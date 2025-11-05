@@ -164,7 +164,7 @@ export default function Home() {
             
             <div className="print-bg h-full overflow-hidden">
                 <ScrollArea className="h-full" type="always">
-                    <div className="scale-75 origin-top mx-auto">
+                    <div className="scale-[0.8] origin-top mx-auto transform-gpu transition-transform duration-300 ease-in-out w-[210mm] min-h-[297mm]">
                         <PrintPreview formData={liveFormData} analysisData={analysis} />
                     </div>
                 </ScrollArea>
