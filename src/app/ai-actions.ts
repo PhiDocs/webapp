@@ -1,6 +1,7 @@
 'use server';
 
 import { generateSafetyAnalysis, type SafetyAnalysisOutput } from '@/ai/flows/generate-safety-analysis';
+import { recommendProtectiveEquipment, type ProtectiveEquipmentOutput } from '@/ai/flows/recommend-protective-equipment';
 import { z } from 'zod';
 
 const actionSchema = z.object({
@@ -19,5 +20,20 @@ export async function getSafetyAnalysis(data: { activityDescription: string }): 
   } catch (e) {
     console.error(e);
     return { data: null, error: 'Falha ao gerar a análise de segurança. Por favor, tente novamente mais tarde.' };
+  }
+}
+
+export async function getProtectiveEquipment(data: { activityDescription: string }): Promise<{ data: ProtectiveEquipmentOutput | null; error: string | null }> {
+  const parsed = actionSchema.safeParse(data);
+  if (!parsed.success) {
+    return { data: null, error: 'Entrada inválida.' };
+  }
+
+  try {
+    const equipment = await recommendProtectiveEquipment(parsed.data);
+    return { data: equipment, error: null };
+  } catch (e) {
+    console.error(e);
+    return { data: null, error: 'Falha ao gerar recomendações de equipamento. Por favor, tente novamente mais tarde.' };
   }
 }

@@ -3,11 +3,13 @@
 import React, { useMemo } from 'react';
 import type { SafetyFormValues } from '@/lib/types';
 import type { SafetyAnalysisOutput } from '@/ai/flows/generate-safety-analysis';
+import type { ProtectiveEquipmentOutput } from '@/ai/flows/recommend-protective-equipment';
 import { Logo } from '@/components/icons/logo';
 
 interface PrintPreviewProps {
   formData: SafetyFormValues;
   analysisData: SafetyAnalysisOutput | null;
+  equipmentData: ProtectiveEquipmentOutput | null;
 }
 
 function PrintHeader({ data }: { data: SafetyFormValues }) {
@@ -97,11 +99,15 @@ function ResponsiblesSection({ data }: { data: SafetyFormValues }) {
           </tr>
         </thead>
         <tbody>
-          {(data.responsiblePersons?.length > 0 ? data.responsiblePersons : [{ name: '', role: '' }]).map((person: any, index: number) => (
+          {(data.responsiblePersons?.length > 0 ? data.responsiblePersons : [{ name: '', role: '', signature: '' }]).map((person, index: number) => (
             <tr key={`resp-${index}`} className="avoid-break">
               <td className="h-12">{person.name || '...'}</td>
               <td>{person.role || '...'}</td>
-              <td></td>
+              <td>
+                {person.signature && (
+                  <img src={person.signature} alt="Assinatura" className="h-10 object-contain" />
+                )}
+              </td>
             </tr>
           ))}
         </tbody>
@@ -142,8 +148,19 @@ function TeamSection({ data }: { data: SafetyFormValues }) {
 }
 
 function AnalysisTable({ steps }: { steps: any[] }) {
+  if (!steps || steps.length === 0) {
+      return (
+          <section className='avoid-break'>
+              <h3 className="section-title">PROCEDIMENTO OPERACIONAL</h3>
+              <div className="text-center text-gray-500 italic py-8 border-2 border-dashed rounded-lg">
+                  A análise de procedimento operacional aparecerá aqui após ser gerada.
+              </div>
+          </section>
+      );
+  }
+
   return (
-     <section className='avoid-break'>
+     <section className='analysis-table-wrapper avoid-break'>
         <h3 className="section-title">PROCEDIMENTO OPERACIONAL</h3>
         <table className="w-full border-collapse text-xs analysis-table">
             <thead className='analysis-table-header'>
@@ -169,22 +186,39 @@ function AnalysisTable({ steps }: { steps: any[] }) {
   );
 }
 
-function SignatureSection() {
+function EquipmentSection({ data }: { data: ProtectiveEquipmentOutput | null }) {
+  if (!data) return null;
+
   return (
-    <section className="signature-section pt-8 avoid-break">
-      <h3 className="section-title">Assinaturas</h3>
-      <div className="signature-grid">
-        <div>
-          <div className="signature-line"></div>
-          <p className="signature-label">Responsável pela Segurança</p>
-        </div>
-        <div>
-          <div className="signature-line"></div>
-          <p className="signature-label">Gerente do Projeto</p>
-        </div>
-      </div>
+    <section className="equipment-section avoid-break">
+      <table className="w-full border-collapse text-xs analysis-table">
+        <thead className='analysis-table-header'>
+          <tr>
+            <th className="p-1 text-left w-1/2">EPI NECESSÁRIO A EXECUÇÃO DA ATIVIDADE</th>
+            <th className="p-1 text-left w-1/2">EPC NECESSÁRIO A EXECUÇÃO DA ATIVIDADE</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td className="p-2 align-top">
+              <ul className="list-disc pl-4 space-y-1">
+                {data.epiItems.map((item, index) => <li key={`epi-${index}`}>{item}</li>)}
+              </ul>
+            </td>
+            <td className="p-2 align-top">
+              <ul className="list-disc pl-4 space-y-1">
+                {data.epcItems.map((item, index) => <li key={`epc-${index}`}>{item}</li>)}
+              </ul>
+            </td>
+          </tr>
+          <tr>
+            <td className="p-2 align-top text-xs"><strong>BS.:</strong> {data.epiNote}</td>
+            <td className="p-2 align-top text-xs"><strong>OBS.:</strong> {data.epcNote}</td>
+          </tr>
+        </tbody>
+      </table>
     </section>
-  );
+  )
 }
 
 function getShortDate(dateString: string) {
@@ -198,28 +232,15 @@ function getShortDate(dateString: string) {
   }
 }
 
-export function PrintPreviewContent({ formData, analysisData }: { formData: SafetyFormValues, analysisData: SafetyAnalysisOutput | null }) {
-  const proceduralSteps = useMemo(() => analysisData?.proceduralSteps || [], [analysisData]);
-
+export function PrintPreviewContent({ formData, analysisData, equipmentData }: { formData: SafetyFormValues, analysisData: SafetyAnalysisOutput | null, equipmentData: ProtectiveEquipmentOutput | null }) {
   return (
     <div className="page-content-wrapper">
         <PrintHeader data={formData} />
         <main className='print-main'>
             <ResponsiblesSection data={formData} />
-
-            {proceduralSteps && proceduralSteps.length > 0 ? (
-              <AnalysisTable steps={proceduralSteps} />
-            ) : (
-              <section className='avoid-break'>
-                  <h3 className="section-title">PROCEDIMENTO OPERACIONAL</h3>
-                  <div className="text-center text-gray-500 italic py-8 border-2 border-dashed rounded-lg">
-                      A análise de procedimento operacional aparecerá aqui após ser gerada.
-                  </div>
-              </section>
-            )}
-            
+            <AnalysisTable steps={analysisData?.proceduralSteps || []} />
+            <EquipmentSection data={equipmentData} />
             <TeamSection data={formData} />
-            <SignatureSection />
         </main>
         <PrintFooter />
     </div>
@@ -227,10 +248,10 @@ export function PrintPreviewContent({ formData, analysisData }: { formData: Safe
 }
 
 
-export function PrintPreview({ formData, analysisData }: PrintPreviewProps) {
+export function PrintPreview({ formData, analysisData, equipmentData }: PrintPreviewProps) {
   return (
       <div className="print-document-container">
-          <PrintPreviewContent formData={formData} analysisData={analysisData} />
+          <PrintPreviewContent formData={formData} analysisData={analysisData} equipmentData={equipmentData} />
       </div>
   );
 }

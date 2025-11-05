@@ -3,8 +3,9 @@
 import { useState } from 'react';
 import { jsPDF } from 'jspdf';
 import type { SafetyAnalysisOutput } from '@/ai/flows/generate-safety-analysis';
+import type { ProtectiveEquipmentOutput } from '@/ai/flows/recommend-protective-equipment';
 import type { SafetyFormValues } from '@/lib/types';
-import { getSafetyAnalysis } from '@/app/ai-actions';
+import { getSafetyAnalysis, getProtectiveEquipment } from '@/app/ai-actions';
 import { Logo } from '@/components/icons/logo';
 import { SafetyForm } from '@/components/safety-form';
 import { Card, CardContent } from '@/components/ui/card';
@@ -21,6 +22,7 @@ import './print/print-layout.css';
 
 export default function Home() {
   const [analysis, setAnalysis] = useState<SafetyAnalysisOutput | null>(null);
+  const [equipment, setEquipment] = useState<ProtectiveEquipmentOutput | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -35,7 +37,7 @@ export default function Home() {
       endDate: '',
       workLocationDetails: '',
       activityDescription: '',
-      responsiblePersons: [{ name: '', role: '' }],
+      responsiblePersons: [{ name: '', role: '', signature: '' }],
       companyName: '',
       companyLogo: '',
       teamMembers: [],
@@ -49,21 +51,37 @@ export default function Home() {
     setIsLoading(true);
     setError(null);
     setAnalysis(null);
+    setEquipment(null);
 
-    const result = await getSafetyAnalysis({
-      activityDescription: data.activityDescription,
-    });
+    const [analysisResult, equipmentResult] = await Promise.all([
+        getSafetyAnalysis({ activityDescription: data.activityDescription }),
+        getProtectiveEquipment({ activityDescription: data.activityDescription })
+    ]);
 
-    if (result.error || !result.data) {
-      setError(result.error || 'An unknown error occurred.');
+    if (analysisResult.error || !analysisResult.data) {
+      setError(analysisResult.error || 'An unknown error occurred during safety analysis.');
     } else {
-      setAnalysis(result.data);
+      setAnalysis(analysisResult.data);
     }
+    
+    if (equipmentResult.error || !equipmentResult.data) {
+        // Handle error for equipment, maybe show a toast or a partial error message
+        console.error(equipmentResult.error);
+        toast({
+            variant: 'destructive',
+            title: 'Falha ao buscar EPIs/EPCs',
+            description: equipmentResult.error || 'Não foi possível gerar as recomendações de equipamento.',
+        });
+    } else {
+        setEquipment(equipmentResult.data);
+    }
+
     setIsLoading(false);
   };
 
   const handleNewReport = () => {
     setAnalysis(null);
+    setEquipment(null);
     setError(null);
     form.reset();
   };
@@ -236,6 +254,7 @@ export default function Home() {
                   <PrintPreview
                     formData={liveFormData}
                     analysisData={analysis}
+                    equipmentData={equipment}
                   />
                 </div>
               </div>
