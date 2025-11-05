@@ -23,7 +23,7 @@
 
 .print-container {
   width: 210mm;
-  /* min-height: 297mm; Let content define height */
+  min-height: 297mm;
   background: white;
   box-shadow: 0 0 15px rgba(0, 0, 0, 0.15);
   color: #333;
@@ -31,8 +31,7 @@
   flex-direction: column;
   font-size: 9pt;
   position: relative;
-  overflow: visible; /* Let content flow naturally */
-  page-break-after: always;
+  overflow: hidden; /* Hide overflow to mimic print */
 }
 
 .page-content-wrapper {
@@ -48,7 +47,7 @@
 
 .print-main {
     flex-grow: 1;
-    overflow: visible; /* Allow content to overflow for html2canvas */
+    overflow: hidden;
 }
 
 .section-title {
@@ -101,7 +100,7 @@ table.analysis-table th {
 }
 
 table.analysis-table thead {
-    display: table-header-group; /* This is the magic for repeating headers */
+    display: table-header-group;
 }
 
 table.analysis-table tbody tr {
@@ -131,25 +130,14 @@ section {
     color: #555;
 }
 
-.break-after-page {
-    break-after: page;
+.page-break-before {
+  break-before: page;
 }
-.break-before-page {
-    break-before: page;
-}
-
-.print-header-wrapper {
-    break-after: avoid;
-}
-.print-footer-wrapper {
-    break-before: avoid;
-}
-
 
 /* --- PRINT-SPECIFIC CSS RULES --- */
 @page {
-  size: A4;
-  margin: 0;
+  size: A4 portrait;
+  margin: 20mm 15mm;
 }
 
 @media print {
@@ -159,7 +147,6 @@ section {
      background: white;
      padding:0;
      margin: 0;
-     width: 210mm;
   }
   
   .print-bg, .print-container-wrapper, #print-content-root {
@@ -179,23 +166,20 @@ section {
     overflow: visible;
   }
 
-  .print-header-wrapper {
-     position: running(header);
+  thead {
+    display: table-row-group !important; /* NÃO repetir cabeçalho */
+  }
+  tfoot {
+    display: table-row-group !important;
   }
   
-  .print-footer-wrapper {
-    position: running(footer);
+  table, tr, td, th, .avoid-break {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
   }
 
-  @page {
-    @top-center {
-      content: element(header);
-    }
-    @bottom-center {
-      content: element(footer);
-    }
+  .page-break-before {
+    page-break-before: always !important;
+    break-before: page !important;
   }
-
 }
-
-    
