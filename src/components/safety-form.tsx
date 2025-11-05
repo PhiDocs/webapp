@@ -25,8 +25,9 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { AlertTriangle, BookOpen, Building2, FileText, HardHat, MapPin, ShieldCheck, Siren, Users, RotateCcw } from 'lucide-react';
+import { AlertTriangle, BookOpen, Building2, FileText, HardHat, MapPin, ShieldCheck, Siren, Users, RotateCcw, Briefcase, UserCheck } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { Separator } from '@/components/ui/separator';
 
 interface SafetyFormProps {
   onSubmit: (data: SafetyFormValues) => void;
@@ -42,10 +43,16 @@ export function SafetyForm({ onSubmit, isLoading, isFormSubmitted, onNewReport }
     resolver: zodResolver(formSchema),
     defaultValues: {
       documentType: 'APR',
-      companyName: '',
-      workLocation: '',
-      teamMembers: '',
+      workName: '',
+      workAddress: '',
+      startDate: '',
+      endDate: '',
+      workLocationDetails: '',
       activityDescription: '',
+      responsibleName: '',
+      responsibleRole: '',
+      companyName: '',
+      teamMembers: '',
     },
     mode: 'onChange',
   });
@@ -125,15 +132,143 @@ export function SafetyForm({ onSubmit, isLoading, isFormSubmitted, onNewReport }
               )}
             />
 
+            <Separator />
+            <h3 className="text-lg font-semibold flex items-center"><Briefcase className="mr-2"/> Dados da Obra</h3>
+
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+              <FormField
+                control={form.control}
+                name="workName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Nome da Obra</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g., Neodent Supernova" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="workAddress"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Endereço</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g., Av. Juscelino Kubitschek" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+              <FormField
+                control={form.control}
+                name="startDate"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Data de Início</FormLabel>
+                    <FormControl>
+                      <Input type="date" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+               <FormField
+                control={form.control}
+                name="endDate"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Data de Término</FormLabel>
+                    <FormControl>
+                      <Input type="date" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+             <FormField
+                control={form.control}
+                name="workLocationDetails"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel><MapPin className="inline-block mr-2" /> Local da Obra / Pavimento</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g., Pavimento 2" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+            <Separator />
+            <h3 className="text-lg font-semibold flex items-center"><UserCheck className="mr-2"/> Responsável pelo Acompanhamento</h3>
+            
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                <FormField
+                    control={form.control}
+                    name="responsibleName"
+                    render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Nome</FormLabel>
+                        <FormControl>
+                        <Input placeholder="Nome do responsável" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                    </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
+                    name="responsibleRole"
+                    render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Função</FormLabel>
+                        <FormControl>
+                        <Input placeholder="e.g., Técnico de Segurança" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                    </FormItem>
+                    )}
+                />
+            </div>
+
+            <Separator />
+            
+            <FormField
+              control={form.control}
+              name="activityDescription"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel><BookOpen className="inline-block mr-2" /> Descrição da Atividade</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="Descreva a atividade de trabalho em detalhes. Ex: 'Instalação de tubulações de ar condicionado na fachada do 3º andar utilizando andaime'."
+                      className="resize-y min-h-[120px]"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <Separator />
+            <h3 className="text-lg font-semibold flex items-center"><Building2 className="mr-2"/> Dados da Empresa e Equipe</h3>
+
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               <FormField
                 control={form.control}
                 name="companyName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel><Building2 className="inline-block mr-2" /> Company Name</FormLabel>
+                    <FormLabel>Nome da Empresa</FormLabel>
                     <FormControl>
-                      <Input placeholder="Your Company Inc." {...field} />
+                      <Input placeholder="Sua Empresa Inc." {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -144,40 +279,26 @@ export function SafetyForm({ onSubmit, isLoading, isFormSubmitted, onNewReport }
                 name="companyLogo"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Company Logo (Optional)</FormLabel>
+                    <FormLabel>Logo da Empresa (Opcional)</FormLabel>
                     <FormControl>
                        <Input type="file" accept="image/png, image/jpeg" onChange={handleLogoChange} />
                     </FormControl>
-                    <FormDescription>Max 2MB. PNG or JPG.</FormDescription>
+                    <FormDescription>Max 2MB. PNG ou JPG.</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
               />
             </div>
-
-            <FormField
-              control={form.control}
-              name="workLocation"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel><MapPin className="inline-block mr-2" /> Work Location</FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g., Main construction site, Block A" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
+            
             <FormField
               control={form.control}
               name="teamMembers"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel><Users className="inline-block mr-2" /> Team Members (Optional)</FormLabel>
+                  <FormLabel><Users className="inline-block mr-2" /> Equipe de Trabalho (Opcional)</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="List the names of team members involved, separated by commas."
+                      placeholder="Liste os nomes dos membros da equipe envolvidos, separados por vírgulas."
                       className="resize-none"
                       {...field}
                     />
@@ -186,27 +307,10 @@ export function SafetyForm({ onSubmit, isLoading, isFormSubmitted, onNewReport }
                 </FormItem>
               )}
             />
-
-            <FormField
-              control={form.control}
-              name="activityDescription"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel><BookOpen className="inline-block mr-2" /> Activity Description</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="Describe the work activity in detail. For example: 'Installation of air conditioning pipes on the 3rd floor facade using scaffolding'."
-                      className="resize-y min-h-[120px]"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            
 
             <Button type="submit" disabled={isLoading} className="w-full">
-              {isLoading ? 'Generating...' : 'Generate Analysis'}
+              {isLoading ? 'Gerando Análise...' : 'Gerar Análise'}
             </Button>
           </form>
         </Form>

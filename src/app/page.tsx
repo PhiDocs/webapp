@@ -58,24 +58,29 @@ export default function Home() {
       </header>
 
       <main className="container mx-auto p-4 md:p-6">
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
-          <div className="space-y-6">
-            <div className="space-y-2">
-              <h2 className="text-2xl font-bold tracking-tight text-foreground font-headline">
-                Generate Your Safety Document
-              </h2>
-              <p className="text-muted-foreground">
-                Select a document type and describe the work activity. Our AI will
-                analyze it based on Brazilian NRs.
-              </p>
-            </div>
-            <SafetyForm onSubmit={handleFormSubmit} isLoading={isLoading} isFormSubmitted={!!analysis} onNewReport={handleNewReport} />
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:items-start">
+          <div className="space-y-6 lg:sticky lg:top-20">
+            {!analysis ? (
+              <>
+                <div className="space-y-2">
+                  <h2 className="text-2xl font-bold tracking-tight text-foreground font-headline">
+                    Gere seu Documento de Segurança
+                  </h2>
+                  <p className="text-muted-foreground">
+                    Selecione um tipo de documento e descreva a atividade de trabalho. Nossa IA irá analisá-la com base nas NRs brasileiras.
+                  </p>
+                </div>
+                <SafetyForm onSubmit={handleFormSubmit} isLoading={isLoading} isFormSubmitted={!!analysis} onNewReport={handleNewReport} />
+              </>
+            ) : (
+               <SafetyForm onSubmit={handleFormSubmit} isLoading={isLoading} isFormSubmitted={!!analysis} onNewReport={handleNewReport} />
+            )}
           </div>
 
           <div className="space-y-6">
              {isLoading && (
               <Card className="flex h-full min-h-[400px] w-full flex-col items-center justify-center">
-                <CardContent className="flex flex-col items-center justify-center gap-4 text-center">
+                <CardContent className="flex flex-col items-center justify-center gap-4 text-center p-6">
                   <div className="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-12 w-12 mb-4"></div>
                   <style jsx>{`
                     .loader {
@@ -87,9 +92,9 @@ export default function Home() {
                       100% { transform: rotate(360deg); }
                     }
                   `}</style>
-                  <h3 className="text-xl font-semibold">Generating Analysis...</h3>
+                  <h3 className="text-xl font-semibold">Gerando Análise...</h3>
                   <p className="text-muted-foreground">
-                    Please wait while our AI prepares your safety report.
+                    Por favor, aguarde enquanto nossa IA prepara seu relatório de segurança.
                   </p>
                 </CardContent>
               </Card>
@@ -97,15 +102,15 @@ export default function Home() {
 
             {error && (
                <Card className="flex h-full min-h-[400px] w-full flex-col items-center justify-center bg-destructive/10 border-destructive">
-                <CardContent className="flex flex-col items-center justify-center gap-4 text-center">
-                  <h3 className="text-xl font-semibold text-destructive-foreground">Error</h3>
+                <CardContent className="flex flex-col items-center justify-center gap-4 text-center p-6">
+                  <h3 className="text-xl font-semibold text-destructive-foreground">Erro</h3>
                   <p className="text-destructive-foreground/80">{error}</p>
                 </CardContent>
                </Card>
             )}
 
             {!isLoading && !analysis && !error && (
-              <Card className="relative overflow-hidden rounded-lg">
+              <Card className="relative overflow-hidden rounded-lg lg:min-h-[calc(100vh-10rem)] flex items-center justify-center">
                 <CardContent className="p-0">
                   {safetyIllustration && (
                     <Image
@@ -121,10 +126,10 @@ export default function Home() {
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                   <div className="absolute bottom-0 p-6">
                     <h3 className="text-2xl font-bold text-white font-headline">
-                      Your analysis will appear here
+                      Sua análise aparecerá aqui
                     </h3>
                     <p className="mt-2 text-white/80">
-                      Fill out the form to get started.
+                      Preencha o formulário para começar.
                     </p>
                   </div>
                 </CardContent>

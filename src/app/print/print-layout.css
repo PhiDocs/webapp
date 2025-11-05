@@ -18,6 +18,7 @@ body.print-body {
   color: #333;
   display: flex;
   flex-direction: column;
+  font-size: 10pt;
 }
 
 .text-primary-dark {
@@ -25,23 +26,26 @@ body.print-body {
 }
 
 .section-title {
-  font-size: 1.25rem;
+  font-size: 1.1rem;
   font-weight: bold;
-  color: #1A237E;
-  border-bottom: 2px solid #1A237E;
-  padding-bottom: 0.5rem;
-  margin-bottom: 1rem;
+  color: #333;
+  background-color: #e0e0e0;
+  padding: 0.3rem;
+  margin-bottom: 0.5rem;
+  text-align: center;
 }
 
-.info-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1.5rem;
+.info-grid tr, .info-grid td {
+    border: 1px solid #999;
+    padding: 0.5rem;
+    vertical-align: top;
 }
-.info-grid p {
-    margin: 0;
-    line-height: 1.5;
+
+.info-grid strong {
+  font-size: 8pt;
+  text-transform: uppercase;
 }
+
 
 table {
   width: 100%;
@@ -49,8 +53,8 @@ table {
 }
 
 table th, table td {
-  border: 1px solid #ccc;
-  padding: 0.75rem;
+  border: 1px solid #999;
+  padding: 0.5rem;
   text-align: left;
   vertical-align: top;
 }
@@ -86,7 +90,7 @@ table tbody tr:nth-child(even) {
 @media print {
   @page {
     size: A4;
-    margin: 20mm;
+    margin: 15mm;
   }
 
   html, body {
@@ -109,6 +113,7 @@ table tbody tr:nth-child(even) {
     box-shadow: none;
     margin: 0;
     border: none;
+    font-size: 9pt;
   }
 
   .no-print {
