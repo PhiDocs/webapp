@@ -1,3 +1,4 @@
+
 import type { NextApiRequest, NextApiResponse } from 'next';
 import puppeteer from 'puppeteer';
 import { renderToStaticMarkup } from 'react-dom/server';
