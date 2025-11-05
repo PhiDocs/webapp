@@ -83,11 +83,11 @@ export function PrintPreview({ formData, analysisData }: PrintPreviewProps) {
                             // Finish previous page
                             if(currentTableRows.length > 0) {
                                 currentPageElements.push(
-                                    <section key={`table-chunk-${newPages.length}`}>
-                                        {sectionTitle.outerHTML}
+                                    <section key={`table-chunk-p${newPages.length}-i${rowIndex}`}>
+                                        <div dangerouslySetInnerHTML={{ __html: sectionTitle.outerHTML }}/>
                                         <table className="w-full border-collapse border mt-1 text-xs analysis-table">
-                                           {tableHeader.outerHTML}
-                                            <tbody>{currentTableRows.map(r => r.outerHTML).join('')}</tbody>
+                                           <thead dangerouslySetInnerHTML={{ __html: tableHeader.innerHTML }}/>
+                                            <tbody dangerouslySetInnerHTML={{ __html: currentTableRows.map(r => r.outerHTML).join('') }}/>
                                         </table>
                                     </section>
                                 );
