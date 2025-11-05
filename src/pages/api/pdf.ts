@@ -14,7 +14,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const dataParam = encodeURIComponent(JSON.stringify(printData));
         
         // Construct the URL to the print page
-        const url = `${process.env.NODE_ENV === 'production' ? 'https://' + process.env.NEXT_PUBLIC_HOST : 'http://localhost:9002'}/print?data=${dataParam}`;
+        const host = req.headers.host;
+        const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http';
+        const url = `${protocol}://${host}/print?data=${dataParam}`;
 
         const browser = await puppeteer.launch({ 
             headless: true,
