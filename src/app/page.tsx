@@ -73,11 +73,19 @@ export default function Home() {
   const handleGeneratePdf = async () => {
     // Trigger validation
     const isValid = await form.trigger();
-    if (!isValid || !analysis) {
+    if (!isValid) {
         toast({
             variant: 'destructive',
             title: 'Formulário incompleto',
-            description: 'Por favor, preencha os campos obrigatórios e gere a análise da atividade primeiro.',
+            description: 'Por favor, preencha todos os campos obrigatórios antes de gerar o PDF.',
+        });
+        return;
+    }
+    if (!analysis) {
+        toast({
+            variant: 'destructive',
+            title: 'Análise de Risco não gerada',
+            description: 'Por favor, gere a análise da atividade antes de baixar o PDF.',
         });
         return;
     }
@@ -108,11 +116,11 @@ export default function Home() {
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `APR-${printData.companyName.replace(/ /g,"_")}-${printData.date}.pdf`;
+      a.download = `${printData.documentType}-${printData.companyName.replace(/ /g,"_")}-${new Date().toLocaleDateString('pt-BR').replace(/\//g, '-')}.pdf`;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
-      a.remove();
+a.remove();
 
     } catch (error) {
       console.error('Falha ao gerar PDF:', error);
@@ -137,7 +145,7 @@ export default function Home() {
               Safety Docs AI
             </h1>
           </div>
-          <Button onClick={handleGeneratePdf} disabled={isDownloading}>
+          <Button onClick={handleGeneratePdf} disabled={isDownloading || !analysis}>
             {isDownloading ? (
                 <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -155,8 +163,8 @@ export default function Home() {
 
       <main className="container mx-auto p-4 md:p-6 flex-grow">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 h-full">
-          <ScrollArea className="h-[calc(100vh-120px)]">
-            <div className="space-y-6 lg:pr-4">
+          <ScrollArea className="h-[calc(100vh-120px)] rounded-lg border">
+            <div className="p-1 space-y-6 lg:p-4">
                 <div className="space-y-2">
                   <h2 className="text-2xl font-bold tracking-tight text-foreground font-headline">
                     Gere seu Documento de Segurança
@@ -169,42 +177,41 @@ export default function Home() {
             </div>
           </ScrollArea>
 
-          <div className="relative flex flex-col space-y-6 h-[calc(100vh-120px)]">
-            <div className="lg:sticky lg:top-20 flex-grow h-full">
-            
-            {error && (
-               <Card className="flex h-full min-h-[400px] w-full flex-col items-center justify-center bg-destructive/10 border-destructive">
-                <CardContent className="flex flex-col items-center justify-center gap-4 text-center p-6">
-                  <h3 className="text-xl font-semibold text-destructive-foreground">Erro</h3>
-                  <p className="text-destructive-foreground/80">{error}</p>
-                </CardContent>
-               </Card>
-            )}
-            
-            {!error && (
-              <div className="print-bg h-full overflow-hidden rounded-lg border">
-                  <ScrollArea className="h-full" type="always">
-                      <div className="relative w-full h-full">
-                          {isLoading && (
-                              <div className="absolute inset-0 bg-white/80 backdrop-blur-sm z-10 flex flex-col items-center justify-center">
-                                  <div className="flex flex-col items-center gap-4 text-center p-6">
-                                      <Loader2 className="h-12 w-12 animate-spin text-primary" />
-                                      <h3 className="text-xl font-semibold">Gerando Análise...</h3>
-                                      <p className="text-muted-foreground">
-                                          Aguarde enquanto nossa IA prepara seu relatório.
-                                      </p>
-                                  </div>
+          <div className="relative flex flex-col h-[calc(100vh-120px)]">
+             <div className="print-bg flex-grow rounded-lg border overflow-hidden">
+                <ScrollArea className="h-full" type="always">
+                  <div className="relative w-full h-full p-4 sm:p-8">
+                      {isLoading && (
+                          <div className="absolute inset-0 bg-white/80 backdrop-blur-sm z-10 flex flex-col items-center justify-center">
+                              <div className="flex flex-col items-center gap-4 text-center p-6">
+                                  <Loader2 className="h-12 w-12 animate-spin text-primary" />
+                                  <h3 className="text-xl font-semibold">Gerando Análise...</h3>
+                                  <p className="text-muted-foreground">
+                                      Aguarde enquanto nossa IA prepara seu relatório.
+                                  </p>
                               </div>
-                          )}
-                          <div className="mx-auto my-8 w-[210mm] min-h-[297mm] scale-[0.8] origin-top transform-gpu bg-white shadow-lg transition-transform duration-300 ease-in-out">
-                              <PrintPreview formData={liveFormData} analysisData={analysis} />
                           </div>
-                      </div>
-                  </ScrollArea>
-              </div>
-            )}
+                      )}
+                      
+                       {error && (
+                         <div className="w-[210mm] min-h-[297mm] mx-auto bg-white shadow-lg flex items-center justify-center">
+                           <Card className="flex h-full min-h-[400px] w-full flex-col items-center justify-center bg-destructive/10 border-destructive">
+                            <CardContent className="flex flex-col items-center justify-center gap-4 text-center p-6">
+                              <h3 className="text-xl font-semibold text-destructive-foreground">Erro</h3>
+                              <p className="text-destructive-foreground/80">{error}</p>
+                            </CardContent>
+                           </Card>
+                         </div>
+                       )}
 
-            </div>
+                      {!error && (
+                        <div className="w-[210mm] mx-auto transform-gpu bg-transparent transition-transform duration-300 ease-in-out origin-top">
+                            <PrintPreview formData={liveFormData} analysisData={analysis} />
+                        </div>
+                      )}
+                  </div>
+                </ScrollArea>
+             </div>
           </div>
         </div>
       </main>
