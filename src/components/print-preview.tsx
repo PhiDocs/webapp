@@ -10,17 +10,6 @@ interface PrintPreviewProps {
     analysisData: SafetyAnalysisOutput | null;
 }
 
-// A simple hook to get the component's rendered height
-const useElementHeight = (ref: React.RefObject<HTMLDivElement>) => {
-    const [height, setHeight] = useState(0);
-    useEffect(() => {
-        if (ref.current) {
-            setHeight(ref.current.offsetHeight);
-        }
-    }, [ref]);
-    return height;
-};
-
 // Represents one physical A4 page in the preview
 const Page = React.forwardRef<HTMLDivElement, { children: React.ReactNode }>(({ children }, ref) => {
     return (
@@ -58,11 +47,14 @@ export function PrintPreview({ formData, analysisData }: PrintPreviewProps) {
             const footer = getPageFooter(formData);
             
             const tempDiv = document.createElement('div');
-            const reactRoot = require('react-dom/client').createRoot(tempDiv);
-            reactRoot.render(header);
+            // This is a trick to render and measure a component without showing it
+            const root = require('react-dom/client').createRoot(tempDiv);
+            root.render(header);
             const headerHeight = tempDiv.offsetHeight || 100;
-            reactRoot.render(footer);
+            root.render(footer);
             const footerHeight = tempDiv.offsetHeight || 50;
+            root.unmount();
+
 
             const maxContentHeight = A4_PAGE_HEIGHT_PX - headerHeight - footerHeight - 80; // 80 for padding
 
@@ -76,6 +68,7 @@ export function PrintPreview({ formData, analysisData }: PrintPreviewProps) {
                     const sectionTitle = el.querySelector('.section-title')!.cloneNode(true) as HTMLElement;
                     
                     let currentTableRows: HTMLElement[] = [];
+                    let chunkIndex = 0;
                     
                     rows.forEach((row, rowIndex) => {
                         const rowHeight = row.offsetHeight;
@@ -83,7 +76,7 @@ export function PrintPreview({ formData, analysisData }: PrintPreviewProps) {
                             // Finish previous page
                             if(currentTableRows.length > 0) {
                                 currentPageElements.push(
-                                    <section key={`table-chunk-p${newPages.length}-i${rowIndex}`}>
+                                    <section key={`table-chunk-p${newPages.length}-i${chunkIndex}`}>
                                         <div dangerouslySetInnerHTML={{ __html: sectionTitle.outerHTML }}/>
                                         <table className="w-full border-collapse border mt-1 text-xs analysis-table">
                                            <thead dangerouslySetInnerHTML={{ __html: tableHeader.innerHTML }}/>
@@ -91,6 +84,7 @@ export function PrintPreview({ formData, analysisData }: PrintPreviewProps) {
                                         </table>
                                     </section>
                                 );
+                                chunkIndex++;
                             }
                             newPages.push(currentPageElements);
                             currentPageElements = [];
@@ -98,7 +92,7 @@ export function PrintPreview({ formData, analysisData }: PrintPreviewProps) {
                             currentTableRows = [];
                         }
                         
-                        if (currentTableRows.length === 0) {
+                        if (currentTableRows.length === 0) { // First row of a new table chunk
                             currentHeight += (sectionTitle.offsetHeight + tableHeader.offsetHeight);
                         }
 
@@ -108,7 +102,7 @@ export function PrintPreview({ formData, analysisData }: PrintPreviewProps) {
                     
                      if(currentTableRows.length > 0) {
                         currentPageElements.push(
-                           <section key={`table-chunk-${newPages.length}`}>
+                           <section key={`table-chunk-final-p${newPages.length}-i${chunkIndex}`}>
                                 <div dangerouslySetInnerHTML={{ __html: sectionTitle.outerHTML }}/>
                                 <table className="w-full border-collapse border mt-1 text-xs analysis-table">
                                     <thead dangerouslySetInnerHTML={{ __html: tableHeader.innerHTML }}/>
@@ -121,10 +115,10 @@ export function PrintPreview({ formData, analysisData }: PrintPreviewProps) {
                     const elementHeight = el.offsetHeight;
                     if (currentHeight + elementHeight > maxContentHeight && currentPageElements.length > 0) {
                         newPages.push(currentPageElements);
-                        currentPageElements = [ <div key={index} dangerouslySetInnerHTML={{ __html: el.outerHTML }} /> ];
+                        currentPageElements = [ <div key={`${index}-el`} dangerouslySetInnerHTML={{ __html: el.outerHTML }} /> ];
                         currentHeight = elementHeight;
                     } else {
-                        currentPageElements.push( <div key={index} dangerouslySetInnerHTML={{ __html: el.outerHTML }} /> );
+                        currentPageElements.push( <div key={`${index}-el`} dangerouslySetInnerHTML={{ __html: el.outerHTML }} /> );
                         currentHeight += elementHeight;
                     }
                 }
@@ -136,7 +130,7 @@ export function PrintPreview({ formData, analysisData }: PrintPreviewProps) {
             
             const totalPages = newPages.length;
             const finalPages = newPages.map((pageContent, i) => (
-                 <div key={i} className="print-container page-break">
+                 <div key={`page-${i}`} className="print-container page-break">
                     <div className="page-content-wrapper">
                         {getPageHeader(i + 1, totalPages, formData)}
                         <main className="print-main flex-grow flex flex-col">
@@ -151,7 +145,7 @@ export function PrintPreview({ formData, analysisData }: PrintPreviewProps) {
         };
         
         // Use a timeout to allow the browser to render the initial content before we measure it
-        const timer = setTimeout(paginate, 100);
+        const timer = setTimeout(paginate, 250);
         return () => clearTimeout(timer);
 
     }, [formData, analysisData]);
@@ -172,7 +166,7 @@ export function PrintPreview({ formData, analysisData }: PrintPreviewProps) {
     // Then, render the paginated content
     return (
         <>
-            <div ref={pageContainerRef} style={{ position: 'absolute', left: '-9999px', top: '0', width: '210mm' }}>
+            <div ref={pageContainerRef} style={{ position: 'absolute', left: '-9999px', top: '0', width: '210mm', opacity: 0, zIndex: -1 }}>
                 {initialContent}
             </div>
             {pages.length > 0 ? pages : (
@@ -288,7 +282,7 @@ function getSections(formData: any, analysisData: any, date: string) {
               </thead>
               <tbody>
                 {data.responsiblePersons?.map((person: any, index: number) => (
-                  <tr key={index}>
+                  <tr key={`resp-${index}`}>
                     <td className="h-12">{person.name || '...'}</td>
                     <td>{person.role || '...'}</td>
                     <td></td>
@@ -311,7 +305,7 @@ function getSections(formData: any, analysisData: any, date: string) {
                 </thead>
                  <tbody>
                     {teamMembers.map((member: any, index: number) => (
-                      <tr key={index}>
+                      <tr key={`team-${index}`}>
                         <td className="h-10">{getShortDate(member.date)}</td>
                         <td>{member.name}</td>
                         <td>{member.role}</td>
@@ -319,7 +313,7 @@ function getSections(formData: any, analysisData: any, date: string) {
                       </tr>
                     ))}
                     {Array.from({ length: Math.max(0, 5 - teamMembers.length) }).map((_: any, index: number) => (
-                      <tr key={`empty-${index}`}>
+                      <tr key={`empty-team-${index}`}>
                         <td className="h-10"></td><td></td><td></td><td></td>
                       </tr>
                     ))}
@@ -341,7 +335,7 @@ function getSections(formData: any, analysisData: any, date: string) {
                 </thead>
                 <tbody>
                   {data.proceduralSteps.map((step: any, index: number) => (
-                    <tr key={index}>
+                    <tr key={`proc-${index}`}>
                       <td className="p-2 align-top text-center">{step.item}</td>
                       <td className="p-2 align-top whitespace-pre-wrap">{step.activity}</td>
                       <td className="p-2 align-top whitespace-pre-wrap">{step.potentialRisks}</td>
