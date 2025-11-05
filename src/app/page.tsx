@@ -129,8 +129,8 @@ export default function Home() {
             </div>
           </ScrollArea>
 
-          <div className="space-y-6">
-            <div className="lg:sticky lg:top-20">
+          <div className="flex flex-col space-y-6 h-[calc(100vh-120px)]">
+            <div className="lg:sticky lg:top-20 flex-grow">
              {isLoading && (
               <Card className="flex h-full min-h-[400px] w-full flex-col items-center justify-center">
                 <CardContent className="flex flex-col items-center justify-center gap-4 text-center p-6">
@@ -162,13 +162,14 @@ export default function Home() {
                </Card>
             )}
             
-            <div className="print-bg h-[calc(100vh-120px)] overflow-hidden">
-              <ScrollArea className='h-full' type='always'>
-                <div className='scale-75 origin-top'>
-                  <PrintPreview formData={liveFormData} analysisData={analysis} />
-                </div>
-              </ScrollArea>
+            <div className="print-bg h-full overflow-hidden">
+                <ScrollArea className="h-full" type="always">
+                    <div className="scale-75 origin-top mx-auto">
+                        <PrintPreview formData={liveFormData} analysisData={analysis} />
+                    </div>
+                </ScrollArea>
             </div>
+
             </div>
           </div>
         </div>
