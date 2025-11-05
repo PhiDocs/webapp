@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
             '--disable-accelerated-2d-canvas',
             '--no-first-run',
             '--no-zygote',
-            '--single-process', // <- this one doesn't works in Windows
+            '--single-process', // This might not work on Windows, but is useful for Linux containers
             '--disable-gpu'
         ]
     });
