@@ -94,7 +94,9 @@ export default function Home() {
       });
 
       if (!response.ok) {
-        throw new Error('Falha ao gerar o PDF no servidor.');
+        const errorText = await response.text();
+        console.error('Server error:', errorText);
+        throw new Error(`Falha ao gerar o PDF no servidor: ${response.statusText}`);
       }
       
       const blob = await response.blob();
@@ -112,7 +114,7 @@ export default function Home() {
       toast({
         variant: 'destructive',
         title: 'Erro ao gerar PDF',
-        description: 'Não foi possível gerar o PDF. Por favor, tente novamente.',
+        description: (error as Error).message || 'Não foi possível gerar o PDF. Por favor, tente novamente.',
       });
     } finally {
         setIsDownloading(false);

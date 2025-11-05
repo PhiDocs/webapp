@@ -11,14 +11,13 @@ type PrintData = SafetyFormValues & Partial<SafetyAnalysisOutput> & {
   date: string;
 };
 
+// This page is no longer used for active PDF generation,
+// but can be kept for direct previewing if needed.
 export default function PrintPage() {
   const [data, setData] = useState<PrintData | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // This component is now only for rendering on the server for PDF generation.
-    // The client-side logic has been removed.
-    // We check for a query param to see if this is a direct render request.
     const urlParams = new URLSearchParams(window.location.search);
     const dataParam = urlParams.get('data');
     if (dataParam) {
@@ -29,8 +28,6 @@ export default function PrintPage() {
         console.error("Failed to parse print data from URL", e);
         setError("Invalid data provided for printing.");
       }
-    } else {
-        setError("No data provided for printing.");
     }
   }, []);
 
