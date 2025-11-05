@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import './print-layout.css';
-import type { SafetyFormValues, ResponsiblePerson } from '@/lib/types';
+import type { SafetyFormValues } from '@/lib/types';
 import type { SafetyAnalysisOutput } from '@/ai/flows/generate-safety-analysis';
 import { PrintPreviewContent } from '@/components/print-preview';
 
@@ -19,10 +19,6 @@ export default function PrintPage() {
     if (storedData) {
       try {
         const parsedData = JSON.parse(storedData);
-        // Ensure responsiblePersons is an array
-        if (parsedData.responsibleName && !parsedData.responsiblePersons) {
-            parsedData.responsiblePersons = [{name: parsedData.responsibleName, role: parsedData.responsibleRole}]
-        }
         setData(parsedData);
       } catch (e) {
         console.error("Failed to parse print data", e);

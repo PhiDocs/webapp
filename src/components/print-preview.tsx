@@ -1,9 +1,8 @@
 'use client';
 
-import type { SafetyFormValues, ResponsiblePerson } from '@/lib/types';
+import type { SafetyFormValues } from '@/lib/types';
 import type { SafetyAnalysisOutput } from '@/ai/flows/generate-safety-analysis';
 import { Logo } from '@/components/icons/logo';
-import { Separator } from '@/components/ui/separator';
 
 interface PrintPreviewProps {
     formData: SafetyFormValues;
@@ -29,13 +28,6 @@ export function PrintPreviewContent({ formData, analysisData }: PrintPreviewProp
         return 'Data inválida'
     }
   }
-  
-  const analysisSections = analysisData ? [
-    { title: 'Riscos', content: analysisData.risks },
-    { title: 'Perigos', content: analysisData.hazards },
-    { title: 'Medidas Preventivas', content: analysisData.preventiveMeasures },
-    { title: 'Recomendações de EPI', content: analysisData.epiRecommendations },
-  ] : [];
 
   return (
     <div className="print-container">
@@ -155,30 +147,32 @@ export function PrintPreviewContent({ formData, analysisData }: PrintPreviewProp
           </section>
         )}
         
-        {analysisData && (
-            <>
-                <Separator className="my-8" />
-                <h2 className="text-2xl font-bold text-center mb-6 text-primary-dark">Análise de Segurança por IA</h2>
-                <section>
-                    <table className="w-full border-collapse">
-                    <thead>
-                        <tr>
-                        <th className="w-1/4">Categoria</th>
-                        <th>Detalhes</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {analysisSections.map((section, index) => (
-                        <tr key={index}>
-                            <td className="font-bold align-top">{section.title}</td>
-                            <td className="whitespace-pre-wrap">{section.content}</td>
-                        </tr>
-                        ))}
-                    </tbody>
-                    </table>
-                </section>
-            </>
+        {analysisData?.proceduralSteps && analysisData.proceduralSteps.length > 0 && (
+          <section className="mb-4" style={{ pageBreakInside: 'avoid' }}>
+            <h3 className="section-title text-center">PROCEDIMENTO OPERACIONAL</h3>
+            <table className="w-full border-collapse border mt-1">
+              <thead>
+                <tr>
+                  <th className="border p-2 text-left w-[5%]">ITEM</th>
+                  <th className="border p-2 text-left w-[25%]">ATIVIDADES (Com suas respectivas etapas/passos)</th>
+                  <th className="border p-2 text-left w-[25%]">RISCOS POTENCIAIS (O que poderá sair errado)</th>
+                  <th className="border p-2 text-left w-[45%]">MEDIDAS PREVENTIVAS / RECOMENDAÇÕES DE SEGURANÇA (Evitar o acidente ou minimizar os danos, caso este ocorra)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {analysisData.proceduralSteps.map((step, index) => (
+                  <tr key={index}>
+                    <td className="border p-2 text-center">{step.item}</td>
+                    <td className="border p-2 whitespace-pre-wrap">{step.activity}</td>
+                    <td className="border p-2 whitespace-pre-wrap">{step.potentialRisks}</td>
+                    <td className="border p-2 whitespace-pre-wrap">{step.preventiveMeasures}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </section>
         )}
+
 
         <section className="mt-16">
           <h3 className="section-title">Assinaturas</h3>

@@ -15,7 +15,7 @@ export const formSchema = z.object({
   endDate: z.string().min(1, 'Data de término é obrigatória.'),
   workLocationDetails: z.string().min(1, 'Local da obra/pavimento é obrigatório.'),
   
-  activityDescription: z.string().min(10, 'Activity description must be at least 10 characters.'),
+  activityDescription: z.string().min(10, 'A descrição da atividade deve ter pelo menos 10 caracteres.'),
   
   // Responsible Person
   responsiblePersons: z.array(responsiblePersonSchema).min(1, 'Adicione pelo menos um responsável.'),

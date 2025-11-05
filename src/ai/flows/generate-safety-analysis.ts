@@ -18,15 +18,15 @@ const SafetyAnalysisInputSchema = z.object({
 });
 export type SafetyAnalysisInput = z.infer<typeof SafetyAnalysisInputSchema>;
 
+const ProceduralStepSchema = z.object({
+    item: z.number().describe('The sequential item number for the operational procedure step.'),
+    activity: z.string().describe('The specific activity or step in the operational procedure.'),
+    potentialRisks: z.string().describe('The potential risks associated with this specific activity. What could go wrong.'),
+    preventiveMeasures: z.string().describe('The preventive measures and safety recommendations for this step, based on Brazilian NRs. This should include necessary EPIs.'),
+});
+
 const SafetyAnalysisOutputSchema = z.object({
-  risks: z.string().describe('Potential risks associated with the activity.'),
-  hazards: z.string().describe('Potential hazards associated with the activity.'),
-  preventiveMeasures: z
-    .string()
-    .describe('Preventive measures to mitigate the risks and hazards.'),
-  epiRecommendations: z
-    .string()
-    .describe('Recommended Equipamento de Proteção Individual (EPI) for the activity'),
+  proceduralSteps: z.array(ProceduralStepSchema).describe('An array of detailed operational procedure steps for the described work activity. Generate a comprehensive list of steps, from preparation to completion.'),
 });
 export type SafetyAnalysisOutput = z.infer<typeof SafetyAnalysisOutputSchema>;
 
@@ -42,11 +42,19 @@ const prompt = ai.definePrompt({
   output: {schema: SafetyAnalysisOutputSchema},
   prompt: `You are an AI assistant specialized in workplace safety, with expertise in Brazilian Normas Regulamentadoras (NRs).
 
-  Based on the following work activity description, generate a safety analysis, including potential risks, hazards, preventive measures, and recommended Equipamento de Proteção Individual (EPI).
+  Based on the following work activity description, generate a detailed operational procedure. For each step of the procedure, identify the activity, its potential risks, and the corresponding preventive measures and safety recommendations.
+
+  The output must be a table-like structure. The final output should be a JSON object containing an array of procedural steps.
+
+  Example of a step:
+  - item: 1
+  - activity: "1. TREINAMENTO DE 'ST' DA ATIVIDADE;"
+  - potentialRisks: "1.1. Passar pelo Treinamento e/ou retirada da Obra."
+  - preventiveMeasures: "1.1.1. Antes de iniciar as atividades contidas nesta APR, deverá ser realizado um treinamento aos envolvidos nas tarefas, e instruí-los sobre os EPI's necessários: Capacete de Segurança, Botinas de couro, Luvas de multitato, Óculos de segurança, Protetor solar; Protetor Auditivo (Plug ou Concha);\\n1.1.2. As recomendações contidas neste documento deverão ser usadas neste treinamento;\\n1.1.3. O treinamento deverá ser ministrado pelo encarregado responsável e emitido lista de assinatura no verso de APR;\\n1.1.4. Antes de iniciar as atividades fornecer conhecimento aos envolvidos dos riscos inerentes a função."
 
   Activity Description: {{{activityDescription}}}
 
-  Provide the output in a structured format.
+  Generate a comprehensive list of procedural steps based on the user's activity description.
   `,
 });
 

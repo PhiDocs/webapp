@@ -1,6 +1,5 @@
 'use client';
 
-import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm, useFieldArray } from 'react-hook-form';
 import type { ChangeEvent } from 'react';
 import type { SafetyFormValues } from '@/lib/types';
@@ -25,7 +24,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { BookOpen, Building2, FileText, MapPin, Users, RotateCcw, Briefcase, UserCheck, PlusCircle, Trash2 } from 'lucide-react';
+import { BookOpen, Building2, FileText, MapPin, Users, Briefcase, UserCheck, PlusCircle, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Separator } from '@/components/ui/separator';
 
@@ -33,11 +32,10 @@ interface SafetyFormProps {
   form: ReturnType<typeof useForm<SafetyFormValues>>;
   onSubmit: (data: SafetyFormValues) => void;
   isLoading: boolean;
-  isFormSubmitted: boolean;
   onNewReport: () => void;
 }
 
-export function SafetyForm({ form, onSubmit, isLoading, isFormSubmitted, onNewReport }: SafetyFormProps) {
+export function SafetyForm({ form, onSubmit, isLoading, onNewReport }: SafetyFormProps) {
   const { toast } = useToast();
   
   const { fields, append, remove } = useFieldArray({
@@ -65,34 +63,9 @@ export function SafetyForm({ form, onSubmit, isLoading, isFormSubmitted, onNewRe
   };
 
 
-  if (isFormSubmitted) {
-    return (
-       <Card className="w-full">
-        <CardHeader>
-          <CardTitle>Análise Completa</CardTitle>
-          <CardDescription>
-            Sua análise de segurança está pronta à direita.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Button onClick={onNewReport} className="w-full" variant="outline">
-            <RotateCcw className="mr-2 h-4 w-4" />
-            Começar Novo Relatório
-          </Button>
-        </CardContent>
-      </Card>
-    )
-  }
-
   return (
     <Card className="w-full">
-      <CardHeader>
-        <CardTitle>Detalhes do Documento</CardTitle>
-        <CardDescription>
-          Todos os campos são obrigatórios, a menos que indicado de outra forma.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
+      <CardContent className="pt-6">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             <FormField
@@ -260,6 +233,10 @@ export function SafetyForm({ form, onSubmit, isLoading, isFormSubmitted, onNewRe
                 </FormItem>
               )}
             />
+            
+            <Button type="submit" disabled={isLoading} className="w-full">
+              {isLoading ? 'Gerando Análise...' : 'Gerar Análise de Segurança'}
+            </Button>
 
             <Separator />
             <h3 className="text-lg font-semibold flex items-center"><Building2 className="mr-2"/> Dados da Empresa e Equipe</h3>
@@ -312,9 +289,8 @@ export function SafetyForm({ form, onSubmit, isLoading, isFormSubmitted, onNewRe
               )}
             />
             
-
-            <Button type="submit" disabled={isLoading} className="w-full">
-              {isLoading ? 'Gerando Análise...' : 'Gerar Análise'}
+            <Button type="button" onClick={onNewReport} variant="outline" className="w-full">
+                Começar Novo Relatório
             </Button>
           </form>
         </Form>

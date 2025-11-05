@@ -6,7 +6,6 @@ import type { SafetyFormValues } from '@/lib/types';
 import { getSafetyAnalysis } from '@/app/actions';
 import { Logo } from '@/components/icons/logo';
 import { SafetyForm } from '@/components/safety-form';
-import { AnalysisResult } from '@/components/analysis-result';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { useForm } from 'react-hook-form';
@@ -14,6 +13,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { formSchema } from '@/lib/types';
 import { PrintPreview } from '@/components/print-preview';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Button } from '@/components/ui/button';
+import { FileDown } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 export default function Home() {
   const [analysis, setAnalysis] = useState<SafetyAnalysisOutput | null>(null);
@@ -38,7 +40,6 @@ export default function Home() {
   });
 
   const liveFormData = form.watch();
-  const isFormSubmitted = !!analysis;
 
   const handleFormSubmit = async (data: SafetyFormValues) => {
     setIsLoading(true);
@@ -63,6 +64,37 @@ export default function Home() {
     form.reset();
   }
 
+  const { toast } = useToast();
+
+  const handleGeneratePdf = () => {
+    if (!analysis) {
+        toast({
+            variant: 'destructive',
+            title: 'Análise não gerada',
+            description: 'Por favor, gere a análise da atividade primeiro.',
+        });
+        return;
+    }
+    try {
+      const printData = {
+        ...liveFormData,
+        ...analysis,
+        date: new Date().toLocaleDateString('pt-BR'),
+      };
+      sessionStorage.setItem('printData', JSON.stringify(printData));
+      window.open('/print', '_blank');
+    } catch (error) {
+      console.error('Failed to prepare data for PDF generation:', error);
+      toast({
+        variant: 'destructive',
+        title: 'PDF Generation Error',
+        description:
+          'Could not prepare data for PDF generation. Please check console for details.',
+      });
+    }
+  };
+
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <header className="sticky top-0 z-10 w-full border-b bg-background/80 backdrop-blur-sm">
@@ -73,6 +105,10 @@ export default function Home() {
               Safety Docs AI
             </h1>
           </div>
+          <Button onClick={handleGeneratePdf}>
+            <FileDown className="mr-2 h-4 w-4" />
+            Gerar & Baixar PDF
+          </Button>
         </div>
       </header>
 
@@ -80,21 +116,15 @@ export default function Home() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 h-full">
           <ScrollArea className="h-[calc(100vh-120px)]">
             <div className="space-y-6 lg:pr-4">
-              {!isFormSubmitted ? (
-                <>
-                  <div className="space-y-2">
-                    <h2 className="text-2xl font-bold tracking-tight text-foreground font-headline">
-                      Gere seu Documento de Segurança
-                    </h2>
-                    <p className="text-muted-foreground">
-                      Preencha o formulário e veja a pré-visualização ao lado. Nossa IA irá analisar a atividade com base nas NRs brasileiras.
-                    </p>
-                  </div>
-                  <SafetyForm form={form} onSubmit={handleFormSubmit} isLoading={isLoading} isFormSubmitted={isFormSubmitted} onNewReport={handleNewReport} />
-                </>
-              ) : (
-                 <SafetyForm form={form} onSubmit={handleFormSubmit} isLoading={isLoading} isFormSubmitted={isFormSubmitted} onNewReport={handleNewReport} />
-              )}
+                <div className="space-y-2">
+                  <h2 className="text-2xl font-bold tracking-tight text-foreground font-headline">
+                    Gere seu Documento de Segurança
+                  </h2>
+                  <p className="text-muted-foreground">
+                    Preencha o formulário e veja a pré-visualização ao lado. Nossa IA irá analisar a atividade com base nas NRs brasileiras.
+                  </p>
+                </div>
+                <SafetyForm form={form} onSubmit={handleFormSubmit} isLoading={isLoading} onNewReport={handleNewReport} />
             </div>
           </ScrollArea>
 
@@ -130,25 +160,12 @@ export default function Home() {
                 </CardContent>
                </Card>
             )}
-
-            {!isLoading && !error && !analysis && (
-              <div className="bg-gray-200 dark:bg-gray-800 p-4 rounded-lg h-[calc(100vh-120px)] overflow-hidden">
-                <ScrollArea className='h-full'>
-                  <PrintPreview formData={liveFormData} analysisData={null} />
-                </ScrollArea>
-              </div>
-            )}
             
-            {analysis && !isLoading && !error && (
-              <div className='flex flex-col gap-6'>
-                <AnalysisResult analysisData={analysis} formData={liveFormData} />
-                 <div className="bg-gray-200 dark:bg-gray-800 p-4 rounded-lg h-[calc(100vh-420px)] overflow-hidden">
-                    <ScrollArea className='h-full'>
-                      <PrintPreview formData={liveFormData} analysisData={analysis} />
-                    </ScrollArea>
-                </div>
-              </div>
-            )}
+            <div className="bg-gray-200 dark:bg-gray-800 p-4 rounded-lg h-[calc(100vh-120px)] overflow-hidden">
+              <ScrollArea className='h-full'>
+                <PrintPreview formData={liveFormData} analysisData={analysis} />
+              </ScrollArea>
+            </div>
             </div>
           </div>
         </div>

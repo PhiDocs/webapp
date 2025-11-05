@@ -4,13 +4,13 @@ import { generateSafetyAnalysis, type SafetyAnalysisOutput } from '@/ai/flows/ge
 import { z } from 'zod';
 
 const actionSchema = z.object({
-  activityDescription: z.string(),
+  activityDescription: z.string().min(10, 'A descrição da atividade deve ter pelo menos 10 caracteres.'),
 });
 
 export async function getSafetyAnalysis(data: { activityDescription: string }): Promise<{ data: SafetyAnalysisOutput | null; error: string | null }> {
   const parsed = actionSchema.safeParse(data);
   if (!parsed.success) {
-    return { data: null, error: 'Invalid input.' };
+    return { data: null, error: 'Entrada inválida.' };
   }
 
   try {
@@ -18,6 +18,6 @@ export async function getSafetyAnalysis(data: { activityDescription: string }): 
     return { data: analysis, error: null };
   } catch (e) {
     console.error(e);
-    return { data: null, error: 'Failed to generate safety analysis. Please try again later.' };
+    return { data: null, error: 'Falha ao gerar a análise de segurança. Por favor, tente novamente mais tarde.' };
   }
 }
