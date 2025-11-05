@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import type { SafetyAnalysisOutput } from '@/ai/flows/generate-safety-analysis';
 import type { SafetyFormValues } from '@/lib/types';
 import { getSafetyAnalysis } from '@/app/ai-actions';
@@ -110,30 +110,28 @@ export default function Home() {
         for (let i = 0; i < pageElements.length; i++) {
             const pageElement = pageElements[i];
             
-            // Adiciona a numeração da página no rodapé antes de capturar
             const pageNumberElement = pageElement.querySelector('.page-number-placeholder');
             if (pageNumberElement) {
                 pageNumberElement.innerHTML = `Página ${i + 1} de ${pageElements.length}`;
             }
 
             const canvas = await html2canvas(pageElement, {
-                scale: 3, // Increased scale for better quality
+                scale: 2, 
                 useCORS: true,
                 backgroundColor: '#ffffff',
             });
             
-             // Resetar o texto do placeholder para não afetar a visualização
             if (pageNumberElement) {
                 pageNumberElement.innerHTML = `&nbsp;`;
             }
 
-            const imgData = canvas.toDataURL('image/png');
+            const imgData = canvas.toDataURL('image/jpeg', 0.90); // Use JPEG for compression
             
             if (i > 0) {
                 pdf.addPage();
             }
             
-            pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+            pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
         }
 
         const printData = form.getValues();
