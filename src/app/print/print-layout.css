@@ -1,5 +1,9 @@
 /* This file contains styles for the print preview and the actual print output. */
 
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 /* Styles for the on-screen preview */
 .print-bg {
   background-color: hsl(var(--muted));
@@ -20,7 +24,6 @@
 .print-container {
   width: 210mm;
   min-height: 297mm;
-  height: 297mm;
   background: white;
   box-shadow: 0 0 15px rgba(0, 0, 0, 0.15);
   color: #333;
@@ -95,17 +98,11 @@ table.analysis-table th {
   color: #333;
 }
 
-/* This is key for paginating the preview */
-table.analysis-table tr {
-  break-inside: avoid;
-}
-
 .signature-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 4rem;
     margin-top: 4rem;
-    break-before: page; /* Ensure signatures start on a new page if necessary */
 }
 
 .signature-line {
@@ -119,6 +116,48 @@ table.analysis-table tr {
     color: #555;
 }
 
+/* --- PRINT-SPECIFIC CSS RULES --- */
+@page {
+  size: A4;
+  margin: 20mm 15mm 20mm 15mm;
+}
+
+body {
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+.page-break {
+  page-break-after: always;
+  break-after: page;
+}
+
+/* Evitar que blocos quebrem ao meio */
+.section-title, .info-grid, table.analysis-table, .signature-grid {
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+
+/* Forçar início de página antes do elemento */
+.page-break-before {
+  page-break-before: always;
+  break-before: page;
+}
+
+/* Tabelas longas com cabeçalho/rodapé repetidos */
+table.analysis-table thead { display: table-header-group; }
+table.analysis-table tfoot { display: table-footer-group; }
+table.analysis-table tr, table.analysis-table td, table.analysis-table th { 
+    page-break-inside: avoid; 
+    break-inside: avoid; 
+}
+
+/* Viúvas/órfãs (parágrafos/títulos colados) */
+h1, h2, h3, h4, h5, h6, p {
+  orphans: 3;
+  widows: 3;
+}
+
 
 /* Styles for the actual @media print */
 @media print {
@@ -127,7 +166,7 @@ table.analysis-table tr {
     font-family: 'Inter', sans-serif;
   }
   
-  .no-print {
+  .no-print, .print-bg, .print-container-wrapper {
     display: none;
   }
 
@@ -141,27 +180,17 @@ table.analysis-table tr {
     height: 297mm;
     margin: 0;
     padding: 0;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
   }
   
-  .print-bg, .print-container-wrapper {
-    background: none;
-    padding: 0;
-    margin: 0;
-    box-shadow: none;
-    gap: 0;
-  }
-
   .print-container {
     width: 100%;
-    min-height: 297mm;
-    height: 297mm;
+    min-height: 0;
+    height: auto;
     box-shadow: none;
     margin: 0;
     border: none;
     font-size: 9pt;
-    break-after: page;
+    break-after: auto;
     overflow: visible;
   }
 }

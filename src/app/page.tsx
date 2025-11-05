@@ -1,10 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
+import ReactDOMServer from 'react-dom/server';
 import type { SafetyAnalysisOutput } from '@/ai/flows/generate-safety-analysis';
 import type { SafetyFormValues } from '@/lib/types';
 import { getSafetyAnalysis } from '@/app/ai-actions';
-import { generatePdfAction } from '@/app/pdf-actions';
 import { Logo } from '@/components/icons/logo';
 import { SafetyForm } from '@/components/safety-form';
 import { Card, CardContent } from '@/components/ui/card';
@@ -24,6 +24,7 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const printPreviewRef = useRef<HTMLDivElement>(null);
   
   const form = useForm<SafetyFormValues>({
     resolver: zodResolver(formSchema),
@@ -97,20 +98,40 @@ export default function Home() {
         date: new Date().toLocaleDateString('pt-BR'),
       };
       
-      const { pdfBase64, error } = await generatePdfAction(printData);
+      const printComponent = <PrintPreview formData={printData} analysisData={analysis} />;
+      const html = ReactDOMServer.renderToStaticMarkup(printComponent);
 
-      if (error || !pdfBase64) {
-        throw new Error(error || 'Falha ao gerar o PDF no servidor.');
+      const globalsCSS = await fetch('/globals.css').then(res => res.text());
+      const printCSS = await fetch('/print/print-layout.css').then(res => res.text());
+
+      const fullHtml = `
+        <html>
+          <head>
+            <style>
+              ${globalsCSS}
+              ${printCSS}
+            </style>
+          </head>
+          <body>
+            ${html}
+          </body>
+        </html>
+      `;
+
+      const response = await fetch('/api/generate-pdf', {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ html: fullHtml }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Falha ao gerar o PDF no servidor.');
       }
       
-      const byteCharacters = atob(pdfBase64);
-      const byteNumbers = new Array(byteCharacters.length);
-      for (let i = 0; i < byteCharacters.length; i++) {
-        byteNumbers[i] = byteCharacters.charCodeAt(i);
-      }
-      const byteArray = new Uint8Array(byteNumbers);
-      const blob = new Blob([byteArray], { type: 'application/pdf' });
-
+      const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -178,7 +199,7 @@ export default function Home() {
           <div className="relative flex flex-col h-[calc(100vh-120px)]">
              <div className="print-bg flex-grow rounded-lg border overflow-hidden">
                 <ScrollArea className="h-full" type="always">
-                  <div className="relative w-full h-full p-4 sm:p-8">
+                  <div ref={printPreviewRef} className="relative w-full h-full p-4 sm:p-8">
                       {isLoading && (
                           <div className="absolute inset-0 bg-white/80 backdrop-blur-sm z-10 flex flex-col items-center justify-center">
                               <div className="flex flex-col items-center gap-4 text-center p-6">
