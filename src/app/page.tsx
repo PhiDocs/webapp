@@ -97,68 +97,49 @@ export default function Home() {
           throw new Error("Elemento raiz de impressão não encontrado.");
         }
         
-        // Hide scrollbars during capture
-        rootElement.style.overflow = 'visible';
-        document.body.style.overflow = 'hidden';
-
-        const pdf = new jsPDF({
-            orientation: 'portrait',
-            unit: 'mm',
-            format: 'a4',
-        });
-        
+        const pdf = new jsPDF('p', 'mm', 'a4');
         const pdfWidth = pdf.internal.pageSize.getWidth();
         const pdfHeight = pdf.internal.pageSize.getHeight();
         
         const canvas = await html2canvas(rootElement, {
-            scale: 2, 
+            scale: 2,
             useCORS: true,
-            backgroundColor: '#ffffff',
-            logging: false,
             windowWidth: rootElement.scrollWidth,
             windowHeight: rootElement.scrollHeight,
         });
-        
-        rootElement.style.overflow = 'auto';
-        document.body.style.overflow = 'auto';
 
         const imgData = canvas.toDataURL('image/jpeg', 0.95);
         const imgWidth = pdfWidth;
         const imgHeight = canvas.height * imgWidth / canvas.width;
+        
         let heightLeft = imgHeight;
         let position = 0;
-        let page = 1;
         
-        pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+        pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight, undefined, 'FAST');
         heightLeft -= pdfHeight;
 
         while (heightLeft > 0) {
-          position = -pdfHeight * page;
-          pdf.addPage();
-          pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
-          heightLeft -= pdfHeight;
-          page++;
+            position = heightLeft - imgHeight;
+            pdf.addPage();
+            pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight, undefined, 'FAST');
+            heightLeft -= pdfHeight;
         }
 
         const printData = form.getValues();
         const fileName = `${printData.documentType}-${printData.companyName.replace(/ /g,"_")}-${new Date().toLocaleDateString('pt-BR').replace(/\//g, '-')}.pdf`;
         pdf.save(fileName);
 
-    } catch (error) {
+    } catch (error: any) {
         console.error('Falha ao gerar PDF:', error);
         toast({
             variant: 'destructive',
             title: 'Erro ao gerar PDF',
-            description: (error as Error).message || 'Não foi possível gerar o PDF. Por favor, tente novamente.',
+            description: error.message || 'Não foi possível gerar o PDF. Por favor, tente novamente.',
         });
     } finally {
-        const rootElement = document.getElementById('print-content-root');
-        if (rootElement) rootElement.style.overflow = 'auto';
-        document.body.style.overflow = 'auto';
         setIsDownloading(false);
     }
   };
-
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -205,7 +186,7 @@ export default function Home() {
 
           <div className="relative flex flex-col bg-muted h-full">
             <ScrollArea className='h-full'>
-              <div id="print-content-root" className="print-container-wrapper p-4 sm:p-8">
+              <div className="print-container-wrapper p-4 sm:p-8">
                   {isLoading && (
                       <div className="absolute inset-0 bg-muted/80 backdrop-blur-sm z-10 flex flex-col items-center justify-center rounded-lg">
                           <div className="flex flex-col items-center gap-4 text-center p-6 bg-background rounded-xl shadow-2xl">
@@ -228,10 +209,10 @@ export default function Home() {
                        </Card>
                      </div>
                    )}
-
-                  {!isLoading && !error && (
-                      <PrintPreview formData={liveFormData} analysisData={analysis} />
-                  )}
+                  
+                  <div id="print-content-root">
+                    <PrintPreview formData={liveFormData} analysisData={analysis} />
+                  </div>
               </div>
             </ScrollArea>
           </div>

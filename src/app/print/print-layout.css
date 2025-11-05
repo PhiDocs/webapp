@@ -8,28 +8,25 @@
 .print-container-wrapper {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem; /* Space between pages */
   align-items: center;
   width: 100%;
 }
 
 .print-page-container {
   width: 210mm;
-  min-height: 297mm;
-  height: 297mm;
+  /* min-height is important for the container to grow with content */
+  min-height: 297mm; 
   background: white;
   box-shadow: 0 0 15px rgba(0, 0, 0, 0.15);
   color: #333;
+  font-size: 9pt;
   display: flex;
   flex-direction: column;
-  font-size: 9pt;
-  position: relative;
-  overflow: hidden; /* Hide overflow to mimic print */
 }
 
 .page-content-wrapper {
     padding: 20mm 15mm;
-    height: 100%;
+    flex-grow: 1;
     display: flex;
     flex-direction: column;
     width: 100%;
@@ -50,7 +47,6 @@
     gap: 1rem;
 }
 
-
 .section-title {
   font-size: 11pt;
   font-weight: bold;
@@ -59,13 +55,11 @@
   padding: 0.3rem;
   margin-bottom: 0.5rem;
   text-align: center;
-  break-inside: avoid;
 }
 
 .info-grid {
     border-collapse: collapse;
     width: 100%;
-    break-inside: avoid;
 }
 .info-grid tr, .info-grid td {
     border: 1px solid #999;
@@ -107,7 +101,6 @@ table.analysis-table th {
     grid-template-columns: 1fr 1fr;
     gap: 4rem;
     margin-top: 4rem;
-    break-inside: avoid;
 }
 
 .signature-line {
@@ -122,15 +115,10 @@ table.analysis-table th {
 }
 
 
-/* --- PRINT-SPECIFIC CSS RULES --- */
-/* These rules are respected by html2canvas when generating the PDF */
-@page {
-  size: A4 portrait;
-  margin: 0; /* Handled by .page-content-wrapper padding */
-}
-
+/* --- Rules respected by html2canvas for PDF generation --- */
 .avoid-break {
   break-inside: avoid !important;
+  page-break-inside: avoid !important;
 }
 
 thead.analysis-table-header {
@@ -140,45 +128,4 @@ thead.analysis-table-header {
 tr, td, th, .procedural-step-row {
     break-inside: avoid !important;
     page-break-inside: avoid !important;
-}
-
-/* --- Specific overrides for direct printing from browser (Ctrl+P), not for PDF generation --- */
-@media print {
-  html, body {
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
-     background: white;
-     padding:0;
-     margin: 0;
-     width: 210mm;
-     height: 297mm;
-  }
-  
-  .print-container-wrapper {
-    background: none;
-    padding: 0;
-    margin: 0;
-    box-shadow: none;
-    border: none;
-    gap: 0;
-  }
-  
-  .print-page-container {
-    box-shadow: none;
-    margin: 0;
-    border: none;
-    width: 100%;
-    height: 297mm; /* Force height for printing */
-    overflow: hidden;
-    page-break-after: always;
-  }
-
-  .print-page-container:last-child {
-      page-break-after: auto;
-  }
-  
-  tr, td, th, .avoid-break, .section-title, .info-grid {
-    page-break-inside: avoid !important;
-    break-inside: avoid !important;
-  }
 }
