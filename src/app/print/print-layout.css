@@ -10,7 +10,6 @@
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  padding: 2rem;
 }
 
 .print-container-wrapper {
@@ -21,9 +20,9 @@
   width: 100%;
 }
 
-.print-container {
+.print-page-container {
   width: 210mm;
-  min-height: 297mm;
+  height: 297mm;
   background: white;
   box-shadow: 0 0 15px rgba(0, 0, 0, 0.15);
   color: #333;
@@ -99,16 +98,25 @@ table.analysis-table th {
   color: #333;
 }
 
-table.analysis-table thead {
-    display: table-header-group;
+/* --- PRINT-SPECIFIC CSS RULES --- */
+/* These rules are respected by html2canvas when generating the PDF */
+@page {
+  size: A4 portrait;
+  margin: 0; /* Handled by .page-content-wrapper padding */
 }
 
-table.analysis-table tbody tr {
+thead {
+    display: table-header-group; /* Repeats header on each page */
+}
+tbody {
+    display: table-row-group;
+}
+tr {
     page-break-inside: avoid;
 }
 
-section {
-  break-inside: avoid-page;
+.page-break-before {
+  break-before: page;
 }
 
 .signature-grid {
@@ -130,16 +138,8 @@ section {
     color: #555;
 }
 
-.page-break-before {
-  break-before: page;
-}
 
-/* --- PRINT-SPECIFIC CSS RULES --- */
-@page {
-  size: A4 portrait;
-  margin: 20mm 15mm;
-}
-
+/* --- Specific overrides for direct printing from browser (Ctrl+P), not for PDF generation --- */
 @media print {
   html, body {
     -webkit-print-color-adjust: exact !important;
@@ -147,39 +147,38 @@ section {
      background: white;
      padding:0;
      margin: 0;
+     width: 210mm;
   }
   
-  .print-bg, .print-container-wrapper, #print-content-root {
+  .print-bg, .print-container-wrapper {
     background: none;
     padding: 0;
     margin: 0;
     box-shadow: none;
     border: none;
+    gap: 0;
   }
   
-  .print-container {
+  .print-page-container {
     box-shadow: none;
     margin: 0;
     border: none;
     width: 100%;
-    height: auto;
-    overflow: visible;
+    height: 297mm; /* Force height for printing */
+    overflow: hidden;
+    page-break-after: always;
+  }
+
+  .print-page-container:last-child {
+      page-break-after: auto;
   }
 
   thead {
-    display: table-row-group !important; /* NÃO repetir cabeçalho */
-  }
-  tfoot {
-    display: table-row-group !important;
+    display: table-header-group !important; /* Ensure header repeats on print */
   }
   
-  table, tr, td, th, .avoid-break {
+  tr, td, th, .avoid-break, .section-title, .info-grid {
     page-break-inside: avoid !important;
     break-inside: avoid !important;
-  }
-
-  .page-break-before {
-    page-break-before: always !important;
-    break-before: page !important;
   }
 }

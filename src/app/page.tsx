@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import type { SafetyAnalysisOutput } from '@/ai/flows/generate-safety-analysis';
 import type { SafetyFormValues } from '@/lib/types';
 import { getSafetyAnalysis } from '@/app/ai-actions';
@@ -26,7 +26,6 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const printPreviewContainerRef = useRef<HTMLDivElement>(null);
   
   const form = useForm<SafetyFormValues>({
     resolver: zodResolver(formSchema),
@@ -92,82 +91,62 @@ export default function Home() {
         return;
     }
     
-    const printRoot = document.getElementById('print-content-root');
-    if (!printRoot) {
-        toast({
-            variant: 'destructive',
-            title: 'Erro de Referência',
-            description: 'Não foi possível encontrar o conteúdo para gerar o PDF.',
-        });
-        return;
-    }
-    
     setIsDownloading(true);
     try {
-      const pdf = new jsPDF({
-          orientation: 'portrait',
-          unit: 'mm',
-          format: 'a4',
-          compress: true,
-      });
+        const pageElements = document.querySelectorAll<HTMLElement>('.print-page-container');
+        if (pageElements.length === 0) {
+            throw new Error("Nenhum conteúdo para impressão foi encontrado.");
+        }
 
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
-      
-      const canvas = await html2canvas(printRoot, {
-        scale: 2,
-        useCORS: true,
-        backgroundColor: '#ffffff',
-        windowWidth: printRoot.scrollWidth,
-        windowHeight: printRoot.scrollHeight,
-      });
+        const pdf = new jsPDF({
+            orientation: 'portrait',
+            unit: 'mm',
+            format: 'a4',
+        });
+        
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = pdf.internal.pageSize.getHeight();
 
-      const imgData = canvas.toDataURL('image/png');
-      const imgWidth = pdfWidth;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      let heightLeft = imgHeight;
-      let position = 0;
-      let page = 1;
+        for (let i = 0; i < pageElements.length; i++) {
+            const pageElement = pageElements[i];
+            
+            // Adiciona a numeração da página no rodapé antes de capturar
+            const pageNumberElement = pageElement.querySelector('.page-number-placeholder');
+            if (pageNumberElement) {
+                pageNumberElement.innerHTML = `Página ${i + 1} de ${pageElements.length}`;
+            }
 
-      // Add first page
-      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-      heightLeft -= pdfHeight;
+            const canvas = await html2canvas(pageElement, {
+                scale: 3, // Increased scale for better quality
+                useCORS: true,
+                backgroundColor: '#ffffff',
+            });
+            
+             // Resetar o texto do placeholder para não afetar a visualização
+            if (pageNumberElement) {
+                pageNumberElement.innerHTML = `&nbsp;`;
+            }
 
-      // Calculate total pages
-      const totalPages = Math.ceil(imgHeight / pdfHeight);
+            const imgData = canvas.toDataURL('image/png');
+            
+            if (i > 0) {
+                pdf.addPage();
+            }
+            
+            pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+        }
 
-      // Add remaining pages
-      while (heightLeft > 0) {
-        position = -pdfHeight * page;
-        pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-        heightLeft -= pdfHeight;
-        page++;
-      }
-
-      // Add page numbers
-      for (let i = 1; i <= totalPages; i++) {
-        pdf.setPage(i);
-        pdf.setFontSize(8);
-        pdf.setTextColor(150);
-        const text = `Página ${i} de ${totalPages}`;
-        const textWidth = pdf.getStringUnitWidth(text) * pdf.getFontSize() / pdf.internal.scaleFactor;
-        const textX = pdfWidth - textWidth - 15; // 15mm from right
-        const textY = pdfHeight - 10; // 10mm from bottom
-        pdf.text(text, textX, textY, { align: 'right' });
-      }
-
-      const printData = form.getValues();
-      const fileName = `${printData.documentType}-${printData.companyName.replace(/ /g,"_")}-${new Date().toLocaleDateString('pt-BR').replace(/\//g, '-')}.pdf`;
-      pdf.save(fileName);
+        const printData = form.getValues();
+        const fileName = `${printData.documentType}-${printData.companyName.replace(/ /g,"_")}-${new Date().toLocaleDateString('pt-BR').replace(/\//g, '-')}.pdf`;
+        pdf.save(fileName);
 
     } catch (error) {
-      console.error('Falha ao gerar PDF:', error);
-      toast({
-        variant: 'destructive',
-        title: 'Erro ao gerar PDF',
-        description: (error as Error).message || 'Não foi possível gerar o PDF. Por favor, tente novamente.',
-      });
+        console.error('Falha ao gerar PDF:', error);
+        toast({
+            variant: 'destructive',
+            title: 'Erro ao gerar PDF',
+            description: (error as Error).message || 'Não foi possível gerar o PDF. Por favor, tente novamente.',
+        });
     } finally {
         setIsDownloading(false);
     }
@@ -219,7 +198,7 @@ export default function Home() {
           <div className="relative flex flex-col h-[calc(100vh-120px)]">
              <div className="print-bg flex-grow rounded-lg border overflow-hidden">
                 <ScrollArea className="h-full" type="always">
-                  <div ref={printPreviewContainerRef} className="print-container-wrapper p-4 sm:p-8">
+                  <div id="print-content-root" className="print-container-wrapper p-4 sm:p-8">
                       {isLoading && (
                           <div className="absolute inset-0 bg-white/80 backdrop-blur-sm z-10 flex flex-col items-center justify-center">
                               <div className="flex flex-col items-center gap-4 text-center p-6">
@@ -262,5 +241,3 @@ export default function Home() {
     </div>
   );
 }
-
-    
