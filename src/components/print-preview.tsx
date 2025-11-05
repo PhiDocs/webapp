@@ -10,147 +10,177 @@ interface PrintPreviewProps {
     analysisData: SafetyAnalysisOutput | null;
 }
 
-// Represents one physical A4 page in the preview
-const Page = React.forwardRef<HTMLDivElement, { children: React.ReactNode }>(({ children }, ref) => {
+// This component will render the raw, unpaginated content.
+// The pagination logic will happen in the parent component.
+function RenderContent({ formData, analysisData }: PrintPreviewProps) {
+    const data = {...formData, ...analysisData};
+    const teamMembers = data.teamMembers || [];
+    const date = data.date || new Date().toLocaleDateString('pt-BR');
+
     return (
-        <div ref={ref} className="print-container">
-            <div className="page-content-wrapper">
-                {children}
-            </div>
-        </div>
+        <>
+          <section key="s1" className="mb-4">
+              <h3 className="section-title">DADOS DA OBRA</h3>
+              <table className="w-full border-collapse border info-grid">
+                <tbody>
+                  <tr>
+                    <td className="w-1/2"><strong>NOME:</strong>{data.workName || '...'}</td>
+                    <td className="w-1/2"><strong>ENDEREÇO:</strong>{data.workAddress || '...'}</td>
+                  </tr>
+                  <tr>
+                    <td><strong>PREVISÃO DATA INICIO:</strong>{getShortDate(data.startDate)}</td>
+                    <td><strong>PREVISÃO DATA TÉRMINO:</strong>{getShortDate(data.endDate)}</td>
+                  </tr>
+                  <tr>
+                    <td colSpan={2}><strong>LOCAL DA OBRA / PAVIMENTO:</strong>{data.workLocationDetails || '...'}</td>
+                  </tr>
+                   <tr>
+                    <td colSpan={2}><strong>Descrição da atividade:</strong>{data.activityDescription || '...'}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </section>
+            <section key="s2" className="mb-4">
+              <h3 className="section-title">RESPONSÁVEL PELO ACOMPANHAMENTO DOS SERVIÇOS</h3>
+               <table className="w-full border-collapse border mt-1 analysis-table">
+                 <thead>
+                  <tr>
+                    <th className="text-left w-[40%]">NOME</th>
+                    <th className="text-left w-[30%]">FUNÇÃO</th>
+                    <th className="text-left w-[30%]">ASSINATURA</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.responsiblePersons?.map((person: any, index: number) => (
+                    <tr key={`resp-${index}`}>
+                      <td className="h-12">{person.name || '...'}</td>
+                      <td>{person.role || '...'}</td>
+                      <td></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </section>
+            {teamMembers.length > 0 && (
+              <section key="s3" className="mb-4">
+                <h3 className="section-title">EQUIPE DE TRABALHO</h3>
+                 <table className="w-full border-collapse border mt-1 analysis-table">
+                  <thead>
+                    <tr>
+                      <th className="text-left w-1/4">DATA</th>
+                      <th className="text-left w-1/4">NOME</th>
+                      <th className="text-left w-1/4">FUNÇÃO / EMPRESA</th>
+                      <th className="text-left w-1/4">ASSINATURA</th>
+                    </tr>
+                  </thead>
+                   <tbody>
+                      {teamMembers.map((member: any, index: number) => (
+                        <tr key={`team-${index}`}>
+                          <td className="h-10">{getShortDate(member.date)}</td>
+                          <td>{member.name}</td>
+                          <td>{member.role}</td>
+                          <td></td>
+                        </tr>
+                      ))}
+                      {Array.from({ length: Math.max(0, 5 - teamMembers.length) }).map((_: any, index: number) => (
+                        <tr key={`empty-team-${index}`}>
+                          <td className="h-10"></td><td></td><td></td><td></td>
+                        </tr>
+                      ))}
+                   </tbody>
+                </table>
+              </section>
+            )}
+            {data?.proceduralSteps && data.proceduralSteps.length > 0 ? (
+              <section key="s4">
+                <h3 className="section-title">PROCEDIMENTO OPERACIONAL</h3>
+                <table className="w-full border-collapse border mt-1 text-xs analysis-table">
+                  <thead>
+                    <tr>
+                      <th className="p-1 text-left w-[5%]">ITEM</th>
+                      <th className="p-1 text-left w-[25%]">ATIVIDADES</th>
+                      <th className="p-1 text-left w-[25%]">RISCOS POTENCIAIS</th>
+                      <th className="p-1 text-left w-[45%]">MEDIDAS PREVENTIVAS / RECOMENDAÇÕES DE SEGURANÇA</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {data.proceduralSteps.map((step: any, index: number) => (
+                      <tr key={`proc-${index}`}>
+                        <td className="p-2 align-top text-center">{step.item}</td>
+                        <td className="p-2 align-top whitespace-pre-wrap">{step.activity}</td>
+                        <td className="p-2 align-top whitespace-pre-wrap">{step.potentialRisks}</td>
+                        <td className="p-2 align-top whitespace-pre-wrap">{step.preventiveMeasures}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </section>
+            ) : (
+              <section key="s-empty" className="mb-4 text-center text-gray-500 italic py-8 border-2 border-dashed rounded-lg">
+                A análise de procedimento operacional aparecerá aqui após ser gerada.
+              </section>
+            )}
+          <section key="s5" className="signature-section mt-auto pt-8">
+              <h3 className="section-title">Assinaturas</h3>
+              <div className="signature-grid">
+                  <div>
+                      <div className="signature-line"></div>
+                      <p className="signature-label">Responsável pela Segurança</p>
+                  </div>
+                  <div>
+                      <div className="signature-line"></div>
+                      <p className="signature-label">Gerente do Projeto</p>
+                  </div>
+              </div>
+          </section>
+        </>
     );
-});
-Page.displayName = 'Page';
+}
 
 
+// This is the core component that handles pagination for the preview
 export function PrintPreview({ formData, analysisData }: PrintPreviewProps) {
-    const pageContainerRef = useRef<HTMLDivElement>(null);
+    const contentRef = useRef<HTMLDivElement>(null);
     const [pages, setPages] = useState<React.ReactNode[]>([]);
     
     // Re-paginate whenever data changes
     useEffect(() => {
-        const paginate = () => {
-            if (!pageContainerRef.current) return;
+        const paginateContent = () => {
+            const contentElement = contentRef.current;
+            if (!contentElement) return;
 
-            const allElements = Array.from(pageContainerRef.current.children) as HTMLElement[];
-            if (allElements.length === 0) return;
+            // A4 page height in mm, converted to pixels (assuming 96 DPI, 1mm ~ 3.78px)
+            // Page content height = 297mm - 20mm top margin - 20mm bottom margin = 257mm
+            const A4_CONTENT_HEIGHT_PX = (297 - 40) * 3.78; 
+            const totalContentHeight = contentElement.scrollHeight;
+            const totalPages = Math.ceil(totalContentHeight / A4_CONTENT_HEIGHT_PX);
 
-            const A4_PAGE_HEIGHT_PX = 1123; // 297mm at 96 DPI
-            const PAGE_VERTICAL_MARGIN_PX = 150; // Approximation of top/bottom margins + header/footer
-            const MAX_CONTENT_HEIGHT = A4_PAGE_HEIGHT_PX - PAGE_VERTICAL_MARGIN_PX;
-
-            const newPages: React.ReactNode[][] = [];
-            let currentPageElements: React.ReactNode[] = [];
-            let currentHeight = 0;
-
-            const header = getPageHeader(1, 1, formData); // Dummy header for height calculation
-            const footer = getPageFooter(formData);
-            
-            const tempDiv = document.createElement('div');
-            // This is a trick to render and measure a component without showing it
-            const root = require('react-dom/client').createRoot(tempDiv);
-            root.render(header);
-            const headerHeight = tempDiv.offsetHeight || 100;
-            root.render(footer);
-            const footerHeight = tempDiv.offsetHeight || 50;
-            root.unmount();
-
-
-            const maxContentHeight = A4_PAGE_HEIGHT_PX - headerHeight - footerHeight - 80; // 80 for padding
-
-            allElements.forEach((el, index) => {
-                const isTable = el.tagName.toLowerCase() === 'section' && el.querySelector('table.analysis-table');
+            const newPages = [];
+            for (let i = 0; i < totalPages; i++) {
+                const yOffset = -i * A4_CONTENT_HEIGHT_PX;
                 
-                if (isTable) {
-                    const table = el.querySelector('table.analysis-table')!;
-                    const rows = Array.from(table.querySelectorAll('tbody tr'));
-                    const tableHeader = table.querySelector('thead')!.cloneNode(true) as HTMLElement;
-                    const sectionTitle = el.querySelector('.section-title')!.cloneNode(true) as HTMLElement;
-                    
-                    let currentTableRows: HTMLElement[] = [];
-                    let chunkIndex = 0;
-                    
-                    rows.forEach((row, rowIndex) => {
-                        const rowHeight = row.offsetHeight;
-                        if (currentHeight + rowHeight > maxContentHeight && currentPageElements.length > 0) {
-                            // Finish previous page
-                            if(currentTableRows.length > 0) {
-                                currentPageElements.push(
-                                    <section key={`table-chunk-p${newPages.length}-i${chunkIndex}`}>
-                                        <div dangerouslySetInnerHTML={{ __html: sectionTitle.outerHTML }}/>
-                                        <table className="w-full border-collapse border mt-1 text-xs analysis-table">
-                                           <thead dangerouslySetInnerHTML={{ __html: tableHeader.innerHTML }}/>
-                                            <tbody dangerouslySetInnerHTML={{ __html: currentTableRows.map(r => r.outerHTML).join('') }}/>
-                                        </table>
-                                    </section>
-                                );
-                                chunkIndex++;
-                            }
-                            newPages.push(currentPageElements);
-                            currentPageElements = [];
-                            currentHeight = 0;
-                            currentTableRows = [];
-                        }
-                        
-                        if (currentTableRows.length === 0) { // First row of a new table chunk
-                            currentHeight += (sectionTitle.offsetHeight + tableHeader.offsetHeight);
-                        }
-
-                        currentTableRows.push(row);
-                        currentHeight += rowHeight;
-                    });
-                    
-                     if(currentTableRows.length > 0) {
-                        currentPageElements.push(
-                           <section key={`table-chunk-final-p${newPages.length}-i${chunkIndex}`}>
-                                <div dangerouslySetInnerHTML={{ __html: sectionTitle.outerHTML }}/>
-                                <table className="w-full border-collapse border mt-1 text-xs analysis-table">
-                                    <thead dangerouslySetInnerHTML={{ __html: tableHeader.innerHTML }}/>
-                                    <tbody dangerouslySetInnerHTML={{ __html: currentTableRows.map(r => r.outerHTML).join('') }}/>
-                                </table>
-                            </section>
-                        );
-                    }
-                } else {
-                    const elementHeight = el.offsetHeight;
-                    if (currentHeight + elementHeight > maxContentHeight && currentPageElements.length > 0) {
-                        newPages.push(currentPageElements);
-                        currentPageElements = [ <div key={`${index}-el`} dangerouslySetInnerHTML={{ __html: el.outerHTML }} /> ];
-                        currentHeight = elementHeight;
-                    } else {
-                        currentPageElements.push( <div key={`${index}-el`} dangerouslySetInnerHTML={{ __html: el.outerHTML }} /> );
-                        currentHeight += elementHeight;
-                    }
-                }
-            });
-
-            if (currentPageElements.length > 0) {
-                newPages.push(currentPageElements);
-            }
-            
-            const totalPages = newPages.length;
-            const finalPages = newPages.map((pageContent, i) => (
-                 <div key={`page-${i}`} className="print-container page-break">
-                    <div className="page-content-wrapper">
-                        {getPageHeader(i + 1, totalPages, formData)}
-                        <main className="print-main flex-grow flex flex-col">
-                            {pageContent}
-                        </main>
-                        {getPageFooter(formData)}
+                newPages.push(
+                    <div key={`page-${i}`} className="print-container">
+                        <div className="page-content-wrapper">
+                            {getPageHeader(i + 1, totalPages, formData)}
+                            <main className="print-main">
+                                <div style={{ transform: `translateY(${yOffset}px)` }}>
+                                    <RenderContent formData={formData} analysisData={analysisData} />
+                                </div>
+                            </main>
+                            {getPageFooter(formData)}
+                        </div>
                     </div>
-                </div>
-            ));
-            
-            setPages(finalPages);
+                );
+            }
+            setPages(newPages);
         };
         
         // Use a timeout to allow the browser to render the initial content before we measure it
-        const timer = setTimeout(paginate, 250);
+        const timer = setTimeout(paginateContent, 100);
         return () => clearTimeout(timer);
 
     }, [formData, analysisData]);
-
-    const initialContent = getSections(formData, analysisData, formData.date || new Date().toLocaleDateString('pt-BR'));
 
     if (!formData.companyName && !analysisData) {
         return (
@@ -162,18 +192,18 @@ export function PrintPreview({ formData, analysisData }: PrintPreviewProps) {
         );
     }
     
-    // Render all content invisibly first to measure it
-    // Then, render the paginated content
     return (
         <>
-            <div ref={pageContainerRef} style={{ position: 'absolute', left: '-9999px', top: '0', width: '210mm', opacity: 0, zIndex: -1 }}>
-                {initialContent}
+            {/* This invisible div is used to measure the total height of the content */}
+            <div style={{ position: 'absolute', opacity: 0, zIndex: -10, pointerEvents: 'none', width: '210mm' }}>
+                <div ref={contentRef}>
+                    <RenderContent formData={formData} analysisData={analysisData} />
+                </div>
             </div>
+            
             {pages.length > 0 ? pages : (
                  <div className="print-container">
-                    <div className="page-content-wrapper">
-                       <div className="flex h-full items-center justify-center">Calculando paginação...</div>
-                    </div>
+                    <div className="flex h-full items-center justify-center">Calculando paginação...</div>
                  </div>
             )}
         </>
@@ -242,126 +272,4 @@ function getShortDate(dateString: string) {
     } catch(e) {
         return 'Data inválida'
     }
-}
-
-function getSections(formData: any, analysisData: any, date: string) {
-    const data = {...formData, ...analysisData};
-    const teamMembers = data.teamMembers || [];
-
-    return [
-        <section key="s1" className="mb-4">
-            <h3 className="section-title">DADOS DA OBRA</h3>
-            <table className="w-full border-collapse border info-grid">
-              <tbody>
-                <tr>
-                  <td className="w-1/2"><strong>NOME:</strong>{data.workName || '...'}</td>
-                  <td className="w-1/2"><strong>ENDEREÇO:</strong>{data.workAddress || '...'}</td>
-                </tr>
-                <tr>
-                  <td><strong>PREVISÃO DATA INICIO:</strong>{getShortDate(data.startDate)}</td>
-                  <td><strong>PREVISÃO DATA TÉRMINO:</strong>{getShortDate(data.endDate)}</td>
-                </tr>
-                <tr>
-                  <td colSpan={2}><strong>LOCAL DA OBRA / PAVIMENTO:</strong>{data.workLocationDetails || '...'}</td>
-                </tr>
-                 <tr>
-                  <td colSpan={2}><strong>Descrição da atividade:</strong>{data.activityDescription || '...'}</td>
-                </tr>
-              </tbody>
-            </table>
-          </section>,
-          <section key="s2" className="mb-4">
-            <h3 className="section-title">RESPONSÁVEL PELO ACOMPANHAMENTO DOS SERVIÇOS</h3>
-             <table className="w-full border-collapse border mt-1 analysis-table">
-               <thead>
-                <tr>
-                  <th className="text-left w-[40%]">NOME</th>
-                  <th className="text-left w-[30%]">FUNÇÃO</th>
-                  <th className="text-left w-[30%]">ASSINATURA</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.responsiblePersons?.map((person: any, index: number) => (
-                  <tr key={`resp-${index}`}>
-                    <td className="h-12">{person.name || '...'}</td>
-                    <td>{person.role || '...'}</td>
-                    <td></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </section>,
-          ... (teamMembers.length > 0 ? [
-            <section key="s3" className="mb-4" style={{breakInside: 'avoid'}}>
-              <h3 className="section-title">EQUIPE DE TRABALHO</h3>
-               <table className="w-full border-collapse border mt-1 analysis-table">
-                <thead>
-                  <tr>
-                    <th className="text-left w-1/4">DATA</th>
-                    <th className="text-left w-1/4">NOME</th>
-                    <th className="text-left w-1/4">FUNÇÃO / EMPRESA</th>
-                    <th className="text-left w-1/4">ASSINATURA</th>
-                  </tr>
-                </thead>
-                 <tbody>
-                    {teamMembers.map((member: any, index: number) => (
-                      <tr key={`team-${index}`}>
-                        <td className="h-10">{getShortDate(member.date)}</td>
-                        <td>{member.name}</td>
-                        <td>{member.role}</td>
-                        <td></td>
-                      </tr>
-                    ))}
-                    {Array.from({ length: Math.max(0, 5 - teamMembers.length) }).map((_: any, index: number) => (
-                      <tr key={`empty-team-${index}`}>
-                        <td className="h-10"></td><td></td><td></td><td></td>
-                      </tr>
-                    ))}
-                 </tbody>
-              </table>
-            </section>
-          ] : []),
-          ... (data?.proceduralSteps && data.proceduralSteps.length > 0 ? [
-            <section key="s4" className='page-break-before'>
-              <h3 className="section-title">PROCEDIMENTO OPERACIONAL</h3>
-              <table className="w-full border-collapse border mt-1 text-xs analysis-table">
-                <thead>
-                  <tr>
-                    <th className="p-1 text-left w-[5%]">ITEM</th>
-                    <th className="p-1 text-left w-[25%]">ATIVIDADES</th>
-                    <th className="p-1 text-left w-[25%]">RISCOS POTENCIAIS</th>
-                    <th className="p-1 text-left w-[45%]">MEDIDAS PREVENTIVAS / RECOMENDAÇÕES DE SEGURANÇA</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {data.proceduralSteps.map((step: any, index: number) => (
-                    <tr key={`proc-${index}`}>
-                      <td className="p-2 align-top text-center">{step.item}</td>
-                      <td className="p-2 align-top whitespace-pre-wrap">{step.activity}</td>
-                      <td className="p-2 align-top whitespace-pre-wrap">{step.potentialRisks}</td>
-                      <td className="p-2 align-top whitespace-pre-wrap">{step.preventiveMeasures}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </section>
-          ] : [
-            <section key="s-empty" className="mb-4 text-center text-gray-500 italic py-8 border-2 border-dashed rounded-lg">
-              A análise de procedimento operacional aparecerá aqui após ser gerada.
-            </section>
-          ]),
-        <section key="s5" className="mt-auto pt-8 page-break-before">
-            <h3 className="section-title">Assinaturas</h3>
-            <div className="signature-grid">
-                <div>
-                    <div className="signature-line"></div>
-                    <p className="signature-label">Responsável pela Segurança</p>
-                </div>
-                <div>
-                    <div className="signature-line"></div>
-                    <p className="signature-label">Gerente do Projeto</p>
-                </div>
-            </div>
-        </section>
-    ];
 }

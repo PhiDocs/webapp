@@ -26,7 +26,8 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const printPreviewRef = useRef<HTMLDivElement>(null);
+  // This ref will now point to the container that holds all the page previews
+  const printPreviewContainerRef = useRef<HTMLDivElement>(null);
   
   const form = useForm<SafetyFormValues>({
     resolver: zodResolver(formSchema),
@@ -91,7 +92,7 @@ export default function Home() {
         });
         return;
     }
-    if (!printPreviewRef.current) {
+    if (!printPreviewContainerRef.current) {
         toast({
             variant: 'destructive',
             title: 'Erro de Referência',
@@ -102,26 +103,6 @@ export default function Home() {
     
     setIsDownloading(true);
     try {
-      const element = printPreviewRef.current;
-      // We need to capture the child because the ref parent has a dynamic height
-      const contentToCapture = element.querySelector('.print-container-wrapper') as HTMLElement;
-
-      if (!contentToCapture) {
-         throw new Error("Elemento .print-container-wrapper não encontrado para captura.");
-      }
-
-      const canvas = await html2canvas(contentToCapture, {
-        scale: 2, // Higher scale for better quality
-        useCORS: true,
-        backgroundColor: null, // Use transparent background
-        onclone: (document) => {
-            // This runs in the cloned DOM that html2canvas creates
-            // We can make adjustments here if needed before the "screenshot"
-        }
-      });
-      
-      const imgData = canvas.toDataURL('image/png');
-
       const pdf = new jsPDF({
           orientation: 'portrait',
           unit: 'mm',
@@ -129,24 +110,24 @@ export default function Home() {
           compress: true,
       });
 
+      const pages = printPreviewContainerRef.current.querySelectorAll<HTMLElement>('.print-container');
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = pdf.internal.pageSize.getHeight();
-      
-      const imgProps= pdf.getImageProperties(imgData);
-      const imgWidth = pdfWidth;
-      const imgHeight = (imgProps.height * imgWidth) / imgProps.width;
 
-      let heightLeft = imgHeight;
-      let position = 0;
-
-      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-      heightLeft -= pdfHeight;
-
-      while (heightLeft > 0) {
-        position = heightLeft - imgHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-        heightLeft -= pdfHeight;
+      for (let i = 0; i < pages.length; i++) {
+        const pageElement = pages[i];
+        const canvas = await html2canvas(pageElement, {
+          scale: 2, // Higher scale for better quality
+          useCORS: true,
+          backgroundColor: '#ffffff', // Ensure background is white
+        });
+        
+        const imgData = canvas.toDataURL('image/png');
+        
+        if (i > 0) {
+          pdf.addPage();
+        }
+        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
       }
       
       const printData = form.getValues();
@@ -211,7 +192,7 @@ export default function Home() {
           <div className="relative flex flex-col h-[calc(100vh-120px)]">
              <div className="print-bg flex-grow rounded-lg border overflow-hidden">
                 <ScrollArea className="h-full" type="always">
-                  <div ref={printPreviewRef} className="relative w-full h-full p-4 sm:p-8">
+                  <div ref={printPreviewContainerRef} className="print-container-wrapper p-4 sm:p-8">
                       {isLoading && (
                           <div className="absolute inset-0 bg-white/80 backdrop-blur-sm z-10 flex flex-col items-center justify-center">
                               <div className="flex flex-col items-center gap-4 text-center p-6">
@@ -236,9 +217,7 @@ export default function Home() {
                        )}
 
                       {!error && (
-                        <div className="print-container-wrapper">
-                            <PrintPreview formData={liveFormData} analysisData={analysis} />
-                        </div>
+                          <PrintPreview formData={liveFormData} analysisData={analysis} />
                       )}
                   </div>
                 </ScrollArea>

@@ -10,7 +10,6 @@
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  padding: 2rem;
 }
 
 .print-container-wrapper {
@@ -23,7 +22,7 @@
 
 .print-container {
   width: 210mm;
-  min-height: 297mm;
+  height: 297mm; /* Fixed height for A4 */
   background: white;
   box-shadow: 0 0 15px rgba(0, 0, 0, 0.15);
   color: #333;
@@ -31,8 +30,7 @@
   flex-direction: column;
   font-size: 9pt;
   position: relative;
-  overflow: hidden;
-  page-break-after: always;
+  overflow: hidden; /* Important: prevents content from spilling out */
 }
 
 .page-content-wrapper {
@@ -48,6 +46,7 @@
 
 .print-main {
     flex-grow: 1;
+    overflow: hidden; /* Hide anything that overflows the main content area */
 }
 
 .section-title {
@@ -58,7 +57,6 @@
   padding: 0.3rem;
   margin-bottom: 0.5rem;
   text-align: center;
-  break-after: avoid;
 }
 
 .info-grid {
@@ -98,6 +96,16 @@ table.analysis-table th {
   color: #333;
 }
 
+table.analysis-table thead {
+    display: table-header-group;
+}
+
+table.analysis-table tbody tr {
+    page-break-inside: avoid;
+    break-inside: avoid;
+}
+
+
 .signature-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -117,49 +125,12 @@ table.analysis-table th {
 }
 
 /* --- PRINT-SPECIFIC CSS RULES --- */
+/* These rules are more for actual browser printing, but good to have */
 @page {
   size: A4;
-  margin: 20mm 15mm 20mm 15mm;
+  margin: 0;
 }
 
-body {
-  -webkit-print-color-adjust: exact;
-  print-color-adjust: exact;
-}
-
-.page-break {
-  page-break-after: always;
-  break-after: page;
-}
-
-/* Evitar que blocos quebrem ao meio */
-.section-title, .info-grid, table.analysis-table, .signature-grid {
-  page-break-inside: avoid;
-  break-inside: avoid;
-}
-
-/* Forçar início de página antes do elemento */
-.page-break-before {
-  page-break-before: always;
-  break-before: page;
-}
-
-/* Tabelas longas com cabeçalho/rodapé repetidos */
-table.analysis-table thead { display: table-header-group; }
-table.analysis-table tfoot { display: table-footer-group; }
-table.analysis-table tr, table.analysis-table td, table.analysis-table th { 
-    page-break-inside: avoid; 
-    break-inside: avoid; 
-}
-
-/* Viúvas/órfãs (parágrafos/títulos colados) */
-h1, h2, h3, h4, h5, h6, p {
-  orphans: 3;
-  widows: 3;
-}
-
-
-/* Styles for the actual @media print */
 @media print {
   body {
     background: none;
@@ -167,30 +138,15 @@ h1, h2, h3, h4, h5, h6, p {
   }
   
   .no-print, .print-bg, .print-container-wrapper {
-    display: none;
+    display: block; /* We want the wrapper to be visible for printing */
   }
 
-  @page {
-    size: A4;
-    margin: 0;
-  }
-
-  html, body {
-    width: 210mm;
-    height: 297mm;
-    margin: 0;
-    padding: 0;
-  }
-  
   .print-container {
-    width: 100%;
-    min-height: 0;
-    height: auto;
     box-shadow: none;
     margin: 0;
     border: none;
-    font-size: 9pt;
-    break-after: auto;
-    overflow: visible;
+    height: 100%;
+    width: 100%;
+    page-break-after: always;
   }
 }
