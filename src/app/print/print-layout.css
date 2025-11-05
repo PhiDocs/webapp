@@ -1,0 +1,129 @@
+body.print-body {
+  font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.print-bg {
+  background-color: #e8eaf6; /* Light blue background */
+  padding: 2rem 0;
+}
+
+.print-container {
+  width: 210mm;
+  min-height: 297mm;
+  margin: 0 auto;
+  background: white;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+  color: #333;
+  display: flex;
+  flex-direction: column;
+}
+
+.text-primary-dark {
+    color: #1A237E;
+}
+
+.section-title {
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: #1A237E;
+  border-bottom: 2px solid #1A237E;
+  padding-bottom: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+.info-grid p {
+    margin: 0;
+    line-height: 1.5;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+table th, table td {
+  border: 1px solid #ccc;
+  padding: 0.75rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+table th {
+  background-color: #f2f2f2;
+  font-weight: bold;
+  color: #333;
+}
+
+table tbody tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+.signature-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    margin-top: 4rem;
+}
+
+.signature-line {
+    border-bottom: 1px solid #333;
+    height: 2.5rem;
+    margin-bottom: 0.5rem;
+}
+.signature-label {
+    text-align: center;
+    font-size: 0.875rem;
+    color: #555;
+}
+
+@media print {
+  @page {
+    size: A4;
+    margin: 20mm;
+  }
+
+  html, body {
+    width: 210mm;
+    height: 297mm;
+    margin: 0;
+    padding: 0;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  
+  .print-bg {
+    background: none;
+    padding: 0;
+  }
+
+  .print-container {
+    width: 100%;
+    min-height: auto;
+    box-shadow: none;
+    margin: 0;
+    border: none;
+  }
+
+  .no-print {
+    display: none;
+  }
+
+  h2, h3, .section-title {
+    page-break-after: avoid;
+  }
+  
+  table, .signature-grid {
+    page-break-inside: avoid;
+  }
+
+  tr {
+    page-break-inside: avoid;
+  }
+}

@@ -1,0 +1,154 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import './print-layout.css';
+import { Logo } from '@/components/icons/logo';
+import { Separator } from '@/components/ui/separator';
+
+type PrintData = {
+  documentType: string;
+  companyName: string;
+  companyLogo?: string;
+  workLocation: string;
+  teamMembers?: string;
+  activityDescription: string;
+  date: string;
+  risks: string;
+  hazards: string;
+  preventiveMeasures: string;
+  epiRecommendations: string;
+};
+
+export default function PrintPage() {
+  const [data, setData] = useState<PrintData | null>(null);
+
+  useEffect(() => {
+    const storedData = sessionStorage.getItem('printData');
+    if (storedData) {
+      try {
+        setData(JSON.parse(storedData));
+      } catch (e) {
+        console.error("Failed to parse print data", e);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    if (data) {
+      document.title = `${data.documentType} - ${data.companyName} - ${data.date}`;
+      const timer = setTimeout(() => {
+        window.print();
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [data]);
+
+  if (!data) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gray-100">
+        <div className="text-center">
+          <p className="text-lg">Loading document for printing...</p>
+        </div>
+      </div>
+    );
+  }
+
+  const analysisSections = [
+    { title: 'Risks', content: data.risks },
+    { title: 'Hazards', content: data.hazards },
+    { title: 'Preventive Measures', content: data.preventiveMeasures },
+    { title: 'EPI Recommendations', content: data.epiRecommendations },
+  ];
+
+  return (
+    <div className="print-bg">
+      <div className="print-container">
+        <header className="flex items-center justify-between p-8 border-b">
+          <div className="flex items-center gap-4">
+            {data.companyLogo ? (
+              <img src={data.companyLogo} alt="Company Logo" className="h-16 w-auto max-w-48 object-contain" />
+            ) : (
+              <Logo className="h-12 w-12 text-gray-700" />
+            )}
+            <h1 className="text-3xl font-bold text-gray-800">{data.companyName}</h1>
+          </div>
+          <div className="text-right">
+            <h2 className="text-4xl font-extrabold text-primary-dark">{data.documentType}</h2>
+            <p className="text-gray-500">{data.documentType === 'APR' ? 'Análise Preliminar de Risco' : 'Análise Preliminar de Tarefa'}</p>
+          </div>
+        </header>
+
+        <main className="p-8">
+          <section className="mb-8">
+            <h3 className="section-title">Document Information</h3>
+            <div className="info-grid">
+              <div>
+                <p className="font-semibold text-gray-600">Work Location</p>
+                <p>{data.workLocation}</p>
+              </div>
+              <div>
+                <p className="font-semibold text-gray-600">Date of Issue</p>
+                <p>{data.date}</p>
+              </div>
+            </div>
+          </section>
+
+          <section className="mb-8">
+            <h3 className="section-title">Activity Description</h3>
+            <p className="text-gray-700 whitespace-pre-wrap">{data.activityDescription}</p>
+          </section>
+
+          {data.teamMembers && (
+            <section className="mb-8">
+              <h3 className="section-title">Involved Team Members</h3>
+              <p className="text-gray-700 whitespace-pre-wrap">{data.teamMembers}</p>
+            </section>
+          )}
+
+          <Separator className="my-8" />
+          
+          <h2 className="text-2xl font-bold text-center mb-6 text-primary-dark">AI-Powered Safety Analysis</h2>
+
+          <section>
+            <table className="w-full border-collapse">
+              <thead>
+                <tr>
+                  <th className="w-1/4">Category</th>
+                  <th>Details</th>
+                </tr>
+              </thead>
+              <tbody>
+                {analysisSections.map((section, index) => (
+                  <tr key={index}>
+                    <td className="font-bold align-top">{section.title}</td>
+                    <td className="whitespace-pre-wrap">{section.content}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </section>
+
+          <section className="mt-16">
+            <h3 className="section-title">Signatures</h3>
+            <div className="signature-grid">
+                <div>
+                    <div className="signature-line"></div>
+                    <p className="signature-label">Safety Officer</p>
+                </div>
+                <div>
+                    <div className="signature-line"></div>
+                    <p className="signature-label">Project Manager</p>
+                </div>
+            </div>
+          </section>
+
+        </main>
+
+        <footer className="p-4 text-center text-xs text-gray-500 border-t">
+          <p>This document was generated by Safety Docs AI on {data.date}.</p>
+          <p>&copy; {new Date().getFullYear()} {data.companyName}</p>
+        </footer>
+      </div>
+    </div>
+  );
+}
