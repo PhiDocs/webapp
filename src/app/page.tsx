@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import type { SafetyAnalysisOutput } from '@/ai/flows/generate-safety-analysis';
 import type { SafetyFormValues } from '@/lib/types';
 import { getSafetyAnalysis } from '@/app/ai-actions';
@@ -91,7 +91,9 @@ export default function Home() {
         });
         return;
     }
-    if (!printPreviewContainerRef.current) {
+    
+    const printRoot = document.getElementById('print-content-root');
+    if (!printRoot) {
         toast({
             variant: 'destructive',
             title: 'Erro de Referência',
@@ -109,44 +111,52 @@ export default function Home() {
           compress: true,
       });
 
-      const pages = printPreviewContainerRef.current.querySelectorAll<HTMLElement>('.print-container');
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = pdf.internal.pageSize.getHeight();
-      const totalPages = pages.length;
-
-      for (let i = 0; i < totalPages; i++) {
-        const pageElement = pages[i];
-        
-        // Clone the element to modify it without affecting the screen
-        const clonedElement = pageElement.cloneNode(true) as HTMLElement;
-        document.body.appendChild(clonedElement); // Add to body to compute styles
-        
-        // Replace placeholder with actual page number
-        const pageNumberPlaceholder = clonedElement.querySelector('.page-number-placeholder');
-        if(pageNumberPlaceholder) {
-            pageNumberPlaceholder.innerHTML = `Página ${i + 1} de ${totalPages}`;
-        }
-        
-        const canvas = await html2canvas(clonedElement, {
-          scale: 2, 
-          useCORS: true,
-          backgroundColor: '#ffffff',
-          windowWidth: clonedElement.scrollWidth,
-          windowHeight: clonedElement.scrollHeight,
-        });
-
-        document.body.removeChild(clonedElement); // Clean up the cloned element
-        
-        const imgData = canvas.toDataURL('image/png');
-        
-        if (i > 0) {
-          pdf.addPage();
-        }
-
-        // Hide header on subsequent pages logic is now handled by the component structure
-        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-      }
       
+      const canvas = await html2canvas(printRoot, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#ffffff',
+        windowWidth: printRoot.scrollWidth,
+        windowHeight: printRoot.scrollHeight,
+      });
+
+      const imgData = canvas.toDataURL('image/png');
+      const imgWidth = pdfWidth;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      let heightLeft = imgHeight;
+      let position = 0;
+      let page = 1;
+
+      // Add first page
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pdfHeight;
+
+      // Calculate total pages
+      const totalPages = Math.ceil(imgHeight / pdfHeight);
+
+      // Add remaining pages
+      while (heightLeft > 0) {
+        position = -pdfHeight * page;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pdfHeight;
+        page++;
+      }
+
+      // Add page numbers
+      for (let i = 1; i <= totalPages; i++) {
+        pdf.setPage(i);
+        pdf.setFontSize(8);
+        pdf.setTextColor(150);
+        const text = `Página ${i} de ${totalPages}`;
+        const textWidth = pdf.getStringUnitWidth(text) * pdf.getFontSize() / pdf.internal.scaleFactor;
+        const textX = pdfWidth - textWidth - 15; // 15mm from right
+        const textY = pdfHeight - 10; // 10mm from bottom
+        pdf.text(text, textX, textY, { align: 'right' });
+      }
+
       const printData = form.getValues();
       const fileName = `${printData.documentType}-${printData.companyName.replace(/ /g,"_")}-${new Date().toLocaleDateString('pt-BR').replace(/\//g, '-')}.pdf`;
       pdf.save(fileName);
@@ -252,3 +262,5 @@ export default function Home() {
     </div>
   );
 }
+
+    

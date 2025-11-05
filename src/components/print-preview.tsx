@@ -10,6 +10,17 @@ interface PrintPreviewProps {
     analysisData: SafetyAnalysisOutput | null;
 }
 
+// Helper to render pages
+function Page({ children, isFirstPage }: { children: React.ReactNode, isFirstPage: boolean }) {
+  return (
+    <div className="print-container">
+      <div className="page-content-wrapper">
+        {children}
+      </div>
+    </div>
+  );
+}
+
 // This is the core component that renders the content for preview AND for PDF generation
 export function PrintPreview({ formData, analysisData }: PrintPreviewProps) {
     if (!formData.companyName && !analysisData) {
@@ -24,23 +35,20 @@ export function PrintPreview({ formData, analysisData }: PrintPreviewProps) {
     
     // We render the content in a sequence of pages. CSS will handle the rest.
     return (
-        <>
-            {/* Page 1 */}
-            <div className="print-container">
-                <div className="page-content-wrapper">
-                    <PrintHeader data={formData} />
-                    <main className="print-main">
-                        <RenderContent formData={formData} analysisData={analysisData} />
-                    </main>
-                    <PrintFooter data={formData} />
-                </div>
-            </div>
-        </>
+      <>
+        <Page isFirstPage={true}>
+          <PrintHeader data={formData} />
+          <main className="print-main">
+            <PrintContent formData={formData} analysisData={analysisData} />
+          </main>
+          <PrintFooter data={formData} isFirstPage={true} />
+        </Page>
+      </>
     );
 }
 
 // This component renders the raw, unpaginated content
-function RenderContent({ formData, analysisData }: {formData: SafetyFormValues, analysisData: SafetyAnalysisOutput | null}) {
+function PrintContent({ formData, analysisData }: {formData: SafetyFormValues, analysisData: SafetyAnalysisOutput | null}) {
     const data = {...formData, ...analysisData};
     const teamMembers = data.teamMembers || [];
 
@@ -128,7 +136,7 @@ function RenderContent({ formData, analysisData }: {formData: SafetyFormValues, 
               A análise de procedimento operacional aparecerá aqui após ser gerada.
             </section>
           )}
-        <section className="signature-section mt-auto pt-8">
+          <section className="signature-section mt-auto pt-8 break-before-page">
             <h3 className="section-title">Assinaturas</h3>
             <div className="signature-grid">
                 <div>
@@ -198,7 +206,7 @@ function PrintHeader({ data }: { data: SafetyFormValues }) {
     )
 }
 
-function PrintFooter({ data }: { data: SafetyFormValues }) {
+function PrintFooter({ data, isFirstPage }: { data: SafetyFormValues, isFirstPage: boolean }) {
     const date = new Date().toLocaleDateString('pt-BR');
     return (
         <footer className="print-footer pt-2 mt-auto text-xs text-gray-500 border-t">
@@ -212,12 +220,44 @@ function PrintFooter({ data }: { data: SafetyFormValues }) {
             </div>
             <div className="text-right">
                 <p>Data: {date}</p>
-                <p className="page-number-placeholder">&nbsp;</p> {/* Placeholder for page number */}
+                {/* This placeholder is filled during PDF generation */}
+                <p className="page-number-placeholder">&nbsp;</p>
             </div>
           </div>
         </footer>
     )
 }
+
+// This component is now responsible for handling pagination and rendering multiple pages
+function PaginatedPrintPreview({ formData, analysisData }: PrintPreviewProps) {
+    if (!formData.companyName && !analysisData) {
+        return (
+            <div className="print-container">
+                <div className="flex h-full items-center justify-center p-8 text-center text-gray-500 italic">
+                    A pré-visualização do documento aparecerá aqui.
+                </div>
+            </div>
+        );
+    }
+    return (
+        <div className="print-container-wrapper">
+             <div className="print-container" id="print-content-root">
+                <div className='page-content-wrapper'>
+                    <div className='print-header-wrapper'>
+                        <PrintHeader data={formData} />
+                    </div>
+                    <main className='print-main'>
+                        <PrintContent formData={formData} analysisData={analysisData} />
+                    </main>
+                    <div className='print-footer-wrapper'>
+                       <PrintFooter data={formData} isFirstPage={true} />
+                    </div>
+                </div>
+             </div>
+        </div>
+    )
+}
+
 
 function getShortDate(dateString: string) {
     if (!dateString) return '...';
@@ -230,3 +270,9 @@ function getShortDate(dateString: string) {
         return 'Data inválida'
     }
 }
+
+// We default to the new paginated component.
+export { PaginatedPrintPreview as PrintPreview };
+export { PrintContent as PrintPreviewContent } from './print-preview';
+
+    

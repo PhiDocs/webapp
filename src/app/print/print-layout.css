@@ -23,7 +23,7 @@
 
 .print-container {
   width: 210mm;
-  height: 297mm;
+  /* min-height: 297mm; Let content define height */
   background: white;
   box-shadow: 0 0 15px rgba(0, 0, 0, 0.15);
   color: #333;
@@ -31,7 +31,7 @@
   flex-direction: column;
   font-size: 9pt;
   position: relative;
-  overflow: hidden;
+  overflow: visible; /* Let content flow naturally */
   page-break-after: always;
 }
 
@@ -48,7 +48,7 @@
 
 .print-main {
     flex-grow: 1;
-    overflow: hidden; /* Hide anything that overflows the main content area */
+    overflow: visible; /* Allow content to overflow for html2canvas */
 }
 
 .section-title {
@@ -59,11 +59,13 @@
   padding: 0.3rem;
   margin-bottom: 0.5rem;
   text-align: center;
+  break-inside: avoid;
 }
 
 .info-grid {
     border-collapse: collapse;
     width: 100%;
+    break-inside: avoid;
 }
 .info-grid tr, .info-grid td {
     border: 1px solid #999;
@@ -107,7 +109,7 @@ table.analysis-table tbody tr {
 }
 
 section {
-  break-inside: avoid;
+  break-inside: avoid-page;
 }
 
 .signature-grid {
@@ -115,6 +117,7 @@ section {
     grid-template-columns: 1fr 1fr;
     gap: 4rem;
     margin-top: 4rem;
+    break-inside: avoid-page;
 }
 
 .signature-line {
@@ -127,6 +130,21 @@ section {
     font-size: 0.875rem;
     color: #555;
 }
+
+.break-after-page {
+    break-after: page;
+}
+.break-before-page {
+    break-before: page;
+}
+
+.print-header-wrapper {
+    break-after: avoid;
+}
+.print-footer-wrapper {
+    break-before: avoid;
+}
+
 
 /* --- PRINT-SPECIFIC CSS RULES --- */
 @page {
@@ -141,23 +159,43 @@ section {
      background: white;
      padding:0;
      margin: 0;
+     width: 210mm;
   }
   
-  .print-bg {
+  .print-bg, .print-container-wrapper, #print-content-root {
     background: none;
     padding: 0;
-  }
-  
-  .print-container-wrapper {
-    gap: 0;
+    margin: 0;
+    box-shadow: none;
+    border: none;
   }
   
   .print-container {
     box-shadow: none;
     margin: 0;
     border: none;
-    height: 100%;
     width: 100%;
-    page-break-after: always;
+    height: auto;
+    overflow: visible;
   }
+
+  .print-header-wrapper {
+     position: running(header);
+  }
+  
+  .print-footer-wrapper {
+    position: running(footer);
+  }
+
+  @page {
+    @top-center {
+      content: element(header);
+    }
+    @bottom-center {
+      content: element(footer);
+    }
+  }
+
 }
+
+    
