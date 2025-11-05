@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import type { SafetyAnalysisOutput } from '@/ai/flows/generate-safety-analysis';
 import type { SafetyFormValues } from '@/lib/types';
-import { getSafetyAnalysis } from '@/app/actions';
+import { getSafetyAnalysis } from '@/app/ai-actions';
 import { Logo } from '@/components/icons/logo';
 import { SafetyForm } from '@/components/safety-form';
 import { Card, CardContent } from '@/components/ui/card';
