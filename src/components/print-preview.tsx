@@ -16,7 +16,7 @@ interface PageContent {
     content: React.ReactNode; 
 }
 
-const PAGE_CONTENT_HEIGHT_MM = 297 - 20 - 15; // A4 height minus top/bottom margin
+const PAGE_CONTENT_HEIGHT_MM = 297 - 20 - 15 - 20; // A4 height minus top/bottom margin and footer
 
 // --- Sub-components for printing ---
 
@@ -107,7 +107,7 @@ function ResponsiblesSection({ data }: { data: SafetyFormValues }) {
                 </tr>
               </thead>
               <tbody>
-                {data.responsiblePersons?.map((person: any, index: number) => (
+                {(data.responsiblePersons?.length > 0 ? data.responsiblePersons : [{ name: '', role: '' }]).map((person: any, index: number) => (
                   <tr key={`resp-${index}`}>
                     <td className="h-12">{person.name || '...'}</td>
                     <td>{person.role || '...'}</td>
@@ -158,37 +158,38 @@ function TeamSection({ data }: { data: SafetyFormValues }) {
 }
 
 function AnalysisTable({ steps }: { steps: any[] }) {
-     if (!steps || steps.length === 0) {
-        return (
-            <section className="mb-4 text-center text-gray-500 italic py-8 border-2 border-dashed rounded-lg">
-                A análise de procedimento operacional aparecerá aqui após ser gerada.
-            </section>
-        );
-    }
+    const hasSteps = steps && steps.length > 0;
 
     return (
-        <section className='analysis-table-wrapper break-before-page'>
+        <section className='analysis-table-wrapper'>
           <h3 className="section-title">PROCEDIMENTO OPERACIONAL</h3>
-          <table className="w-full border-collapse border mt-1 text-xs analysis-table">
-            <thead>
-              <tr>
-                <th className="p-1 text-left w-[5%]">ITEM</th>
-                <th className="p-1 text-left w-[25%]">ATIVIDADES</th>
-                <th className="p-1 text-left w-[25%]">RISCOS POTENCIAIS</th>
-                <th className="p-1 text-left w-[45%]">MEDIDAS PREVENTIVAS / RECOMENDAÇÕES DE SEGURANÇA</th>
-              </tr>
-            </thead>
-            <tbody>
-              {steps.map((step: any, index: number) => (
-                <tr key={`proc-step-${step.item || index}`} className="procedural-step-row">
-                  <td className="p-2 align-top text-center">{step.item}</td>
-                  <td className="p-2 align-top whitespace-pre-wrap">{step.activity}</td>
-                  <td className="p-2 align-top whitespace-pre-wrap">{step.potentialRisks}</td>
-                  <td className="p-2 align-top whitespace-pre-wrap">{step.preventiveMeasures}</td>
+           {!hasSteps && (
+            <div className="text-center text-gray-500 italic py-8 border-2 border-dashed rounded-lg">
+                A análise de procedimento operacional aparecerá aqui após ser gerada.
+            </div>
+          )}
+          {hasSteps && (
+            <table className="w-full border-collapse border mt-1 text-xs analysis-table">
+              <thead>
+                <tr>
+                  <th className="p-1 text-left w-[5%]">ITEM</th>
+                  <th className="p-1 text-left w-[25%]">ATIVIDADES</th>
+                  <th className="p-1 text-left w-[25%]">RISCOS POTENCIAIS</th>
+                  <th className="p-1 text-left w-[45%]">MEDIDAS PREVENTIVAS / RECOMENDAÇÕES DE SEGURANÇA</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {steps.map((step: any, index: number) => (
+                  <tr key={`proc-step-${step.item || index}`} className="procedural-step-row">
+                    <td className="p-2 align-top text-center">{step.item}</td>
+                    <td className="p-2 align-top whitespace-pre-wrap">{step.activity}</td>
+                    <td className="p-2 align-top whitespace-pre-wrap">{step.potentialRisks}</td>
+                    <td className="p-2 align-top whitespace-pre-wrap">{step.preventiveMeasures}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </section>
     );
 }
@@ -229,7 +230,6 @@ export function PrintPreview({ formData, analysisData }: PrintPreviewProps) {
 
   const allDocumentContent = useMemo(() => (
       <>
-          <PrintHeader data={formData} />
           <ResponsiblesSection data={formData} />
           <AnalysisTable steps={analysisData?.proceduralSteps || []} />
           <TeamSection data={formData} />
@@ -241,91 +241,98 @@ export function PrintPreview({ formData, analysisData }: PrintPreviewProps) {
   useEffect(() => {
     const paginate = async () => {
         const measurementNode = measurementRef.current;
-        if (!measurementNode || !analysisData) return;
+        if (!measurementNode) return;
 
-        // 1. Render all content into the hidden measurement div
+        // 1. Render all content into the hidden measurement div to calculate heights
         const root = createRoot(measurementNode);
         root.render(
-          <div className="page-content-wrapper" style={{ width: '210mm', height: 'auto' }}>
+          <div className="page-content-wrapper" style={{ width: '210mm' }}>
+             <PrintHeader data={formData} />
             {allDocumentContent}
           </div>
         );
 
         // Delay to allow for rendering and layout calculation
-        await new Promise(resolve => setTimeout(resolve, 300));
+        await new Promise(resolve => setTimeout(resolve, 250));
         
-        const newPages: PageContent[] = [];
-        let pageIndex = 0;
-        const pageContentHeightPx = PAGE_CONTENT_HEIGHT_MM * 3.78; 
-
-        // 2. Query all top-level children (sections)
-        const allChildren = Array.from(measurementNode.querySelector('.page-content-wrapper')?.children || []) as HTMLElement[];
+        const newPages: {content: HTMLElement[], height: number}[] = [];
         let currentPageContent: HTMLElement[] = [];
         let currentPageHeight = 0;
 
-        const headerHeight = (allChildren[0] as HTMLElement).offsetHeight;
+        const pageContentHeightPx = PAGE_CONTENT_HEIGHT_MM * 3.78; 
+        
+        const headerElement = measurementNode.querySelector('.print-header') as HTMLElement;
+        const headerHeight = headerElement ? headerElement.offsetHeight + 16 : 0; // 16 for pb-4
 
-        for (let i = 0; i < allChildren.length; i++) {
-            const child = allChildren[i];
+        // Start Page 1 with the main header
+        currentPageContent.push(headerElement.cloneNode(true) as HTMLElement);
+        currentPageHeight += headerHeight;
+
+        // Get all other sections
+        const allChildren = Array.from(measurementNode.querySelector('.page-content-wrapper')?.children || []).slice(1) as HTMLElement[];
+        
+        for (const child of allChildren) {
+            const isTable = child.querySelector('.analysis-table');
             const childHeight = child.offsetHeight;
             const childMarginTop = parseInt(window.getComputedStyle(child).marginTop, 10);
             const totalChildHeight = childHeight + childMarginTop;
 
-            const isFirstPage = pageIndex === 0;
-            const availableHeight = isFirstPage ? pageContentHeightPx : pageContentHeightPx - headerHeight;
-            
-            // Special handling for the main table
-            if (child.querySelector('.analysis-table')) {
-                const tableHeader = child.querySelector('h3')!;
-                const table = child.querySelector('table')!;
-                const tableHeaderHeight = tableHeader.offsetHeight + parseInt(window.getComputedStyle(tableHeader).marginBottom, 10);
-                const tableTheadHeight = table.querySelector('thead')?.offsetHeight || 0;
-                let tableCurrentHeight = tableHeaderHeight + tableTheadHeight;
-
-                currentPageContent.push(tableHeader.cloneNode(true) as HTMLElement);
-                const newTable = table.cloneNode(true) as HTMLTableElement;
-                const newTbody = document.createElement('tbody');
-                newTable.querySelector('tbody')!.remove();
-                newTable.appendChild(newTbody);
-                currentPageContent.push(newTable);
-
-
+            if (isTable) {
+                const table = isTable as HTMLTableElement;
+                const tableTitle = child.querySelector('h3')!;
+                const tableTitleHeight = tableTitle.offsetHeight + 4; // 4 for margin
+                
+                const thead = table.querySelector('thead')!;
+                const theadHeight = thead.offsetHeight;
+                
                 const rows = Array.from(table.querySelectorAll('tbody tr'));
-                for(const row of rows) {
-                    const rowHeight = row.offsetHeight;
-                    if (currentPageHeight + tableCurrentHeight + rowHeight > availableHeight) {
-                        // Finalize current page
-                        const pageContentHTML = currentPageContent.map(el => el.outerHTML).join('');
-                        newPages.push({ key: `page-${pageIndex}`, content: <div dangerouslySetInnerHTML={{ __html: pageContentHTML }} /> });
-                        pageIndex++;
 
-                        // Start new page
-                        currentPageContent = [];
-                        currentPageHeight = 0;
-                        tableCurrentHeight = tableHeaderHeight + tableTheadHeight;
-                        
-                        currentPageContent.push(tableHeader.cloneNode(true) as HTMLElement);
-                        const newerTable = table.cloneNode(true) as HTMLTableElement;
-                        const newerTbody = document.createElement('tbody');
-                        newerTable.querySelector('tbody')!.remove();
-                        newerTable.appendChild(newerTbody);
-                        currentPageContent.push(newerTable);
-                        newerTbody.appendChild(row.cloneNode(true));
+                let tempTableHeight = tableTitleHeight;
+                let tempRows: HTMLElement[] = [];
 
-                    } else {
-                        newTbody.appendChild(row.cloneNode(true));
-                        tableCurrentHeight += rowHeight;
-                    }
+                function startNewPage() {
+                    newPages.push({ content: currentPageContent, height: currentPageHeight });
+                    currentPageContent = [];
+                    currentPageHeight = 0;
                 }
-                 currentPageHeight += tableCurrentHeight;
+                
+                function addContentToPage(element: HTMLElement, height: number) {
+                    currentPageContent.push(element);
+                    currentPageHeight += height;
+                }
+                
+                // Check if table title fits on current page
+                if (currentPageHeight + tableTitleHeight > pageContentHeightPx) {
+                    startNewPage();
+                }
+                addContentToPage(tableTitle.cloneNode(true) as HTMLElement, tableTitleHeight);
+                
+                // Create a new table for the rows on the current page
+                let newTable = table.cloneNode(false) as HTMLTableElement;
+                newTable.appendChild(thead.cloneNode(true));
+                let newTbody = document.createElement('tbody');
+                newTable.appendChild(newTbody);
+                addContentToPage(newTable, theadHeight);
+                tempTableHeight += theadHeight;
 
-            } else { // Handle other sections
-                 if (currentPageHeight + totalChildHeight > availableHeight && currentPageContent.length > 0) {
-                    // Finalize current page
-                    const pageContentHTML = currentPageContent.map(el => el.outerHTML).join('');
-                    newPages.push({ key: `page-${pageIndex}`, content: <div dangerouslySetInnerHTML={{ __html: pageContentHTML }} /> });
-                    pageIndex++;
-                    // Start new page
+                for (const row of rows) {
+                    const rowHeight = (row as HTMLElement).offsetHeight;
+                    if (currentPageHeight + rowHeight > pageContentHeightPx) {
+                        startNewPage();
+                        
+                        addContentToPage(tableTitle.cloneNode(true) as HTMLElement, tableTitleHeight);
+                        newTable = table.cloneNode(false) as HTMLTableElement;
+                        newTable.appendChild(thead.cloneNode(true));
+                        newTbody = document.createElement('tbody');
+                        newTable.appendChild(newTbody);
+                        addContentToPage(newTable, theadHeight);
+                    }
+                    newTbody.appendChild(row.cloneNode(true));
+                    currentPageHeight += rowHeight;
+                }
+            } else {
+                 if (currentPageHeight + totalChildHeight > pageContentHeightPx && currentPageContent.length > 0) {
+                    newPages.push({ content: currentPageContent, height: currentPageHeight });
                     currentPageContent = [child.cloneNode(true) as HTMLElement];
                     currentPageHeight = totalChildHeight;
                 } else {
@@ -335,50 +342,61 @@ export function PrintPreview({ formData, analysisData }: PrintPreviewProps) {
             }
         }
 
-        // Add the last remaining page
         if (currentPageContent.length > 0) {
-            const pageContentHTML = currentPageContent.map(el => el.outerHTML).join('');
-            newPages.push({ key: `page-${pageIndex}`, content: <div dangerouslySetInnerHTML={{ __html: pageContentHTML }} /> });
+            newPages.push({ content: currentPageContent, height: currentPageHeight });
         }
         
-        setPages(newPages);
+        const finalPages: PageContent[] = newPages.map((page, index) => {
+            const pageHTML = page.content.map(el => el.outerHTML).join('');
+            return {
+                key: `page-${index}-${Date.now()}`,
+                content: <div className='print-main' dangerouslySetInnerHTML={{ __html: pageHTML }} />
+            }
+        });
+        
+        setPages(finalPages);
         root.unmount();
-
     };
 
-    if (formData.companyName && analysisData) {
-        setPages([]);
-        setTimeout(paginate, 100);
-    } else {
-         setPages([]); 
-    }
-
+    // Use a timeout to ensure all data is ready before paginating
+    const timer = setTimeout(paginate, 250);
+    return () => clearTimeout(timer);
+    
   }, [formData, analysisData, allDocumentContent]);
 
-  if (!analysisData) {
+  if (!formData.companyName && !analysisData) {
     return (
       <div className="print-page-container">
         <div className="flex h-full items-center justify-center p-8 text-center text-gray-500 italic">
-          A pré-visualização do documento aparecerá aqui após preencher o formulário e gerar a análise.
+          A pré-visualização do documento aparecerá aqui conforme você preenche o formulário.
         </div>
       </div>
     );
   }
 
-
   return (
     <>
-      {pages.map((page, index) => (
+      {pages.length > 0 ? pages.map((page, index) => (
           <div key={page.key} className="print-page-container">
             <div className="page-content-wrapper">
-                {index === 0 && <PrintHeader data={formData} />}
-                 <main className='print-main'>
-                    {page.content}
-                 </main>
+                <main className='print-main'>
+                  {page.content}
+                </main>
                 <PrintFooter data={formData} />
             </div>
           </div>
-      ))}
+      )) : (
+          <div className="print-page-container">
+             <div className="page-content-wrapper">
+                <main className='print-main'>
+                    <PrintHeader data={formData} />
+                    <ResponsiblesSection data={formData} />
+                    <AnalysisTable steps={[]} />
+                </main>
+                <PrintFooter data={formData} />
+             </div>
+          </div>
+      )}
       {/* Hidden container for measurement */}
       <div ref={measurementRef} style={{ position: 'absolute', top: '-9999px', left: '-9999px', zIndex: -100, opacity: 0 }} />
     </>

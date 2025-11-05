@@ -177,66 +177,57 @@ export default function Home() {
         </div>
       </header>
 
-      <main className="container mx-auto p-4 md:p-6 flex-grow">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 h-full items-start">
+      <main className="flex-grow">
+        <div className="grid grid-cols-1 lg:grid-cols-2 h-[calc(100vh-65px)]">
           
-          <div className="sticky top-20">
-            <ScrollArea className="h-[calc(100vh-120px)] rounded-lg border">
-              <div className="p-1 space-y-6 lg:p-4">
-                  <div className="space-y-2">
-                    <h2 className="text-2xl font-bold tracking-tight text-foreground font-headline">
-                      Gere seu Documento de Segurança
-                    </h2>
-                    <p className="text-muted-foreground">
-                      Preencha o formulário e veja a pré-visualização ao lado. Nossa IA irá analisar a atividade com base nas NRs brasileiras.
-                    </p>
-                  </div>
-                  <SafetyForm form={form} onSubmit={handleFormSubmit} isLoading={isLoading} onNewReport={handleNewReport} />
+          <ScrollArea className="h-full">
+            <div className="p-4 md:p-6 space-y-6">
+                <div className="space-y-2">
+                  <h2 className="text-2xl font-bold tracking-tight text-foreground font-headline">
+                    Gere seu Documento de Segurança
+                  </h2>
+                  <p className="text-muted-foreground">
+                    Preencha o formulário e veja a pré-visualização ao lado. Nossa IA irá analisar a atividade com base nas NRs brasileiras.
+                  </p>
+                </div>
+                <SafetyForm form={form} onSubmit={handleFormSubmit} isLoading={isLoading} onNewReport={handleNewReport} />
+            </div>
+          </ScrollArea>
+
+          <div className="relative flex flex-col bg-muted h-full">
+            <ScrollArea className='h-full'>
+              <div id="print-content-root" className="print-container-wrapper p-4 sm:p-8">
+                  {isLoading && (
+                      <div className="absolute inset-0 bg-muted/80 backdrop-blur-sm z-10 flex flex-col items-center justify-center rounded-lg">
+                          <div className="flex flex-col items-center gap-4 text-center p-6 bg-background rounded-xl shadow-2xl">
+                              <Loader2 className="h-12 w-12 animate-spin text-primary" />
+                              <h3 className="text-xl font-semibold">Gerando Análise...</h3>
+                              <p className="text-muted-foreground">
+                                  Aguarde enquanto nossa IA prepara seu relatório.
+                              </p>
+                          </div>
+                      </div>
+                  )}
+                  
+                   {error && (
+                     <div className="w-[210mm] min-h-[297mm] mx-auto bg-white shadow-lg flex items-center justify-center">
+                       <Card className="flex h-full min-h-[400px] w-full flex-col items-center justify-center bg-destructive/10 border-destructive">
+                        <CardContent className="flex flex-col items-center justify-center gap-4 text-center p-6">
+                          <h3 className="text-xl font-semibold text-destructive-foreground">Erro</h3>
+                          <p className="text-destructive-foreground/80">{error}</p>
+                        </CardContent>
+                       </Card>
+                     </div>
+                   )}
+
+                  {!isLoading && !error && (
+                      <PrintPreview formData={liveFormData} analysisData={analysis} />
+                  )}
               </div>
             </ScrollArea>
           </div>
-
-          <div className="relative flex flex-col">
-             <div className="print-bg rounded-lg">
-                <div id="print-content-root" className="print-container-wrapper p-4 sm:p-8">
-                    {isLoading && (
-                        <div className="absolute inset-0 bg-white/80 backdrop-blur-sm z-10 flex flex-col items-center justify-center rounded-lg">
-                            <div className="flex flex-col items-center gap-4 text-center p-6">
-                                <Loader2 className="h-12 w-12 animate-spin text-primary" />
-                                <h3 className="text-xl font-semibold">Gerando Análise...</h3>
-                                <p className="text-muted-foreground">
-                                    Aguarde enquanto nossa IA prepara seu relatório.
-                                </p>
-                            </div>
-                        </div>
-                    )}
-                    
-                     {error && (
-                       <div className="w-[210mm] min-h-[297mm] mx-auto bg-white shadow-lg flex items-center justify-center">
-                         <Card className="flex h-full min-h-[400px] w-full flex-col items-center justify-center bg-destructive/10 border-destructive">
-                          <CardContent className="flex flex-col items-center justify-center gap-4 text-center p-6">
-                            <h3 className="text-xl font-semibold text-destructive-foreground">Erro</h3>
-                            <p className="text-destructive-foreground/80">{error}</p>
-                          </CardContent>
-                         </Card>
-                       </div>
-                     )}
-
-                    {!isLoading && !error && (
-                        <PrintPreview formData={liveFormData} analysisData={analysis} />
-                    )}
-                </div>
-             </div>
-          </div>
         </div>
       </main>
-
-      <footer className="container mx-auto mt-auto px-4 md:px-6">
-          <Separator/>
-          <div className="py-6 text-center text-sm text-muted-foreground">
-            <p>&copy; {new Date().getFullYear()} Safety Docs AI. All Rights Reserved.</p>
-          </div>
-      </footer>
     </div>
   );
 }
