@@ -46,8 +46,9 @@
 
 .print-main {
     flex-grow: 1;
-    overflow: hidden;
+    overflow: hidden; /* This is key to contain the content */
 }
+
 
 .section-title {
   font-size: 11pt;
@@ -82,6 +83,7 @@
 table.analysis-table {
   width: 100%;
   border-collapse: collapse;
+  table-layout: fixed; /* helps with consistent column widths */
 }
 
 table.analysis-table th, table.analysis-table td {
@@ -98,33 +100,13 @@ table.analysis-table th {
   color: #333;
 }
 
-/* --- PRINT-SPECIFIC CSS RULES --- */
-/* These rules are respected by html2canvas when generating the PDF */
-@page {
-  size: A4 portrait;
-  margin: 0; /* Handled by .page-content-wrapper padding */
-}
-
-thead {
-    display: table-header-group; /* Repeats header on each page */
-}
-tbody {
-    display: table-row-group;
-}
-tr {
-    page-break-inside: avoid;
-}
-
-.page-break-before {
-  break-before: page;
-}
 
 .signature-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 4rem;
     margin-top: 4rem;
-    break-inside: avoid-page;
+    break-inside: avoid;
 }
 
 .signature-line {
@@ -136,6 +118,28 @@ tr {
     text-align: center;
     font-size: 0.875rem;
     color: #555;
+}
+
+
+/* --- PRINT-SPECIFIC CSS RULES --- */
+/* These rules are respected by html2canvas when generating the PDF */
+@page {
+  size: A4 portrait;
+  margin: 0; /* Handled by .page-content-wrapper padding */
+}
+
+thead.analysis-table-header {
+    display: table-header-group; /* Repeats header on each page */
+}
+tbody {
+    display: table-row-group;
+}
+tr {
+    page-break-inside: avoid;
+}
+
+.page-break-before {
+  break-before: page;
 }
 
 

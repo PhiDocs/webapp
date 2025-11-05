@@ -110,20 +110,12 @@ export default function Home() {
         for (let i = 0; i < pageElements.length; i++) {
             const pageElement = pageElements[i];
             
-            const pageNumberElement = pageElement.querySelector('.page-number-placeholder');
-            if (pageNumberElement) {
-                pageNumberElement.innerHTML = `Página ${i + 1} de ${pageElements.length}`;
-            }
-
             const canvas = await html2canvas(pageElement, {
                 scale: 2, 
                 useCORS: true,
                 backgroundColor: '#ffffff',
+                logging: false,
             });
-            
-            if (pageNumberElement) {
-                pageNumberElement.innerHTML = `&nbsp;`;
-            }
 
             const imgData = canvas.toDataURL('image/jpeg', 0.90);
             
@@ -132,6 +124,14 @@ export default function Home() {
             }
             
             pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
+
+            // Add page number text directly to the PDF
+            const pageNumText = `Página ${i + 1} de ${pageElements.length}`;
+            pdf.setFontSize(8);
+            pdf.setTextColor('#6b7280'); // gray-500
+            const textWidth = pdf.getStringUnitWidth(pageNumText) * pdf.getFontSize() / pdf.internal.scaleFactor;
+            // Position at bottom right (15mm margin from right, 10mm from bottom)
+            pdf.text(pageNumText, pdfWidth - 15 - textWidth, pdfHeight - 10);
         }
 
         const printData = form.getValues();
