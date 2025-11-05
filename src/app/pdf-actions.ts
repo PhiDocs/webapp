@@ -52,15 +52,15 @@ export async function generatePdfAction(data: any): Promise<{pdfBase64: string |
 
     // --- HEADER ---
     if (data.companyLogo) {
-      const imageBytes = Buffer.from(data.companyLogo.split(',')[1], 'base64');
-      const image = await pdfDoc.embedPng(imageBytes);
-      const imageDims = image.scaleToFit(120, 40);
-      page.drawImage(image, {
-          x: margin,
-          y: height - margin - imageDims.height + 20,
-          width: imageDims.width,
-          height: imageDims.height,
-      });
+        const imageBytes = Buffer.from(data.companyLogo.split(',')[1], 'base64');
+        const image = await pdfDoc.embedPng(imageBytes);
+        const imageDims = image.scaleToFit(120, 40);
+        page.drawImage(image, {
+            x: margin,
+            y: height - margin - imageDims.height + 20,
+            width: imageDims.width,
+            height: imageDims.height,
+        });
     }
 
     page.drawText(data.companyName || 'Nome da Empresa', {
@@ -272,7 +272,7 @@ export async function generatePdfAction(data: any): Promise<{pdfBase64: string |
     return { pdfBase64, error: null };
 
   } catch (e:any) {
-    console.error('Erro ao gerar PDF:', e);
+    console.error('Erro detalhado ao gerar PDF:', e);
     return { pdfBase64: null, error: e.message || 'Erro desconhecido ao gerar PDF.' };
   }
 }
