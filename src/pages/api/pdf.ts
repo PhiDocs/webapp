@@ -4,19 +4,20 @@ import puppeteer from 'puppeteer';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { PrintPreviewContent } from '@/components/print-preview';
 import React from 'react';
+import fs from 'fs';
+import path from 'path';
 
-// This function is a workaround to get the css as a string.
-// In a real-world scenario, you would have a better way to handle this.
-const getGlobalCss = async (url: string) => {
+// This function now reads CSS files directly from the filesystem.
+const getCssFromFile = (filePath: string): string => {
     try {
-      const response = await fetch(url);
-      if (!response.ok) {
-        console.warn(`Failed to fetch global CSS from ${url}. Status: ${response.status}`);
-        return '';
+      const fullPath = path.resolve(process.cwd(), filePath);
+      if (fs.existsSync(fullPath)) {
+        return fs.readFileSync(fullPath, 'utf-8');
       }
-      return await response.text();
+      console.warn(`CSS file not found at: ${fullPath}`);
+      return '';
     } catch (error) {
-      console.error(`Error fetching global CSS from ${url}:`, error);
+      console.error(`Error reading CSS file from ${filePath}:`, error);
       return '';
     }
 };
@@ -31,14 +32,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     try {
         const printData = req.body;
 
-        // 1. Get Host to fetch CSS files
-        const host = req.headers.host;
-        const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http';
-        const baseUrl = `${protocol}://${host}`;
-
-        // 2. Fetch CSS content
-        const globalsCss = await getGlobalCss(new URL('/globals.css', baseUrl).href);
-        const printLayoutCss = await getGlobalCss(new URL('/print-layout.css', baseUrl).href);
+        // 2. Read CSS content directly from files
+        // Note: These paths are relative to the project root.
+        const globalsCss = getCssFromFile('src/app/globals.css');
+        const printLayoutCss = getCssFromFile('src/app/print/print-layout.css');
         
         // 3. Render React component to static HTML
         const htmlContent = renderToStaticMarkup(
@@ -60,7 +57,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
                 rel="stylesheet"
                 />
-                <style>${globalsCss}</style>
+                <style>${globalsCss.replace(/@tailwind/g, '/* @tailwind */')}</style>
                 <style>${printLayoutCss}</style>
                 <style>
                     body { font-family: 'Inter', sans-serif; }
