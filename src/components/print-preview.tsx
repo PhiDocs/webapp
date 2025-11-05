@@ -66,7 +66,7 @@ function PrintHeader({ data }: { data: SafetyFormValues }) {
 function PrintFooter() {
     const date = useMemo(() => new Date().toLocaleDateString('pt-BR'), []);
     return (
-        <div className="print-footer">
+        <div className="print-footer avoid-break">
             <div className="footer-content-wrapper">
                 <div className="flex justify-between items-center w-full text-xs text-gray-500">
                     <div className="text-left">
@@ -76,7 +76,7 @@ function PrintFooter() {
                         <p>Data: {date}</p>
                     </div>
                     <div className="text-right">
-                        {/* Page number will be handled by jsPDF */}
+                        {/* Page number is handled by PDF generation */}
                     </div>
                 </div>
             </div>
@@ -89,7 +89,7 @@ function ResponsiblesSection({ data }: { data: SafetyFormValues }) {
     <section className="responsibles-section avoid-break">
       <h3 className="section-title">RESPONSÁVEL PELO ACOMPANHAMENTO DOS SERVIÇOS</h3>
       <table className="w-full border-collapse border mt-1 analysis-table">
-        <thead>
+        <thead className='analysis-table-header'>
           <tr>
             <th className="text-left w-[40%]">NOME</th>
             <th className="text-left w-[30%]">FUNÇÃO</th>
@@ -143,7 +143,7 @@ function TeamSection({ data }: { data: SafetyFormValues }) {
 
 function AnalysisTable({ steps }: { steps: any[] }) {
   return (
-     <section>
+     <section className='avoid-break'>
         <h3 className="section-title">PROCEDIMENTO OPERACIONAL</h3>
         <table className="w-full border-collapse text-xs analysis-table">
             <thead className='analysis-table-header'>
@@ -210,7 +210,7 @@ export function PrintPreviewContent({ formData, analysisData }: { formData: Safe
             {proceduralSteps && proceduralSteps.length > 0 ? (
               <AnalysisTable steps={proceduralSteps} />
             ) : (
-              <section className='analysis-table-wrapper avoid-break'>
+              <section className='avoid-break'>
                   <h3 className="section-title">PROCEDIMENTO OPERACIONAL</h3>
                   <div className="text-center text-gray-500 italic py-8 border-2 border-dashed rounded-lg">
                       A análise de procedimento operacional aparecerá aqui após ser gerada.

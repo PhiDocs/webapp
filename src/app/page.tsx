@@ -93,34 +93,47 @@ export default function Home() {
 
     setIsDownloading(true);
     try {
-      const rootElement = document.getElementById('print-content-root');
-      if (!rootElement) {
-        throw new Error('Elemento raiz de impressão não encontrado.');
+      const doc = new jsPDF({
+        orientation: 'p',
+        unit: 'mm',
+        format: 'a4',
+      });
+      
+      const content = document.getElementById('print-content-root');
+
+      if (!content) {
+        throw new Error('Elemento de impressão não encontrado.');
       }
       
-      const contentWidth = rootElement.offsetWidth;
-      // Use getBoundingClientRect for a more precise height, preventing minor overflows
-      const contentHeight = rootElement.getBoundingClientRect().height;
+      // Get all style tags and link tags from the document head
+      const styles = Array.from(document.head.querySelectorAll('style, link[rel="stylesheet"]'))
+        .map(el => el.outerHTML).join('');
 
-      // Add a small buffer to ensure everything fits
-      const pdfHeight = contentHeight + 1;
 
-      const pdf = new jsPDF({
-        orientation: 'p',
-        unit: 'px',
-        format: [contentWidth, pdfHeight]
+      const fullHtml = `
+        <html>
+          <head>
+            <meta charset="utf-8">
+            ${styles}
+          </head>
+          <body>
+            ${content.innerHTML}
+          </body>
+        </html>
+      `;
+
+      await doc.html(fullHtml, {
+        callback: function (doc) {
+            const printData = form.getValues();
+            const fileName = `${printData.documentType}-${printData.companyName.replace(/ /g,"_")}-${new Date().toLocaleDateString('pt-br').replace(/\//g, '-')}.pdf`;
+            doc.save(fileName);
+        },
+        margin: [15, 15, 15, 15],
+        autoPaging: 'text',
+        width: 180, // A4 width in mm minus margins (210 - 15 - 15)
+        windowWidth: 794 // A4 width in px for 96 DPI
       });
 
-      // Disable auto-paging as we want a single, continuous page
-      pdf.html(rootElement, {
-          callback: function(doc) {
-              const printData = form.getValues();
-              const fileName = `${printData.documentType}-${printData.companyName.replace(/ /g,"_")}-${new Date().toLocaleDateString('pt-br').replace(/\//g, '-')}.pdf`;
-              doc.save(fileName);
-          },
-          width: contentWidth, 
-          windowWidth: contentWidth
-      });
 
     } catch (error: any) {
       console.error('Falha ao gerar PDF:', error);

@@ -14,8 +14,7 @@
 
 /* 
   This is the main container for the entire printable document.
-  It's a single, continuous block of content.
-  The 'page' divisions are handled by CSS page-break rules.
+  It defines the A4 page dimensions for the on-screen preview.
 */
 .print-document-container {
   width: 210mm;
@@ -31,7 +30,7 @@
   This defines the A4 page margins.
 */
 .page-content-wrapper {
-    padding: 20mm 15mm;
+    padding: 15mm;
     width: 100%;
 }
 
@@ -120,8 +119,7 @@ table.analysis-table th {
 
 
 /* --- PRINT & PDF GENERATION RULES --- */
-
-/* These rules are critical for html2canvas and browser printing */
+/* These rules are critical for jsPDF and browser printing */
 
 /* Rule 1: Control where page breaks happen */
 .avoid-break {
@@ -140,22 +138,30 @@ thead.analysis-table-header {
     display: table-header-group !important;
 }
 
-/* 
-  Rule 4: The footer should appear at the bottom of each printed page.
-  This is a bit tricky. We make it a repeating table footer group.
-*/
-tfoot.print-footer-group {
-    display: table-footer-group !important;
-}
-
-.footer-content-wrapper {
-  padding: 0 15mm; /* Match page horizontal padding */
-}
-
-/*
-  A placeholder for the footer content. The actual content will be in a <tfoot>,
-  but this helps maintain the space in the document flow for the on-screen preview.
-*/
-.footer-placeholder {
-  height: 50px; /* Approximate height of the footer */
+/* This rule applies only when printing/generating PDF */
+@media print {
+    @page {
+        size: A4 portrait;
+        margin: 15mm;
+    }
+    
+    html, body {
+        width: 210mm;
+        height: 297mm;
+        font-size: 9pt;
+        background: white;
+        color: black;
+    }
+    .print-container-wrapper {
+        background: none;
+        padding: 0;
+    }
+    .print-document-container {
+        box-shadow: none;
+        width: 100%;
+        min-height: 0;
+    }
+    .page-content-wrapper {
+        padding: 0;
+    }
 }
