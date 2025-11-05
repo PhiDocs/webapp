@@ -4,6 +4,7 @@ import { useState } from 'react';
 import type { SafetyAnalysisOutput } from '@/ai/flows/generate-safety-analysis';
 import type { SafetyFormValues } from '@/lib/types';
 import { getSafetyAnalysis } from '@/app/ai-actions';
+import { generatePdfAction } from '@/app/pdf-actions';
 import { Logo } from '@/components/icons/logo';
 import { SafetyForm } from '@/components/safety-form';
 import { Card, CardContent } from '@/components/ui/card';
@@ -70,7 +71,9 @@ export default function Home() {
   const { toast } = useToast();
 
   const handleGeneratePdf = async () => {
-    if (!form.formState.isValid && !analysis) {
+    // Trigger validation
+    const isValid = await form.trigger();
+    if (!isValid || !analysis) {
         toast({
             variant: 'destructive',
             title: 'Formulário incompleto',
@@ -82,24 +85,26 @@ export default function Home() {
     setIsDownloading(true);
     try {
       const printData = {
-        ...liveFormData,
+        ...form.getValues(),
         ...analysis,
         date: new Date().toLocaleDateString('pt-BR'),
       };
       
-      const response = await fetch('/api/pdf', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(printData),
-      });
+      const { pdfBase64, error } = await generatePdfAction(printData);
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Server error:', errorText);
-        throw new Error(`Falha ao gerar o PDF no servidor: ${response.statusText}`);
+      if (error || !pdfBase64) {
+        throw new Error(error || 'Falha ao gerar o PDF no servidor.');
       }
       
-      const blob = await response.blob();
+      // Decode Base64 and create a blob
+      const byteCharacters = atob(pdfBase64);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      const blob = new Blob([byteArray], { type: 'application/pdf' });
+
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;

@@ -1,7 +1,6 @@
+'use server';
 
 import { PDFDocument, StandardFonts, rgb, PDFFont } from 'pdf-lib';
-
-export const runtime = 'nodejs';
 
 // Helper to draw wrapped text
 async function drawWrappedText(
@@ -40,9 +39,9 @@ async function drawWrappedText(
   return currentY - lineHeight;
 }
 
-export async function POST(req: Request) {
+
+export async function generatePdfAction(data: any): Promise<{pdfBase64: string | null; error: string | null}> {
   try {
-    const data = await req.json();
     const pdfDoc = await PDFDocument.create();
     let page = pdfDoc.addPage([595.28, 841.89]); // A4 size
     const { width, height } = page.getSize();
@@ -193,19 +192,14 @@ export async function POST(req: Request) {
 
 
     const pdfBytes = await pdfDoc.save();
+    
+    // Convert to Base64
+    const pdfBase64 = Buffer.from(pdfBytes).toString('base64');
+    
+    return { pdfBase64, error: null };
 
-    return new Response(pdfBytes, {
-      status: 200,
-      headers: {
-        'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename="APR-${data.companyName?.replace(/ /g,"_")}-${data.date}.pdf"`,
-      },
-    });
   } catch (e:any) {
     console.error('Erro ao gerar PDF:', e);
-    return new Response(JSON.stringify({ error: 'Erro interno do servidor ao gerar PDF', details: e.message }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return { pdfBase64: null, error: e.message || 'Erro desconhecido ao gerar PDF.' };
   }
 }
