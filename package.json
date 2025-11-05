@@ -26,7 +26,6 @@
     "@radix-ui/react-menubar": "^1.1.6",
     "@radix-ui/react-popover": "^1.1.6",
     "@radix-ui/react-progress": "^1.1.2",
-    "html2canvas": "^1.4.1",
     "jspdf": "^2.5.1",
     "@radix-ui/react-radio-group": "^1.2.3",
     "@radix-ui/react-scroll-area": "^1.2.3",

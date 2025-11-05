@@ -16,7 +16,7 @@ import { Button } from '@/components/ui/button';
 import { FileDown, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { jsPDF } from 'jspdf';
-import html2canvas from 'html2canvas';
+import 'jspdf/dist/polyfills.js'; // Required for html method
 
 import './print/print-layout.css';
 
@@ -97,40 +97,24 @@ export default function Home() {
           throw new Error("Elemento raiz de impressão não encontrado.");
         }
         
-        const canvas = await html2canvas(rootElement, {
-            scale: 2, // Good quality without being excessively large
-            useCORS: true,
-            windowWidth: rootElement.scrollWidth,
-            windowHeight: rootElement.scrollHeight,
-            logging: false,
+        // Use jsPDF's html method for better results
+        const pdf = new jsPDF({
+            orientation: 'p',
+            unit: 'mm',
+            format: 'a4'
         });
 
-        const pdf = new jsPDF('p', 'mm', 'a4');
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = pdf.internal.pageSize.getHeight();
-        
-        const imgData = canvas.toDataURL('image/jpeg', 0.9); // Use JPEG with compression
-        const imgWidth = pdfWidth;
-        const imgHeight = canvas.height * imgWidth / canvas.width;
-        
-        let heightLeft = imgHeight;
-        let position = 0;
-        
-        // Add the first page
-        pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight, undefined, 'FAST');
-        heightLeft -= pdfHeight;
-
-        // Add subsequent pages if content overflows
-        while (heightLeft > 0) {
-            position = heightLeft - imgHeight;
-            pdf.addPage();
-            pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight, undefined, 'FAST');
-            heightLeft -= pdfHeight;
-        }
-
-        const printData = form.getValues();
-        const fileName = `${printData.documentType}-${printData.companyName.replace(/ /g,"_")}-${new Date().toLocaleDateString('pt-BR').replace(/\//g, '-')}.pdf`;
-        pdf.save(fileName);
+        await pdf.html(rootElement, {
+            callback: function(doc) {
+                const printData = form.getValues();
+                const fileName = `${printData.documentType}-${printData.companyName.replace(/ /g,"_")}-${new Date().toLocaleDateString('pt-BR').replace(/\//g, '-')}.pdf`;
+                doc.save(fileName);
+            },
+            margin: [15, 10, 15, 10], // top, right, bottom, left
+            autoPaging: 'text',
+            width: 210, // A4 width in mm
+            windowWidth: 794 // Approx 210mm in pixels at 96dpi
+        });
 
     } catch (error: any) {
         console.error('Falha ao gerar PDF:', error);

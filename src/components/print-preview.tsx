@@ -63,25 +63,24 @@ function PrintHeader({ data }: { data: SafetyFormValues }) {
   );
 }
 
-function PrintFooter({ date, pageNumber, totalPages }: { date: string, pageNumber: number, totalPages: number }) {
+function PrintFooter() {
+    const date = useMemo(() => new Date().toLocaleDateString('pt-BR'), []);
     return (
-        <tr className="print-footer">
-            <td colSpan={4}>
-                <div className="footer-content-wrapper">
-                    <div className="flex justify-between items-center w-full text-xs text-gray-500">
-                        <div className="text-left">
-                            <p>Deve ser disponibilizado a qualquer tempo para a Inspeção do Trabalho - MTE</p>
-                        </div>
-                        <div className="text-center">
-                            <p>Data: {date}</p>
-                        </div>
-                        <div className="text-right">
-                            <p>Página {pageNumber} de {totalPages}</p>
-                        </div>
+        <div className="print-footer">
+            <div className="footer-content-wrapper">
+                <div className="flex justify-between items-center w-full text-xs text-gray-500">
+                    <div className="text-left">
+                        <p>Deve ser disponibilizado a qualquer tempo para a Inspeção do Trabalho - MTE</p>
+                    </div>
+                    <div className="text-center">
+                        <p>Data: {date}</p>
+                    </div>
+                    <div className="text-right">
+                        {/* Page number will be handled by jsPDF */}
                     </div>
                 </div>
-            </td>
-        </tr>
+            </div>
+        </div>
     );
 }
 
@@ -143,18 +142,30 @@ function TeamSection({ data }: { data: SafetyFormValues }) {
 }
 
 function AnalysisTable({ steps }: { steps: any[] }) {
-  // This component will be part of a larger table structure for print control
   return (
-    <>
-      {steps.map((step: any, index: number) => (
-        <tr key={`proc-step-${step.item || index}`} className="procedural-step-row">
-          <td className="p-2 align-top text-center">{step.item}</td>
-          <td className="p-2 align-top whitespace-pre-wrap">{step.activity}</td>
-          <td className="p-2 align-top whitespace-pre-wrap">{step.potentialRisks}</td>
-          <td className="p-2 align-top whitespace-pre-wrap">{step.preventiveMeasures}</td>
-        </tr>
-      ))}
-    </>
+     <section>
+        <h3 className="section-title">PROCEDIMENTO OPERACIONAL</h3>
+        <table className="w-full border-collapse text-xs analysis-table">
+            <thead className='analysis-table-header'>
+                <tr>
+                    <th className="p-1 text-left w-[5%]">ITEM</th>
+                    <th className="p-1 text-left w-[25%]">ATIVIDADES</th>
+                    <th className="p-1 text-left w-[25%]">RISCOS POTENCIAIS</th>
+                    <th className="p-1 text-left w-[45%]">MEDIDAS PREVENTIVAS / RECOMENDAÇÕES DE SEGURANÇA</th>
+                </tr>
+            </thead>
+            <tbody>
+              {steps.map((step: any, index: number) => (
+                <tr key={`proc-step-${step.item || index}`} className="procedural-step-row">
+                  <td className="p-2 align-top text-center">{step.item}</td>
+                  <td className="p-2 align-top whitespace-pre-wrap">{step.activity}</td>
+                  <td className="p-2 align-top whitespace-pre-wrap">{step.potentialRisks}</td>
+                  <td className="p-2 align-top whitespace-pre-wrap">{step.preventiveMeasures}</td>
+                </tr>
+              ))}
+            </tbody>
+        </table>
+      </section>
   );
 }
 
@@ -187,40 +198,19 @@ function getShortDate(dateString: string) {
   }
 }
 
-export function PrintPreviewContent({ formData, analysisData, isSinglePage = false }: { formData: SafetyFormValues, analysisData: SafetyAnalysisOutput | null, isSinglePage?: boolean }) {
+export function PrintPreviewContent({ formData, analysisData }: { formData: SafetyFormValues, analysisData: SafetyAnalysisOutput | null }) {
   const proceduralSteps = useMemo(() => analysisData?.proceduralSteps || [], [analysisData]);
-  const date = useMemo(() => new Date().toLocaleDateString('pt-BR'), []);
 
   return (
-    <div className={isSinglePage ? "page-content-wrapper" : ""}>
+    <div className="page-content-wrapper">
         <PrintHeader data={formData} />
         <main className='print-main'>
             <ResponsiblesSection data={formData} />
 
             {proceduralSteps && proceduralSteps.length > 0 ? (
-              <table className="w-full border-collapse text-xs analysis-table">
-                  <thead className='analysis-table-header'>
-                      <tr>
-                          <th colSpan={4} className='p-0 border-0'>
-                              <div className='section-title !mb-0'>PROCEDIMENTO OPERACIONAL</div>
-                          </th>
-                      </tr>
-                      <tr>
-                          <th className="p-1 text-left w-[5%]">ITEM</th>
-                          <th className="p-1 text-left w-[25%]">ATIVIDADES</th>
-                          <th className="p-1 text-left w-[25%]">RISCOS POTENCIAIS</th>
-                          <th className="p-1 text-left w-[45%]">MEDIDAS PREVENTIVAS / RECOMENDAÇÕES DE SEGURANÇA</th>
-                      </tr>
-                  </thead>
-                  <tbody>
-                      <AnalysisTable steps={proceduralSteps} />
-                  </tbody>
-                  <tfoot className="print-footer-group">
-                      <PrintFooter date={date} pageNumber={1} totalPages={1} />
-                  </tfoot>
-              </table>
+              <AnalysisTable steps={proceduralSteps} />
             ) : (
-              <section className='analysis-table-wrapper avoid-break -mt-4'>
+              <section className='analysis-table-wrapper avoid-break'>
                   <h3 className="section-title">PROCEDIMENTO OPERACIONAL</h3>
                   <div className="text-center text-gray-500 italic py-8 border-2 border-dashed rounded-lg">
                       A análise de procedimento operacional aparecerá aqui após ser gerada.
@@ -231,6 +221,7 @@ export function PrintPreviewContent({ formData, analysisData, isSinglePage = fal
             <TeamSection data={formData} />
             <SignatureSection />
         </main>
+        <PrintFooter />
     </div>
   );
 }
@@ -239,7 +230,7 @@ export function PrintPreviewContent({ formData, analysisData, isSinglePage = fal
 export function PrintPreview({ formData, analysisData }: PrintPreviewProps) {
   return (
       <div className="print-document-container">
-          <PrintPreviewContent formData={formData} analysisData={analysisData} isSinglePage={true} />
+          <PrintPreviewContent formData={formData} analysisData={analysisData} />
       </div>
   );
 }
