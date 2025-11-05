@@ -236,27 +236,24 @@ export function PrintPreview({ formData, analysisData }: PrintPreviewProps) {
   useEffect(() => {
     // This function will be responsible for creating and destroying the measurement root
     const setupMeasurementRoot = () => {
-        const measurementNode = document.createElement('div');
-        measurementNode.id = 'measurement-root';
-        measurementNode.style.position = 'absolute';
-        measurementNode.style.left = '-9999px';
-        measurementNode.style.top = '-9999px';
-        measurementNode.style.width = '210mm'; // A4 width
-        document.body.appendChild(measurementNode);
-        measurementRootRef.current = createRoot(measurementNode);
-        return measurementNode;
+        const measurementNode = document.getElementById('measurement-root');
+        if (measurementNode) {
+            if (!measurementRootRef.current) {
+                measurementRootRef.current = createRoot(measurementNode);
+            }
+            return measurementNode;
+        }
+        return null;
     };
 
-    const cleanupMeasurementRoot = (node: HTMLElement) => {
-        measurementRootRef.current?.unmount();
-        measurementRootRef.current = null;
-        if (node.parentNode) {
-            node.parentNode.removeChild(node);
-        }
+    const cleanupMeasurementRoot = () => {
+        // Unmount and clean up is handled in the return of useEffect
     };
 
     const paginate = async () => {
       const measurementNode = setupMeasurementRoot();
+      if (!measurementNode) return;
+
       const root = measurementRootRef.current!;
 
       // --- Define constants for pagination ---
@@ -290,8 +287,11 @@ export function PrintPreview({ formData, analysisData }: PrintPreviewProps) {
       const footerElement = document.createElement('div');
       footerElement.className = 'page-content-wrapper';
       const footerRoot = createRoot(footerElement);
-      footerRoot.render(<PrintFooter page={1} totalPages={1} date={date} />);
-      await new Promise(resolve => setTimeout(resolve, 20));
+      
+      await new Promise<void>(resolve => {
+        footerRoot.render(<PrintFooter page={1} totalPages={1} date={date} />);
+        setTimeout(resolve, 20);
+      });
       const footerHeight = footerElement.querySelector('.print-footer')?.getBoundingClientRect().height || 20;
       footerRoot.unmount();
 
@@ -303,7 +303,7 @@ export function PrintPreview({ formData, analysisData }: PrintPreviewProps) {
       let currentPageHeight = 0;
 
       // --- Page 1 ---
-      let availableHeight = maxContentHeight - footerHeight;
+      let availableHeight = maxContentHeightPx - footerHeight;
       if (headerHeight > 0) {
         availableHeight -= headerHeight;
       }
@@ -329,7 +329,7 @@ export function PrintPreview({ formData, analysisData }: PrintPreviewProps) {
                 newPagesContent.push([...currentPageContent]);
                 currentPageContent = [];
                 currentPageHeight = 0;
-                availableHeight = maxContentHeight - footerHeight;
+                availableHeight = maxContentHeightPx - footerHeight;
             }
             currentPageHeight += titleHeight;
 
@@ -338,10 +338,10 @@ export function PrintPreview({ formData, analysisData }: PrintPreviewProps) {
                  newPagesContent.push([...currentPageContent]);
                  currentPageContent = [];
                  currentPageHeight = 0;
-                 availableHeight = maxContentHeight - footerHeight;
+                 availableHeight = maxContentHeightPx - footerHeight;
             }
             // Header will be added to each page with a table
-            const clonedHeader = React.cloneElement(tableHeader as React.ReactElement);
+            const clonedHeader = tableHeader ? React.cloneElement(tableHeader as React.ReactElement) : null;
 
             for (const row of rows) {
                 const rowHeight = row.getBoundingClientRect().height;
@@ -355,7 +355,7 @@ export function PrintPreview({ formData, analysisData }: PrintPreviewProps) {
                             <section key={`table-chunk-${newPagesContent.length}`} className='analysis-table-wrapper'>
                                 <h3 className="section-title">PROCEDIMENTO OPERACIONAL</h3>
                                 <table className='w-full border-collapse border mt-1 text-xs analysis-table'>
-                                    <thead className='analysis-table-header'>{clonedHeader.props.children}</thead>
+                                    {clonedHeader && <thead className='analysis-table-header'>{clonedHeader.props.children}</thead>}
                                     <tbody>{currentTableRowsForPage}</tbody>
                                 </table>
                             </section>
@@ -366,7 +366,7 @@ export function PrintPreview({ formData, analysisData }: PrintPreviewProps) {
                     // Start new page
                     currentPageContent = [];
                     currentPageHeight = 0;
-                    availableHeight = maxContentHeight - footerHeight;
+                    availableHeight = maxContentHeightPx - footerHeight;
                     currentTableRowsForPage = [];
                 }
 
@@ -382,7 +382,7 @@ export function PrintPreview({ formData, analysisData }: PrintPreviewProps) {
                     <section key={`table-chunk-final-${newPagesContent.length}`} className='analysis-table-wrapper'>
                         <h3 className="section-title">PROCEDIMENTO OPERACIONAL</h3>
                         <table className='w-full border-collapse border mt-1 text-xs analysis-table'>
-                           <thead className='analysis-table-header'>{clonedHeader.props.children}</thead>
+                           {clonedHeader && <thead className='analysis-table-header'>{clonedHeader.props.children}</thead>}
                            <tbody>{currentTableRowsForPage}</tbody>
                        </table>
                     </section>
@@ -396,7 +396,7 @@ export function PrintPreview({ formData, analysisData }: PrintPreviewProps) {
                 newPagesContent.push([...currentPageContent]);
                 currentPageContent = [];
                 currentPageHeight = 0;
-                availableHeight = maxContentHeight - footerHeight;
+                availableHeight = maxContentHeightPx - footerHeight;
             }
             currentPageHeight += sectionHeight;
             currentPageContent.push(<div key={(el as HTMLElement).outerHTML + Math.random()} dangerouslySetInnerHTML={{ __html: (el as HTMLElement).outerHTML }} />);
@@ -408,47 +408,55 @@ export function PrintPreview({ formData, analysisData }: PrintPreviewProps) {
         newPagesContent.push([...currentPageContent]);
       }
 
-      const totalPages = newPagesContent.length;
-      const finalPages = newPagesContent.map((pageContent, index) => (
-        <div key={`page-${index}`} className="print-page-container" id={`print-page-${index}`}>
-            <div className="page-content-wrapper">
-                {index === 0 && <PrintHeader data={formData} />}
-                <main className='print-main'>
-                    {pageContent}
-                </main>
-                <PrintFooter page={index + 1} totalPages={totalPages} date={date} />
+      const totalPages = newPagesContent.length || 1;
+      const finalPages = newPagesContent.length > 0 
+        ? newPagesContent.map((pageContent, index) => (
+            <div key={`page-${index}`} className="print-page-container" id={`print-page-${index}`}>
+                <div className="page-content-wrapper">
+                    {index === 0 && <PrintHeader data={formData} />}
+                    <main className='print-main'>
+                        {pageContent}
+                    </main>
+                    <PrintFooter page={index + 1} totalPages={totalPages} date={date} />
+                </div>
             </div>
-        </div>
-      ));
-      
-      setPages(finalPages);
-
-      // Cleanup
-      cleanupMeasurementRoot(measurementNode);
-    };
-
-    if (formData.companyName) { // Only paginate if there's basic data
-        paginate();
-    } else {
-        setPages([
+        ))
+        : [(
             <div key="placeholder" className="print-page-container">
                  <div className="page-content-wrapper">
-                    <main className="flex-grow flex items-center justify-center">
+                    <PrintHeader data={formData} />
+                    <main className="flex-grow flex items-center justify-center print-main">
                         <div className="text-center text-gray-500 italic p-8">
-                            A pré-visualização do documento aparecerá aqui conforme você preenche o formulário.
+                            A pré-visualização do documento aparecerá aqui conforme você preenche o formulário. A análise de risco aparecerá após ser gerada.
                         </div>
                     </main>
                      <PrintFooter page={1} totalPages={1} date={date} />
                  </div>
             </div>
-        ]);
-    }
+        )];
+      
+      setPages(finalPages);
+
+      // Cleanup not really needed as root is reused, but good practice
+      // cleanupMeasurementRoot();
+    };
+
+    paginate();
     
+    return () => {
+        if(measurementRootRef.current) {
+            measurementRootRef.current.unmount();
+            measurementRootRef.current = null;
+        }
+    };
     // This is intentional. Re-run pagination whenever formData or analysisData changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData, analysisData, date]);
 
-  return <>{pages}</>;
+  return (
+    <>
+        <div id="measurement-root" style={{ position: 'absolute', left: '-9999px', top: '-9999px', width: '210mm' }}></div>
+        {pages}
+    </>
+  );
 }
-
-    
