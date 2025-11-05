@@ -29,7 +29,7 @@ function PrintHeader({ data }: { data: SafetyFormValues }) {
             </p>
           </div>
         </div>
-        <div className="text-right flex flex-col gap-2 shrink-0">
+        <div className="text-right flex flex-row gap-2 shrink-0">
           <div className='border p-1 text-center min-w-[100px]'>
             <p className='text-xs font-bold'>APR Nº</p>
             <p className='text-sm'>&nbsp;</p>
@@ -233,25 +233,27 @@ function getShortDate(dateString: string) {
 }
 
 export function PrintPreviewContent({ formData, analysisData, equipmentData }: { formData: SafetyFormValues, analysisData: SafetyAnalysisOutput | null, equipmentData: ProtectiveEquipmentOutput | null }) {
-  return (
-    <div className="page-content-wrapper">
-        <PrintHeader data={formData} />
-        <main className='print-main'>
-            <ResponsiblesSection data={formData} />
-            <AnalysisTable steps={analysisData?.proceduralSteps || []} />
-            <EquipmentSection data={equipmentData} />
-            <TeamSection data={formData} />
-        </main>
-        <PrintFooter />
-    </div>
-  );
+    if (!formData) return null;
+    return (
+        <div className="page-content-wrapper">
+            <PrintHeader data={formData} />
+            <main className='print-main'>
+                <ResponsiblesSection data={formData} />
+                <AnalysisTable steps={analysisData?.proceduralSteps || []} />
+                <EquipmentSection data={equipmentData} />
+                <TeamSection data={formData} />
+            </main>
+            <PrintFooter />
+        </div>
+    );
 }
 
-
 export function PrintPreview({ formData, analysisData, equipmentData }: PrintPreviewProps) {
-  return (
-      <div className="print-document-container">
-          <PrintPreviewContent formData={formData} analysisData={analysisData} equipmentData={equipmentData} />
-      </div>
-  );
+    return (
+        <div id="print-content-root">
+             <div className="print-document-container">
+                <PrintPreviewContent formData={formData} analysisData={analysisData} equipmentData={equipmentData} />
+            </div>
+        </div>
+    );
 }
