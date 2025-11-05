@@ -22,6 +22,7 @@
 
 .print-container {
   width: 210mm;
+  min-height: 297mm; /* Use min-height to allow content to grow if needed, but keep A4 aspect */
   height: 297mm; /* Fixed height for A4 */
   background: white;
   box-shadow: 0 0 15px rgba(0, 0, 0, 0.15);
@@ -34,7 +35,7 @@
 }
 
 .page-content-wrapper {
-    padding: 40px; /* Corresponds to margin in pdf-lib */
+    padding: 20mm 15mm;
     height: 100%;
     display: flex;
     flex-direction: column;
