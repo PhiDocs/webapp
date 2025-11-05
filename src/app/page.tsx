@@ -71,7 +71,6 @@ export default function Home() {
   const { toast } = useToast();
 
   const handleGeneratePdf = async () => {
-    // Trigger validation
     const isValid = await form.trigger();
     if (!isValid) {
         toast({
@@ -104,7 +103,6 @@ export default function Home() {
         throw new Error(error || 'Falha ao gerar o PDF no servidor.');
       }
       
-      // Decode Base64 and create a blob
       const byteCharacters = atob(pdfBase64);
       const byteNumbers = new Array(byteCharacters.length);
       for (let i = 0; i < byteCharacters.length; i++) {
@@ -120,7 +118,7 @@ export default function Home() {
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
-a.remove();
+      a.remove();
 
     } catch (error) {
       console.error('Falha ao gerar PDF:', error);
@@ -205,7 +203,7 @@ a.remove();
                        )}
 
                       {!error && (
-                        <div className="w-[210mm] mx-auto transform-gpu bg-transparent transition-transform duration-300 ease-in-out origin-top">
+                        <div className="print-container-wrapper">
                             <PrintPreview formData={liveFormData} analysisData={analysis} />
                         </div>
                       )}
