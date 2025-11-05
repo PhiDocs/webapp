@@ -246,10 +246,6 @@ export function PrintPreview({ formData, analysisData }: PrintPreviewProps) {
         return null;
     };
 
-    const cleanupMeasurementRoot = () => {
-        // Unmount and clean up is handled in the return of useEffect
-    };
-
     const paginate = async () => {
       const measurementNode = setupMeasurementRoot();
       if (!measurementNode) return;
@@ -414,6 +410,7 @@ export function PrintPreview({ formData, analysisData }: PrintPreviewProps) {
             <div key={`page-${index}`} className="print-page-container" id={`print-page-${index}`}>
                 <div className="page-content-wrapper">
                     {index === 0 && <PrintHeader data={formData} />}
+                    {index > 0 && <div className="print-header-placeholder" style={{ height: headerHeight > 0 ? contentPaddingTopMm * mmToPx : 0 }}></div>}
                     <main className='print-main'>
                         {pageContent}
                     </main>
@@ -437,16 +434,17 @@ export function PrintPreview({ formData, analysisData }: PrintPreviewProps) {
       
       setPages(finalPages);
 
-      // Cleanup not really needed as root is reused, but good practice
-      // cleanupMeasurementRoot();
     };
 
     paginate();
     
     return () => {
         if(measurementRootRef.current) {
-            measurementRootRef.current.unmount();
-            measurementRootRef.current = null;
+            // Defer the unmount to avoid race conditions.
+            setTimeout(() => {
+                measurementRootRef.current?.unmount();
+                measurementRootRef.current = null;
+            }, 0);
         }
     };
     // This is intentional. Re-run pagination whenever formData or analysisData changes.
