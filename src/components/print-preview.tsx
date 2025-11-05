@@ -4,7 +4,7 @@ import React, { useEffect, useRef, useState, useMemo } from 'react';
 import type { SafetyFormValues } from '@/lib/types';
 import type { SafetyAnalysisOutput } from '@/ai/flows/generate-safety-analysis';
 import { Logo } from '@/components/icons/logo';
-import { createRoot } from 'react-dom/client';
+import { createRoot, type Root } from 'react-dom/client';
 
 interface PrintPreviewProps {
   formData: SafetyFormValues;
@@ -16,7 +16,7 @@ interface PageContent {
     content: React.ReactNode; 
 }
 
-const PAGE_CONTENT_HEIGHT_MM = 297 - 20 - 15 - 15; // A4 height minus top/bottom margin and footer height
+const PAGE_CONTENT_HEIGHT_MM = 297 - 20 - 15; // A4 height minus top/bottom margin and footer height
 const MM_TO_PX = 3.78;
 const PAGE_CONTENT_HEIGHT_PX = PAGE_CONTENT_HEIGHT_MM * MM_TO_PX;
 
@@ -222,6 +222,7 @@ function getShortDate(dateString: string) {
 export function PrintPreview({ formData, analysisData }: PrintPreviewProps) {
   const [pages, setPages] = useState<PageContent[]>([]);
   const measurementRef = useRef<HTMLDivElement>(null);
+  const rootRef = useRef<Root | null>(null);
 
   const allDocumentContent = useMemo(() => {
     const proceduralSteps = analysisData?.proceduralSteps || [];
@@ -245,10 +246,12 @@ export function PrintPreview({ formData, analysisData }: PrintPreviewProps) {
         const measurementNode = measurementRef.current;
         if (!measurementNode) return;
 
-        // --- Render all content into the measurement div to calculate heights ---
-        measurementNode.innerHTML = '';
-        const root = createRoot(measurementNode);
+        // --- Create root only once ---
+        if (!rootRef.current) {
+            rootRef.current = createRoot(measurementNode);
+        }
         
+        // --- Render all content into the measurement div to calculate heights ---
         const FullRenderForMeasurement = (
             <div style={{ width: '210mm' }}>
                 <div className="page-content-wrapper">
@@ -256,24 +259,30 @@ export function PrintPreview({ formData, analysisData }: PrintPreviewProps) {
                 </div>
             </div>
         );
-        root.render(FullRenderForMeasurement);
+        rootRef.current.render(FullRenderForMeasurement);
 
         // Wait for render to get heights
         await new Promise(resolve => setTimeout(resolve, 350));
         
-        const headerEl = measurementNode.querySelector('.print-header');
-        const headerHeight = headerEl ? (headerEl as HTMLElement).offsetHeight : 0;
-        
+        const headerEl = document.createElement('div');
+        const headerRoot = createRoot(headerEl);
+        headerRoot.render(<PrintHeader data={formData} />)
+        await new Promise(resolve => setTimeout(resolve, 50));
+        const headerHeight = headerEl.offsetHeight;
+        headerRoot.unmount();
+
+
         const contentElements = Array.from(measurementNode.querySelector('.page-content-wrapper')?.children || []) as HTMLElement[];
 
         const pagesArray: HTMLElement[][] = [];
         let currentPage: HTMLElement[] = [];
-        let currentPageHeight = 0;
+        let currentPageHeight = headerHeight; // Start with header height for the first page
         
-        const pageHeightLimit = PAGE_CONTENT_HEIGHT_PX - (pagesArray.length === 0 ? headerHeight : 0);
-
         for (const el of contentElements) {
           const isTable = el.classList.contains('analysis-table-wrapper');
+          
+          let pageHeightLimit = PAGE_CONTENT_HEIGHT_PX;
+
           if (isTable) {
             const titleEl = el.querySelector('.section-title') as HTMLElement;
             const tableEl = el.querySelector('table') as HTMLTableElement;
@@ -286,13 +295,13 @@ export function PrintPreview({ formData, analysisData }: PrintPreviewProps) {
             
             const rows = Array.from(tableEl.querySelectorAll('tbody tr'));
             
-            // Add table title
+            // Add table title and header
             if (currentPageHeight + tableHeaderHeight > pageHeightLimit) {
                 pagesArray.push(currentPage);
                 currentPage = [];
                 currentPageHeight = 0;
             }
-            currentPageHeight += titleEl.offsetHeight;
+            
             let currentTableContainer = document.createElement('section');
             currentTableContainer.className = 'analysis-table-wrapper';
             currentTableContainer.appendChild(titleEl.cloneNode(true));
@@ -301,8 +310,15 @@ export function PrintPreview({ formData, analysisData }: PrintPreviewProps) {
             let newTbody = document.createElement('tbody');
             newTable.appendChild(newTbody);
             currentTableContainer.appendChild(newTable);
-            currentPage.push(currentTableContainer);
-
+            
+            if (currentPage.length === 0 || !(currentPage[currentPage.length -1]?.classList.contains('analysis-table-wrapper'))) {
+                currentPage.push(currentTableContainer);
+            } else {
+                 currentTableContainer = currentPage[currentPage.length -1] as HTMLElement;
+                 newTbody = currentTableContainer.querySelector('tbody') as HTMLTableSectionElement;
+            }
+            
+            currentPageHeight += titleEl.offsetHeight + (thead?.offsetHeight || 0);
 
             // Add table rows
             for (const row of rows) {
@@ -314,14 +330,17 @@ export function PrintPreview({ formData, analysisData }: PrintPreviewProps) {
                   
                   currentTableContainer = document.createElement('section');
                   currentTableContainer.className = 'analysis-table-wrapper';
+                  // Add title and header to new page
                   currentTableContainer.appendChild(titleEl.cloneNode(true));
                   newTable = tableEl.cloneNode(false) as HTMLTableElement;
-                  if (thead) newTable.appendChild(thead.cloneNode(true));
+                   if (thead) {
+                      newTable.appendChild(thead.cloneNode(true));
+                      currentPageHeight += tableHeaderHeight;
+                   }
                   newTbody = document.createElement('tbody');
                   newTable.appendChild(newTbody);
                   currentTableContainer.appendChild(newTable);
                   currentPage.push(currentTableContainer);
-                  currentPageHeight += tableHeaderHeight;
               }
               newTbody.appendChild(row.cloneNode(true));
               currentPageHeight += rowHeight;
@@ -362,14 +381,24 @@ export function PrintPreview({ formData, analysisData }: PrintPreviewProps) {
         });
         
         setPages(finalPages);
-        root.unmount();
-        if (measurementNode) measurementNode.innerHTML = '';
+        // Don't unmount, just clear content for next measurement
+        rootRef.current.render(null);
     };
 
     const timer = setTimeout(paginate, 350);
     return () => clearTimeout(timer);
     
   }, [formData, analysisData, allDocumentContent]);
+
+  useEffect(() => {
+    // Cleanup on unmount
+    return () => {
+      if (rootRef.current) {
+        rootRef.current.unmount();
+        rootRef.current = null;
+      }
+    };
+  }, []);
 
   if (!formData.companyName && !analysisData) {
     return (
