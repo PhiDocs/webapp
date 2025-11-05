@@ -63,23 +63,24 @@ function PrintHeader({ data }: { data: SafetyFormValues }) {
   );
 }
 
-function PrintFooter({ date }: { date: string }) {
-    // This component is a placeholder for structure but won't be visible in the final PDF,
-    // as page numbers are added by jsPDF. It helps with layout spacing.
+function PrintFooter({ date, pageNumber, totalPages }: { date: string, pageNumber: number, totalPages: number }) {
     return (
-        <footer className="print-footer mt-auto text-xs text-gray-500 border-t pt-2">
-            <div className="flex justify-between items-center w-full">
-                <div className="text-left">
-                    <p>Deve ser disponibilizado a qualquer tempo para a Inspeção do Trabalho - MTE</p>
+        <tr className="print-footer">
+            <td colSpan={4}>
+                <div className="flex justify-between items-center w-full text-xs text-gray-500">
+                    <div className="text-left">
+                        <p>Deve ser disponibilizado a qualquer tempo para a Inspeção do Trabalho - MTE</p>
+                    </div>
+                    <div className="text-center">
+                        <p>Data: {date}</p>
+                    </div>
+                    <div className="text-right">
+                        {/* Page numbers are handled by CSS counters for printing, this is for visual aid */}
+                        <p>Página {pageNumber} de {totalPages}</p>
+                    </div>
                 </div>
-                <div className="text-center">
-                    <p>Data: {date}</p>
-                </div>
-                <div className="text-right">
-                    <p>Página <span className='page-number'>-</span> de <span className='total-pages'>-</span></p>
-                </div>
-            </div>
-        </footer>
+            </td>
+        </tr>
     );
 }
 
@@ -97,7 +98,7 @@ function ResponsiblesSection({ data }: { data: SafetyFormValues }) {
         </thead>
         <tbody>
           {(data.responsiblePersons?.length > 0 ? data.responsiblePersons : [{ name: '', role: '' }]).map((person: any, index: number) => (
-            <tr key={`resp-${index}`}>
+            <tr key={`resp-${index}`} className="avoid-break">
               <td className="h-12">{person.name || '...'}</td>
               <td>{person.role || '...'}</td>
               <td></td>
@@ -127,7 +128,7 @@ function TeamSection({ data }: { data: SafetyFormValues }) {
         </thead>
         <tbody>
           {teamMembers.map((member: any, index: number) => (
-            <tr key={`team-${index}`}>
+            <tr key={`team-${index}`} className="avoid-break">
               <td className="h-10">{getShortDate(member.date)}</td>
               <td>{member.name}</td>
               <td>{member.role}</td>
@@ -143,37 +144,29 @@ function TeamSection({ data }: { data: SafetyFormValues }) {
 function AnalysisTable({ steps }: { steps: any[] }) {
   const hasSteps = steps && steps.length > 0;
 
+  if (!hasSteps) {
+    return (
+        <section className='analysis-table-wrapper avoid-break'>
+            <h3 className="section-title">PROCEDIMENTO OPERACIONAL</h3>
+            <div className="text-center text-gray-500 italic py-8 border-2 border-dashed rounded-lg">
+                A análise de procedimento operacional aparecerá aqui após ser gerada.
+            </div>
+        </section>
+    );
+  }
+  
+  // This component will be part of a larger table structure for print control
   return (
-    <section className='analysis-table-wrapper'>
-      <h3 className="section-title">PROCEDIMENTO OPERACIONAL</h3>
-      {!hasSteps && (
-        <div className="text-center text-gray-500 italic py-8 border-2 border-dashed rounded-lg">
-          A análise de procedimento operacional aparecerá aqui após ser gerada.
-        </div>
-      )}
-      {hasSteps && (
-        <table className="w-full border-collapse border mt-1 text-xs analysis-table">
-          <thead className='analysis-table-header'>
-            <tr>
-              <th className="p-1 text-left w-[5%]">ITEM</th>
-              <th className="p-1 text-left w-[25%]">ATIVIDADES</th>
-              <th className="p-1 text-left w-[25%]">RISCOS POTENCIAIS</th>
-              <th className="p-1 text-left w-[45%]">MEDIDAS PREVENTIVAS / RECOMENDAÇÕES DE SEGURANÇA</th>
-            </tr>
-          </thead>
-          <tbody>
-            {steps.map((step: any, index: number) => (
-              <tr key={`proc-step-${step.item || index}`} className="procedural-step-row">
-                <td className="p-2 align-top text-center">{step.item}</td>
-                <td className="p-2 align-top whitespace-pre-wrap">{step.activity}</td>
-                <td className="p-2 align-top whitespace-pre-wrap">{step.potentialRisks}</td>
-                <td className="p-2 align-top whitespace-pre-wrap">{step.preventiveMeasures}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
-    </section>
+    <>
+      {steps.map((step: any, index: number) => (
+        <tr key={`proc-step-${step.item || index}`} className="procedural-step-row">
+          <td className="p-2 align-top text-center">{step.item}</td>
+          <td className="p-2 align-top whitespace-pre-wrap">{step.activity}</td>
+          <td className="p-2 align-top whitespace-pre-wrap">{step.potentialRisks}</td>
+          <td className="p-2 align-top whitespace-pre-wrap">{step.preventiveMeasures}</td>
+        </tr>
+      ))}
+    </>
   );
 }
 
@@ -192,7 +185,7 @@ function SignatureSection() {
         </div>
       </div>
     </section>
-  )
+  );
 }
 
 function getShortDate(dateString: string) {
@@ -211,17 +204,48 @@ export function PrintPreview({ formData, analysisData }: PrintPreviewProps) {
   const date = useMemo(() => new Date().toLocaleDateString('pt-BR'), []);
 
   return (
-    <div className="print-page-container">
+    <div className="print-document-container">
         <div className="page-content-wrapper">
             <PrintHeader data={formData} />
             <main className='print-main'>
                 <ResponsiblesSection data={formData} />
-                <AnalysisTable steps={proceduralSteps} />
+
+                {/* Main analysis table for layout control */}
+                <table className="w-full border-collapse text-xs analysis-table">
+                    <thead className='analysis-table-header'>
+                        <tr>
+                            <th colSpan={4} className='p-0 border-0'>
+                               <div className='section-title !mb-0'>PROCEDIMENTO OPERACIONAL</div>
+                            </th>
+                        </tr>
+                        <tr>
+                            <th className="p-1 text-left w-[5%]">ITEM</th>
+                            <th className="p-1 text-left w-[25%]">ATIVIDADES</th>
+                            <th className="p-1 text-left w-[25%]">RISCOS POTENCIAIS</th>
+                            <th className="p-1 text-left w-[45%]">MEDIDAS PREVENTIVAS / RECOMENDAÇÕES DE SEGURANÇA</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <AnalysisTable steps={proceduralSteps} />
+                    </tbody>
+                    <tfoot className="print-footer-group">
+                        {/* This footer will repeat on each page thanks to CSS */}
+                        <PrintFooter date={date} pageNumber={1} totalPages={1} />
+                    </tfoot>
+                </table>
+                
+                {(!proceduralSteps || proceduralSteps.length === 0) && (
+                    <div className="text-center text-gray-500 italic py-8 border-2 border-dashed rounded-lg -mt-4">
+                        A análise de procedimento operacional aparecerá aqui após ser gerada.
+                    </div>
+                )}
+                
                 <TeamSection data={formData} />
                 <SignatureSection />
             </main>
-            <PrintFooter date={date} />
         </div>
+        {/* The footer placeholder helps reserve space in the on-screen preview */}
+        <div className='footer-placeholder'></div>
     </div>
   );
 }

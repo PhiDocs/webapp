@@ -4,44 +4,49 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Styles for the on-screen preview */
+/* 
+  Container for the print preview on screen.
+  It gives the white page a grey backdrop.
+*/
 .print-container-wrapper {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 100%;
+  @apply flex flex-col items-center w-full bg-muted;
 }
 
-.print-page-container {
+/* 
+  This is the main container for the entire printable document.
+  It's a single, continuous block of content.
+  The 'page' divisions are handled by CSS page-break rules.
+*/
+.print-document-container {
   width: 210mm;
-  /* min-height is important for the container to grow with content */
-  min-height: 297mm; 
+  min-height: 297mm; /* Ensure at least one page height */
   background: white;
   box-shadow: 0 0 15px rgba(0, 0, 0, 0.15);
   color: #333;
   font-size: 9pt;
-  display: flex;
-  flex-direction: column;
 }
 
+/* 
+  The content wrapper inside the document.
+  This defines the A4 page margins.
+*/
 .page-content-wrapper {
     padding: 20mm 15mm;
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
     width: 100%;
 }
 
 .print-header {
-    flex-shrink: 0;
     margin-bottom: 1rem;
 }
 .print-footer {
-    flex-shrink: 0;
+    font-size: 8pt;
+    color: #555;
+    border-top: 1px solid #ccc;
+    padding-top: 0.5rem;
+    margin-top: 1rem;
 }
 
 .print-main {
-    flex-grow: 1;
     display: flex;
     flex-direction: column;
     gap: 1rem;
@@ -78,7 +83,6 @@
 table.analysis-table {
   width: 100%;
   border-collapse: collapse;
-  table-layout: fixed; /* helps with consistent column widths */
 }
 
 table.analysis-table th, table.analysis-table td {
@@ -86,7 +90,7 @@ table.analysis-table th, table.analysis-table td {
   padding: 0.4rem;
   text-align: left;
   vertical-align: top;
-  word-wrap: break-word;
+  word-wrap: break-word; /* Ensure long words don't overflow */
 }
 
 table.analysis-table th {
@@ -115,17 +119,43 @@ table.analysis-table th {
 }
 
 
-/* --- Rules respected by html2canvas for PDF generation --- */
+/* --- PRINT & PDF GENERATION RULES --- */
+
+/* These rules are critical for html2canvas and browser printing */
+
+/* Rule 1: Control where page breaks happen */
 .avoid-break {
   break-inside: avoid !important;
   page-break-inside: avoid !important;
 }
 
-thead.analysis-table-header {
-    display: table-header-group !important; /* Ensure header repeats on print */
-}
-
-tr, td, th, .procedural-step-row {
+/* Rule 2: Ensure table rows don't get cut in half */
+tr, .procedural-step-row {
     break-inside: avoid !important;
     page-break-inside: avoid !important;
+}
+
+/* Rule 3: The table header should repeat on every new page */
+thead.analysis-table-header {
+    display: table-header-group !important;
+}
+
+/* 
+  Rule 4: The footer should appear at the bottom of each printed page.
+  This is a bit tricky. We make it a repeating table footer group.
+*/
+tfoot.print-footer-group {
+    display: table-footer-group !important;
+}
+
+.footer-content-wrapper {
+  padding: 0 15mm; /* Match page horizontal padding */
+}
+
+/*
+  A placeholder for the footer content. The actual content will be in a <tfoot>,
+  but this helps maintain the space in the document flow for the on-screen preview.
+*/
+.footer-placeholder {
+  height: 50px; /* Approximate height of the footer */
 }
