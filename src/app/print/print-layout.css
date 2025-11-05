@@ -16,6 +16,7 @@
 .print-page-container {
   width: 210mm;
   min-height: 297mm;
+  height: 297mm;
   background: white;
   box-shadow: 0 0 15px rgba(0, 0, 0, 0.15);
   color: #333;
@@ -31,15 +32,22 @@
     height: 100%;
     display: flex;
     flex-direction: column;
+    width: 100%;
 }
 
-.print-header, .print-footer {
+.print-header {
+    flex-shrink: 0;
+    margin-bottom: 1rem;
+}
+.print-footer {
     flex-shrink: 0;
 }
 
 .print-main {
     flex-grow: 1;
-    overflow: hidden; /* This is key to contain the content */
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
 }
 
 
@@ -125,6 +133,14 @@ table.analysis-table th {
   break-inside: avoid !important;
 }
 
+thead.analysis-table-header {
+    display: table-header-group !important; /* Ensure header repeats on print */
+}
+
+tr, td, th, .procedural-step-row {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+}
 
 /* --- Specific overrides for direct printing from browser (Ctrl+P), not for PDF generation --- */
 @media print {
@@ -159,10 +175,6 @@ table.analysis-table th {
 
   .print-page-container:last-child {
       page-break-after: auto;
-  }
-
-  thead.analysis-table-header {
-    display: table-header-group !important; /* Ensure header repeats on print */
   }
   
   tr, td, th, .avoid-break, .section-title, .info-grid {
