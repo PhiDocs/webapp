@@ -1,4 +1,3 @@
-'use server';
 import { PDFDocument, StandardFonts, rgb, PDFFont } from 'pdf-lib';
 
 export const runtime = 'nodejs';
@@ -44,7 +43,7 @@ export async function POST(req: Request) {
   try {
     const data = await req.json();
     const pdfDoc = await PDFDocument.create();
-    const page = pdfDoc.addPage([595.28, 841.89]); // A4 size
+    let page = pdfDoc.addPage([595.28, 841.89]); // A4 size
     const { width, height } = page.getSize();
     const margin = 40;
     
@@ -104,7 +103,6 @@ export async function POST(req: Request) {
     page.drawText("RESPONSÁVEL PELO ACOMPANHAMENTO DOS SERVIÇOS", { x: width / 2 - 120, y: currentY - 10, font: helveticaBold, size: 11 });
 
     currentY -= 25;
-    const respTableY = currentY;
     const respHeaders = ["NOME", "FUNÇÃO", "ASSINATURA"];
     const respColWidths = [(width - 2 * margin) * 0.4, (width - 2 * margin) * 0.3, (width - 2 * margin) * 0.3];
     
@@ -116,19 +114,22 @@ export async function POST(req: Request) {
     });
 
     currentY -= 25;
-    data.responsiblePersons?.forEach((person: any) => {
-        let colX = margin;
-        page.drawText(person.name, { x: colX + 5, y: currentY, font: helvetica, size: 9 });
-        colX += respColWidths[0];
-        page.drawText(person.role, { x: colX + 5, y: currentY, font: helvetica, size: 9 });
-        
-        let rowX = margin;
-        respColWidths.forEach(w => {
-            page.drawRectangle({ x: rowX, y: currentY - 5, width: w, height: 20, borderColor: rgb(0.5, 0.5, 0.5), borderWidth: 1});
-            rowX += w;
-        })
-        currentY -= 20;
-    });
+    if (data.responsiblePersons && data.responsiblePersons.length > 0) {
+        data.responsiblePersons?.forEach((person: any) => {
+            let colX = margin;
+            page.drawText(person.name, { x: colX + 5, y: currentY, font: helvetica, size: 9 });
+            colX += respColWidths[0];
+            page.drawText(person.role, { x: colX + 5, y: currentY, font: helvetica, size: 9 });
+            
+            let rowX = margin;
+            respColWidths.forEach(w => {
+                page.drawRectangle({ x: rowX, y: currentY - 5, width: w, height: 20, borderColor: rgb(0.5, 0.5, 0.5), borderWidth: 1});
+                rowX += w;
+            })
+            currentY -= 20;
+        });
+    }
+
 
     currentY -= 20;
 
@@ -143,7 +144,7 @@ export async function POST(req: Request) {
         });
         page.drawText("PROCEDIMENTO OPERACIONAL", { x: width / 2 - 70, y: currentY - 10, font: helveticaBold, size: 11 });
 
-        currentY -= 25;
+        currentY -= 35;
         
         const procHeaders = ["ITEM", "ATIVIDADES", "RISCOS POTENCIAIS", "MEDIDAS PREVENTIVAS"];
         const procColWidths = [40, 150, 150, 175.28];
@@ -157,6 +158,10 @@ export async function POST(req: Request) {
         currentY -= (lineHeight + 5);
 
         for (const step of data.proceduralSteps) {
+             if (currentY < margin + 150) {
+              page = pdfDoc.addPage([595.28, 841.89]);
+              currentY = height - margin;
+            }
             const startY = currentY;
             let finalY = startY;
 
@@ -182,10 +187,6 @@ export async function POST(req: Request) {
             });
             
             currentY = finalY - 10;
-             if (currentY < margin + 100) {
-              page = pdfDoc.addPage([595.28, 841.89]);
-              currentY = height - margin;
-            }
         }
     }
 
