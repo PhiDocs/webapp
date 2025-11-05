@@ -2,41 +2,49 @@
 
 import { PDFDocument, StandardFonts, rgb, PDFFont } from 'pdf-lib';
 
-// Helper to draw wrapped text
-async function drawWrappedText(
-  page: any,
-  font: PDFFont,
-  text: string,
-  x: number,
-  y: number,
-  maxWidth: number,
-  lineHeight: number,
-  size: number
-) {
-  const words = text.replace(/\n/g, ' \n ').split(' ');
+// Helper to draw wrapped text and return the new Y position
+async function drawWrappedText(opts: {
+  page: any;
+  font: PDFFont;
+  text: string;
+  x: number;
+  y: number;
+  maxWidth: number;
+  lineHeight: number;
+  size: number;
+  color?: any;
+}) {
+  const { page, font, text, x, y, maxWidth, lineHeight, size, color = rgb(0.2, 0.2, 0.2) } = opts;
+  const words = text.replace(/\r/g, '').split(/(\s+|\n)/);
   let currentLine = '';
   let currentY = y;
 
   for (const word of words) {
     if (word === '\n') {
-      page.drawText(currentLine, { x, y: currentY, font, size, color: rgb(0.2, 0.2, 0.2), lineHeight });
+      page.drawText(currentLine, { x, y: currentY, font, size, color, lineHeight });
       currentY -= lineHeight;
       currentLine = '';
       continue;
     }
-    const testLine = currentLine + (currentLine === '' ? '' : ' ') + word;
+
+    const testLine = currentLine + word;
     const { width } = font.widthOfTextAtSize(testLine, size);
 
     if (width > maxWidth) {
-      page.drawText(currentLine, { x, y: currentY, font, size, color: rgb(0.2, 0.2, 0.2), lineHeight });
+      page.drawText(currentLine, { x, y: currentY, font, size, color, lineHeight });
       currentY -= lineHeight;
-      currentLine = word;
+      currentLine = word.trimStart();
     } else {
       currentLine = testLine;
     }
   }
-  page.drawText(currentLine, { x, y: currentY, font, size, color: rgb(0.2, 0.2, 0.2), lineHeight });
-  return currentY - lineHeight;
+
+  if (currentLine) {
+    page.drawText(currentLine, { x, y: currentY, font, size, color, lineHeight });
+    currentY -= lineHeight;
+  }
+  
+  return currentY;
 }
 
 
@@ -51,27 +59,35 @@ export async function generatePdfAction(data: any): Promise<{pdfBase64: string |
     const helveticaBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
 
     // --- HEADER ---
+    let headerY = height - margin;
     if (data.companyLogo) {
+      try {
         const imageBytes = Buffer.from(data.companyLogo.split(',')[1], 'base64');
-        const image = await pdfDoc.embedPng(imageBytes);
+        const image = data.companyLogo.startsWith('data:image/png') 
+            ? await pdfDoc.embedPng(imageBytes) 
+            : await pdfDoc.embedJpg(imageBytes);
+
         const imageDims = image.scaleToFit(120, 40);
         page.drawImage(image, {
             x: margin,
-            y: height - margin - imageDims.height + 20,
+            y: headerY - imageDims.height,
             width: imageDims.width,
             height: imageDims.height,
         });
+      } catch (e) {
+          console.error("Could not embed company logo:", e);
+      }
     }
 
     page.drawText(data.companyName || 'Nome da Empresa', {
-      x: margin,
-      y: height - margin,
+      x: margin + 130,
+      y: headerY - 15,
       font: helveticaBold,
       size: 18,
       color: rgb(0.1, 0.1, 0.4),
     });
     
-    await drawWrappedText(page, helvetica, `Serviços a executar: ${data.activityDescription || '...'}`, margin, height - margin - 25, width - margin * 2 - 150, 10, 9);
+    await drawWrappedText({page, font: helvetica, text: `Serviços a executar: ${data.activityDescription || '...'}`, x: margin + 130, y: headerY - 35, maxWidth: width - margin*2 - 150, lineHeight: 12, size: 9});
     
     // Header boxes (DATA, APR, etc)
     let headerBoxX = width - margin - 210;
@@ -94,13 +110,7 @@ export async function generatePdfAction(data: any): Promise<{pdfBase64: string |
     
     // --- Dados da Obra ---
     let currentY = height - margin - 90;
-    page.drawRectangle({
-        x: margin,
-        y: currentY - 15,
-        width: width - margin * 2,
-        height: 20,
-        color: rgb(0.9, 0.9, 0.9)
-    });
+    page.drawRectangle({ x: margin, y: currentY - 15, width: width - margin * 2, height: 20, color: rgb(0.9, 0.9, 0.9) });
     page.drawText("DADOS DA OBRA", { x: width / 2 - 40, y: currentY - 10, font: helveticaBold, size: 11 });
 
     currentY -= 35;
@@ -115,18 +125,12 @@ export async function generatePdfAction(data: any): Promise<{pdfBase64: string |
     page.drawText(`LOCAL DA OBRA / PAVIMENTO: ${data.workLocationDetails || '...'}`, { x: margin + 5, y: currentY, font: helvetica, size: 9 });
     
     currentY -= 15;
-    currentY = await drawWrappedText(page, helvetica, `Descrição da atividade: ${data.activityDescription || '...'}`, margin + 5, currentY, width - margin*2 -10, 11, 9);
+    currentY = await drawWrappedText({page, font: helvetica, text: `Descrição da atividade: ${data.activityDescription || '...'}`, x: margin + 5, y: currentY, maxWidth: width - margin*2 -10, lineHeight: 11, size: 9});
     
     currentY -= 20;
 
     // --- Responsáveis ---
-    page.drawRectangle({
-        x: margin,
-        y: currentY - 15,
-        width: width - margin * 2,
-        height: 20,
-        color: rgb(0.9, 0.9, 0.9)
-    });
+    page.drawRectangle({ x: margin, y: currentY - 15, width: width - margin * 2, height: 20, color: rgb(0.9, 0.9, 0.9) });
     page.drawText("RESPONSÁVEL PELO ACOMPANHAMENTO DOS SERVIÇOS", { x: width / 2 - 120, y: currentY - 10, font: helveticaBold, size: 11 });
 
     currentY -= 25;
@@ -148,9 +152,9 @@ export async function generatePdfAction(data: any): Promise<{pdfBase64: string |
               currentY = height - margin;
             }
             let colX = margin;
-            page.drawText(person.name, { x: colX + 5, y: currentY, font: helvetica, size: 9 });
+            page.drawText(person.name || '', { x: colX + 5, y: currentY, font: helvetica, size: 9 });
             colX += respColWidths[0];
-            page.drawText(person.role, { x: colX + 5, y: currentY, font: helvetica, size: 9 });
+            page.drawText(person.role || '', { x: colX + 5, y: currentY, font: helvetica, size: 9 });
             
             let rowX = margin;
             respColWidths.forEach(w => {
@@ -170,13 +174,7 @@ export async function generatePdfAction(data: any): Promise<{pdfBase64: string |
             currentY = height - margin;
         }
 
-        page.drawRectangle({
-            x: margin,
-            y: currentY - 15,
-            width: width - margin * 2,
-            height: 20,
-            color: rgb(0.9, 0.9, 0.9)
-        });
+        page.drawRectangle({ x: margin, y: currentY - 15, width: width - margin * 2, height: 20, color: rgb(0.9, 0.9, 0.9) });
         page.drawText("PROCEDIMENTO OPERACIONAL", { x: width / 2 - 70, y: currentY - 10, font: helveticaBold, size: 11 });
 
         currentY -= 25;
@@ -184,6 +182,7 @@ export async function generatePdfAction(data: any): Promise<{pdfBase64: string |
         const procHeaders = ["ITEM", "ATIVIDADES", "RISCOS POTENCIAIS", "MEDIDAS PREVENTIVAS"];
         const procColWidths = [40, (width - margin*2 - 40) * 0.25, (width - margin*2 - 40) * 0.25, (width - margin*2 - 40) * 0.5 ];
         const lineHeight = 10;
+        const fontHeight = 9;
 
         let procHeaderX = margin;
         page.drawRectangle({ x: procHeaderX, y: currentY - 5, width: width-margin*2, height: 20, color: rgb(0.95,0.95,0.95)});
@@ -196,37 +195,41 @@ export async function generatePdfAction(data: any): Promise<{pdfBase64: string |
         currentY -= (lineHeight + 5);
 
         for (const step of data.proceduralSteps) {
-             const fontHeight = 9;
-             const linePadding = 5;
-             const calcHeight = (text: string, font: PDFFont, size: number, maxWidth: number) => {
-                const lines = text.split('\n').map(line => {
-                    let wrappedLines = 1;
-                    let currentLine = '';
-                    const words = line.split(' ');
-                    for (const word of words) {
-                        const testLine = currentLine + (currentLine ? ' ' : '') + word;
-                        if (font.widthOfTextAtSize(testLine, size) > maxWidth) {
-                            wrappedLines++;
-                            currentLine = word;
-                        } else {
-                            currentLine = testLine;
-                        }
+            const rowStartY = currentY;
+            const linePadding = 5;
+
+            // Estimate heights for each column
+            const getTextHeight = (text: string, font: PDFFont, size: number, maxWidth: number) => {
+                const words = text.replace(/\r/g, '').split(/(\s+|\n)/);
+                let lineCount = 1;
+                let currentLine = '';
+                for (const word of words) {
+                    if (word === '\n') {
+                        lineCount++;
+                        currentLine = '';
+                        continue;
                     }
-                    return wrappedLines;
-                }).reduce((a,b) => a+b, 0);
-                 
-                return (lines || 1) * (size + 2); // line height approximation
-             }
-             
-             const activityHeight = calcHeight(step.activity, helvetica, fontHeight, procColWidths[1] - 10);
-             const risksHeight = calcHeight(step.potentialRisks, helvetica, fontHeight, procColWidths[2] - 10);
-             const measuresHeight = calcHeight(step.preventiveMeasures, helvetica, fontHeight, procColWidths[3] - 10);
-             
-             const estimatedRowHeight = Math.max(activityHeight, risksHeight, measuresHeight, fontHeight) + linePadding * 2;
+                    const testLine = currentLine + word;
+                    if (font.widthOfTextAtSize(testLine, size) > maxWidth) {
+                        lineCount++;
+                        currentLine = word.trimStart();
+                    } else {
+                        currentLine = testLine;
+                    }
+                }
+                return lineCount * lineHeight;
+            };
+
+            const h1 = getTextHeight(step.item?.toString() || '', helvetica, fontHeight, procColWidths[0] - 10);
+            const h2 = getTextHeight(step.activity || '', helvetica, fontHeight, procColWidths[1] - 10);
+            const h3 = getTextHeight(step.potentialRisks || '', helvetica, fontHeight, procColWidths[2] - 10);
+            const h4 = getTextHeight(step.preventiveMeasures || '', helvetica, fontHeight, procColWidths[3] - 10);
+            
+            const estimatedRowHeight = Math.max(h1, h2, h3, h4) + linePadding * 2;
 
              if (currentY - estimatedRowHeight < margin) {
-              page = pdfDoc.addPage([595.28, 841.89]);
-              currentY = height - margin;
+                page = pdfDoc.addPage([595.28, 841.89]);
+                currentY = height - margin;
               
                 let procHeaderX = margin;
                 page.drawRectangle({ x: procHeaderX, y: currentY - 5, width: width-margin*2, height: 20, color: rgb(0.95,0.95,0.95)});
@@ -240,29 +243,32 @@ export async function generatePdfAction(data: any): Promise<{pdfBase64: string |
             
             const startY = currentY;
             
-            const y1 = await drawWrappedText(page, helvetica, step.item.toString(), margin + 5, startY - linePadding, procColWidths[0] - 10, lineHeight, fontHeight);
-            const y2 = await drawWrappedText(page, helvetica, step.activity, margin + procColWidths[0] + 5, startY - linePadding, procColWidths[1] - 10, lineHeight, fontHeight);
-            const y3 = await drawWrappedText(page, helvetica, step.potentialRisks, margin + procColWidths[0] + procColWidths[1] + 5, startY - linePadding, procColWidths[2] - 10, lineHeight, fontHeight);
-            const y4 = await drawWrappedText(page, helvetica, step.preventiveMeasures, margin + procColWidths[0] + procColWidths[1] + procColWidths[2] + 5, startY - linePadding, procColWidths[3] - 10, lineHeight, fontHeight);
+            const y1 = await drawWrappedText({page, font: helvetica, text: step.item?.toString() || '', x: margin + 5, y: startY - linePadding, maxWidth: procColWidths[0] - 10, lineHeight, size: fontHeight });
+            const y2 = await drawWrappedText({page, font: helvetica, text: step.activity || '', x: margin + procColWidths[0] + 5, y: startY - linePadding, maxWidth: procColWidths[1] - 10, lineHeight, size: fontHeight });
+            const y3 = await drawWrappedText({page, font: helvetica, text: step.potentialRisks || '', x: margin + procColWidths[0] + procColWidths[1] + 5, y: startY - linePadding, maxWidth: procColWidths[2] - 10, lineHeight, size: fontHeight });
+            const y4 = await drawWrappedText({page, font: helvetica, text: step.preventiveMeasures || '', x: margin + procColWidths[0] + procColWidths[1] + procColWidths[2] + 5, y: startY - linePadding, maxWidth: procColWidths[3] - 10, lineHeight, size: fontHeight });
             
             const endY = Math.min(y1, y2, y3, y4);
-            
             const rowHeight = startY - endY;
             
             let borderX = margin;
             procColWidths.forEach(w => {
-                 page.drawRectangle({ x: borderX, y: endY - linePadding, width: w, height: rowHeight + linePadding, borderColor: rgb(0.5, 0.5, 0.5), borderWidth: 0.5});
+                 page.drawRectangle({ x: borderX, y: endY, width: w, height: rowHeight + linePadding, borderColor: rgb(0.5, 0.5, 0.5), borderWidth: 0.5});
                  borderX += w;
             });
             
-            currentY = endY - linePadding;
+            currentY = endY;
         }
     }
 
 
     const pageCount = pdfDoc.getPageCount();
     pdfDoc.getPages().forEach((p, i) => {
-       p.drawText(`Página ${i + 1} de ${pageCount}`, { x: width-margin-60, y: height-margin-55, font: helvetica, size: 9 })
+       try {
+        p.drawText(`Página ${i + 1} de ${pageCount}`, { x: width-margin-60, y: height-margin-55, font: helvetica, size: 9 })
+       } catch(e) {
+           // This can fail if the page number overlaps with the header box. Ignore.
+       }
     })
 
     const finalPdfBytes = await pdfDoc.save()
@@ -273,6 +279,6 @@ export async function generatePdfAction(data: any): Promise<{pdfBase64: string |
 
   } catch (e:any) {
     console.error('Erro detalhado ao gerar PDF:', e);
-    return { pdfBase64: null, error: e.message || 'Erro desconhecido ao gerar PDF.' };
+    return { pdfBase64: null, error: `Erro ao gerar PDF: ${e.message}` };
   }
 }
