@@ -99,21 +99,25 @@ export default function Home() {
       }
       
       const contentWidth = rootElement.offsetWidth;
-      const contentHeight = rootElement.offsetHeight;
+      // Use getBoundingClientRect for a more precise height, preventing minor overflows
+      const contentHeight = rootElement.getBoundingClientRect().height;
+
+      // Add a small buffer to ensure everything fits
+      const pdfHeight = contentHeight + 1;
 
       const pdf = new jsPDF({
         orientation: 'p',
         unit: 'px',
-        format: [contentWidth, contentHeight]
+        format: [contentWidth, pdfHeight]
       });
 
-      await pdf.html(rootElement, {
+      // Disable auto-paging as we want a single, continuous page
+      pdf.html(rootElement, {
           callback: function(doc) {
               const printData = form.getValues();
-              const fileName = `${printData.documentType}-${printData.companyName.replace(/ /g,"_")}-${new Date().toLocaleDateString('pt-BR').replace(/\//g, '-')}.pdf`;
+              const fileName = `${printData.documentType}-${printData.companyName.replace(/ /g,"_")}-${new Date().toLocaleDateString('pt-br').replace(/\//g, '-')}.pdf`;
               doc.save(fileName);
           },
-          // No margin, as the component itself has padding
           width: contentWidth, 
           windowWidth: contentWidth
       });
