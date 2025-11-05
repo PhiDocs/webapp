@@ -67,16 +67,17 @@ function PrintFooter({ date, pageNumber, totalPages }: { date: string, pageNumbe
     return (
         <tr className="print-footer">
             <td colSpan={4}>
-                <div className="flex justify-between items-center w-full text-xs text-gray-500">
-                    <div className="text-left">
-                        <p>Deve ser disponibilizado a qualquer tempo para a Inspeção do Trabalho - MTE</p>
-                    </div>
-                    <div className="text-center">
-                        <p>Data: {date}</p>
-                    </div>
-                    <div className="text-right">
-                        {/* Page numbers are handled by CSS counters for printing, this is for visual aid */}
-                        <p>Página {pageNumber} de {totalPages}</p>
+                <div className="footer-content-wrapper">
+                    <div className="flex justify-between items-center w-full text-xs text-gray-500">
+                        <div className="text-left">
+                            <p>Deve ser disponibilizado a qualquer tempo para a Inspeção do Trabalho - MTE</p>
+                        </div>
+                        <div className="text-center">
+                            <p>Data: {date}</p>
+                        </div>
+                        <div className="text-right">
+                            <p>Página {pageNumber} de {totalPages}</p>
+                        </div>
                     </div>
                 </div>
             </td>
@@ -142,19 +143,6 @@ function TeamSection({ data }: { data: SafetyFormValues }) {
 }
 
 function AnalysisTable({ steps }: { steps: any[] }) {
-  const hasSteps = steps && steps.length > 0;
-
-  if (!hasSteps) {
-    return (
-        <section className='analysis-table-wrapper avoid-break'>
-            <h3 className="section-title">PROCEDIMENTO OPERACIONAL</h3>
-            <div className="text-center text-gray-500 italic py-8 border-2 border-dashed rounded-lg">
-                A análise de procedimento operacional aparecerá aqui após ser gerada.
-            </div>
-        </section>
-    );
-  }
-  
   // This component will be part of a larger table structure for print control
   return (
     <>
@@ -199,53 +187,59 @@ function getShortDate(dateString: string) {
   }
 }
 
-export function PrintPreview({ formData, analysisData }: PrintPreviewProps) {
+export function PrintPreviewContent({ formData, analysisData, isSinglePage = false }: { formData: SafetyFormValues, analysisData: SafetyAnalysisOutput | null, isSinglePage?: boolean }) {
   const proceduralSteps = useMemo(() => analysisData?.proceduralSteps || [], [analysisData]);
   const date = useMemo(() => new Date().toLocaleDateString('pt-BR'), []);
 
   return (
-    <div className="print-document-container">
-        <div className="page-content-wrapper">
-            <PrintHeader data={formData} />
-            <main className='print-main'>
-                <ResponsiblesSection data={formData} />
+    <div className={isSinglePage ? "page-content-wrapper" : ""}>
+        <PrintHeader data={formData} />
+        <main className='print-main'>
+            <ResponsiblesSection data={formData} />
 
-                {/* Main analysis table for layout control */}
-                <table className="w-full border-collapse text-xs analysis-table">
-                    <thead className='analysis-table-header'>
-                        <tr>
-                            <th colSpan={4} className='p-0 border-0'>
-                               <div className='section-title !mb-0'>PROCEDIMENTO OPERACIONAL</div>
-                            </th>
-                        </tr>
-                        <tr>
-                            <th className="p-1 text-left w-[5%]">ITEM</th>
-                            <th className="p-1 text-left w-[25%]">ATIVIDADES</th>
-                            <th className="p-1 text-left w-[25%]">RISCOS POTENCIAIS</th>
-                            <th className="p-1 text-left w-[45%]">MEDIDAS PREVENTIVAS / RECOMENDAÇÕES DE SEGURANÇA</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <AnalysisTable steps={proceduralSteps} />
-                    </tbody>
-                    <tfoot className="print-footer-group">
-                        {/* This footer will repeat on each page thanks to CSS */}
-                        <PrintFooter date={date} pageNumber={1} totalPages={1} />
-                    </tfoot>
-                </table>
-                
-                {(!proceduralSteps || proceduralSteps.length === 0) && (
-                    <div className="text-center text-gray-500 italic py-8 border-2 border-dashed rounded-lg -mt-4">
-                        A análise de procedimento operacional aparecerá aqui após ser gerada.
-                    </div>
-                )}
-                
-                <TeamSection data={formData} />
-                <SignatureSection />
-            </main>
-        </div>
-        {/* The footer placeholder helps reserve space in the on-screen preview */}
-        <div className='footer-placeholder'></div>
+            {proceduralSteps && proceduralSteps.length > 0 ? (
+              <table className="w-full border-collapse text-xs analysis-table">
+                  <thead className='analysis-table-header'>
+                      <tr>
+                          <th colSpan={4} className='p-0 border-0'>
+                              <div className='section-title !mb-0'>PROCEDIMENTO OPERACIONAL</div>
+                          </th>
+                      </tr>
+                      <tr>
+                          <th className="p-1 text-left w-[5%]">ITEM</th>
+                          <th className="p-1 text-left w-[25%]">ATIVIDADES</th>
+                          <th className="p-1 text-left w-[25%]">RISCOS POTENCIAIS</th>
+                          <th className="p-1 text-left w-[45%]">MEDIDAS PREVENTIVAS / RECOMENDAÇÕES DE SEGURANÇA</th>
+                      </tr>
+                  </thead>
+                  <tbody>
+                      <AnalysisTable steps={proceduralSteps} />
+                  </tbody>
+                  <tfoot className="print-footer-group">
+                      <PrintFooter date={date} pageNumber={1} totalPages={1} />
+                  </tfoot>
+              </table>
+            ) : (
+              <section className='analysis-table-wrapper avoid-break -mt-4'>
+                  <h3 className="section-title">PROCEDIMENTO OPERACIONAL</h3>
+                  <div className="text-center text-gray-500 italic py-8 border-2 border-dashed rounded-lg">
+                      A análise de procedimento operacional aparecerá aqui após ser gerada.
+                  </div>
+              </section>
+            )}
+            
+            <TeamSection data={formData} />
+            <SignatureSection />
+        </main>
     </div>
+  );
+}
+
+
+export function PrintPreview({ formData, analysisData }: PrintPreviewProps) {
+  return (
+      <div className="print-document-container">
+          <PrintPreviewContent formData={formData} analysisData={analysisData} isSinglePage={true} />
+      </div>
   );
 }
