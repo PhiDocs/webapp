@@ -37,7 +37,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         // 2. Fetch CSS content
         const globalsCss = await getGlobalCss(new URL('/globals.css', baseUrl).href);
-        const printLayoutCss = await getGlobalCss(new URL('/print/print-layout.css', baseUrl).href);
+        const printLayoutCss = await getGlobalCss(new URL('/print-layout.css', baseUrl).href);
         
         // 3. Render React component to static HTML
         const htmlContent = renderToStaticMarkup(
