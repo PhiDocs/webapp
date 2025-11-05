@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import ReactDOMServer from 'react-dom/server';
 import type { SafetyAnalysisOutput } from '@/ai/flows/generate-safety-analysis';
 import type { SafetyFormValues } from '@/lib/types';
 import { getSafetyAnalysis } from '@/app/ai-actions';
@@ -17,6 +16,9 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { FileDown, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { jsPDF } from 'jspdf';
+import html2canvas from 'html2canvas';
+
 import './print/print-layout.css';
 
 export default function Home() {
@@ -89,57 +91,67 @@ export default function Home() {
         });
         return;
     }
+    if (!printPreviewRef.current) {
+        toast({
+            variant: 'destructive',
+            title: 'Erro de Referência',
+            description: 'Não foi possível encontrar o conteúdo para gerar o PDF.',
+        });
+        return;
+    }
     
     setIsDownloading(true);
     try {
-      const printData = {
-        ...form.getValues(),
-        ...analysis,
-        date: new Date().toLocaleDateString('pt-BR'),
-      };
+      const element = printPreviewRef.current;
+      // We need to capture the child because the ref parent has a dynamic height
+      const contentToCapture = element.querySelector('.print-container-wrapper') as HTMLElement;
+
+      if (!contentToCapture) {
+         throw new Error("Elemento .print-container-wrapper não encontrado para captura.");
+      }
+
+      const canvas = await html2canvas(contentToCapture, {
+        scale: 2, // Higher scale for better quality
+        useCORS: true,
+        backgroundColor: null, // Use transparent background
+        onclone: (document) => {
+            // This runs in the cloned DOM that html2canvas creates
+            // We can make adjustments here if needed before the "screenshot"
+        }
+      });
       
-      const printComponent = <PrintPreview formData={printData} analysisData={analysis} />;
-      const html = ReactDOMServer.renderToStaticMarkup(printComponent);
+      const imgData = canvas.toDataURL('image/png');
 
-      const globalsCSS = await fetch('/globals.css').then(res => res.text());
-      const printCSS = await fetch('/print/print-layout.css').then(res => res.text());
-
-      const fullHtml = `
-        <html>
-          <head>
-            <style>
-              ${globalsCSS}
-              ${printCSS}
-            </style>
-          </head>
-          <body>
-            ${html}
-          </body>
-        </html>
-      `;
-
-      const response = await fetch('/api/generate-pdf', {
-          method: 'POST',
-          headers: {
-              'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ html: fullHtml }),
+      const pdf = new jsPDF({
+          orientation: 'portrait',
+          unit: 'mm',
+          format: 'a4',
+          compress: true,
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Falha ao gerar o PDF no servidor.');
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      
+      const imgProps= pdf.getImageProperties(imgData);
+      const imgWidth = pdfWidth;
+      const imgHeight = (imgProps.height * imgWidth) / imgProps.width;
+
+      let heightLeft = imgHeight;
+      let position = 0;
+
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pdfHeight;
+
+      while (heightLeft > 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pdfHeight;
       }
       
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${printData.documentType}-${printData.companyName.replace(/ /g,"_")}-${new Date().toLocaleDateString('pt-BR').replace(/\//g, '-')}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      a.remove();
+      const printData = form.getValues();
+      const fileName = `${printData.documentType}-${printData.companyName.replace(/ /g,"_")}-${new Date().toLocaleDateString('pt-BR').replace(/\//g, '-')}.pdf`;
+      pdf.save(fileName);
 
     } catch (error) {
       console.error('Falha ao gerar PDF:', error);
