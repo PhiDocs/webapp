@@ -14,13 +14,14 @@ import { formSchema } from '@/lib/types';
 import { PrintPreview } from '@/components/print-preview';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
-import { FileDown } from 'lucide-react';
+import { FileDown, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import './print/print-layout.css';
 
 export default function Home() {
   const [analysis, setAnalysis] = useState<SafetyAnalysisOutput | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
   const form = useForm<SafetyFormValues>({
@@ -35,7 +36,8 @@ export default function Home() {
       activityDescription: '',
       responsiblePersons: [{ name: '', role: '' }],
       companyName: '',
-      teamMembers: '',
+      companyLogo: '',
+      teamMembers: [],
     },
     mode: 'onChange',
   });
@@ -67,31 +69,53 @@ export default function Home() {
 
   const { toast } = useToast();
 
-  const handleGeneratePdf = () => {
-    if (!analysis && !form.getValues('activityDescription')) {
+  const handleGeneratePdf = async () => {
+    if (!form.formState.isValid && !analysis) {
         toast({
             variant: 'destructive',
-            title: 'Análise não gerada',
-            description: 'Por favor, preencha o formulário e gere a análise da atividade primeiro.',
+            title: 'Formulário incompleto',
+            description: 'Por favor, preencha os campos obrigatórios e gere a análise da atividade primeiro.',
         });
         return;
     }
+    
+    setIsDownloading(true);
     try {
       const printData = {
         ...liveFormData,
         ...analysis,
         date: new Date().toLocaleDateString('pt-BR'),
       };
-      sessionStorage.setItem('printData', JSON.stringify(printData));
-      window.open('/print', '_blank');
+      
+      const response = await fetch('/api/pdf', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(printData),
+      });
+
+      if (!response.ok) {
+        throw new Error('Falha ao gerar o PDF no servidor.');
+      }
+      
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `APR-${printData.companyName.replace(/ /g,"_")}-${printData.date}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      a.remove();
+
     } catch (error) {
-      console.error('Failed to prepare data for PDF generation:', error);
+      console.error('Falha ao gerar PDF:', error);
       toast({
         variant: 'destructive',
-        title: 'PDF Generation Error',
-        description:
-          'Could not prepare data for PDF generation. Please check console for details.',
+        title: 'Erro ao gerar PDF',
+        description: 'Não foi possível gerar o PDF. Por favor, tente novamente.',
       });
+    } finally {
+        setIsDownloading(false);
     }
   };
 
@@ -106,9 +130,18 @@ export default function Home() {
               Safety Docs AI
             </h1>
           </div>
-          <Button onClick={handleGeneratePdf}>
-            <FileDown className="mr-2 h-4 w-4" />
-            Gerar & Baixar PDF
+          <Button onClick={handleGeneratePdf} disabled={isDownloading}>
+            {isDownloading ? (
+                <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Baixando...
+                </>
+            ) : (
+                <>
+                    <FileDown className="mr-2 h-4 w-4" />
+                    Baixar PDF
+                </>
+            )}
           </Button>
         </div>
       </header>
@@ -129,30 +162,9 @@ export default function Home() {
             </div>
           </ScrollArea>
 
-          <div className="flex flex-col space-y-6 h-[calc(100vh-120px)]">
-            <div className="lg:sticky lg:top-20 flex-grow">
-             {isLoading && (
-              <Card className="flex h-full min-h-[400px] w-full flex-col items-center justify-center">
-                <CardContent className="flex flex-col items-center justify-center gap-4 text-center p-6">
-                  <div className="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-12 w-12 mb-4"></div>
-                  <style jsx>{`
-                    .loader {
-                      border-top-color: hsl(var(--primary));
-                      animation: spinner 1.2s linear infinite;
-                    }
-                    @keyframes spinner {
-                      0% { transform: rotate(0deg); }
-                      100% { transform: rotate(360deg); }
-                    }
-                  `}</style>
-                  <h3 className="text-xl font-semibold">Gerando Análise...</h3>
-                  <p className="text-muted-foreground">
-                    Por favor, aguarde enquanto nossa IA prepara seu relatório de segurança.
-                  </p>
-                </CardContent>
-              </Card>
-            )}
-
+          <div className="relative flex flex-col space-y-6 h-[calc(100vh-120px)]">
+            <div className="lg:sticky lg:top-20 flex-grow h-full">
+            
             {error && (
                <Card className="flex h-full min-h-[400px] w-full flex-col items-center justify-center bg-destructive/10 border-destructive">
                 <CardContent className="flex flex-col items-center justify-center gap-4 text-center p-6">
@@ -162,13 +174,28 @@ export default function Home() {
                </Card>
             )}
             
-            <div className="print-bg h-full overflow-hidden">
-                <ScrollArea className="h-full" type="always">
-                    <div className="scale-[0.8] origin-top mx-auto transform-gpu transition-transform duration-300 ease-in-out w-[210mm] min-h-[297mm]">
-                        <PrintPreview formData={liveFormData} analysisData={analysis} />
-                    </div>
-                </ScrollArea>
-            </div>
+            {!error && (
+              <div className="print-bg h-full overflow-hidden rounded-lg border">
+                  <ScrollArea className="h-full" type="always">
+                      <div className="relative w-full h-full">
+                          {isLoading && (
+                              <div className="absolute inset-0 bg-white/80 backdrop-blur-sm z-10 flex flex-col items-center justify-center">
+                                  <div className="flex flex-col items-center gap-4 text-center p-6">
+                                      <Loader2 className="h-12 w-12 animate-spin text-primary" />
+                                      <h3 className="text-xl font-semibold">Gerando Análise...</h3>
+                                      <p className="text-muted-foreground">
+                                          Aguarde enquanto nossa IA prepara seu relatório.
+                                      </p>
+                                  </div>
+                              </div>
+                          )}
+                          <div className="mx-auto my-8 w-[210mm] min-h-[297mm] scale-[0.8] origin-top transform-gpu bg-white shadow-lg transition-transform duration-300 ease-in-out">
+                              <PrintPreview formData={liveFormData} analysisData={analysis} />
+                          </div>
+                      </div>
+                  </ScrollArea>
+              </div>
+            )}
 
             </div>
           </div>

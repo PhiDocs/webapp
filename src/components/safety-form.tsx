@@ -3,7 +3,6 @@
 import { useForm, useFieldArray } from 'react-hook-form';
 import type { ChangeEvent } from 'react';
 import type { SafetyFormValues } from '@/lib/types';
-import { formSchema } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import {
   Form,
@@ -19,9 +18,6 @@ import { Textarea } from '@/components/ui/textarea';
 import {
   Card,
   CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
 } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BookOpen, Building2, FileText, MapPin, Users, Briefcase, UserCheck, PlusCircle, Trash2 } from 'lucide-react';
@@ -38,9 +34,14 @@ interface SafetyFormProps {
 export function SafetyForm({ form, onSubmit, isLoading, onNewReport }: SafetyFormProps) {
   const { toast } = useToast();
   
-  const { fields, append, remove } = useFieldArray({
+  const { fields: responsibleFields, append: appendResponsible, remove: removeResponsible } = useFieldArray({
     control: form.control,
     name: "responsiblePersons"
+  });
+  
+  const { fields: teamMemberFields, append: appendTeamMember, remove: removeTeamMember } = useFieldArray({
+    control: form.control,
+    name: "teamMembers"
   });
 
   const handleLogoChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -49,8 +50,8 @@ export function SafetyForm({ form, onSubmit, isLoading, onNewReport }: SafetyFor
       if (file.size > 2 * 1024 * 1024) { // 2MB limit
         toast({
           variant: "destructive",
-          title: "File too large",
-          description: "Please upload a logo smaller than 2MB.",
+          title: "Arquivo muito grande",
+          description: "Por favor, envie um logo menor que 2MB.",
         });
         return;
       }
@@ -169,13 +170,13 @@ export function SafetyForm({ form, onSubmit, isLoading, onNewReport }: SafetyFor
             <Separator />
             <div className='flex items-center justify-between'>
               <h3 className="text-lg font-semibold flex items-center"><UserCheck className="mr-2"/> Responsáveis</h3>
-              <Button type='button' variant='outline' size='sm' onClick={() => append({name: '', role: ''})}>
+              <Button type='button' variant='outline' size='sm' onClick={() => appendResponsible({name: '', role: ''})}>
                 <PlusCircle className='mr-2 h-4 w-4' /> Adicionar
               </Button>
             </div>
             
             <div className='space-y-4'>
-            {fields.map((item, index) => (
+            {responsibleFields.map((item, index) => (
               <div key={item.id} className='flex items-start gap-4'>
                 <div className="grid grid-cols-1 gap-x-4 gap-y-2 md:grid-cols-2 flex-grow">
                   <FormField
@@ -205,7 +206,7 @@ export function SafetyForm({ form, onSubmit, isLoading, onNewReport }: SafetyFor
                     )}
                   />
                 </div>
-                <Button type='button' variant='ghost' size='icon' className='mt-8' onClick={() => remove(index)} disabled={fields.length <= 1}>
+                <Button type='button' variant='ghost' size='icon' className='mt-8' onClick={() => removeResponsible(index)} disabled={responsibleFields.length <= 1}>
                     <Trash2 className='h-4 w-4 text-destructive'/>
                 </Button>
               </div>
@@ -239,7 +240,7 @@ export function SafetyForm({ form, onSubmit, isLoading, onNewReport }: SafetyFor
             </Button>
 
             <Separator />
-            <h3 className="text-lg font-semibold flex items-center"><Building2 className="mr-2"/> Dados da Empresa e Equipe</h3>
+            <h3 className="text-lg font-semibold flex items-center"><Building2 className="mr-2"/> Dados da Empresa</h3>
 
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               <FormField
@@ -271,23 +272,65 @@ export function SafetyForm({ form, onSubmit, isLoading, onNewReport }: SafetyFor
               />
             </div>
             
-            <FormField
-              control={form.control}
-              name="teamMembers"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel><Users className="inline-block mr-2" /> Equipe de Trabalho (Opcional)</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="Liste os nomes dos membros da equipe envolvidos, separados por vírgulas."
-                      className="resize-none"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <Separator />
+            <div className='flex items-center justify-between'>
+              <h3 className="text-lg font-semibold flex items-center"><Users className="mr-2"/> Equipe de Trabalho</h3>
+              <Button type='button' variant='outline' size='sm' onClick={() => appendTeamMember({date: '', name: '', role: ''})}>
+                <PlusCircle className='mr-2 h-4 w-4' /> Adicionar Membro
+              </Button>
+            </div>
+            
+            <div className='space-y-4'>
+            {teamMemberFields.map((item, index) => (
+              <div key={item.id} className='flex items-start gap-2'>
+                <div className="grid grid-cols-1 gap-x-2 gap-y-2 sm:grid-cols-3 flex-grow">
+                  <FormField
+                    control={form.control}
+                    name={`teamMembers.${index}.date`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className={index !== 0 ? "sr-only" : ""}>Data</FormLabel>
+                        <FormControl>
+                          <Input type="date" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name={`teamMembers.${index}.name`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className={index !== 0 ? "sr-only" : ""}>Nome</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Nome do membro" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name={`teamMembers.${index}.role`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className={index !== 0 ? "sr-only" : ""}>Função/Empresa</FormLabel>
+                        <FormControl>
+                          <Input placeholder="e.g., Eletricista" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                <Button type='button' variant='ghost' size='icon' className='mt-8' onClick={() => removeTeamMember(index)}>
+                    <Trash2 className='h-4 w-4 text-destructive'/>
+                </Button>
+              </div>
+            ))}
+            <FormMessage>{form.formState.errors.teamMembers?.root?.message}</FormMessage>
+            </div>
             
             <Button type="button" onClick={onNewReport} variant="outline" className="w-full">
                 Começar Novo Relatório

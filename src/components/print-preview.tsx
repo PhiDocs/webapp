@@ -30,6 +30,8 @@ export function PrintPreviewContent({ formData, analysisData }: PrintPreviewProp
     }
   }
 
+  const teamMembers = data.teamMembers || [];
+
   return (
     <div className="print-container">
       <header className="flex items-start justify-between p-8 border-b">
@@ -113,7 +115,7 @@ export function PrintPreviewContent({ formData, analysisData }: PrintPreviewProp
           </table>
         </section>
 
-        {data.teamMembers && (
+        {teamMembers.length > 0 && (
           <section className="mb-4">
             <h3 className="section-title text-center">EQUIPE DE TRABALHO</h3>
              <table className="w-full border-collapse border mt-1">
@@ -126,16 +128,16 @@ export function PrintPreviewContent({ formData, analysisData }: PrintPreviewProp
                 </tr>
               </thead>
                <tbody>
-                  {data.teamMembers.split(',').filter(m => m.trim() !== '').map((member, index) => (
+                  {teamMembers.map((member, index) => (
                     <tr key={index}>
-                      <td className="border p-2 h-10"></td>
-                      <td className="border p-2">{member.trim()}</td>
-                      <td className="border p-2"></td>
+                      <td className="border p-2 h-10">{getShortDate(member.date)}</td>
+                      <td className="border p-2">{member.name}</td>
+                      <td className="border p-2">{member.role}</td>
                       <td className="border p-2"></td>
                     </tr>
                   ))}
                   {/* Add empty rows for signature */}
-                  {Array.from({ length: Math.max(0, 5 - (data.teamMembers.split(',').filter(m => m.trim() !== '').length)) }).map((_, index) => (
+                  {Array.from({ length: Math.max(0, 5 - teamMembers.length) }).map((_, index) => (
                     <tr key={`empty-${index}`}>
                       <td className="border p-2 h-10"></td>
                       <td className="border p-2"></td>
