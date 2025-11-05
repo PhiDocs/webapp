@@ -7,7 +7,6 @@ import { getSafetyAnalysis } from '@/app/ai-actions';
 import { Logo } from '@/components/icons/logo';
 import { SafetyForm } from '@/components/safety-form';
 import { Card, CardContent } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { formSchema } from '@/lib/types';
@@ -93,10 +92,14 @@ export default function Home() {
     
     setIsDownloading(true);
     try {
-        const pageElements = document.querySelectorAll<HTMLElement>('.print-page-container');
-        if (pageElements.length === 0) {
-            throw new Error("Nenhum conteúdo para impressão foi encontrado.");
+        const rootElement = document.getElementById('print-content-root');
+        if (!rootElement) {
+          throw new Error("Elemento raiz de impressão não encontrado.");
         }
+        
+        // Hide scrollbars during capture
+        rootElement.style.overflow = 'visible';
+        document.body.style.overflow = 'hidden';
 
         const pdf = new jsPDF({
             orientation: 'portrait',
@@ -106,32 +109,35 @@ export default function Home() {
         
         const pdfWidth = pdf.internal.pageSize.getWidth();
         const pdfHeight = pdf.internal.pageSize.getHeight();
+        
+        const canvas = await html2canvas(rootElement, {
+            scale: 2, 
+            useCORS: true,
+            backgroundColor: '#ffffff',
+            logging: false,
+            windowWidth: rootElement.scrollWidth,
+            windowHeight: rootElement.scrollHeight,
+        });
+        
+        rootElement.style.overflow = 'auto';
+        document.body.style.overflow = 'auto';
 
-        for (let i = 0; i < pageElements.length; i++) {
-            const pageElement = pageElements[i];
-            
-            const canvas = await html2canvas(pageElement, {
-                scale: 2, 
-                useCORS: true,
-                backgroundColor: '#ffffff',
-                logging: false,
-            });
+        const imgData = canvas.toDataURL('image/jpeg', 0.95);
+        const imgWidth = pdfWidth;
+        const imgHeight = canvas.height * imgWidth / canvas.width;
+        let heightLeft = imgHeight;
+        let position = 0;
+        let page = 1;
+        
+        pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pdfHeight;
 
-            const imgData = canvas.toDataURL('image/jpeg', 0.90);
-            
-            if (i > 0) {
-                pdf.addPage();
-            }
-            
-            pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
-
-            // Add page number text directly to the PDF
-            const pageNumText = `Página ${i + 1} de ${pageElements.length}`;
-            pdf.setFontSize(8);
-            pdf.setTextColor('#6b7280'); // gray-500
-            const textWidth = pdf.getStringUnitWidth(pageNumText) * pdf.getFontSize() / pdf.internal.scaleFactor;
-            // Position at bottom right (15mm margin from right, 10mm from bottom)
-            pdf.text(pageNumText, pdfWidth - 15 - textWidth, pdfHeight - 10);
+        while (heightLeft > 0) {
+          position = -pdfHeight * page;
+          pdf.addPage();
+          pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+          heightLeft -= pdfHeight;
+          page++;
         }
 
         const printData = form.getValues();
@@ -146,6 +152,9 @@ export default function Home() {
             description: (error as Error).message || 'Não foi possível gerar o PDF. Por favor, tente novamente.',
         });
     } finally {
+        const rootElement = document.getElementById('print-content-root');
+        if (rootElement) rootElement.style.overflow = 'auto';
+        document.body.style.overflow = 'auto';
         setIsDownloading(false);
     }
   };
@@ -180,7 +189,7 @@ export default function Home() {
       <main className="flex-grow">
         <div className="grid grid-cols-1 lg:grid-cols-2 h-[calc(100vh-65px)]">
           
-          <ScrollArea className="h-full">
+          <ScrollArea className="h-full border-r">
             <div className="p-4 md:p-6 space-y-6">
                 <div className="space-y-2">
                   <h2 className="text-2xl font-bold tracking-tight text-foreground font-headline">

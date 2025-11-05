@@ -1,24 +1,14 @@
 'use client';
 
-import React, { useEffect, useRef, useState, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import type { SafetyFormValues } from '@/lib/types';
 import type { SafetyAnalysisOutput } from '@/ai/flows/generate-safety-analysis';
 import { Logo } from '@/components/icons/logo';
-import { createRoot, type Root } from 'react-dom/client';
 
 interface PrintPreviewProps {
   formData: SafetyFormValues;
   analysisData: SafetyAnalysisOutput | null;
 }
-
-interface PageContent {
-    key: string;
-    content: React.ReactNode; 
-}
-
-const PAGE_CONTENT_HEIGHT_MM = 297 - 20 - 15; // A4 height minus top/bottom margin and footer height
-const MM_TO_PX = 3.78;
-const PAGE_CONTENT_HEIGHT_PX = PAGE_CONTENT_HEIGHT_MM * MM_TO_PX;
 
 // --- Sub-components for printing ---
 
@@ -96,7 +86,7 @@ function PrintFooter({ page, totalPages }: { page: number; totalPages: number; }
 
 function ResponsiblesSection({ data }: { data: SafetyFormValues }) {
     return (
-        <section className="mb-4 responsibles-section">
+        <section className="mb-4 responsibles-section avoid-break">
             <h3 className="section-title">RESPONSÁVEL PELO ACOMPANHAMENTO DOS SERVIÇOS</h3>
             <table className="w-full border-collapse border mt-1 analysis-table">
               <thead>
@@ -125,7 +115,7 @@ function TeamSection({ data }: { data: SafetyFormValues }) {
      if (teamMembers.length === 0) return null;
 
     return (
-      <section className="mb-4 team-section">
+      <section className="mb-4 team-section avoid-break">
         <h3 className="section-title">EQUIPE DE TRABALHO</h3>
         <table className="w-full border-collapse border mt-1 analysis-table">
           <thead>
@@ -190,7 +180,7 @@ function AnalysisTable({ steps }: { steps: any[] }) {
 
 function SignatureSection() {
     return (
-        <section className="signature-section mt-auto pt-8">
+        <section className="signature-section mt-auto pt-8 avoid-break">
             <h3 className="section-title">Assinaturas</h3>
             <div className="signature-grid">
                 <div>
@@ -218,188 +208,25 @@ function getShortDate(dateString: string) {
   }
 }
 
-// This is the main component that orchestrates the paginated preview
-export function PrintPreview({ formData, analysisData }: PrintPreviewProps) {
-  const [pages, setPages] = useState<PageContent[]>([]);
-  const measurementRef = useRef<HTMLDivElement>(null);
-  const rootRef = useRef<Root | null>(null);
+export function PrintPreviewContent({ formData, analysisData }: PrintPreviewProps) {
+  const proceduralSteps = useMemo(() => analysisData?.proceduralSteps || [], [analysisData]);
 
-  const allDocumentContent = useMemo(() => {
-    const proceduralSteps = analysisData?.proceduralSteps || [];
-    
-    const content = (
-        <>
+  return (
+    <div className='page-content-wrapper'>
+        <PrintHeader data={formData} />
+        <main className='print-main'>
             <ResponsiblesSection data={formData} />
             <AnalysisTable steps={proceduralSteps} />
             <TeamSection data={formData} />
             <SignatureSection />
-        </>
-    );
-
-    return { content, proceduralSteps };
-
-  }, [formData, analysisData]);
+        </main>
+    </div>
+  );
+}
 
 
-  useEffect(() => {
-    const paginate = async () => {
-        const measurementNode = measurementRef.current;
-        if (!measurementNode) return;
-
-        // --- Create root only once ---
-        if (!rootRef.current) {
-            rootRef.current = createRoot(measurementNode);
-        }
-        
-        // --- Render all content into the measurement div to calculate heights ---
-        const FullRenderForMeasurement = (
-            <div style={{ width: '210mm' }}>
-                <div className="page-content-wrapper">
-                    {allDocumentContent.content}
-                </div>
-            </div>
-        );
-        rootRef.current.render(FullRenderForMeasurement);
-
-        // Wait for render to get heights
-        await new Promise(resolve => setTimeout(resolve, 350));
-        
-        const headerEl = document.createElement('div');
-        const headerRoot = createRoot(headerEl);
-        headerRoot.render(<PrintHeader data={formData} />)
-        await new Promise(resolve => setTimeout(resolve, 50));
-        const headerHeight = headerEl.offsetHeight;
-        headerRoot.unmount();
-
-
-        const contentElements = Array.from(measurementNode.querySelector('.page-content-wrapper')?.children || []) as HTMLElement[];
-
-        const pagesArray: HTMLElement[][] = [];
-        let currentPage: HTMLElement[] = [];
-        let currentPageHeight = headerHeight; // Start with header height for the first page
-        
-        for (const el of contentElements) {
-          const isTable = el.classList.contains('analysis-table-wrapper');
-          
-          let pageHeightLimit = PAGE_CONTENT_HEIGHT_PX;
-
-          if (isTable) {
-            const titleEl = el.querySelector('.section-title') as HTMLElement;
-            const tableEl = el.querySelector('table') as HTMLTableElement;
-            const thead = tableEl.querySelector('thead');
-            
-            let tableHeaderHeight = titleEl.offsetHeight;
-            if (thead) {
-              tableHeaderHeight += thead.offsetHeight;
-            }
-            
-            const rows = Array.from(tableEl.querySelectorAll('tbody tr'));
-            
-            // Add table title and header
-            if (currentPageHeight + tableHeaderHeight > pageHeightLimit) {
-                pagesArray.push(currentPage);
-                currentPage = [];
-                currentPageHeight = 0;
-            }
-            
-            let currentTableContainer = document.createElement('section');
-            currentTableContainer.className = 'analysis-table-wrapper';
-            currentTableContainer.appendChild(titleEl.cloneNode(true));
-            let newTable = tableEl.cloneNode(false) as HTMLTableElement;
-            if (thead) newTable.appendChild(thead.cloneNode(true));
-            let newTbody = document.createElement('tbody');
-            newTable.appendChild(newTbody);
-            currentTableContainer.appendChild(newTable);
-            
-            if (currentPage.length === 0 || !(currentPage[currentPage.length -1]?.classList.contains('analysis-table-wrapper'))) {
-                currentPage.push(currentTableContainer);
-            } else {
-                 currentTableContainer = currentPage[currentPage.length -1] as HTMLElement;
-                 newTbody = currentTableContainer.querySelector('tbody') as HTMLTableSectionElement;
-            }
-            
-            currentPageHeight += titleEl.offsetHeight + (thead?.offsetHeight || 0);
-
-            // Add table rows
-            for (const row of rows) {
-              const rowHeight = (row as HTMLElement).offsetHeight;
-              if (currentPageHeight + rowHeight > pageHeightLimit) {
-                  pagesArray.push(currentPage);
-                  currentPage = [];
-                  currentPageHeight = 0;
-                  
-                  currentTableContainer = document.createElement('section');
-                  currentTableContainer.className = 'analysis-table-wrapper';
-                  // Add title and header to new page
-                  currentTableContainer.appendChild(titleEl.cloneNode(true));
-                  newTable = tableEl.cloneNode(false) as HTMLTableElement;
-                   if (thead) {
-                      newTable.appendChild(thead.cloneNode(true));
-                      currentPageHeight += tableHeaderHeight;
-                   }
-                  newTbody = document.createElement('tbody');
-                  newTable.appendChild(newTbody);
-                  currentTableContainer.appendChild(newTable);
-                  currentPage.push(currentTableContainer);
-              }
-              newTbody.appendChild(row.cloneNode(true));
-              currentPageHeight += rowHeight;
-            }
-          } else { // For other sections
-              const elHeight = el.offsetHeight;
-              if (currentPageHeight + elHeight > pageHeightLimit) {
-                  pagesArray.push(currentPage);
-                  currentPage = [];
-                  currentPageHeight = 0;
-              }
-              currentPage.push(el.cloneNode(true) as HTMLElement);
-              currentPageHeight += elHeight;
-          }
-        }
-        
-        if (currentPage.length > 0) {
-          pagesArray.push(currentPage);
-        }
-
-        // --- Finalize and set pages for rendering ---
-        const finalPages: PageContent[] = pagesArray.map((pageContent, index) => {
-            const pageHTML = pageContent.map(el => el.outerHTML).join('');
-            const isFirstPage = index === 0;
-
-            const contentNode = (
-                <div className='page-content-wrapper'>
-                    {isFirstPage && <PrintHeader data={formData} />}
-                    <main className='print-main' dangerouslySetInnerHTML={{ __html: pageHTML }} />
-                    <PrintFooter page={index + 1} totalPages={pagesArray.length} />
-                </div>
-            )
-            
-            return {
-                key: `page-${index}-${Date.now()}`,
-                content: contentNode
-            };
-        });
-        
-        setPages(finalPages);
-        // Don't unmount, just clear content for next measurement
-        rootRef.current.render(null);
-    };
-
-    const timer = setTimeout(paginate, 350);
-    return () => clearTimeout(timer);
-    
-  }, [formData, analysisData, allDocumentContent]);
-
-  useEffect(() => {
-    // Cleanup on unmount
-    return () => {
-      if (rootRef.current) {
-        rootRef.current.unmount();
-        rootRef.current = null;
-      }
-    };
-  }, []);
-
+// This is the main component that orchestrates the paginated preview
+export function PrintPreview({ formData, analysisData }: PrintPreviewProps) {
   if (!formData.companyName && !analysisData) {
     return (
       <div className="print-page-container">
@@ -411,26 +238,9 @@ export function PrintPreview({ formData, analysisData }: PrintPreviewProps) {
   }
 
   return (
-    <>
-      {pages.length > 0 ? pages.map((page) => (
-          <div key={page.key} className="print-page-container">
-            {page.content}
-          </div>
-      )) : (
-          // Fallback for initial render
-          <div className="print-page-container">
-            <div className="page-content-wrapper">
-                <PrintHeader data={formData} />
-                <main className='print-main'>
-                    <ResponsiblesSection data={formData} />
-                    <AnalysisTable steps={[]} />
-                </main>
-                <PrintFooter page={1} totalPages={1} />
-            </div>
-          </div>
-      )}
-      {/* Hidden container for measurement */}
-      <div ref={measurementRef} style={{ position: 'absolute', top: '-9999px', left: '-9999px', zIndex: -100, opacity: 0, background: 'white' }} />
-    </>
+      <div className="print-page-container">
+         <PrintPreviewContent formData={formData} analysisData={analysisData} />
+      </div>
   );
 }
+

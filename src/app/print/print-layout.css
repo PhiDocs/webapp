@@ -5,13 +5,6 @@
 @tailwind utilities;
 
 /* Styles for the on-screen preview */
-.print-bg {
-  background-color: hsl(var(--muted));
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-}
-
 .print-container-wrapper {
   display: flex;
   flex-direction: column;
@@ -22,7 +15,7 @@
 
 .print-page-container {
   width: 210mm;
-  height: 297mm;
+  min-height: 297mm;
   background: white;
   box-shadow: 0 0 15px rgba(0, 0, 0, 0.15);
   color: #333;
@@ -128,18 +121,8 @@ table.analysis-table th {
   margin: 0; /* Handled by .page-content-wrapper padding */
 }
 
-thead.analysis-table-header {
-    display: table-header-group; /* Repeats header on each page */
-}
-tbody {
-    display: table-row-group;
-}
-tr {
-    page-break-inside: avoid;
-}
-
-.page-break-before {
-  break-before: page;
+.avoid-break {
+  break-inside: avoid !important;
 }
 
 
@@ -152,9 +135,10 @@ tr {
      padding:0;
      margin: 0;
      width: 210mm;
+     height: 297mm;
   }
   
-  .print-bg, .print-container-wrapper {
+  .print-container-wrapper {
     background: none;
     padding: 0;
     margin: 0;
@@ -177,7 +161,7 @@ tr {
       page-break-after: auto;
   }
 
-  thead {
+  thead.analysis-table-header {
     display: table-header-group !important; /* Ensure header repeats on print */
   }
   
