@@ -26,7 +26,6 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  // This ref will now point to the container that holds all the page previews
   const printPreviewContainerRef = useRef<HTMLDivElement>(null);
   
   const form = useForm<SafetyFormValues>({
@@ -113,20 +112,38 @@ export default function Home() {
       const pages = printPreviewContainerRef.current.querySelectorAll<HTMLElement>('.print-container');
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = pdf.internal.pageSize.getHeight();
+      const totalPages = pages.length;
 
-      for (let i = 0; i < pages.length; i++) {
+      for (let i = 0; i < totalPages; i++) {
         const pageElement = pages[i];
-        const canvas = await html2canvas(pageElement, {
-          scale: 2, // Higher scale for better quality
+        
+        // Clone the element to modify it without affecting the screen
+        const clonedElement = pageElement.cloneNode(true) as HTMLElement;
+        document.body.appendChild(clonedElement); // Add to body to compute styles
+        
+        // Replace placeholder with actual page number
+        const pageNumberPlaceholder = clonedElement.querySelector('.page-number-placeholder');
+        if(pageNumberPlaceholder) {
+            pageNumberPlaceholder.innerHTML = `Página ${i + 1} de ${totalPages}`;
+        }
+        
+        const canvas = await html2canvas(clonedElement, {
+          scale: 2, 
           useCORS: true,
-          backgroundColor: '#ffffff', // Ensure background is white
+          backgroundColor: '#ffffff',
+          windowWidth: clonedElement.scrollWidth,
+          windowHeight: clonedElement.scrollHeight,
         });
+
+        document.body.removeChild(clonedElement); // Clean up the cloned element
         
         const imgData = canvas.toDataURL('image/png');
         
         if (i > 0) {
           pdf.addPage();
         }
+
+        // Hide header on subsequent pages logic is now handled by the component structure
         pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
       }
       

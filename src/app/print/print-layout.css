@@ -10,6 +10,7 @@
   display: flex;
   justify-content: center;
   align-items: flex-start;
+  padding: 2rem;
 }
 
 .print-container-wrapper {
@@ -22,8 +23,7 @@
 
 .print-container {
   width: 210mm;
-  min-height: 297mm; /* Use min-height to allow content to grow if needed, but keep A4 aspect */
-  height: 297mm; /* Fixed height for A4 */
+  height: 297mm;
   background: white;
   box-shadow: 0 0 15px rgba(0, 0, 0, 0.15);
   color: #333;
@@ -31,7 +31,8 @@
   flex-direction: column;
   font-size: 9pt;
   position: relative;
-  overflow: hidden; /* Important: prevents content from spilling out */
+  overflow: hidden;
+  page-break-after: always;
 }
 
 .page-content-wrapper {
@@ -98,14 +99,16 @@ table.analysis-table th {
 }
 
 table.analysis-table thead {
-    display: table-header-group;
+    display: table-header-group; /* This is the magic for repeating headers */
 }
 
 table.analysis-table tbody tr {
     page-break-inside: avoid;
-    break-inside: avoid;
 }
 
+section {
+  break-inside: avoid;
+}
 
 .signature-grid {
     display: grid;
@@ -126,22 +129,29 @@ table.analysis-table tbody tr {
 }
 
 /* --- PRINT-SPECIFIC CSS RULES --- */
-/* These rules are more for actual browser printing, but good to have */
 @page {
   size: A4;
   margin: 0;
 }
 
 @media print {
-  body {
-    background: none;
-    font-family: 'Inter', sans-serif;
+  html, body {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+     background: white;
+     padding:0;
+     margin: 0;
   }
   
-  .no-print, .print-bg, .print-container-wrapper {
-    display: block; /* We want the wrapper to be visible for printing */
+  .print-bg {
+    background: none;
+    padding: 0;
   }
-
+  
+  .print-container-wrapper {
+    gap: 0;
+  }
+  
   .print-container {
     box-shadow: none;
     margin: 0;
