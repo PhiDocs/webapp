@@ -15,15 +15,16 @@ export function PrintPreview({ formData, analysisData }: PrintPreviewProps) {
 
 export function PrintPreviewContent({ formData, analysisData }: PrintPreviewProps) {
   const data = { ...formData, ...analysisData };
-  const date = new Date().toLocaleDateString('pt-BR');
+  const date = (data as any).date || new Date().toLocaleDateString('pt-BR');
+
 
   const getShortDate = (dateString: string) => {
-    if (!dateString) return 'N/A';
+    if (!dateString) return '...';
     try {
-      const date = new Date(dateString);
-      // Adjust for timezone offset by using UTC methods
-      const utcDate = new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
-      return utcDate.toLocaleDateString('pt-BR');
+      // Input is 'YYYY-MM-DD', we need to display as DD/MM/YYYY
+      const parts = dateString.split('-');
+      if (parts.length !== 3) return dateString;
+      return `${parts[2]}/${parts[1]}/${parts[0]}`;
     } catch(e) {
         return 'Data inválida'
     }
@@ -125,7 +126,7 @@ export function PrintPreviewContent({ formData, analysisData }: PrintPreviewProp
                 </tr>
               </thead>
                <tbody>
-                  {data.teamMembers.split(',').map((member, index) => (
+                  {data.teamMembers.split(',').filter(m => m.trim() !== '').map((member, index) => (
                     <tr key={index}>
                       <td className="border p-2 h-10"></td>
                       <td className="border p-2">{member.trim()}</td>
@@ -134,7 +135,7 @@ export function PrintPreviewContent({ formData, analysisData }: PrintPreviewProp
                     </tr>
                   ))}
                   {/* Add empty rows for signature */}
-                  {Array.from({ length: Math.max(0, 5 - data.teamMembers.split(',').length) }).map((_, index) => (
+                  {Array.from({ length: Math.max(0, 5 - (data.teamMembers.split(',').filter(m => m.trim() !== '').length)) }).map((_, index) => (
                     <tr key={`empty-${index}`}>
                       <td className="border p-2 h-10"></td>
                       <td className="border p-2"></td>
@@ -147,7 +148,7 @@ export function PrintPreviewContent({ formData, analysisData }: PrintPreviewProp
           </section>
         )}
         
-        {analysisData?.proceduralSteps && analysisData.proceduralSteps.length > 0 && (
+        {analysisData?.proceduralSteps && analysisData.proceduralSteps.length > 0 ? (
           <section className="mb-4" style={{ pageBreakInside: 'avoid' }}>
             <h3 className="section-title text-center">PROCEDIMENTO OPERACIONAL</h3>
             <table className="w-full border-collapse border mt-1">
@@ -170,6 +171,10 @@ export function PrintPreviewContent({ formData, analysisData }: PrintPreviewProp
                 ))}
               </tbody>
             </table>
+          </section>
+        ) : (
+          <section className="mb-4 text-center text-gray-500 italic py-8">
+            A análise de procedimento operacional aparecerá aqui após ser gerada.
           </section>
         )}
 

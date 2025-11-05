@@ -16,6 +16,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { FileDown } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import './print/print-layout.css';
 
 export default function Home() {
   const [analysis, setAnalysis] = useState<SafetyAnalysisOutput | null>(null);
@@ -67,11 +68,11 @@ export default function Home() {
   const { toast } = useToast();
 
   const handleGeneratePdf = () => {
-    if (!analysis) {
+    if (!analysis && !form.getValues('activityDescription')) {
         toast({
             variant: 'destructive',
             title: 'Análise não gerada',
-            description: 'Por favor, gere a análise da atividade primeiro.',
+            description: 'Por favor, preencha o formulário e gere a análise da atividade primeiro.',
         });
         return;
     }
@@ -161,9 +162,11 @@ export default function Home() {
                </Card>
             )}
             
-            <div className="bg-gray-200 dark:bg-gray-800 p-4 rounded-lg h-[calc(100vh-120px)] overflow-hidden">
-              <ScrollArea className='h-full'>
-                <PrintPreview formData={liveFormData} analysisData={analysis} />
+            <div className="print-bg h-[calc(100vh-120px)] overflow-hidden">
+              <ScrollArea className='h-full' type='always'>
+                <div className='scale-75 origin-top'>
+                  <PrintPreview formData={liveFormData} analysisData={analysis} />
+                </div>
               </ScrollArea>
             </div>
             </div>
