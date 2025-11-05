@@ -226,22 +226,16 @@ export function PrintPreview({ formData, analysisData }: PrintPreviewProps) {
   const allDocumentContent = useMemo(() => {
     const proceduralSteps = analysisData?.proceduralSteps || [];
     
-    // Split the content into what must be on the first page vs what can flow
-    const firstPageContent = (
-      <>
-        <ResponsiblesSection data={formData} />
-      </>
-    );
-
-    const flowingContent = (
+    const content = (
         <>
+            <ResponsiblesSection data={formData} />
             <AnalysisTable steps={proceduralSteps} />
             <TeamSection data={formData} />
             <SignatureSection />
         </>
     );
 
-    return { firstPageContent, flowingContent, proceduralSteps };
+    return { content, proceduralSteps };
 
   }, [formData, analysisData]);
 
@@ -258,129 +252,106 @@ export function PrintPreview({ formData, analysisData }: PrintPreviewProps) {
         const FullRenderForMeasurement = (
             <div style={{ width: '210mm' }}>
                 <div className="page-content-wrapper">
-                    <PrintHeader data={formData} />
-                    {allDocumentContent.firstPageContent}
-                    {allDocumentContent.flowingContent}
+                    {allDocumentContent.content}
                 </div>
             </div>
         );
         root.render(FullRenderForMeasurement);
 
-        // Wait for render
+        // Wait for render to get heights
         await new Promise(resolve => setTimeout(resolve, 350));
         
-        const newPages: {content: HTMLElement[], height: number}[] = [];
-        let currentPageElements: HTMLElement[] = [];
+        const headerEl = measurementNode.querySelector('.print-header');
+        const headerHeight = headerEl ? (headerEl as HTMLElement).offsetHeight : 0;
         
-        // --- Page 1 ---
-        const headerEl = measurementNode.querySelector('.print-header') as HTMLElement;
-        const respSectionEl = measurementNode.querySelector('.responsibles-section') as HTMLElement;
+        const contentElements = Array.from(measurementNode.querySelector('.page-content-wrapper')?.children || []) as HTMLElement[];
 
-        if (!headerEl) return;
+        const pagesArray: HTMLElement[][] = [];
+        let currentPage: HTMLElement[] = [];
+        let currentPageHeight = 0;
         
-        const headerHeight = headerEl.offsetHeight;
-        currentPageElements.push(headerEl.cloneNode(true) as HTMLElement);
-        let currentPageHeight = headerHeight;
+        const pageHeightLimit = PAGE_CONTENT_HEIGHT_PX - (pagesArray.length === 0 ? headerHeight : 0);
 
-        if (respSectionEl) {
-          const respHeight = respSectionEl.offsetHeight;
-          if (currentPageHeight + respHeight <= PAGE_CONTENT_HEIGHT_PX) {
-              currentPageElements.push(respSectionEl.cloneNode(true) as HTMLElement);
-              currentPageHeight += respHeight;
-          }
-        }
-       
-        // --- Subsequent Pages & Content Flow ---
-        const analysisTableWrapper = measurementNode.querySelector('.analysis-table-wrapper');
-        const teamSectionEl = measurementNode.querySelector('.team-section');
-        const signatureSectionEl = measurementNode.querySelector('.signature-section');
-
-        const addContentToPage = (el: HTMLElement) => {
-            const elHeight = el.offsetHeight;
-            if (currentPageHeight + elHeight > PAGE_CONTENT_HEIGHT_PX && currentPageElements.length > 0) {
-                newPages.push({ content: currentPageElements, height: currentPageHeight });
-                currentPageElements = [];
+        for (const el of contentElements) {
+          const isTable = el.classList.contains('analysis-table-wrapper');
+          if (isTable) {
+            const titleEl = el.querySelector('.section-title') as HTMLElement;
+            const tableEl = el.querySelector('table') as HTMLTableElement;
+            const thead = tableEl.querySelector('thead');
+            
+            let tableHeaderHeight = titleEl.offsetHeight;
+            if (thead) {
+              tableHeaderHeight += thead.offsetHeight;
+            }
+            
+            const rows = Array.from(tableEl.querySelectorAll('tbody tr'));
+            
+            // Add table title
+            if (currentPageHeight + tableHeaderHeight > pageHeightLimit) {
+                pagesArray.push(currentPage);
+                currentPage = [];
                 currentPageHeight = 0;
             }
-            currentPageElements.push(el.cloneNode(true) as HTMLElement);
-            currentPageHeight += elHeight;
-        };
+            currentPageHeight += titleEl.offsetHeight;
+            let currentTableContainer = document.createElement('section');
+            currentTableContainer.className = 'analysis-table-wrapper';
+            currentTableContainer.appendChild(titleEl.cloneNode(true));
+            let newTable = tableEl.cloneNode(false) as HTMLTableElement;
+            if (thead) newTable.appendChild(thead.cloneNode(true));
+            let newTbody = document.createElement('tbody');
+            newTable.appendChild(newTbody);
+            currentTableContainer.appendChild(newTable);
+            currentPage.push(currentTableContainer);
 
-        if (analysisTableWrapper) {
-            const titleEl = analysisTableWrapper.querySelector('h3') as HTMLElement;
-            const tableEl = analysisTableWrapper.querySelector('.analysis-table') as HTMLTableElement;
 
-            if (titleEl && tableEl) {
-                // Keep title and table header together
-                const titleHeight = titleEl.offsetHeight;
-                const theadHeight = tableEl.querySelector('thead')?.offsetHeight || 0;
-                const headerGroupHeight = titleHeight + theadHeight;
-                
-                let currentTableWrapper = document.createElement('section');
-                currentTableWrapper.className = 'analysis-table-wrapper';
-                currentTableWrapper.appendChild(titleEl.cloneNode(true));
-                let currentTable = tableEl.cloneNode(false) as HTMLTableElement;
-                const thead = tableEl.querySelector('thead');
-                if (thead) currentTable.appendChild(thead.cloneNode(true));
-                let currentTbody = document.createElement('tbody');
-                currentTable.appendChild(currentTbody);
-                currentTableWrapper.appendChild(currentTable);
-
-                if (currentPageHeight + headerGroupHeight > PAGE_CONTENT_HEIGHT_PX) {
-                    newPages.push({ content: currentPageElements, height: currentPageHeight });
-                    currentPageElements = [];
-                    currentPageHeight = 0;
-                }
-                currentPageElements.push(currentTableWrapper);
-                currentPageHeight += headerGroupHeight;
-
-                const rows = Array.from(tableEl.querySelectorAll('tbody tr'));
-                for (const row of rows) {
-                    const rowHeight = (row as HTMLElement).offsetHeight;
-                    if (currentPageHeight + rowHeight > PAGE_CONTENT_HEIGHT_PX) {
-                        // Finish the current page
-                        newPages.push({ content: currentPageElements, height: currentPageHeight });
-                        
-                        // Start a new page
-                        currentPageElements = [];
-                        currentPageHeight = 0;
-                        
-                        // Create a new table for the new page
-                        currentTableWrapper = document.createElement('section');
-                        currentTableWrapper.className = 'analysis-table-wrapper';
-                        currentTableWrapper.appendChild(titleEl.cloneNode(true));
-                        currentTable = tableEl.cloneNode(false) as HTMLTableElement;
-                        if (thead) currentTable.appendChild(thead.cloneNode(true));
-                        currentTbody = document.createElement('tbody');
-                        currentTable.appendChild(currentTbody);
-                        currentTableWrapper.appendChild(currentTable);
-
-                        currentPageElements.push(currentTableWrapper);
-                        currentPageHeight += headerGroupHeight;
-                    }
-                    currentTbody.appendChild(row.cloneNode(true));
-                    currentPageHeight += rowHeight;
-                }
+            // Add table rows
+            for (const row of rows) {
+              const rowHeight = (row as HTMLElement).offsetHeight;
+              if (currentPageHeight + rowHeight > pageHeightLimit) {
+                  pagesArray.push(currentPage);
+                  currentPage = [];
+                  currentPageHeight = 0;
+                  
+                  currentTableContainer = document.createElement('section');
+                  currentTableContainer.className = 'analysis-table-wrapper';
+                  currentTableContainer.appendChild(titleEl.cloneNode(true));
+                  newTable = tableEl.cloneNode(false) as HTMLTableElement;
+                  if (thead) newTable.appendChild(thead.cloneNode(true));
+                  newTbody = document.createElement('tbody');
+                  newTable.appendChild(newTbody);
+                  currentTableContainer.appendChild(newTable);
+                  currentPage.push(currentTableContainer);
+                  currentPageHeight += tableHeaderHeight;
+              }
+              newTbody.appendChild(row.cloneNode(true));
+              currentPageHeight += rowHeight;
             }
+          } else { // For other sections
+              const elHeight = el.offsetHeight;
+              if (currentPageHeight + elHeight > pageHeightLimit) {
+                  pagesArray.push(currentPage);
+                  currentPage = [];
+                  currentPageHeight = 0;
+              }
+              currentPage.push(el.cloneNode(true) as HTMLElement);
+              currentPageHeight += elHeight;
+          }
         }
         
-        if (teamSectionEl) addContentToPage(teamSectionEl);
-        if (signatureSectionEl) addContentToPage(signatureSectionEl);
-
-        if (currentPageElements.length > 0) {
-            newPages.push({ content: currentPageElements, height: currentPageHeight });
+        if (currentPage.length > 0) {
+          pagesArray.push(currentPage);
         }
 
         // --- Finalize and set pages for rendering ---
-        const finalPages: PageContent[] = newPages.map((page, index) => {
-            const pageHTML = page.content.map(el => el.outerHTML).join('');
+        const finalPages: PageContent[] = pagesArray.map((pageContent, index) => {
+            const pageHTML = pageContent.map(el => el.outerHTML).join('');
             const isFirstPage = index === 0;
 
             const contentNode = (
                 <div className='page-content-wrapper'>
-                    {!isFirstPage && <div className='print-header-placeholder' style={{height: headerHeight}}></div>}
+                    {isFirstPage && <PrintHeader data={formData} />}
                     <main className='print-main' dangerouslySetInnerHTML={{ __html: pageHTML }} />
-                    <PrintFooter page={index + 1} totalPages={newPages.length} />
+                    <PrintFooter page={index + 1} totalPages={pagesArray.length} />
                 </div>
             )
             
