@@ -1,7 +1,7 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
+import { useForm, useFieldArray } from 'react-hook-form';
 import type { ChangeEvent } from 'react';
 import type { SafetyFormValues } from '@/lib/types';
 import { formSchema } from '@/lib/types';
@@ -25,38 +25,26 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { AlertTriangle, BookOpen, Building2, FileText, HardHat, MapPin, ShieldCheck, Siren, Users, RotateCcw, Briefcase, UserCheck } from 'lucide-react';
+import { BookOpen, Building2, FileText, MapPin, Users, RotateCcw, Briefcase, UserCheck, PlusCircle, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Separator } from '@/components/ui/separator';
 
 interface SafetyFormProps {
+  form: ReturnType<typeof useForm<SafetyFormValues>>;
   onSubmit: (data: SafetyFormValues) => void;
   isLoading: boolean;
   isFormSubmitted: boolean;
   onNewReport: () => void;
 }
 
-export function SafetyForm({ onSubmit, isLoading, isFormSubmitted, onNewReport }: SafetyFormProps) {
+export function SafetyForm({ form, onSubmit, isLoading, isFormSubmitted, onNewReport }: SafetyFormProps) {
   const { toast } = useToast();
-
-  const form = useForm<SafetyFormValues>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      documentType: 'APR',
-      workName: '',
-      workAddress: '',
-      startDate: '',
-      endDate: '',
-      workLocationDetails: '',
-      activityDescription: '',
-      responsibleName: '',
-      responsibleRole: '',
-      companyName: '',
-      teamMembers: '',
-    },
-    mode: 'onChange',
-  });
   
+  const { fields, append, remove } = useFieldArray({
+    control: form.control,
+    name: "responsiblePersons"
+  });
+
   const handleLogoChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -81,15 +69,15 @@ export function SafetyForm({ onSubmit, isLoading, isFormSubmitted, onNewReport }
     return (
        <Card className="w-full">
         <CardHeader>
-          <CardTitle>Analysis Complete</CardTitle>
+          <CardTitle>Análise Completa</CardTitle>
           <CardDescription>
-            Your safety document analysis is ready on the right.
+            Sua análise de segurança está pronta à direita.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <Button onClick={onNewReport} className="w-full" variant="outline">
             <RotateCcw className="mr-2 h-4 w-4" />
-            Start New Report
+            Começar Novo Relatório
           </Button>
         </CardContent>
       </Card>
@@ -99,9 +87,9 @@ export function SafetyForm({ onSubmit, isLoading, isFormSubmitted, onNewReport }
   return (
     <Card className="w-full">
       <CardHeader>
-        <CardTitle>Document Details</CardTitle>
+        <CardTitle>Detalhes do Documento</CardTitle>
         <CardDescription>
-          All fields are required unless stated otherwise.
+          Todos os campos são obrigatórios, a menos que indicado de outra forma.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -113,7 +101,7 @@ export function SafetyForm({ onSubmit, isLoading, isFormSubmitted, onNewReport }
               render={({ field }) => (
                 <FormItem className="space-y-3">
                   <FormLabel>
-                    <FileText className="inline-block mr-2" /> Document Type
+                    <FileText className="inline-block mr-2" /> Tipo de Documento
                   </FormLabel>
                   <FormControl>
                     <Tabs
@@ -206,36 +194,52 @@ export function SafetyForm({ onSubmit, isLoading, isFormSubmitted, onNewReport }
               />
 
             <Separator />
-            <h3 className="text-lg font-semibold flex items-center"><UserCheck className="mr-2"/> Responsável pelo Acompanhamento</h3>
-            
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                <FormField
-                    control={form.control}
-                    name="responsibleName"
-                    render={({ field }) => (
-                    <FormItem>
-                        <FormLabel>Nome</FormLabel>
-                        <FormControl>
-                        <Input placeholder="Nome do responsável" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                    </FormItem>
-                    )}
-                />
-                <FormField
-                    control={form.control}
-                    name="responsibleRole"
-                    render={({ field }) => (
-                    <FormItem>
-                        <FormLabel>Função</FormLabel>
-                        <FormControl>
-                        <Input placeholder="e.g., Técnico de Segurança" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                    </FormItem>
-                    )}
-                />
+            <div className='flex items-center justify-between'>
+              <h3 className="text-lg font-semibold flex items-center"><UserCheck className="mr-2"/> Responsáveis</h3>
+              <Button type='button' variant='outline' size='sm' onClick={() => append({name: '', role: ''})}>
+                <PlusCircle className='mr-2 h-4 w-4' /> Adicionar
+              </Button>
             </div>
+            
+            <div className='space-y-4'>
+            {fields.map((item, index) => (
+              <div key={item.id} className='flex items-start gap-4'>
+                <div className="grid grid-cols-1 gap-x-4 gap-y-2 md:grid-cols-2 flex-grow">
+                  <FormField
+                    control={form.control}
+                    name={`responsiblePersons.${index}.name`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className={index !== 0 ? "sr-only" : ""}>Nome</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Nome do responsável" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name={`responsiblePersons.${index}.role`}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className={index !== 0 ? "sr-only" : ""}>Função</FormLabel>
+                        <FormControl>
+                          <Input placeholder="e.g., Técnico de Segurança" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                <Button type='button' variant='ghost' size='icon' className='mt-8' onClick={() => remove(index)} disabled={fields.length <= 1}>
+                    <Trash2 className='h-4 w-4 text-destructive'/>
+                </Button>
+              </div>
+            ))}
+            <FormMessage>{form.formState.errors.responsiblePersons?.root?.message}</FormMessage>
+            </div>
+
 
             <Separator />
             

@@ -1,5 +1,10 @@
 import { z } from 'zod';
 
+export const responsiblePersonSchema = z.object({
+  name: z.string().min(1, 'Nome do responsável é obrigatório.'),
+  role: z.string().min(1, 'Função do responsável é obrigatória.'),
+});
+
 export const formSchema = z.object({
   documentType: z.enum(['APR', 'APT'], { required_error: 'Please select a document type.' }),
   
@@ -13,8 +18,7 @@ export const formSchema = z.object({
   activityDescription: z.string().min(10, 'Activity description must be at least 10 characters.'),
   
   // Responsible Person
-  responsibleName: z.string().min(1, 'Nome do responsável é obrigatório.'),
-  responsibleRole: z.string().min(1, 'Função do responsável é obrigatória.'),
+  responsiblePersons: z.array(responsiblePersonSchema).min(1, 'Adicione pelo menos um responsável.'),
 
   // Company and Team
   companyName: z.string().min(1, 'Company name is required.'),
@@ -23,3 +27,4 @@ export const formSchema = z.object({
 });
 
 export type SafetyFormValues = z.infer<typeof formSchema>;
+export type ResponsiblePerson = z.infer<typeof responsiblePersonSchema>;

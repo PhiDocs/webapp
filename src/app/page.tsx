@@ -7,25 +7,44 @@ import { getSafetyAnalysis } from '@/app/actions';
 import { Logo } from '@/components/icons/logo';
 import { SafetyForm } from '@/components/safety-form';
 import { AnalysisResult } from '@/components/analysis-result';
-import Image from 'next/image';
 import { Card, CardContent } from '@/components/ui/card';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Separator } from '@/components/ui/separator';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { formSchema } from '@/lib/types';
+import { PrintPreview } from '@/components/print-preview';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 export default function Home() {
   const [analysis, setAnalysis] = useState<SafetyAnalysisOutput | null>(null);
-  const [formData, setFormData] = useState<SafetyFormValues | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  const form = useForm<SafetyFormValues>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      documentType: 'APR',
+      workName: '',
+      workAddress: '',
+      startDate: '',
+      endDate: '',
+      workLocationDetails: '',
+      activityDescription: '',
+      responsiblePersons: [{ name: '', role: '' }],
+      companyName: '',
+      teamMembers: '',
+    },
+    mode: 'onChange',
+  });
 
-  const safetyIllustration = PlaceHolderImages.find(p => p.id === 'safety-illustration');
+  const liveFormData = form.watch();
+  const isFormSubmitted = !!analysis;
 
   const handleFormSubmit = async (data: SafetyFormValues) => {
     setIsLoading(true);
     setError(null);
     setAnalysis(null);
-    setFormData(data);
-
+    
     const result = await getSafetyAnalysis({
       activityDescription: data.activityDescription,
     });
@@ -40,12 +59,12 @@ export default function Home() {
   
   const handleNewReport = () => {
     setAnalysis(null);
-    setFormData(null);
     setError(null);
+    form.reset();
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col">
       <header className="sticky top-0 z-10 w-full border-b bg-background/80 backdrop-blur-sm">
         <div className="container mx-auto flex h-16 items-center justify-between px-4 md:px-6">
           <div className="flex items-center gap-3">
@@ -57,27 +76,30 @@ export default function Home() {
         </div>
       </header>
 
-      <main className="container mx-auto p-4 md:p-6">
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:items-start">
-          <div className="space-y-6 lg:sticky lg:top-20">
-            {!analysis ? (
-              <>
-                <div className="space-y-2">
-                  <h2 className="text-2xl font-bold tracking-tight text-foreground font-headline">
-                    Gere seu Documento de Segurança
-                  </h2>
-                  <p className="text-muted-foreground">
-                    Selecione um tipo de documento e descreva a atividade de trabalho. Nossa IA irá analisá-la com base nas NRs brasileiras.
-                  </p>
-                </div>
-                <SafetyForm onSubmit={handleFormSubmit} isLoading={isLoading} isFormSubmitted={!!analysis} onNewReport={handleNewReport} />
-              </>
-            ) : (
-               <SafetyForm onSubmit={handleFormSubmit} isLoading={isLoading} isFormSubmitted={!!analysis} onNewReport={handleNewReport} />
-            )}
-          </div>
+      <main className="container mx-auto p-4 md:p-6 flex-grow">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 h-full">
+          <ScrollArea className="h-[calc(100vh-120px)]">
+            <div className="space-y-6 lg:pr-4">
+              {!isFormSubmitted ? (
+                <>
+                  <div className="space-y-2">
+                    <h2 className="text-2xl font-bold tracking-tight text-foreground font-headline">
+                      Gere seu Documento de Segurança
+                    </h2>
+                    <p className="text-muted-foreground">
+                      Preencha o formulário e veja a pré-visualização ao lado. Nossa IA irá analisar a atividade com base nas NRs brasileiras.
+                    </p>
+                  </div>
+                  <SafetyForm form={form} onSubmit={handleFormSubmit} isLoading={isLoading} isFormSubmitted={isFormSubmitted} onNewReport={handleNewReport} />
+                </>
+              ) : (
+                 <SafetyForm form={form} onSubmit={handleFormSubmit} isLoading={isLoading} isFormSubmitted={isFormSubmitted} onNewReport={handleNewReport} />
+              )}
+            </div>
+          </ScrollArea>
 
           <div className="space-y-6">
+            <div className="lg:sticky lg:top-20">
              {isLoading && (
               <Card className="flex h-full min-h-[400px] w-full flex-col items-center justify-center">
                 <CardContent className="flex flex-col items-center justify-center gap-4 text-center p-6">
@@ -109,41 +131,30 @@ export default function Home() {
                </Card>
             )}
 
-            {!isLoading && !analysis && !error && (
-              <Card className="relative overflow-hidden rounded-lg lg:min-h-[calc(100vh-10rem)] flex items-center justify-center">
-                <CardContent className="p-0">
-                  {safetyIllustration && (
-                    <Image
-                      src={safetyIllustration.imageUrl}
-                      alt={safetyIllustration.description}
-                      width={800}
-                      height={600}
-                      className="object-cover"
-                      data-ai-hint={safetyIllustration.imageHint}
-                      priority
-                    />
-                  )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                  <div className="absolute bottom-0 p-6">
-                    <h3 className="text-2xl font-bold text-white font-headline">
-                      Sua análise aparecerá aqui
-                    </h3>
-                    <p className="mt-2 text-white/80">
-                      Preencha o formulário para começar.
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
+            {!isLoading && !error && !analysis && (
+              <div className="bg-gray-200 dark:bg-gray-800 p-4 rounded-lg h-[calc(100vh-120px)] overflow-hidden">
+                <ScrollArea className='h-full'>
+                  <PrintPreview formData={liveFormData} analysisData={null} />
+                </ScrollArea>
+              </div>
             )}
             
-            {analysis && formData && !isLoading && !error && (
-              <AnalysisResult analysisData={analysis} formData={formData} />
+            {analysis && !isLoading && !error && (
+              <div className='flex flex-col gap-6'>
+                <AnalysisResult analysisData={analysis} formData={liveFormData} />
+                 <div className="bg-gray-200 dark:bg-gray-800 p-4 rounded-lg h-[calc(100vh-420px)] overflow-hidden">
+                    <ScrollArea className='h-full'>
+                      <PrintPreview formData={liveFormData} analysisData={analysis} />
+                    </ScrollArea>
+                </div>
+              </div>
             )}
+            </div>
           </div>
         </div>
       </main>
 
-      <footer className="container mx-auto mt-12 px-4 md:px-6">
+      <footer className="container mx-auto mt-auto px-4 md:px-6">
           <Separator/>
           <div className="py-6 text-center text-sm text-muted-foreground">
             <p>&copy; {new Date().getFullYear()} Safety Docs AI. All Rights Reserved.</p>
