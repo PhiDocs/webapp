@@ -66,3 +66,30 @@
     @apply bg-background text-foreground;
   }
 }
+
+@media print {
+    @page {
+        size: A4 portrait;
+        margin: 15mm;
+    }
+    
+    html, body {
+        width: 210mm;
+        height: 297mm;
+        font-size: 9pt;
+        background: white;
+        color: black;
+    }
+    .print-container-wrapper {
+        background: none;
+        padding: 0;
+    }
+    .print-document-container {
+        box-shadow: none;
+        width: 100%;
+        min-height: 0;
+    }
+    .page-content-wrapper {
+        padding: 0;
+    }
+}
