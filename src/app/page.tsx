@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
 import type { SafetyAnalysisOutput } from '@/ai/flows/generate-safety-analysis';
 import type { SafetyFormValues } from '@/lib/types';
@@ -99,10 +98,13 @@ export default function Home() {
         throw new Error('Elemento raiz de impressão não encontrado.');
       }
       
+      const contentWidth = rootElement.offsetWidth;
+      const contentHeight = rootElement.offsetHeight;
+
       const pdf = new jsPDF({
-          orientation: 'p',
-          unit: 'mm',
-          format: 'a4'
+        orientation: 'p',
+        unit: 'px',
+        format: [contentWidth, contentHeight]
       });
 
       await pdf.html(rootElement, {
@@ -111,10 +113,9 @@ export default function Home() {
               const fileName = `${printData.documentType}-${printData.companyName.replace(/ /g,"_")}-${new Date().toLocaleDateString('pt-BR').replace(/\//g, '-')}.pdf`;
               doc.save(fileName);
           },
-          margin: [10, 10, 10, 10],
-          autoPaging: 'text',
-          width: 210, // A4 width in mm
-          windowWidth: rootElement.scrollWidth,
+          // No margin, as the component itself has padding
+          width: contentWidth, 
+          windowWidth: contentWidth
       });
 
     } catch (error: any) {
