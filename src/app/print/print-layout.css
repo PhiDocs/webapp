@@ -30,7 +30,7 @@
   This defines the A4 page margins.
 */
 .page-content-wrapper {
-    padding: 15mm;
+    padding: 7.5mm;
     width: 100%;
 }
 
@@ -105,7 +105,7 @@ table.analysis-table th {
 }
 
 table.analysis-table td {
-    whitespace: pre-wrap;
+    white-space: pre-wrap;
 }
 
 .signature-grid {
@@ -151,7 +151,7 @@ thead.analysis-table-header {
 @media print {
     @page {
         size: A4 portrait;
-        margin: 15mm;
+        margin: 7.5mm;
     }
     
     html, body {

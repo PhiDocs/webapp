@@ -145,9 +145,9 @@ export default function Home() {
             const fileName = `${docName}-${printData.companyName.replace(/ /g,"_")}-${new Date().toLocaleDateString('pt-br').replace(/\//g, '-')}.pdf`;
             doc.save(fileName);
         },
-        margin: [15, 15, 15, 15],
+        margin: [7.5, 7.5, 7.5, 7.5],
         autoPaging: 'text',
-        width: 180, 
+        width: 195, 
         windowWidth: 794
       });
 
