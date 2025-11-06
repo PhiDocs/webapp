@@ -1,6 +1,7 @@
 'use client';
 
-import type { UseFormReturn, useFieldArray } from 'react-hook-form';
+import type { UseFormReturn } from 'react-hook-form';
+import { useFieldArray } from 'react-hook-form';
 import type { SafetyFormValues } from '@/lib/types';
 import {
   FormControl,
