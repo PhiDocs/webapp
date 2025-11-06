@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import type { SafetyFormValues, PtFormValues } from '@/lib/types';
 import type { SafetyAnalysisOutput } from '@/ai/flows/generate-safety-analysis';
 import type { ProtectiveEquipmentOutput } from '@/ai/flows/recommend-protective-equipment';
@@ -68,7 +68,11 @@ function APRHeader({ data }: { data: SafetyFormValues }) {
 }
 
 function PrintFooter() {
-    const date = useMemo(() => new Date().toLocaleDateString('pt-BR'), []);
+    const [date, setDate] = useState('');
+    useEffect(() => {
+        setDate(new Date().toLocaleDateString('pt-BR'));
+    }, []);
+
     return (
         <div className="print-footer avoid-break">
             <div className="footer-content-wrapper">
@@ -269,3 +273,5 @@ export function PrintPreview({ formData, analysisData, equipmentData }: PrintPre
       </div>
   );
 }
+
+    
