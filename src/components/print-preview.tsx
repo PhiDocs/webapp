@@ -27,8 +27,8 @@ function APRHeader({ data, isPrinting }: { data: SafetyFormValues, isPrinting?: 
           )}
           <div className='flex-1 min-w-0'>
             <h1 className="text-xl font-bold text-gray-800 break-words">{data.companyName || 'Nome da Empresa'}</h1>
-            <p className='text-xs mt-2 break-words whitespace-pre-wrap'>
-              <strong className='font-semibold'>Serviços a executar:</strong> {data.activityDescription || '...'}
+            <p className='text-sm mt-2 font-bold'>
+              APR - Analise Preliminar de Risco
             </p>
           </div>
         </div>
