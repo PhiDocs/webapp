@@ -2,8 +2,6 @@
 
 import { useState } from 'react';
 import { jsPDF } from 'jspdf';
-import 'html2canvas';
-
 import type { SafetyAnalysisOutput } from '@/ai/flows/generate-safety-analysis';
 import type { ProtectiveEquipmentOutput } from '@/ai/flows/recommend-protective-equipment';
 import type { SafetyFormValues } from '@/lib/types';
@@ -117,16 +115,6 @@ export default function Home() {
   const { toast } = useToast();
 
   const handleGeneratePdf = async () => {
-    // const isValid = await form.trigger();
-    // if (!isValid) {
-    //   toast({
-    //     variant: 'destructive',
-    //     title: 'Formulário incompleto',
-    //     description:
-    //       'Por favor, preencha todos os campos obrigatórios antes de gerar o PDF.',
-    //   });
-    //   return;
-    // }
     if (liveFormData.documentType === 'APR' && !analysis) {
       toast({
         variant: 'destructive',
@@ -139,18 +127,18 @@ export default function Home() {
 
     setIsDownloading(true);
     try {
-      const doc = new jsPDF({
-        orientation: 'p',
-        unit: 'mm',
-        format: 'a4',
-      });
-      
       const content = document.getElementById('print-content-root');
 
       if (!content) {
         throw new Error('Elemento de impressão não encontrado.');
       }
       
+      const doc = new jsPDF({
+        orientation: 'p',
+        unit: 'mm',
+        format: 'a4',
+      });
+
       await doc.html(content, {
         callback: function (doc) {
             const printData = form.getValues();
@@ -160,8 +148,8 @@ export default function Home() {
         },
         margin: [15, 15, 15, 15],
         autoPaging: 'text',
-        width: 180, // A4 width in mm minus margins (210 - 15 - 15)
-        windowWidth: 794 // A4 width in px for 96 DPI
+        width: 180, 
+        windowWidth: 794
       });
 
 

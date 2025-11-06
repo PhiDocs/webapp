@@ -41,8 +41,8 @@ export const ptFormSchema = z.object({
   ptObservacao: z.string(),
   ptVisto: z.string(),
   
-  ptVigia: ptTeamMemberSchema.optional(),
-  ptResgatistas: z.array(ptTeamMemberSchema).optional(),
+  ptVigia: ptTeamMemberSchema,
+  ptResgatistas: z.array(ptTeamMemberSchema),
 
   ptGestorArea: z.string().optional(),
   ptResponsavelAtividade: z.string().optional(),
@@ -72,6 +72,19 @@ export const formSchema = z.object({
 
   // PT Form Data
   pt: ptFormSchema,
+}).superRefine((data, ctx) => {
+    if (data.documentType === 'APR') {
+        if (!data.companyName) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Nome da empresa é obrigatório.", path: ["companyName"] });
+        if (!data.workName) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Nome da obra é obrigatório.", path: ["workName"] });
+        if (!data.workAddress) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Endereço da obra é obrigatório.", path: ["workAddress"] });
+        if (!data.startDate) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Data de início é obrigatória.", path: ["startDate"] });
+        if (!data.endDate) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Data de término é obrigatória.", path: ["endDate"] });
+        if (!data.workLocationDetails) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Local da obra/pavimento é obrigatório.", path: ["workLocationDetails"] });
+    } else if (data.documentType === 'PT') {
+        if (!data.pt.ptLocalAtividade) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Local da atividade é obrigatório.", path: ["pt", "ptLocalAtividade"] });
+        if (!data.pt.ptData) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Data é obrigatória.", path: ["pt", "ptData"] });
+        if (!data.pt.ptHoraInicio) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Hora de início é obrigatória.", path: ["pt", "ptHoraInicio"] });
+    }
 });
 
 export type SafetyFormValues = z.infer<typeof formSchema>;
