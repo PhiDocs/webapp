@@ -16,7 +16,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   BookOpen,
   Building2,
@@ -210,7 +210,9 @@ export function SafetyForm({
                 )}
               />
 
-              {documentType === 'APR' && (
+              {documentType === 'PT' ? (
+                <PTForm form={form} />
+              ) : (
                 <div className="space-y-8">
                   <Separator />
                   <h3 className="text-lg font-semibold flex items-center">
@@ -528,9 +530,6 @@ export function SafetyForm({
                     </FormMessage>
                   </div>
                 </div>
-              )}
-              {documentType === 'PT' && (
-                <PTForm form={form} />
               )}
               
               <Button

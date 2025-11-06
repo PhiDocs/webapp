@@ -3,6 +3,7 @@
 import React from 'react';
 import type { SafetyFormValues, PtTeamMember } from '@/lib/types';
 import { ptChecklistItems } from '@/lib/pt-checklist-data';
+import { Logo } from './icons/logo';
 
 interface PTPreviewProps {
   formData: SafetyFormValues;
@@ -17,7 +18,7 @@ const CheckboxDisplay = ({ checked }: { checked: boolean }) => (
 const TextLine = ({ label, value, className = '' }: { label: string, value: string | undefined, className?: string}) => (
     <div className={`flex items-end border-b border-black ${className}`}>
         <span className="text-xxs font-bold uppercase mr-1">{label}:</span>
-        <span className="text-xs flex-1 text-left">{value || '...'}</span>
+        <span className="text-xs flex-1 text-left whitespace-pre-wrap break-words">{value || '...'}</span>
     </div>
 );
 
@@ -66,7 +67,7 @@ const TeamTable = ({ title, members, showEmpresa = false }: { title: string, mem
 
 
 export function PTPreview({ formData }: PTPreviewProps) {
-  const { pt: ptData, companyLogo, companyName } = formData;
+  const { pt: ptData } = formData;
   const checklist = ptData.ptChecklist || {};
 
   const getCheckedItems = (sectionId: string) => {
@@ -79,8 +80,8 @@ export function PTPreview({ formData }: PTPreviewProps) {
         <table className="w-full border-collapse info-grid">
             <tbody>
                 <tr>
-                    <td rowSpan={2} className="w-1/4">
-                         <img src={companyLogo || "/placeholder.svg"} alt="Logo" className="h-12 mx-auto" />
+                    <td rowSpan={2} className="w-1/4 align-middle text-center">
+                         <Logo className="h-12 w-auto mx-auto text-gray-700" />
                     </td>
                     <td rowSpan={2} className="w-1/2 text-center">
                         <h1 className="text-lg font-bold">PERMISSÃO DE TRABALHO</h1>
