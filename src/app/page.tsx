@@ -254,6 +254,7 @@ export default function Home() {
                     formData={liveFormData}
                     analysisData={analysis}
                     equipmentData={equipment}
+                    isPrinting={isDownloading}
                   />
                 </div>
               </div>

@@ -7,6 +7,7 @@ import { Logo } from './icons/logo';
 
 interface PTPreviewProps {
   formData: SafetyFormValues;
+  isPrinting?: boolean;
 }
 
 const CheckboxDisplay = ({ checked }: { checked: boolean }) => (
@@ -66,7 +67,7 @@ const TeamTable = ({ title, members, showEmpresa = false }: { title: string, mem
 };
 
 
-export function PTPreview({ formData }: PTPreviewProps) {
+export function PTPreview({ formData, isPrinting }: PTPreviewProps) {
   const { pt: ptData } = formData;
   const checklist = ptData.ptChecklist || {};
 
@@ -81,7 +82,7 @@ export function PTPreview({ formData }: PTPreviewProps) {
             <tbody>
                 <tr>
                     <td rowSpan={2} className="w-1/4 align-middle text-center">
-                         <Logo className="h-12 w-auto mx-auto text-gray-700" />
+                         {!isPrinting && <Logo className="h-12 w-auto mx-auto text-gray-700" />}
                     </td>
                     <td rowSpan={2} className="w-1/2 text-center">
                         <h1 className="text-lg font-bold">PERMISSÃO DE TRABALHO</h1>

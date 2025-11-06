@@ -12,9 +12,10 @@ interface PrintPreviewProps {
   formData: SafetyFormValues;
   analysisData: SafetyAnalysisOutput | null;
   equipmentData: ProtectiveEquipmentOutput | null;
+  isPrinting?: boolean;
 }
 
-function APRHeader({ data }: { data: SafetyFormValues }) {
+function APRHeader({ data, isPrinting }: { data: SafetyFormValues, isPrinting?: boolean }) {
   return (
     <header className="print-header avoid-break">
       <div className="flex items-start justify-between gap-4">
@@ -22,11 +23,11 @@ function APRHeader({ data }: { data: SafetyFormValues }) {
           {data.companyLogo ? (
             <img src={data.companyLogo} alt="Company Logo" className="h-16 w-auto max-w-[120px] object-contain" />
           ) : (
-            <Logo className="h-12 w-12 text-gray-700" />
+            !isPrinting && <Logo className="h-12 w-12 text-gray-700" />
           )}
           <div className='flex-1 min-w-0'>
             <h1 className="text-xl font-bold text-gray-800 break-words">{data.companyName || 'Nome da Empresa'}</h1>
-            <p className='text-xs mt-2 break-words'>
+            <p className='text-xs mt-2 break-words whitespace-pre-wrap'>
               <strong className='font-semibold'>Serviços a executar:</strong> {data.activityDescription || '...'}
             </p>
           </div>
@@ -172,7 +173,7 @@ function AnalysisTable({ steps }: { steps: any[] }) {
                   <td className="p-2 align-top text-center">{step.item}</td>
                   <td className="p-2 align-top">{step.activity}</td>
                   <td className="p-2 align-top">{step.potentialRisks}</td>
-                  <td className="p-2 align-top">{step.preventiveMeasures}</td>
+                  <td className="p-2 align-top whitespace-pre-wrap">{step.preventiveMeasures}</td>
                 </tr>
               ))}
             </tbody>
@@ -228,14 +229,14 @@ function getShortDate(dateString: string | undefined) {
   }
 }
 
-export function APRPreviewContent({ formData, analysisData, equipmentData }: { formData: SafetyFormValues, analysisData: SafetyAnalysisOutput | null, equipmentData: ProtectiveEquipmentOutput | null }) {
+export function APRPreviewContent({ formData, analysisData, equipmentData, isPrinting }: { formData: SafetyFormValues, analysisData: SafetyAnalysisOutput | null, equipmentData: ProtectiveEquipmentOutput | null, isPrinting?: boolean }) {
     if (!formData) return null;
 
     const showAnalysis = analysisData && analysisData.proceduralSteps && analysisData.proceduralSteps.length > 0;
 
     return (
         <div className="page-content-wrapper">
-            <APRHeader data={formData} />
+            <APRHeader data={formData} isPrinting={isPrinting} />
             <main className='print-main'>
                 <ResponsiblesSection data={formData} />
 
@@ -258,16 +259,16 @@ export function APRPreviewContent({ formData, analysisData, equipmentData }: { f
     );
 }
 
-export function PrintPreview({ formData, analysisData, equipmentData }: PrintPreviewProps) {
+export function PrintPreview({ formData, analysisData, equipmentData, isPrinting }: PrintPreviewProps) {
   const documentType = formData?.documentType;
 
   return (
       <div id="print-content-root">
            <div className="print-document-container">
               {documentType === 'APR' ? (
-                  <APRPreviewContent formData={formData} analysisData={analysisData} equipmentData={equipmentData} />
+                  <APRPreviewContent formData={formData} analysisData={analysisData} equipmentData={equipmentData} isPrinting={isPrinting} />
               ) : (
-                  <PTPreview formData={formData} />
+                  <PTPreview formData={formData} isPrinting={isPrinting} />
               )}
           </div>
       </div>
