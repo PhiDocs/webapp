@@ -18,15 +18,15 @@ function APRHeader({ data }: { data: SafetyFormValues }) {
   return (
     <header className="print-header avoid-break">
       <div className="flex items-start justify-between gap-4">
-        <div className="flex items-start gap-4">
+        <div className="flex items-start gap-4 flex-1 min-w-0">
           {data.companyLogo ? (
             <img src={data.companyLogo} alt="Company Logo" className="h-16 w-auto max-w-[120px] object-contain" />
           ) : (
             <Logo className="h-12 w-12 text-gray-700" />
           )}
-          <div className='flex-1'>
-            <h1 className="text-xl font-bold text-gray-800">{data.companyName || 'Nome da Empresa'}</h1>
-            <p className='text-xs max-w-xs mt-2'>
+          <div className='flex-1 min-w-0'>
+            <h1 className="text-xl font-bold text-gray-800 break-words">{data.companyName || 'Nome da Empresa'}</h1>
+            <p className='text-xs mt-2 break-words'>
               <strong className='font-semibold'>Serviços a executar:</strong> {data.activityDescription || '...'}
             </p>
           </div>
@@ -155,7 +155,7 @@ function TeamSection({ data }: { data: SafetyFormValues }) {
 
 function AnalysisTable({ steps }: { steps: any[] }) {
   return (
-     <section className='analysis-table-wrapper avoid-break'>
+     <section className='analysis-table-wrapper'>
         <h3 className="section-title">PROCEDIMENTO OPERACIONAL</h3>
         <table className="w-full border-collapse text-xs analysis-table">
             <thead className='analysis-table-header'>
@@ -170,9 +170,9 @@ function AnalysisTable({ steps }: { steps: any[] }) {
               {steps.map((step: any, index: number) => (
                 <tr key={`proc-step-${step.item || index}`} className="procedural-step-row">
                   <td className="p-2 align-top text-center">{step.item}</td>
-                  <td className="p-2 align-top whitespace-pre-wrap">{step.activity}</td>
-                  <td className="p-2 align-top whitespace-pre-wrap">{step.potentialRisks}</td>
-                  <td className="p-2 align-top whitespace-pre-wrap">{step.preventiveMeasures}</td>
+                  <td className="p-2 align-top">{step.activity}</td>
+                  <td className="p-2 align-top">{step.potentialRisks}</td>
+                  <td className="p-2 align-top">{step.preventiveMeasures}</td>
                 </tr>
               ))}
             </tbody>
@@ -273,5 +273,3 @@ export function PrintPreview({ formData, analysisData, equipmentData }: PrintPre
       </div>
   );
 }
-
-    

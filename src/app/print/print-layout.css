@@ -104,6 +104,9 @@ table.analysis-table th {
   color: #333;
 }
 
+table.analysis-table td {
+    whitespace: pre-wrap;
+}
 
 .signature-grid {
     display: grid;
