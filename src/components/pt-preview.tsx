@@ -28,6 +28,43 @@ const Section = ({ title, children, className = "" }: { title: string, children:
     </div>
 );
 
+const TeamTable = ({ title, members, showEmpresa = false }: { title: string, members: PtTeamMember[], showEmpresa?: boolean }) => {
+    if (!members || members.length === 0) return null;
+
+    return (
+        <Section title={title} className="!mt-2">
+            <table className="w-full border-collapse info-grid text-xs">
+                <thead className='text-center font-bold'>
+                    <tr>
+                        <td className='w-1/3'>NOME</td>
+                        <td className='w-1/4'>RG/CPF</td>
+                        <td className='w-1/4'>FUNÇÃO</td>
+                        {showEmpresa && <td className='w-1/5'>EMPRESA</td>}
+                        <td className='w-1/6'>APTO</td>
+                    </tr>
+                </thead>
+                <tbody>
+                    {members.map((m, i) => (
+                        <tr key={i} className='h-6'>
+                            <td>{m.name}</td>
+                            <td>{m.rgCpf}</td>
+                            <td>{m.func}</td>
+                            {showEmpresa && <td>{m.empresa}</td>}
+                            <td className='text-center'>
+                                <div className='flex items-center justify-center gap-2'>
+                                    <CheckboxDisplay checked={m.apto === 'sim'} /> Sim
+                                    <CheckboxDisplay checked={m.apto === 'nao'} /> Não
+                                </div>
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        </Section>
+    );
+};
+
+
 export function PTPreview({ formData }: PTPreviewProps) {
   const { pt: ptData, companyLogo, companyName } = formData;
   const checklist = ptData.ptChecklist || {};
@@ -105,85 +142,40 @@ export function PTPreview({ formData }: PTPreviewProps) {
             );
         })}
         
-        <Section title="TRABALHO EM ESPAÇO CONFINADO - AVALIAÇÃO FEITA PELO SESMT">
-             <table className="w-full border-collapse info-grid text-xs">
-                <thead className='text-center'>
-                    <tr className='font-bold'>
-                        <td>Oxigênio</td>
-                        <td>L.E.</td>
-                        <td>H²S</td>
-                        <td>CO²</td>
-                        <td className='w-1/4'>Observação</td>
-                        <td className='w-1/6'>Visto</td>
-                    </tr>
-                </thead>
-                <tbody className='text-center'>
-                    <tr className='h-6'>
-                        <td>{ptData.ptOxigenio}</td>
-                        <td>{ptData.ptLE}</td>
-                        <td>{ptData.ptH2S}</td>
-                        <td>{ptData.ptCO2}</td>
-                        <td>{ptData.ptObservacao}</td>
-                        <td>{ptData.ptVisto}</td>
-                    </tr>
-                </tbody>
-             </table>
-        </Section>
-        
-        <Section title="Vigia:" className="!mt-2">
-            <table className="w-full border-collapse info-grid text-xs">
-                 <thead className='text-center font-bold'>
-                    <tr>
-                        <td className='w-1/3'>NOME</td>
-                        <td className='w-1/4'>RG/CPF</td>
-                        <td className='w-1/4'>FUNÇÃO</td>
-                        <td className='w-1/6'>APTO</td>
-                    </tr>
-                 </thead>
-                 <tbody>
-                    <tr className='h-6'>
-                        <td>{ptData.ptVigia?.name}</td>
-                        <td>{ptData.ptVigia?.rgCpf}</td>
-                        <td>{ptData.ptVigia?.func}</td>
-                        <td className='text-center'>
-                           <div className='flex items-center justify-center gap-2'>
-                                <CheckboxDisplay checked={ptData.ptVigia?.apto === 'sim'} /> Sim
-                                <CheckboxDisplay checked={ptData.ptVigia?.apto === 'nao'} /> Não
-                           </div>
-                        </td>
-                    </tr>
-                 </tbody>
-            </table>
-        </Section>
-         <Section title="Resgatistas:" className="!mt-2">
-            <table className="w-full border-collapse info-grid text-xs">
-                 <thead className='text-center font-bold'>
-                    <tr>
-                        <td className='w-1/3'>NOME</td>
-                        <td className='w-1/5'>RG/CPF</td>
-                        <td className='w-1/5'>FUNÇÃO</td>
-                        <td className='w-1/5'>EMPRESA</td>
-                        <td className='w-1/6'>APTO</td>
-                    </tr>
-                 </thead>
-                 <tbody>
-                    {(ptData.ptResgatistas || []).map((m, i) => (
-                        <tr key={i} className='h-6'>
-                            <td>{m.name}</td>
-                            <td>{m.rgCpf}</td>
-                            <td>{m.func}</td>
-                            <td>{m.empresa}</td>
-                             <td className='text-center'>
-                               <div className='flex items-center justify-center gap-2'>
-                                   <CheckboxDisplay checked={m.apto === 'sim'} /> Sim
-                                   <CheckboxDisplay checked={m.apto === 'nao'} /> Não
-                               </div>
-                            </td>
+        {ptData.ptEnableEspacoConfinado && (
+            <Section title="TRABALHO EM ESPAÇO CONFINADO - AVALIAÇÃO FEITA PELO SESMT">
+                <table className="w-full border-collapse info-grid text-xs">
+                    <thead className='text-center'>
+                        <tr className='font-bold'>
+                            <td>Oxigênio</td>
+                            <td>L.E.</td>
+                            <td>H²S</td>
+                            <td>CO²</td>
+                            <td className='w-1/4'>Observação</td>
+                            <td className='w-1/6'>Visto</td>
                         </tr>
-                    ))}
-                 </tbody>
-            </table>
-        </Section>
+                    </thead>
+                    <tbody className='text-center'>
+                        <tr className='h-6'>
+                            <td>{ptData.ptOxigenio}</td>
+                            <td>{ptData.ptLE}</td>
+                            <td>{ptData.ptH2S}</td>
+                            <td>{ptData.ptCO2}</td>
+                            <td>{ptData.ptObservacao}</td>
+                            <td>{ptData.ptVisto}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </Section>
+        )}
+        
+        {ptData.ptEnableVigia && (
+            <TeamTable title="Vigia(s):" members={ptData.ptVigias || []} showEmpresa={false} />
+        )}
+
+        {ptData.ptEnableResgatistas && (
+            <TeamTable title="Resgatistas:" members={ptData.ptResgatistas || []} showEmpresa={true} />
+        )}
 
         <Section title="ASSINATURAS" className="!mt-4">
              <div className="grid grid-cols-3 gap-2 pt-16 text-center border border-black border-t-0 text-xs">

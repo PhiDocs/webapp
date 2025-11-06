@@ -34,6 +34,12 @@ export const ptFormSchema = z.object({
   
   ptChecklist: ptChecklistSchema,
 
+  // Optional Sections
+  ptEnableEspacoConfinado: z.boolean().optional(),
+  ptEnableVigia: z.boolean().optional(),
+  ptEnableResgatistas: z.boolean().optional(),
+
+
   ptOxigenio: z.string(),
   ptLE: z.string(),
   ptH2S: z.string(),
@@ -41,7 +47,7 @@ export const ptFormSchema = z.object({
   ptObservacao: z.string(),
   ptVisto: z.string(),
   
-  ptVigia: ptTeamMemberSchema,
+  ptVigias: z.array(ptTeamMemberSchema),
   ptResgatistas: z.array(ptTeamMemberSchema),
 
   ptGestorArea: z.string().optional(),
