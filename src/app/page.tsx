@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import { jsPDF } from 'jspdf';
+import 'html2canvas';
+
 import type { SafetyAnalysisOutput } from '@/ai/flows/generate-safety-analysis';
 import type { ProtectiveEquipmentOutput } from '@/ai/flows/recommend-protective-equipment';
 import type { SafetyFormValues } from '@/lib/types';
@@ -41,6 +43,31 @@ export default function Home() {
       companyName: '',
       companyLogo: '',
       teamMembers: [],
+      pt: {
+        ptLocalAtividade: '',
+        ptEquipamentoLinha: '',
+        ptEmpresaSetor: 'Plaskaper',
+        ptData: new Date().toISOString().split('T')[0],
+        ptHoraInicio: '',
+        ptHoraFim: '',
+        ptDescricaoTarefa: '',
+        ptChecklist: {},
+        ptOxigenio: '19,5 a 23%',
+        ptLE: '<10%',
+        ptH2S: '8 PPM',
+        ptCO2: '39 PPM',
+        ptObservacao: '',
+        ptVisto: '',
+        ptVigia: { name: '', rgCpf: '', func: '', empresa: '', apto: '' },
+        ptResgatistas: [
+          { name: '', rgCpf: '', func: '', empresa: '', apto: '' },
+          { name: '', rgCpf: '', func: '', empresa: '', apto: '' },
+          { name: '', rgCpf: '', func: '', empresa: '', apto: '' },
+        ],
+        ptGestorArea: '',
+        ptResponsavelAtividade: '',
+        ptSesmt: '',
+      },
     },
     mode: 'onChange',
   });
@@ -48,6 +75,8 @@ export default function Home() {
   const liveFormData = form.watch();
 
   const handleFormSubmit = async (data: SafetyFormValues) => {
+    if (data.documentType !== 'APR') return;
+
     setIsLoading(true);
     setError(null);
     setAnalysis(null);
@@ -65,7 +94,6 @@ export default function Home() {
     }
     
     if (equipmentResult.error || !equipmentResult.data) {
-        // Handle error for equipment, maybe show a toast or a partial error message
         console.error(equipmentResult.error);
         toast({
             variant: 'destructive',
@@ -89,17 +117,17 @@ export default function Home() {
   const { toast } = useToast();
 
   const handleGeneratePdf = async () => {
-    const isValid = await form.trigger();
-    if (!isValid) {
-      toast({
-        variant: 'destructive',
-        title: 'Formulário incompleto',
-        description:
-          'Por favor, preencha todos os campos obrigatórios antes de gerar o PDF.',
-      });
-      return;
-    }
-    if (!analysis) {
+    // const isValid = await form.trigger();
+    // if (!isValid) {
+    //   toast({
+    //     variant: 'destructive',
+    //     title: 'Formulário incompleto',
+    //     description:
+    //       'Por favor, preencha todos os campos obrigatórios antes de gerar o PDF.',
+    //   });
+    //   return;
+    // }
+    if (liveFormData.documentType === 'APR' && !analysis) {
       toast({
         variant: 'destructive',
         title: 'Análise de Risco não gerada',
@@ -123,27 +151,11 @@ export default function Home() {
         throw new Error('Elemento de impressão não encontrado.');
       }
       
-      // Get all style tags and link tags from the document head
-      const styles = Array.from(document.head.querySelectorAll('style, link[rel="stylesheet"]'))
-        .map(el => el.outerHTML).join('');
-
-
-      const fullHtml = `
-        <html>
-          <head>
-            <meta charset="utf-8">
-            ${styles}
-          </head>
-          <body>
-            ${content.innerHTML}
-          </body>
-        </html>
-      `;
-
-      await doc.html(fullHtml, {
+      await doc.html(content, {
         callback: function (doc) {
             const printData = form.getValues();
-            const fileName = `${printData.documentType}-${printData.companyName.replace(/ /g,"_")}-${new Date().toLocaleDateString('pt-br').replace(/\//g, '-')}.pdf`;
+            const docName = printData.documentType === 'APR' ? 'APR' : 'PT';
+            const fileName = `${docName}-${printData.companyName.replace(/ /g,"_")}-${new Date().toLocaleDateString('pt-br').replace(/\//g, '-')}.pdf`;
             doc.save(fileName);
         },
         margin: [15, 15, 15, 15],
@@ -178,7 +190,7 @@ export default function Home() {
           </div>
           <Button
             onClick={handleGeneratePdf}
-            disabled={isDownloading || !analysis}
+            disabled={isDownloading || (liveFormData.documentType === 'APR' && !analysis)}
           >
             {isDownloading ? (
               <>

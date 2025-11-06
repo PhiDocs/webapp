@@ -1,10 +1,12 @@
 'use client';
 
 import React, { useMemo } from 'react';
-import type { SafetyFormValues } from '@/lib/types';
+import type { SafetyFormValues, PtFormValues } from '@/lib/types';
 import type { SafetyAnalysisOutput } from '@/ai/flows/generate-safety-analysis';
 import type { ProtectiveEquipmentOutput } from '@/ai/flows/recommend-protective-equipment';
 import { Logo } from '@/components/icons/logo';
+import { PTPreview } from './pt-preview';
+
 
 interface PrintPreviewProps {
   formData: SafetyFormValues;
@@ -12,7 +14,7 @@ interface PrintPreviewProps {
   equipmentData: ProtectiveEquipmentOutput | null;
 }
 
-function PrintHeader({ data }: { data: SafetyFormValues }) {
+function APRHeader({ data }: { data: SafetyFormValues }) {
   return (
     <header className="print-header avoid-break">
       <div className="flex items-start justify-between gap-4">
@@ -29,7 +31,7 @@ function PrintHeader({ data }: { data: SafetyFormValues }) {
             </p>
           </div>
         </div>
-        <div className="text-right flex flex-row gap-2 shrink-0">
+        <div className="flex flex-row gap-2 shrink-0">
           <div className='border p-1 text-center min-w-[100px]'>
             <p className='text-xs font-bold'>APR Nº</p>
             <p className='text-sm'>&nbsp;</p>
@@ -148,17 +150,6 @@ function TeamSection({ data }: { data: SafetyFormValues }) {
 }
 
 function AnalysisTable({ steps }: { steps: any[] }) {
-  if (!steps || steps.length === 0) {
-      return (
-          <section className='avoid-break'>
-              <h3 className="section-title">PROCEDIMENTO OPERACIONAL</h3>
-              <div className="text-center text-gray-500 italic py-8 border-2 border-dashed rounded-lg">
-                  A análise de procedimento operacional aparecerá aqui após ser gerada.
-              </div>
-          </section>
-      );
-  }
-
   return (
      <section className='analysis-table-wrapper avoid-break'>
         <h3 className="section-title">PROCEDIMENTO OPERACIONAL</h3>
@@ -212,7 +203,7 @@ function EquipmentSection({ data }: { data: ProtectiveEquipmentOutput | null }) 
             </td>
           </tr>
           <tr>
-            <td className="p-2 align-top text-xs"><strong>BS.:</strong> {data.epiNote}</td>
+            <td className="p-2 align-top text-xs"><strong>OBS.:</strong> {data.epiNote}</td>
             <td className="p-2 align-top text-xs"><strong>OBS.:</strong> {data.epcNote}</td>
           </tr>
         </tbody>
@@ -221,10 +212,11 @@ function EquipmentSection({ data }: { data: ProtectiveEquipmentOutput | null }) 
   )
 }
 
-function getShortDate(dateString: string) {
+function getShortDate(dateString: string | undefined) {
   if (!dateString) return '...';
   try {
     const date = new Date(dateString);
+    // Adjust for timezone offset to prevent date from changing
     const zonedDate = new Date(date.valueOf() + date.getTimezoneOffset() * 60 * 1000);
     return zonedDate.toLocaleDateString('pt-BR');
   } catch (e) {
@@ -232,14 +224,28 @@ function getShortDate(dateString: string) {
   }
 }
 
-export function PrintPreviewContent({ formData, analysisData, equipmentData }: { formData: SafetyFormValues, analysisData: SafetyAnalysisOutput | null, equipmentData: ProtectiveEquipmentOutput | null }) {
+export function APRPreviewContent({ formData, analysisData, equipmentData }: { formData: SafetyFormValues, analysisData: SafetyAnalysisOutput | null, equipmentData: ProtectiveEquipmentOutput | null }) {
     if (!formData) return null;
+
+    const showAnalysis = analysisData && analysisData.proceduralSteps && analysisData.proceduralSteps.length > 0;
+
     return (
         <div className="page-content-wrapper">
-            <PrintHeader data={formData} />
+            <APRHeader data={formData} />
             <main className='print-main'>
                 <ResponsiblesSection data={formData} />
-                <AnalysisTable steps={analysisData?.proceduralSteps || []} />
+
+                {showAnalysis ? (
+                   <AnalysisTable steps={analysisData.proceduralSteps} />
+                ) : (
+                    <section className='avoid-break'>
+                        <h3 className="section-title">PROCEDIMENTO OPERACIONAL</h3>
+                        <div className="text-center text-gray-500 italic py-8 border-2 border-dashed rounded-lg">
+                            A análise de procedimento operacional aparecerá aqui após ser gerada.
+                        </div>
+                    </section>
+                )}
+
                 <EquipmentSection data={equipmentData} />
                 <TeamSection data={formData} />
             </main>
@@ -249,11 +255,17 @@ export function PrintPreviewContent({ formData, analysisData, equipmentData }: {
 }
 
 export function PrintPreview({ formData, analysisData, equipmentData }: PrintPreviewProps) {
-    return (
-        <div id="print-content-root">
-             <div className="print-document-container">
-                <PrintPreviewContent formData={formData} analysisData={analysisData} equipmentData={equipmentData} />
-            </div>
-        </div>
-    );
+  const documentType = formData?.documentType;
+
+  return (
+      <div id="print-content-root">
+           <div className="print-document-container">
+              {documentType === 'APR' ? (
+                  <APRPreviewContent formData={formData} analysisData={analysisData} equipmentData={equipmentData} />
+              ) : (
+                  <PTPreview formData={formData} />
+              )}
+          </div>
+      </div>
+  );
 }

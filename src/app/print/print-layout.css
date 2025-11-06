@@ -52,12 +52,12 @@
 }
 
 .section-title {
-  font-size: 11pt;
+  font-size: 10pt;
   font-weight: bold;
-  color: #333;
+  color: #000;
   background-color: #e0e0e0;
   padding: 0.3rem;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0rem;
   text-align: center;
 }
 
@@ -66,16 +66,22 @@
     width: 100%;
 }
 .info-grid tr, .info-grid td {
-    border: 1px solid #999;
-    padding: 0.5rem;
+    border: 1px solid #000;
+    padding: 0.2rem 0.4rem;
     vertical-align: top;
     word-wrap: break-word;
 }
 .info-grid strong {
-  font-size: 8pt;
+  font-size: 7pt;
+  font-weight: bold;
   text-transform: uppercase;
   display: block;
-  margin-bottom: 0.2rem;
+  margin-bottom: 0.1rem;
+}
+
+.text-xxs {
+    font-size: 0.65rem; /* 10.4px */
+    line-height: 0.8rem;
 }
 
 
@@ -147,7 +153,7 @@ thead.analysis-table-header {
     
     html, body {
         width: 210mm;
-        height: 297mm;
+        height: auto;
         font-size: 9pt;
         background: white;
         color: black;
@@ -160,6 +166,7 @@ thead.analysis-table-header {
         box-shadow: none;
         width: 100%;
         min-height: 0;
+        height: auto;
     }
     .page-content-wrapper {
         padding: 0;
