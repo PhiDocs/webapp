@@ -7,9 +7,12 @@ import type { ProtectiveEquipmentOutput } from '@/ai/flows/recommend-protective-
 import { ptChecklistItems } from '@/lib/pt-checklist-data';
 
 // Import pdfmake and fonts
-import pdfMake from 'pdfmake/build/pdfmake';
-import pdfFonts from 'pdfmake/build/vfs_fonts';
-pdfMake.vfs = pdfFonts.pdfMake.vfs;
+import pdfMake from "pdfmake/build/pdfmake";
+import pdfFonts from "pdfmake/build/vfs_fonts";
+
+if (pdfMake.vfs) {
+    pdfMake.vfs = pdfFonts.pdfMake.vfs;
+}
 
 
 function getShortDate(dateString: string | undefined) {
@@ -28,7 +31,7 @@ function generateAPRPages(formData: SafetyFormValues, analysisData: SafetyAnalys
     const content: Content[] = [];
 
     // --- Header ---
-    const headerTable = {
+    const headerTable: Content = {
         table: {
             widths: ['auto', '*', 100],
             body: [
@@ -50,25 +53,29 @@ function generateAPRPages(formData: SafetyFormValues, analysisData: SafetyAnalys
         layout: 'noBorders',
         marginBottom: 10,
     };
-    if (formData.companyLogo) {
-        headerTable.table.body[0][0] = {
-            image: formData.companyLogo,
-            width: 70,
-            rowSpan: 2,
-            alignment: 'center',
-            margin: [0, 5, 0, 0]
-        };
-        headerTable.table.body[0][1] = { text: formData.companyName || 'Nome da Empresa', style: 'h1', alignment: 'left', margin: [10, 0, 0, 0] };
-        headerTable.table.body.splice(1, 0, [
-            {}, // Empty cell for logo
-            { text: 'APR - Análise Preliminar de Risco', bold: true, fontSize: 12, margin: [10, 4, 0, 0] },
-            {} // Empty cell for revision table
-        ]);
-    } else {
-        headerTable.table.body[0][0] = { text: formData.companyName || 'Nome da Empresa', style: 'h1', colSpan: 2, alignment: 'left' };
-        headerTable.table.body.splice(1, 0, [
-             { text: 'APR - Análise Preliminar de Risco', bold: true, fontSize: 12, colSpan: 2, alignment: 'left' }, {}, {}
-        ]);
+    
+    // Type guard for headerTable.table.body
+    if ('table' in headerTable && Array.isArray(headerTable.table.body)) {
+        if (formData.companyLogo) {
+            headerTable.table.body[0][0] = {
+                image: formData.companyLogo,
+                width: 70,
+                rowSpan: 2,
+                alignment: 'center',
+                margin: [0, 5, 0, 0]
+            };
+            headerTable.table.body[0][1] = { text: formData.companyName || 'Nome da Empresa', style: 'h1', alignment: 'left', margin: [10, 0, 0, 0] };
+            headerTable.table.body.splice(1, 0, [
+                {}, // Empty cell for logo
+                { text: 'APR - Análise Preliminar de Risco', bold: true, fontSize: 12, margin: [10, 4, 0, 0] },
+                {} // Empty cell for revision table
+            ]);
+        } else {
+            headerTable.table.body[0][0] = { text: formData.companyName || 'Nome da Empresa', style: 'h1', colSpan: 2, alignment: 'left' };
+            headerTable.table.body.splice(1, 0, [
+                 { text: 'APR - Análise Preliminar de Risco', bold: true, fontSize: 12, colSpan: 2, alignment: 'left' }, {}, {}
+            ]);
+        }
     }
     content.push(headerTable);
 
