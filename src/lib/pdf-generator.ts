@@ -33,19 +33,36 @@ function generateAPRPages(formData: SafetyFormValues, analysisData: SafetyAnalys
     // --- Header ---
     const headerTable: Content = {
         table: {
-            widths: ['auto', '*', 100],
+            widths: ['*', 'auto'],
             body: [
                 [
-                    { text: formData.companyName || 'Nome da Empresa', style: 'h1', colSpan: 2, alignment: 'left' }, {},
+                    {
+                        stack: [
+                            {
+                                // Company Name and Logo
+                                columns: [
+                                    ...(formData.companyLogo ? [{ image: formData.companyLogo, width: 70, alignment: 'left' }] : []),
+                                    {
+                                        stack: [
+                                            { text: formData.companyName || 'Nome da Empresa', style: 'h1', alignment: 'left' },
+                                            { text: 'APR - Análise Preliminar de Risco', bold: true, fontSize: 12, alignment: 'left', margin: [0, 4, 0, 0] }
+                                        ],
+                                        margin: formData.companyLogo ? [10, 0, 0, 0] : [0, 0, 0, 0]
+                                    }
+                                ],
+                            },
+                        ],
+                        margin: [0, 0, 0, 10]
+                    },
                     {
                         table: {
-                            widths: ['*', '*'],
-                            body: [
-                                [{ text: 'APR Nº', style: 'thHeader' }, { text: 'Revisão', style: 'thHeader' }],
-                                [{ text: '...', style: 'td' }, { text: '01', style: 'td' }],
-                            ]
-                        },
-                        layout: 'lightHorizontalLines'
+                             widths: ['*', '*'],
+                             body: [
+                                 [{ text: 'APR Nº', style: 'thHeader' }, { text: 'Revisão', style: 'thHeader' }],
+                                 [{ text: '...', style: 'td', minHeight: 15 }, { text: '01', style: 'td', minHeight: 15 }],
+                             ]
+                         },
+                         layout: 'boxLayout'
                     }
                 ],
             ]
@@ -53,30 +70,6 @@ function generateAPRPages(formData: SafetyFormValues, analysisData: SafetyAnalys
         layout: 'noBorders',
         marginBottom: 10,
     };
-    
-    // Type guard for headerTable.table.body
-    if ('table' in headerTable && Array.isArray(headerTable.table.body)) {
-        if (formData.companyLogo) {
-            headerTable.table.body[0][0] = {
-                image: formData.companyLogo,
-                width: 70,
-                rowSpan: 2,
-                alignment: 'center',
-                margin: [0, 5, 0, 0]
-            };
-            headerTable.table.body[0][1] = { text: formData.companyName || 'Nome da Empresa', style: 'h1', alignment: 'left', margin: [10, 0, 0, 0] };
-            headerTable.table.body.splice(1, 0, [
-                {}, // Empty cell for logo
-                { text: 'APR - Análise Preliminar de Risco', bold: true, fontSize: 12, margin: [10, 4, 0, 0] },
-                {} // Empty cell for revision table
-            ]);
-        } else {
-            headerTable.table.body[0][0] = { text: formData.companyName || 'Nome da Empresa', style: 'h1', colSpan: 2, alignment: 'left' };
-            headerTable.table.body.splice(1, 0, [
-                 { text: 'APR - Análise Preliminar de Risco', bold: true, fontSize: 12, colSpan: 2, alignment: 'left' }, {}, {}
-            ]);
-        }
-    }
     content.push(headerTable);
 
 
@@ -86,14 +79,22 @@ function generateAPRPages(formData: SafetyFormValues, analysisData: SafetyAnalys
         table: {
             widths: ['*', '*'],
             body: [
-                [{ text: 'NOME:', style: 'label' }, { text: 'ENDEREÇO:', style: 'label' }],
-                [{ text: formData.workName || '...', style: 'td' }, { text: formData.workAddress || '...', style: 'td' }],
-                [{ text: 'PREVISÃO DATA INICIO:', style: 'label' }, { text: 'PREVISÃO DATA TÉRMINO:', style: 'label' }],
-                [{ text: getShortDate(formData.startDate), style: 'td' }, { text: getShortDate(formData.endDate), style: 'td' }],
-                [{ text: 'LOCAL DA OBRA / PAVIMENTO:', style: 'label', colSpan: 2 }, {}],
-                [{ text: formData.workLocationDetails || '...', style: 'td', colSpan: 2 }, {}],
-                [{ text: 'DESCRIÇÃO DA ATIVIDADE:', style: 'label', colSpan: 2 }, {}],
-                [{ text: formData.activityDescription || '...', style: 'td', colSpan: 2 }, {}],
+                [
+                    { stack: [{ text: 'NOME:', style: 'label' }, { text: formData.workName || '...', style: 'value' }], style: 'cellPadding' },
+                    { stack: [{ text: 'ENDEREÇO:', style: 'label' }, { text: formData.workAddress || '...', style: 'value' }], style: 'cellPadding' },
+                ],
+                 [
+                    { stack: [{ text: 'PREVISÃO DATA INICIO:', style: 'label' }, { text: getShortDate(formData.startDate), style: 'value' }], style: 'cellPadding' },
+                    { stack: [{ text: 'PREVISÃO DATA TÉRMINO:', style: 'label' }, { text: getShortDate(formData.endDate), style: 'value' }], style: 'cellPadding' },
+                ],
+                [
+                    { stack: [{ text: 'LOCAL DA OBRA / PAVIMENTO:', style: 'label' }, { text: formData.workLocationDetails || '...', style: 'value' }], colSpan: 2, style: 'cellPadding' },
+                    {}
+                ],
+                [
+                    { stack: [{ text: 'DESCRIÇÃO DA ATIVIDADE:', style: 'label' }, { text: formData.activityDescription || '...', style: 'value' }], colSpan: 2, style: 'cellPadding' },
+                    {}
+                ]
             ]
         },
         layout: 'boxLayout',
@@ -193,7 +194,7 @@ function generateAPRPages(formData: SafetyFormValues, analysisData: SafetyAnalys
                 { text: getShortDate(m.date), style: 'td' },
                 { text: m.name, style: 'td' },
                 { text: m.role, style: 'td' },
-                { text: '', style: 'td' }, // Empty for signature
+                { text: '', style: 'td', minHeight: 15 }, // Empty for signature
             ]);
         });
         content.push({
@@ -331,27 +332,29 @@ export async function generatePdf(formData: SafetyFormValues, analysisData: Safe
         },
         styles: {
             h1: { fontSize: 16, bold: true },
-            sectionTitle: { fontSize: 10, bold: true, background: '#E0E0E0', color: '#000', alignment: 'center', margin: [0, 0, 0, 0], padding: 2 },
-            th: { bold: true, fontSize: 8, alignment: 'center' },
-            thHeader: { bold: true, fillColor: '#F2F2F2', fontSize: 7, alignment: 'center' },
-            label: { bold: true, fontSize: 7, textTransform: 'uppercase' },
-            td: { fontSize: 9 },
+            sectionTitle: { fontSize: 10, bold: true, background: '#E0E0E0', color: '#000', alignment: 'center', margin: [0, 0, 0, 0] },
+            th: { bold: true, fontSize: 9, alignment: 'center', fillColor: '#E0E0E0' },
+            thHeader: { bold: true, fontSize: 7, alignment: 'center' },
+            label: { bold: true, fontSize: 7, textTransform: 'uppercase', color: '#555' },
+            value: { fontSize: 9 },
+            td: { fontSize: 9, alignment: 'center' },
             listItem: { fontSize: 9, margin: [0, 0, 0, 2] },
+            cellPadding: { margin: [0, 2, 0, 2] },
         },
         defaultStyle: {
             fontSize: 10,
             lineHeight: 1.15,
             color: '#333',
+            alignment: 'left'
         },
-        // Custom layout for bordered tables with rounded corners
         layout: {
             boxLayout: {
                 hLineWidth: () => 0.5,
                 vLineWidth: () => 0.5,
-                hLineColor: () => '#999',
-                vLineColor: () => '#999',
-                paddingLeft: () => 4,
-                paddingRight: () => 4,
+                hLineColor: () => '#ccc',
+                vLineColor: () => '#ccc',
+                paddingLeft: (i) => i === 0 ? 0 : 8,
+                paddingRight: (i, node) => (i === (node.table.widths?.length || 0) - 1) ? 0 : 8,
                 paddingTop: () => 4,
                 paddingBottom: () => 4,
             }
@@ -363,3 +366,5 @@ export async function generatePdf(formData: SafetyFormValues, analysisData: Safe
 
     pdfMake.createPdf(docDefinition).download(fileName);
 }
+
+    
