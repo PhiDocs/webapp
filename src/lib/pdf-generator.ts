@@ -168,12 +168,14 @@ function generateAPRPages(formData: SafetyFormValues, analysisData: SafetyAnalys
                 body: [
                     [{ text: 'EPI NECESSÁRIO A EXECUÇÃO DA ATIVIDADE', style: 'sectionTitle' }, { text: 'EPC NECESSÁRIO A EXECUÇÃO DA ATIVIDADE', style: 'sectionTitle' }],
                     [
-                        { ul: epiItems, style: 'td' },
-                        { ul: epcItems, style: 'td' },
-                    ],
-                    [
-                        { text: `OBS.: ${equipmentData.epiNote}`, style: 'td', italics: true, fontSize: 8 },
-                        { text: `OBS.: ${equipmentData.epcNote}`, style: 'td', italics: true, fontSize: 8 },
+                        { border: [true, false, true, true], padding: [5,5,5,5], stack: [
+                            { ul: epiItems, style: 'td' },
+                            { text: `OBS.: ${equipmentData.epiNote}`, style: 'td', italics: true, fontSize: 8, margin: [0, 10, 0, 0] },
+                        ]},
+                        { border: [true, false, true, true], padding: [5,5,5,5], stack: [
+                            { ul: epcItems, style: 'td' },
+                            { text: `OBS.: ${equipmentData.epcNote}`, style: 'td', italics: true, fontSize: 8, margin: [0, 10, 0, 0] },
+                        ]},
                     ]
                 ],
                 dontBreakRows: true,
@@ -210,6 +212,14 @@ function generateAPRPages(formData: SafetyFormValues, analysisData: SafetyAnalys
     return content;
 }
 
+
+const Checkbox = (checked: boolean): Content => ({
+    canvas: [
+      { type: 'rect', x: 0, y: 0, w: 8, h: 8, r: 1, lineColor: '#000', lineWidth: 0.5 },
+      ...(checked ? [{ type: 'rect', x: 1, y: 1, w: 6, h: 6, color: '#000' }] : [])
+    ]
+  });
+
 // --- PT Document Generation ---
 function generatePTPages(formData: SafetyFormValues): Content[] {
     const { pt: ptData } = formData;
@@ -218,72 +228,79 @@ function generatePTPages(formData: SafetyFormValues): Content[] {
     // --- Header ---
     content.push({
         table: {
-            widths: ['*', '*', 'auto'],
+            widths: ['*', '*', '*'],
             body: [
+                [{text: 'PERMISSÃO DE TRABALHO', style: 'h1', colSpan: 3, alignment: 'center'}, {}, {}],
                 [
-                    { text: 'PERMISSÃO DE TRABALHO', style: 'h1', colSpan: 3, alignment: 'center', margin: [0, 5, 0, 5] }, {}, {}
-                ],
-                [
-                    { text: `Local da Atividade: ${ptData.ptLocalAtividade || '...'}`, style: 'td', border: [true, true, true, false] },
-                    { text: `Equipamento/Linha: ${ptData.ptEquipamentoLinha || '...'}`, style: 'td', border: [true, true, true, false] },
+                    {stack: [{text: 'Local da Atividade: ', style: 'label'}, {text: ptData.ptLocalAtividade || '...', style: 'value', margin: [0,2,0,0]}]},
+                    {stack: [{text: 'Equipamento/Linha: ', style: 'label'}, {text: ptData.ptEquipamentoLinha || '...', style: 'value', margin: [0,2,0,0]}]},
                     {
                         stack: [
                             {
                                 columns: [
-                                    { text: 'Empresa e/ou Setor:', width: 'auto', bold: true },
-                                    { text: 'Plaskaper', width: 'auto', margin: [5, 0, 5, 0] },
-                                    { text: 'KAF', margin: [5, 0, 0, 0] }
-                                ]
+                                    { text: 'Empresa e/ou Setor: ', style: 'label', width: 'auto' },
+                                    Checkbox(ptData.ptEmpresaSetor === 'Plaskaper'), { text: 'Plaskaper', style: 'value', margin: [2,0,5,0] },
+                                    Checkbox(ptData.ptEmpresaSetor === 'KAF'), { text: 'KAF', style: 'value', margin: [2,0,0,0] }
+                                ],
+                                columnGap: 2,
+                                margin: [0, 0, 0, 2]
                             },
-                        ],
-                        style: 'td',
-                        border: [true, true, true, true]
+                            {text: 'Nº da PT: ...', style: 'value'}
+                        ]
                     }
                 ],
                 [
-                    { text: `Data: ${getShortDate(ptData.ptData)}`, style: 'td', border: [true, false, true, true] },
-                    { text: `Início: ${ptData.ptHoraInicio || '...'} Fim: ${ptData.ptHoraFim || '...'}`, style: 'td', border: [true, false, true, true] },
-                     { text: `Nº da PT: `, style: 'td', border: [true, false, true, true] },
+                    {stack: [{text: 'Data:', style: 'label'}, {text: getShortDate(ptData.ptData), style: 'value', margin: [0,2,0,0]}]},
+                    {stack: [{text: 'Início/Fim:', style: 'label'}, {text: `${ptData.ptHoraInicio || '...'} - ${ptData.ptHoraFim || '...'}`, style: 'value', margin: [0,2,0,0]}]},
+                    {}
                 ],
-                 [
-                    { text: `Descrição da Tarefa: ${ptData.ptDescricaoTarefa || '...'}`, style: 'td', colSpan: 3 }, {}, {}
-                 ]
+                [{ stack: [{ text: 'Descrição da Tarefa:', style: 'label' }, { text: ptData.ptDescricaoTarefa || '...', style: 'value', margin: [0,2,0,0] }], colSpan: 3}, {}, {}]
             ]
         },
         layout: 'boxLayout',
-        marginBottom: 10,
+        marginBottom: 10
     });
 
     // --- Checklist ---
     ptChecklistItems.forEach(section => {
-        const items = section.items.map(item => ({
-            columns: [
-                {
-                    canvas: [{ type: 'rect', x: 0, y: 0, w: 8, h: 8, r: 1, lineColor: '#000', lineWidth: 0.5, ...(ptData.ptChecklist[item.id] ? { color: '#000' } : {}) }],
-                    width: 10
-                },
-                { text: item.label, width: '*' }
-            ],
-            margin: [0, 2, 0, 2]
-        }));
-        
-        content.push({ text: section.title, style: 'sectionTitle' });
-        content.push({
-            columns: section.columns === 2 ?
-                [
-                    { stack: items.slice(0, Math.ceil(items.length / 2)) },
-                    { stack: items.slice(Math.ceil(items.length / 2)) }
-                ] :
-                 section.columns === 3 ?
-                [
-                    { stack: items.slice(0, Math.ceil(items.length / 3)) },
-                    { stack: items.slice(Math.ceil(items.length / 3), 2 * Math.ceil(items.length / 3)) },
-                    { stack: items.slice(2 * Math.ceil(items.length / 3)) }
-                ] :
-                [{ stack: items }],
-            marginBottom: 5,
-             style: 'td',
+        const itemsContent: Content[][] = [];
+        let currentRow: Content[] = [];
+
+        section.items.forEach((item, index) => {
+            currentRow.push({
+                columns: [
+                    { ...Checkbox(ptData.ptChecklist[item.id]), width: 10 },
+                    { text: item.label, width: '*' }
+                ],
+                columnGap: 5,
+                margin: [0, 2, 0, 2]
+            });
+
+            if ((index + 1) % section.columns === 0 || index === section.items.length - 1) {
+                itemsContent.push(currentRow);
+                currentRow = [];
+            }
         });
+        
+        // Fill remaining cells if the last row is not full
+        if (currentRow.length > 0 && currentRow.length < section.columns) {
+            while (currentRow.length < section.columns) {
+                currentRow.push({ text: '' });
+            }
+            itemsContent.push(currentRow);
+        }
+
+        content.push(
+            { text: section.title, style: 'sectionTitle' },
+            {
+                table: {
+                    widths: Array(section.columns).fill('*'),
+                    body: itemsContent,
+                },
+                layout: 'boxLayout',
+                marginBottom: 5,
+            }
+        );
     });
 
     // --- Signatures ---
@@ -337,7 +354,7 @@ export async function generatePdf(formData: SafetyFormValues, analysisData: Safe
             thHeader: { bold: true, fontSize: 7, alignment: 'center' },
             label: { bold: true, fontSize: 7, textTransform: 'uppercase', color: '#555' },
             value: { fontSize: 9 },
-            td: { fontSize: 9, alignment: 'center' },
+            td: { fontSize: 9, alignment: 'left' },
             listItem: { fontSize: 9, margin: [0, 0, 0, 2] },
             cellPadding: { margin: [0, 2, 0, 2] },
         },
@@ -353,8 +370,8 @@ export async function generatePdf(formData: SafetyFormValues, analysisData: Safe
                 vLineWidth: () => 0.5,
                 hLineColor: () => '#ccc',
                 vLineColor: () => '#ccc',
-                paddingLeft: (i) => i === 0 ? 0 : 8,
-                paddingRight: (i, node) => (i === (node.table.widths?.length || 0) - 1) ? 0 : 8,
+                paddingLeft: (i) => i === 0 ? 5 : 5,
+                paddingRight: (i, node) => (i === (node.table.widths?.length || 0) - 1) ? 5 : 5,
                 paddingTop: () => 4,
                 paddingBottom: () => 4,
             }
