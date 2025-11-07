@@ -230,31 +230,24 @@ function generatePTPages(formData: SafetyFormValues): Content[] {
         table: {
             widths: ['*', '*', '*'],
             body: [
-                [{text: 'PERMISSÃO DE TRABALHO', style: 'h1', colSpan: 3, alignment: 'center'}, {}, {}],
                 [
-                    {stack: [{text: 'Local da Atividade: ', style: 'label'}, {text: ptData.ptLocalAtividade || '...', style: 'value', margin: [0,2,0,0]}]},
-                    {stack: [{text: 'Equipamento/Linha: ', style: 'label'}, {text: ptData.ptEquipamentoLinha || '...', style: 'value', margin: [0,2,0,0]}]},
-                    {
-                        stack: [
-                            {
-                                columns: [
-                                    { text: 'Empresa e/ou Setor: ', style: 'label', width: 'auto' },
-                                    Checkbox(ptData.ptEmpresaSetor === 'Plaskaper'), { text: 'Plaskaper', style: 'value', margin: [2,0,5,0] },
-                                    Checkbox(ptData.ptEmpresaSetor === 'KAF'), { text: 'KAF', style: 'value', margin: [2,0,0,0] }
-                                ],
-                                columnGap: 2,
-                                margin: [0, 0, 0, 2]
-                            },
-                            {text: 'Nº da PT: ...', style: 'value'}
-                        ]
-                    }
+                    { text: 'PERMISSÃO DE TRABALHO', style: 'h1', colSpan: 3, alignment: 'center' }, {}, {}
                 ],
                 [
-                    {stack: [{text: 'Data:', style: 'label'}, {text: getShortDate(ptData.ptData), style: 'value', margin: [0,2,0,0]}]},
-                    {stack: [{text: 'Início/Fim:', style: 'label'}, {text: `${ptData.ptHoraInicio || '...'} - ${ptData.ptHoraFim || '...'}`, style: 'value', margin: [0,2,0,0]}]},
+                    { text: 'Local da Atividade: ' + (ptData.ptLocalAtividade || '...'), style: 'td', colSpan: 2 },
+                    {},
+                    { text: 'Data: ' + getShortDate(ptData.ptData), style: 'td' }
+                ],
+                [
+                    { text: 'Equipamento/Linha: ' + (ptData.ptEquipamentoLinha || '...'), style: 'td', colSpan: 2 },
+                    {},
+                    { text: `Início/Fim: ${ptData.ptHoraInicio || '...'} - ${ptData.ptHoraFim || '...'}`, style: 'td' }
+                ],
+                [
+                    { text: 'Descrição da Tarefa: ' + (ptData.ptDescricaoTarefa || '...'), style: 'td', colSpan: 3 },
+                    {},
                     {}
-                ],
-                [{ stack: [{ text: 'Descrição da Tarefa:', style: 'label' }, { text: ptData.ptDescricaoTarefa || '...', style: 'value', margin: [0,2,0,0] }], colSpan: 3}, {}, {}]
+                ]
             ]
         },
         layout: 'boxLayout',
@@ -282,8 +275,7 @@ function generatePTPages(formData: SafetyFormValues): Content[] {
             }
         });
         
-        // Fill remaining cells if the last row is not full
-        if (currentRow.length > 0 && currentRow.length < section.columns) {
+        if (currentRow.length > 0) {
             while (currentRow.length < section.columns) {
                 currentRow.push({ text: '' });
             }
