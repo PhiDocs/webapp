@@ -1,7 +1,7 @@
 'use client';
 
-import type { TDocumentDefinitions, Content, TableCell } from 'pdfmake/interfaces';
-import type { SafetyFormValues } from '@/lib/types';
+import type { TDocumentDefinitions, Content, TableCell, Style } from 'pdfmake/interfaces';
+import type { SafetyFormValues, PtTeamMember } from '@/lib/types';
 import type { SafetyAnalysisOutput } from '@/ai/flows/generate-safety-analysis';
 import type { ProtectiveEquipmentOutput } from '@/ai/flows/recommend-protective-equipment';
 import { ptChecklistItems } from '@/lib/pt-checklist-data';
@@ -222,108 +222,179 @@ const Checkbox = (checked: boolean): Content => ({
 
 // --- PT Document Generation ---
 function generatePTPages(formData: SafetyFormValues): Content[] {
-    const { pt: ptData } = formData;
+    const { pt: ptData, companyLogo, companyName } = formData;
     const content: Content[] = [];
 
-    // --- Header ---
     const headerContent: TableCell[][] = [
         [
             {
-                text: [
-                    { text: 'LOCAL DA ATIVIDADE: ', bold: true },
-                    ptData.ptLocalAtividade || '...'
-                ], style: 'tdSmall', colSpan: 2, border: [true, true, true, false]
+                ...(companyLogo ? { image: companyLogo, width: 70, alignment: 'center', rowSpan: 2 } : {text: '', rowSpan: 2}),
+                style: 'cellPadding',
+                border: [true, true, true, true],
             },
-            {},
             {
-                text: [
-                    { text: 'DATA: ', bold: true },
-                    getShortDate(ptData.ptData)
-                ], style: 'tdSmall', border: [true, true, true, false]
+                text: 'PERMISSÃO DE TRABALHO',
+                style: 'h1',
+                alignment: 'center',
+                rowSpan: 2,
             },
-        ],
-        [
-            {text: '', colSpan: 3, border: [true, false, true, true]},
-            {},
-            {}
-        ],
-        [
             {
-                 text: [
-                    { text: 'EQUIPAMENTO/ LINHA: ', bold: true },
-                    ptData.ptEquipamentoLinha || '...'
-                ], style: 'tdSmall', colSpan: 2, border: [true, true, true, false]
-            },
-            {},
-            {
-                text: [
-                    { text: 'INÍCIO: ', bold: true },
-                    ptData.ptHoraInicio || '...',
-                    { text: '  FIM: ', bold: true },
-                    ptData.ptHoraFim || '...'
-                ], style: 'tdSmall', border: [true, true, true, false]
+                text: companyName || "Nome da Empresa",
+                bold: true,
+                alignment: 'center',
+                style: 'cellPadding'
             }
         ],
         [
-            {text: '', colSpan: 3, border: [true, false, true, true]},
+            {},
+            {},
+            {
+                table: {
+                    widths: ['*', '*'],
+                    body: [
+                        [
+                            {text: `DATA: ${getShortDate(ptData.ptData)}`, style: 'tdSmall'},
+                            {text: 'HORA:', style: 'tdSmall'}
+                        ]
+                    ]
+                },
+                layout: 'noBorders'
+            }
+        ],
+        [
+            {
+                stack: [{text: 'LOCAL DA ATIVIDADE:', style: 'label'}, {text: ptData.ptLocalAtividade, style: 'value'}],
+                style: 'cellPadding',
+                colSpan: 2
+            },
+            {},
+            {
+                 table: {
+                    widths: ['*', '*'],
+                    body: [
+                        [
+                            {text: `INÍCIO: ${ptData.ptHoraInicio}`, style: 'tdSmall'},
+                            {text: `FIM: ${ptData.ptHoraFim}`, style: 'tdSmall'}
+                        ]
+                    ]
+                },
+                layout: 'noBorders'
+            }
+        ],
+        [
+            {
+                stack: [{text: 'EQUIPAMENTO/ LINHA:', style: 'label'}, {text: ptData.ptEquipamentoLinha, style: 'value'}],
+                style: 'cellPadding',
+                colSpan: 3
+            },
             {},
             {}
         ],
         [
-           {
-                 text: [
-                    { text: 'DESCRIÇÃO DA TAREFA: ', bold: true },
-                    ptData.ptDescricaoTarefa || '...'
-                ], style: 'tdSmall', colSpan: 3
+            {
+                stack: [{text: 'DESCRIÇÃO DA TAREFA:', style: 'label'}, {text: ptData.ptDescricaoTarefa, style: 'value'}],
+                style: 'cellPadding',
+                colSpan: 3
             },
             {},
             {}
         ]
     ];
     
-    content.push({ text: 'PERMISSÃO DE TRABALHO', style: 'h1', alignment: 'center', marginBottom: 10 });
     content.push({
         table: {
-            widths: ['*', '*', '*'],
+            widths: ['auto', '*', 'auto'],
             body: headerContent,
         },
         layout: 'boxLayout',
         marginBottom: 10,
     });
 
+
     // --- Checklist ---
     const checklistData = ptData.ptChecklist || {};
     ptChecklistItems.forEach(section => {
-        const allItems: Content[] = section.items.map(item => ({
-            columns: [
-                { ...Checkbox(checklistData[item.id]), width: 10 },
-                { text: item.label, width: '*' }
-            ],
-            columnGap: 5,
-            margin: [0, 2, 0, 2]
-        }));
+        if (!section.items) return;
+        const allItems: Content[] = [];
+        section.items.forEach(item => {
+            allItems.push({
+                columns: [
+                    { ...Checkbox(checklistData[item.id]), width: 10 },
+                    { text: item.label, width: '*', style: 'tdSmall' }
+                ],
+                columnGap: 5,
+                margin: [0, 2, 0, 2]
+            });
+        });
         
-        const body: Content[][] = [];
+        const sectionBody: Content[][] = [];
         for (let i = 0; i < allItems.length; i += section.columns) {
-            const row = allItems.slice(i, i + section.columns);
+            const row: Content[] = allItems.slice(i, i + section.columns);
             while (row.length < section.columns) {
-                row.push({ text: '' });
+                row.push({ text: '' }); // Ensure row is full
             }
-            body.push(row);
+            sectionBody.push(row);
         }
 
-        content.push(
-            { text: section.title, style: 'sectionTitle' },
+        if (sectionBody.length > 0) {
+            content.push(
+                { text: section.title, style: 'sectionTitle' },
+                {
+                    table: {
+                        widths: Array(section.columns).fill('*'),
+                        body: sectionBody,
+                    },
+                    layout: 'boxLayoutNoTop',
+                    marginBottom: 5,
+                }
+            );
+        }
+    });
+
+    // --- Dynamic Team Tables ---
+    const renderTeamTable = (title: string, members: PtTeamMember[], showEmpresa: boolean) => {
+        if (!members || members.length === 0) return [];
+        const body: TableCell[][] = [
+            [{ text: 'NOME', style: 'th' }, { text: 'RG/CPF', style: 'th' }, { text: 'FUNÇÃO', style: 'th' }, ...(showEmpresa ? [{ text: 'EMPRESA', style: 'th' }] : []), { text: 'APTO', style: 'th' }]
+        ];
+        members.forEach(m => {
+            const row: TableCell[] = [
+                { text: m.name, style: 'tdSmall' },
+                { text: m.rgCpf, style: 'tdSmall' },
+                { text: m.func, style: 'tdSmall' },
+                 ...(showEmpresa ? [{ text: m.empresa, style: 'tdSmall' }] : []),
+                {
+                    columns: [
+                        {...Checkbox(m.apto === 'sim'), width: 10}, {text: 'Sim', width: 'auto', style: 'tdSmall'},
+                        {...Checkbox(m.apto === 'nao'), width: 10, margin: [5,0,0,0]}, {text: 'Não', width: 'auto', style: 'tdSmall'}
+                    ],
+                    columnGap: 2,
+                    alignment: 'center'
+                }
+            ];
+            body.push(row);
+        });
+        return [
+            { text: title, style: 'sectionTitle' },
             {
                 table: {
-                    widths: Array(section.columns).fill('*'),
+                    widths: showEmpresa ? ['*', 'auto', 'auto', 'auto', 'auto'] : ['*', 'auto', 'auto', 'auto'],
                     body: body,
+                    dontBreakRows: true,
                 },
                 layout: 'boxLayoutNoTop',
                 marginBottom: 5,
             }
-        );
-    });
+        ];
+    };
+    
+    if (ptData.ptEnableVigia) {
+        content.push(...renderTeamTable('Vigia(s):', ptData.ptVigias, false));
+    }
+    if (ptData.ptEnableResgatistas) {
+        content.push(...renderTeamTable('Resgatistas:', ptData.ptResgatistas, true));
+    }
+
 
     // --- Signatures ---
     content.push({ text: 'ASSINATURAS', style: 'sectionTitle' });
@@ -371,7 +442,7 @@ export async function generatePdf(formData: SafetyFormValues, analysisData: Safe
         },
         styles: {
             h1: { fontSize: 16, bold: true },
-            sectionTitle: { fontSize: 10, bold: true, background: '#E0E0E0', color: '#000', alignment: 'center', margin: [0, 0, 0, 0], padding: [0, 2, 0, 2] },
+            sectionTitle: { fontSize: 10, bold: true, background: '#E0E0E0', color: '#000', alignment: 'center', margin: [0, 0, 0, 0] },
             th: { bold: true, fontSize: 9, alignment: 'center', fillColor: '#E0E0E0' },
             thHeader: { bold: true, fontSize: 7, alignment: 'center' },
             label: { bold: true, fontSize: 7, textTransform: 'uppercase', color: '#555' },
@@ -416,5 +487,3 @@ export async function generatePdf(formData: SafetyFormValues, analysisData: Safe
 
     pdfMake.createPdf(docDefinition).download(fileName);
 }
-
-    

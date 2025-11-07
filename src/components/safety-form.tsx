@@ -122,48 +122,49 @@ export function SafetyForm({
                 )}
               />
 
+              <Separator />
+              <h3 className="text-lg font-semibold flex items-center">
+                <Building2 className="mr-2" /> Dados da Empresa
+              </h3>
+
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                <FormField
+                  control={form.control}
+                  name="companyName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Nome da Empresa</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Sua Empresa Inc." {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="companyLogo"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Logo da Empresa (Opcional)</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="file"
+                          accept="image/png, image/jpeg"
+                          onChange={handleLogoChange}
+                        />
+                      </FormControl>
+                      <FormDescription>Max 2MB. PNG ou JPG.</FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
               {documentType === 'PT' ? (
                 <PTForm form={form} />
               ) : (
                 <div className="space-y-8">
-                  <Separator />
-                  <h3 className="text-lg font-semibold flex items-center">
-                    <Building2 className="mr-2" /> Dados da Empresa
-                  </h3>
-
-                  <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                    <FormField
-                      control={form.control}
-                      name="companyName"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Nome da Empresa</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Sua Empresa Inc." {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="companyLogo"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Logo da Empresa (Opcional)</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="file"
-                              accept="image/png, image/jpeg"
-                              onChange={handleLogoChange}
-                            />
-                          </FormControl>
-                          <FormDescription>Max 2MB. PNG ou JPG.</FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
                   <Separator />
                   <h3 className="text-lg font-semibold flex items-center">
                     <Briefcase className="mr-2" /> Dados da Obra

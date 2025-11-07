@@ -3,11 +3,9 @@
 import React from 'react';
 import type { SafetyFormValues, PtTeamMember } from '@/lib/types';
 import { ptChecklistItems } from '@/lib/pt-checklist-data';
-import { Logo } from './icons/logo';
 
 interface PTPreviewProps {
   formData: SafetyFormValues;
-  isPrinting?: boolean;
 }
 
 const CheckboxDisplay = ({ checked }: { checked: boolean }) => (
@@ -67,8 +65,8 @@ const TeamTable = ({ title, members, showEmpresa = false }: { title: string, mem
 };
 
 
-export function PTPreview({ formData, isPrinting }: PTPreviewProps) {
-  const { pt: ptData } = formData;
+export function PTPreview({ formData }: PTPreviewProps) {
+  const { pt: ptData, companyLogo, companyName } = formData;
   const checklist = ptData.ptChecklist || {};
 
   const getCheckedItems = (sectionId: string) => {
@@ -82,18 +80,16 @@ export function PTPreview({ formData, isPrinting }: PTPreviewProps) {
             <tbody>
                 <tr>
                     <td rowSpan={2} className="w-1/4 align-middle text-center">
-                         {!isPrinting && <Logo className="h-12 w-auto mx-auto text-gray-700" />}
+                         {companyLogo ? (
+                           <img src={companyLogo} alt="Company Logo" className="h-16 w-auto max-w-[120px] object-contain mx-auto" />
+                         ) : <div className="h-16 w-auto"></div>}
                     </td>
                     <td rowSpan={2} className="w-1/2 text-center">
                         <h1 className="text-lg font-bold">PERMISSÃO DE TRABALHO</h1>
                         <p className="text-xs font-bold text-red-600">Obrigatória estar junto a APT diariamente</p>
                     </td>
-                    <td className="w-1/4 !p-0">
-                        <div className="flex items-center text-xs p-1">
-                            <span className='mr-2'>Empresa e/ou Setor</span>
-                            <CheckboxDisplay checked={ptData.ptEmpresaSetor === 'Plaskaper'} /> <span className='mx-1'>Plaskaper</span>
-                            <CheckboxDisplay checked={ptData.ptEmpresaSetor === 'KAF'} /> <span className='ml-1'>KAF</span>
-                        </div>
+                    <td className="w-1/4 !p-1 text-center">
+                        <span className='font-bold'>{companyName || 'Nome da Empresa'}</span>
                     </td>
                 </tr>
                  <tr>

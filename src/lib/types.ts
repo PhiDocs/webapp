@@ -1,3 +1,5 @@
+'use client';
+
 import { z } from 'zod';
 
 export const responsiblePersonSchema = z.object({
@@ -72,7 +74,7 @@ export const formSchema = z.object({
   responsiblePersons: z.array(responsiblePersonSchema).min(1, 'Adicione pelo menos um responsável.'),
 
   // Company and Team (APR)
-  companyName: z.string().min(1, 'Nome da empresa é obrigatório.'),
+  companyName: z.string(),
   companyLogo: z.string().optional(), // Will store as data URL
   teamMembers: z.array(teamMemberSchema).optional(),
 
