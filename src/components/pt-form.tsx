@@ -367,7 +367,7 @@ export function PTForm({ form }: PTFormProps) {
           
            {/* Signatures */}
           <SectionTitle>Assinaturas</SectionTitle>
-           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <SignatureField form={form} fieldPrefix="pt.ptGestorArea" label="Gestor da Área" />
                 <SignatureField form={form} fieldPrefix="pt.ptResponsavelAtividade" label="Responsável pela Atividade" />
                 <SignatureField form={form} fieldPrefix="pt.ptSesmt" label="SESMT" />
