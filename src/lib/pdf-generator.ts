@@ -469,7 +469,7 @@ export async function generatePdf(formData: SafetyFormValues, analysisData: Safe
             tdSmall: { fontSize: 8, alignment: 'left' },
             listItem: { fontSize: 9, margin: [0, 0, 0, 2] },
             cellPadding: { margin: [5, 2, 5, 2] },
-            signatureTyped: { font: 'Times-Italic', fontSize: 16 }
+            signatureTyped: { italics: true, fontSize: 16 }
         },
         defaultStyle: {
             fontSize: 10,
