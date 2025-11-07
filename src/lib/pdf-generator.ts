@@ -41,7 +41,7 @@ function generateAPRPages(formData: SafetyFormValues, analysisData: SafetyAnalys
                         table: {
                             widths: ['*', '*'],
                             body: [
-                                [{ text: 'APR Nº', style: 'th' }, { text: 'Revisão', style: 'th' }],
+                                [{ text: 'APR Nº', style: 'thHeader' }, { text: 'Revisão', style: 'thHeader' }],
                                 [{ text: '...', style: 'td' }, { text: '01', style: 'td' }],
                             ]
                         },
@@ -165,7 +165,7 @@ function generateAPRPages(formData: SafetyFormValues, analysisData: SafetyAnalys
             table: {
                 widths: ['*', '*'],
                 body: [
-                    [{ text: 'EPI NECESSÁRIO A EXECUÇÃO DA ATIVIDADE', style: 'th' }, { text: 'EPC NECESSÁRIO A EXECUÇÃO DA ATIVIDADE', style: 'th' }],
+                    [{ text: 'EPI NECESSÁRIO A EXECUÇÃO DA ATIVIDADE', style: 'sectionTitle' }, { text: 'EPC NECESSÁRIO A EXECUÇÃO DA ATIVIDADE', style: 'sectionTitle' }],
                     [
                         { ul: epiItems, style: 'td' },
                         { ul: epcItems, style: 'td' },
@@ -332,7 +332,8 @@ export async function generatePdf(formData: SafetyFormValues, analysisData: Safe
         styles: {
             h1: { fontSize: 16, bold: true },
             sectionTitle: { fontSize: 10, bold: true, background: '#E0E0E0', color: '#000', alignment: 'center', margin: [0, 0, 0, 0], padding: 2 },
-            th: { bold: true, fillColor: '#F2F2F2', fontSize: 7, alignment: 'center' },
+            th: { bold: true, fontSize: 8, alignment: 'center' },
+            thHeader: { bold: true, fillColor: '#F2F2F2', fontSize: 7, alignment: 'center' },
             label: { bold: true, fontSize: 7, textTransform: 'uppercase' },
             td: { fontSize: 9 },
             listItem: { fontSize: 9, margin: [0, 0, 0, 2] },
