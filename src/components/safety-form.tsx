@@ -31,6 +31,8 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { Separator } from '@/components/ui/separator';
 import { PTForm } from './pt-form';
+import { SignaturePad } from './signature-pad';
+import { RadioGroup, RadioGroupItem } from './ui/radio-group';
 
 interface SafetyFormProps {
   form: ReturnType<typeof useForm<SafetyFormValues>>;
@@ -38,6 +40,89 @@ interface SafetyFormProps {
   isLoading: boolean;
   onNewReport: () => void;
 }
+
+const SignatureField = ({ form, fieldPrefix }: { form: ReturnType<typeof useForm<SafetyFormValues>>, fieldPrefix: string }) => {
+    const signatureType = useWatch({
+      control: form.control,
+      name: `${fieldPrefix}.signatureType` as any,
+    });
+  
+    const handleFileUpload = (e: ChangeEvent<HTMLInputElement>, field: any) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            if (file.size > 1 * 1024 * 1024) { // 1MB limit
+                form.setError(`${fieldPrefix}.signatureData` as any, { type: 'manual', message: 'Imagem muito grande (máx 1MB).' });
+                return;
+            }
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                field.onChange(reader.result as string);
+                form.clearErrors(`${fieldPrefix}.signatureData` as any);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+  
+    return (
+      <div className="col-span-full space-y-2 rounded-md border p-3">
+        <FormField
+          control={form.control}
+          name={`${fieldPrefix}.signatureType` as any}
+          render={({ field }) => (
+            <FormItem className="space-y-2">
+              <FormLabel className="text-xs">Método de Assinatura</FormLabel>
+              <FormControl>
+                <RadioGroup
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                  className="flex items-center space-x-4"
+                >
+                  <FormItem className="flex items-center space-x-2 space-y-0">
+                    <FormControl><RadioGroupItem value="typed" /></FormControl>
+                    <FormLabel className="font-normal text-sm">Digitar</FormLabel>
+                  </FormItem>
+                  <FormItem className="flex items-center space-x-2 space-y-0">
+                    <FormControl><RadioGroupItem value="draw" /></FormControl>
+                    <FormLabel className="font-normal text-sm">Desenhar</FormLabel>
+                  </FormItem>
+                   <FormItem className="flex items-center space-x-2 space-y-0">
+                    <FormControl><RadioGroupItem value="upload" /></FormControl>
+                    <FormLabel className="font-normal text-sm">Carregar</FormLabel>
+                  </FormItem>
+                </RadioGroup>
+              </FormControl>
+            </FormItem>
+          )}
+        />
+  
+        <FormField
+          control={form.control}
+          name={`${fieldPrefix}.signatureData` as any}
+          render={({ field }) => (
+            <FormItem>
+              {signatureType === 'typed' && (
+                <FormControl>
+                  <Input placeholder="Digite o nome para assinar" {...field} />
+                </FormControl>
+              )}
+              {signatureType === 'draw' && (
+                <SignaturePad
+                  value={field.value}
+                  onChange={field.onChange}
+                />
+              )}
+              {signatureType === 'upload' && (
+                 <FormControl>
+                    <Input type="file" accept="image/png, image/jpeg" onChange={(e) => handleFileUpload(e, field)} />
+                </FormControl>
+              )}
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      </div>
+    );
+  };
 
 export function SafetyForm({
   form,
@@ -258,7 +343,7 @@ export function SafetyForm({
                       variant="outline"
                       size="sm"
                       onClick={() =>
-                        appendResponsible({ name: '', role: '', signature: '' })
+                        appendResponsible({ name: '', role: '', signatureType: 'typed', signatureData: '' })
                       }
                     >
                       <PlusCircle className="mr-2 h-4 w-4" /> Adicionar
@@ -266,73 +351,54 @@ export function SafetyForm({
                   </div>
                   <div className="space-y-4">
                     {responsibleFields.map((item, index) => (
-                      <div key={item.id} className="flex items-start gap-2">
-                        <div className="grid grid-cols-1 gap-x-4 gap-y-2 md:grid-cols-2 flex-grow">
-                          <FormField
-                            control={form.control}
-                            name={`responsiblePersons.${index}.name`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel className={index !== 0 ? 'sr-only' : ''}>
-                                  Nome
-                                </FormLabel>
-                                <FormControl>
-                                  <Input
-                                    placeholder="Nome do responsável"
-                                    {...field}
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={form.control}
-                            name={`responsiblePersons.${index}.role`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel className={index !== 0 ? 'sr-only' : ''}>
-                                  Função
-                                </FormLabel>
-                                <FormControl>
-                                  <Input
-                                    placeholder="e.g., Técnico de Segurança"
-                                    {...field}
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
+                      <div key={item.id} className="flex flex-col gap-2 rounded-lg border p-4">
+                        <div className="flex items-start gap-2">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-grow">
+                            <FormField
+                                control={form.control}
+                                name={`responsiblePersons.${index}.name`}
+                                render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Nome do Responsável</FormLabel>
+                                    <FormControl>
+                                    <Input
+                                        placeholder="Nome do responsável"
+                                        {...field}
+                                    />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name={`responsiblePersons.${index}.role`}
+                                render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Função</FormLabel>
+                                    <FormControl>
+                                    <Input
+                                        placeholder="e.g., Técnico de Segurança"
+                                        {...field}
+                                    />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                                )}
+                            />
+                            </div>
+                            <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="mt-8"
+                            onClick={() => removeResponsible(index)}
+                            disabled={responsibleFields.length <= 1}
+                            >
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
                         </div>
-                         <FormField
-                            control={form.control}
-                            name={`responsiblePersons.${index}.signature`}
-                            render={({ field }) => (
-                              <FormItem className="flex-grow">
-                                <FormLabel className={index !== 0 ? 'sr-only' : ''}>
-                                  Assinatura (Nome)
-                                </FormLabel>
-                                <FormControl>
-                                  <Input
-                                    placeholder="Digite o nome para assinar"
-                                    {...field}
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="mt-8"
-                          onClick={() => removeResponsible(index)}
-                          disabled={responsibleFields.length <= 1}
-                        >
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
+                        <SignatureField form={form} fieldPrefix={`responsiblePersons.${index}`} />
                       </div>
                     ))}
                     <FormMessage>

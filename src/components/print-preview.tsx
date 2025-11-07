@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import type { SafetyFormValues } from '@/lib/types';
+import type { SafetyFormValues, PtSigner } from '@/lib/types';
 import type { SafetyAnalysisOutput } from '@/ai/flows/generate-safety-analysis';
 import type { ProtectiveEquipmentOutput } from '@/ai/flows/recommend-protective-equipment';
 import { Logo } from '@/components/icons/logo';
@@ -14,6 +14,22 @@ interface PrintPreviewProps {
   analysisData: SafetyAnalysisOutput | null;
   equipmentData: ProtectiveEquipmentOutput | null;
 }
+
+const SignaturePreview = ({ signatureData, signatureType }: { signatureData?: string, signatureType?: string }) => {
+    if (!signatureData) {
+        return <div className="h-12 w-full border-b border-dashed"></div>;
+    }
+
+    if (signatureType === 'typed') {
+        return <p className="font-serif italic text-lg text-center h-12 flex items-center justify-center">{signatureData}</p>;
+    }
+
+    if (signatureType === 'draw' || signatureType === 'upload') {
+        return <img src={signatureData} alt="Assinatura" className="h-12 object-contain mx-auto" />;
+    }
+
+    return <div className="h-12 w-full border-b border-dashed"></div>;
+};
 
 function APRHeader({ data }: { data: SafetyFormValues }) {
   return (
@@ -100,11 +116,13 @@ function ResponsiblesSection({ data }: { data: SafetyFormValues }) {
           </tr>
         </thead>
         <tbody>
-          {(data.responsiblePersons?.length > 0 ? data.responsiblePersons : [{ name: '', role: '', signature: '' }]).map((person, index: number) => (
+          {(data.responsiblePersons?.length > 0 ? data.responsiblePersons : [{ name: '', role: '', signatureType: 'typed', signatureData: '' }]).map((person, index: number) => (
             <tr key={`resp-${index}`} className="avoid-break">
-              <td className="h-12">{person.name || '...'}</td>
+              <td className="h-16">{person.name || '...'}</td>
               <td>{person.role || '...'}</td>
-               <td className="italic">{person.signature || '...'}</td>
+               <td>
+                <SignaturePreview signatureData={person.signatureData} signatureType={person.signatureType} />
+              </td>
             </tr>
           ))}
         </tbody>

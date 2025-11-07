@@ -1,7 +1,7 @@
 'use client';
 
 import type { TDocumentDefinitions, Content, TableCell, Style } from 'pdfmake/interfaces';
-import type { SafetyFormValues, PtTeamMember } from '@/lib/types';
+import type { SafetyFormValues, PtTeamMember, PtSigner } from '@/lib/types';
 import type { SafetyAnalysisOutput } from '@/ai/flows/generate-safety-analysis';
 import type { ProtectiveEquipmentOutput } from '@/ai/flows/recommend-protective-equipment';
 import { ptChecklistItems } from '@/lib/pt-checklist-data';
@@ -25,6 +25,20 @@ function getShortDate(dateString: string | undefined) {
         return 'Data inválida';
     }
 }
+
+const getSignatureContent = (signer: PtSigner | any): Content => {
+    if (!signer || !signer.signatureData) {
+        return { text: '', minHeight: 40, border: [false, true, false, false] };
+    }
+    if (signer.signatureType === 'typed') {
+        return { text: signer.signatureData, style: 'signatureTyped', alignment: 'center', margin: [0, 15, 0, 0], border: [false, true, false, false]};
+    }
+    if (signer.signatureType === 'draw' || signer.signatureType === 'upload') {
+        return { image: signer.signatureData, width: 120, alignment: 'center', margin: [0, 5, 0, 0], border: [false, true, false, false] };
+    }
+    return { text: '', minHeight: 40 };
+};
+
 
 // --- APR Document Generation ---
 function generateAPRPages(formData: SafetyFormValues, analysisData: SafetyAnalysisOutput | null, equipmentData: ProtectiveEquipmentOutput | null): Content[] {
@@ -108,9 +122,9 @@ function generateAPRPages(formData: SafetyFormValues, analysisData: SafetyAnalys
     ];
     formData.responsiblePersons.forEach(p => {
         responsibleBody.push([
-            { text: p.name || '...', style: 'td' },
-            { text: p.role || '...', style: 'td' },
-            { text: p.signature || '...', style: 'td', italics: true },
+            { text: p.name || '...', style: 'td', alignment: 'center' },
+            { text: p.role || '...', style: 'td', alignment: 'center' },
+            getSignatureContent(p)
         ]);
     });
     content.push({
@@ -403,9 +417,14 @@ function generatePTPages(formData: SafetyFormValues): Content[] {
             widths: ['*', '*', '*'],
             body: [
                 [
-                    { text: ptData.ptGestorArea || 'Gestor da Área', style: 'td', alignment: 'center', margin: [0, 20, 0, 0], border: [false, true, false, false] },
-                    { text: ptData.ptResponsavelAtividade || 'Responsável Atividade', style: 'td', alignment: 'center', margin: [0, 20, 0, 0], border: [false, true, false, false] },
-                    { text: ptData.ptSesmt || 'SESMT', style: 'td', alignment: 'center', margin: [0, 20, 0, 0], border: [false, true, false, false] },
+                    getSignatureContent(ptData.ptGestorArea),
+                    getSignatureContent(ptData.ptResponsavelAtividade),
+                    getSignatureContent(ptData.ptSesmt),
+                ],
+                [
+                    {text: ptData.ptGestorArea?.name || 'Gestor da Área', style: 'td', alignment: 'center', border: [false, false, false, false]},
+                    {text: ptData.ptResponsavelAtividade?.name || 'Responsável Atividade', style: 'td', alignment: 'center', border: [false, false, false, false]},
+                    {text: ptData.ptSesmt?.name || 'SESMT', style: 'td', alignment: 'center', border: [false, false, false, false]},
                 ]
             ]
         },
@@ -450,7 +469,8 @@ export async function generatePdf(formData: SafetyFormValues, analysisData: Safe
             td: { fontSize: 9, alignment: 'left' },
             tdSmall: { fontSize: 8, alignment: 'left' },
             listItem: { fontSize: 9, margin: [0, 0, 0, 2] },
-            cellPadding: { margin: [0, 2, 0, 2] },
+            cellPadding: { margin: [5, 2, 5, 2] },
+            signatureTyped: { font: 'Times-Italic', fontSize: 16 }
         },
         defaultStyle: {
             fontSize: 10,

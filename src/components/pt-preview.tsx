@@ -1,12 +1,37 @@
 'use client';
 
 import React from 'react';
-import type { SafetyFormValues, PtTeamMember } from '@/lib/types';
+import type { SafetyFormValues, PtTeamMember, PtSigner } from '@/lib/types';
 import { ptChecklistItems } from '@/lib/pt-checklist-data';
 
 interface PTPreviewProps {
   formData: SafetyFormValues;
 }
+
+const SignaturePreview = ({ signer, label }: { signer?: PtSigner, label: string }) => {
+    if (!signer) return null;
+    const { signatureData, signatureType, name } = signer;
+
+    const signatureContent = () => {
+        if (!signatureData) {
+            return <div className="h-12 w-full"></div>;
+        }
+        if (signatureType === 'typed') {
+            return <p className="font-serif italic text-sm text-center h-12 flex items-center justify-center">{signatureData}</p>;
+        }
+        if (signatureType === 'draw' || signatureType === 'upload') {
+            return <img src={signatureData} alt="Assinatura" className="h-12 w-full object-contain mx-auto" />;
+        }
+        return <div className="h-12 w-full"></div>;
+    }
+
+    return (
+        <div className='border-t border-black mx-4 pt-1'>
+            {signatureContent()}
+            <p className='text-xs text-center'>{name || label}</p>
+        </div>
+    );
+};
 
 const CheckboxDisplay = ({ checked }: { checked: boolean }) => (
     <div className="w-3 h-3 border border-black flex items-center justify-center">
@@ -176,10 +201,10 @@ export function PTPreview({ formData }: PTPreviewProps) {
         )}
 
         <Section title="ASSINATURAS" className="!mt-4">
-             <div className="grid grid-cols-3 gap-2 pt-16 text-center border border-black border-t-0 text-xs">
-                <div className='border-t border-black mx-4 pt-1'>{ptData.ptGestorArea || 'Gestor da Área de Trabalho'}</div>
-                <div className='border-t border-black mx-4 pt-1'>{ptData.ptResponsavelAtividade || 'Responsável pela atividade'}</div>
-                <div className='border-t border-black mx-4 pt-1'>{ptData.ptSesmt || 'SESMT'}</div>
+             <div className="grid grid-cols-3 gap-2 pt-2 text-center border border-black border-t-0 text-xs">
+                <SignaturePreview signer={ptData.ptGestorArea} label="Gestor da Área" />
+                <SignaturePreview signer={ptData.ptResponsavelAtividade} label="Responsável pela Atividade" />
+                <SignaturePreview signer={ptData.ptSesmt} label="SESMT" />
              </div>
         </Section>
       </main>

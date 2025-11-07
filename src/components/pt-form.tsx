@@ -1,7 +1,7 @@
 'use client';
 
 import type { UseFormReturn } from 'react-hook-form';
-import { useFieldArray, useWatch } from 'react-hook-form';
+import { useFieldArray, useWatch, useForm } from 'react-hook-form';
 import type { SafetyFormValues } from '@/lib/types';
 import {
   FormControl,
@@ -15,12 +15,15 @@ import { Separator } from '@/components/ui/separator';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ptChecklistItems } from '@/lib/pt-checklist-data';
 import { Button } from './ui/button';
-import { PlusCircle, Trash2 } from 'lucide-react';
+import { PlusCircle, Trash2, Signature } from 'lucide-react';
 import { RadioGroup, RadioGroupItem } from './ui/radio-group';
 import { Switch } from './ui/switch';
+import { SignaturePad } from './signature-pad';
+import { ChangeEvent } from 'react';
+
 
 interface PTFormProps {
-  form: UseFormReturn<SafetyFormValues>;
+  form: ReturnType<typeof useForm<SafetyFormValues>>;
 }
 
 const SectionTitle = ({ children }: { children: React.ReactNode }) => (
@@ -107,6 +110,103 @@ const CheckboxField = ({ form, name, label }: { form: UseFormReturn<SafetyFormVa
       </>
     );
   };
+
+  const SignatureField = ({ form, fieldPrefix, label }: { form: ReturnType<typeof useForm<SafetyFormValues>>, fieldPrefix: string, label: string }) => {
+    const signatureType = useWatch({
+      control: form.control,
+      name: `${fieldPrefix}.signatureType` as any,
+    });
+
+    const handleFileUpload = (e: ChangeEvent<HTMLInputElement>, field: any) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            if (file.size > 1 * 1024 * 1024) { // 1MB limit
+                form.setError(`${fieldPrefix}.signatureData` as any, { type: 'manual', message: 'Imagem muito grande (máx 1MB).' });
+                return;
+            }
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                field.onChange(reader.result as string);
+                form.clearErrors(`${fieldPrefix}.signatureData` as any);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+  
+    return (
+        <FormItem>
+            <FormLabel>{label}</FormLabel>
+            <FormField
+                control={form.control}
+                name={`${fieldPrefix}.name` as any}
+                render={({ field }) => (
+                    <FormItem>
+                    <FormLabel className='text-xs font-normal'>Nome do Assinante</FormLabel>
+                    <FormControl><Input {...field} placeholder="Nome do assinante" /></FormControl>
+                    <FormMessage />
+                    </FormItem>
+            )}/>
+            <div className="col-span-full space-y-2 rounded-md border p-3 mt-2">
+                <FormField
+                control={form.control}
+                name={`${fieldPrefix}.signatureType` as any}
+                render={({ field }) => (
+                    <FormItem className="space-y-2">
+                    <FormLabel className="text-xs">Método de Assinatura</FormLabel>
+                    <FormControl>
+                        <RadioGroup
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                        className="flex items-center space-x-4"
+                        >
+                        <FormItem className="flex items-center space-x-2 space-y-0">
+                            <FormControl><RadioGroupItem value="typed" /></FormControl>
+                            <FormLabel className="font-normal text-sm">Digitar</FormLabel>
+                        </FormItem>
+                        <FormItem className="flex items-center space-x-2 space-y-0">
+                            <FormControl><RadioGroupItem value="draw" /></FormControl>
+                            <FormLabel className="font-normal text-sm">Desenhar</FormLabel>
+                        </FormItem>
+                        <FormItem className="flex items-center space-x-2 space-y-0">
+                            <FormControl><RadioGroupItem value="upload" /></FormControl>
+                            <FormLabel className="font-normal text-sm">Carregar</FormLabel>
+                        </FormItem>
+                        </RadioGroup>
+                    </FormControl>
+                    </FormItem>
+                )}
+                />
+        
+                <FormField
+                control={form.control}
+                name={`${fieldPrefix}.signatureData` as any}
+                render={({ field }) => (
+                    <FormItem>
+                    {signatureType === 'typed' && (
+                        <FormControl>
+                        <Input placeholder="Digite o nome para assinar" {...field} />
+                        </FormControl>
+                    )}
+                    {signatureType === 'draw' && (
+                        <SignaturePad
+                        value={field.value}
+                        onChange={field.onChange}
+                        />
+                    )}
+                    {signatureType === 'upload' && (
+                        <FormControl>
+                            <Input type="file" accept="image/png, image/jpeg" onChange={(e) => handleFileUpload(e, field)} />
+                        </FormControl>
+                    )}
+                    <FormMessage />
+                    </FormItem>
+                )}
+                />
+            </div>
+      </FormItem>
+    );
+  };
+
 
 export function PTForm({ form }: PTFormProps) {
     const { control } = form;
@@ -268,9 +368,9 @@ export function PTForm({ form }: PTFormProps) {
            {/* Signatures */}
           <SectionTitle>Assinaturas</SectionTitle>
            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-             <FormField control={control} name="pt.ptGestorArea" render={({ field }) => (<FormItem><FormLabel>Gestor da Área</FormLabel><FormControl><Input {...field} placeholder="Nome do gestor" /></FormControl></FormItem>)} />
-             <FormField control={control} name="pt.ptResponsavelAtividade" render={({ field }) => (<FormItem><FormLabel>Responsável pela Atividade</FormLabel><FormControl><Input {...field} placeholder="Nome do responsável" /></FormControl></FormItem>)} />
-             <FormField control={control} name="pt.ptSesmt" render={({ field }) => (<FormItem><FormLabel>SESMT</FormLabel><FormControl><Input {...field} placeholder="Nome do SESMT" /></FormControl></FormItem>)} />
+                <SignatureField form={form} fieldPrefix="pt.ptGestorArea" label="Gestor da Área" />
+                <SignatureField form={form} fieldPrefix="pt.ptResponsavelAtividade" label="Responsável pela Atividade" />
+                <SignatureField form={form} fieldPrefix="pt.ptSesmt" label="SESMT" />
            </div>
 
 

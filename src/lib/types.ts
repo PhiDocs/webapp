@@ -2,10 +2,13 @@
 
 import { z } from 'zod';
 
+const signatureTypeSchema = z.enum(['typed', 'draw', 'upload']);
+
 export const responsiblePersonSchema = z.object({
   name: z.string().min(1, 'Nome do responsável é obrigatório.'),
   role: z.string().min(1, 'Função do responsável é obrigatória.'),
-  signature: z.string().optional(), // Now a text field for name
+  signatureType: signatureTypeSchema.default('typed'),
+  signatureData: z.string().optional(),
 });
 
 export const teamMemberSchema = z.object({
@@ -24,11 +27,16 @@ export const ptTeamMemberSchema = z.object({
   apto: z.enum(['sim', 'nao', '']),
 });
 
+const ptSignerSchema = z.object({
+    name: z.string().optional(),
+    signatureType: signatureTypeSchema.default('typed'),
+    signatureData: z.string().optional(),
+});
+
 export const ptFormSchema = z.object({
   // PT specific fields
   ptLocalAtividade: z.string(),
   ptEquipamentoLinha: z.string(),
-  ptEmpresaSetor: z.string(),
   ptData: z.string(),
   ptHoraInicio: z.string(),
   ptHoraFim: z.string(),
@@ -52,30 +60,32 @@ export const ptFormSchema = z.object({
   ptVigias: z.array(ptTeamMemberSchema),
   ptResgatistas: z.array(ptTeamMemberSchema),
 
-  ptGestorArea: z.string().optional(),
-  ptResponsavelAtividade: z.string().optional(),
-  ptSesmt: z.string().optional(),
+  // Signatures
+  ptGestorArea: ptSignerSchema,
+  ptResponsavelAtividade: ptSignerSchema,
+  ptSesmt: ptSignerSchema,
 });
 
 
 export const formSchema = z.object({
   documentType: z.enum(['APR', 'PT'], { required_error: 'Please select a document type.' }),
   
-  // Work Data (APR)
-  workName: z.string().min(1, 'Nome da obra é obrigatório.'),
-  workAddress: z.string().min(1, 'Endereço da obra é obrigatório.'),
-  startDate: z.string().min(1, 'Data de início é obrigatória.'),
-  endDate: z.string().min(1, 'Data de término é obrigatória.'),
-  workLocationDetails: z.string().min(1, 'Local da obra/pavimento é obrigatório.'),
+  companyName: z.string(),
+  companyLogo: z.string().optional(),
   
-  activityDescription: z.string().min(10, 'A descrição da atividade deve ter pelo menos 10 caracteres.'),
+  // Work Data (APR)
+  workName: z.string().optional(),
+  workAddress: z.string().optional(),
+  startDate: z.string().optional(),
+  endDate: z.string().optional(),
+  workLocationDetails: z.string().optional(),
+  
+  activityDescription: z.string().optional(),
   
   // Responsible Person (APR)
   responsiblePersons: z.array(responsiblePersonSchema).min(1, 'Adicione pelo menos um responsável.'),
 
-  // Company and Team (APR)
-  companyName: z.string(),
-  companyLogo: z.string().optional(), // Will store as data URL
+  // Team (APR)
   teamMembers: z.array(teamMemberSchema).optional(),
 
   // PT Form Data
@@ -88,6 +98,7 @@ export const formSchema = z.object({
         if (!data.startDate) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Data de início é obrigatória.", path: ["startDate"] });
         if (!data.endDate) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Data de término é obrigatória.", path: ["endDate"] });
         if (!data.workLocationDetails) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Local da obra/pavimento é obrigatório.", path: ["workLocationDetails"] });
+        if (!data.activityDescription || data.activityDescription.length < 10) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "A descrição da atividade deve ter pelo menos 10 caracteres.", path: ["activityDescription"] });
     } else if (data.documentType === 'PT') {
         if (!data.pt.ptLocalAtividade) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Local da atividade é obrigatório.", path: ["pt", "ptLocalAtividade"] });
         if (!data.pt.ptData) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Data é obrigatória.", path: ["pt", "ptData"] });
@@ -100,3 +111,4 @@ export type ResponsiblePerson = z.infer<typeof responsiblePersonSchema>;
 export type TeamMember = z.infer<typeof teamMemberSchema>;
 export type PtFormValues = z.infer<typeof ptFormSchema>;
 export type PtTeamMember = z.infer<typeof ptTeamMemberSchema>;
+export type PtSigner = z.infer<typeof ptSignerSchema>;

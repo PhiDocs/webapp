@@ -37,14 +37,13 @@ export default function Home() {
       endDate: '',
       workLocationDetails: '',
       activityDescription: '',
-      responsiblePersons: [{ name: '', role: '', signature: '' }],
+      responsiblePersons: [{ name: '', role: '', signatureType: 'typed', signatureData: '' }],
       companyName: '',
       companyLogo: '',
       teamMembers: [],
       pt: {
         ptLocalAtividade: '',
         ptEquipamentoLinha: '',
-        ptEmpresaSetor: 'Plaskaper',
         ptData: new Date().toISOString().split('T')[0],
         ptHoraInicio: '',
         ptHoraFim: '',
@@ -61,9 +60,9 @@ export default function Home() {
         ptVisto: '',
         ptVigias: [],
         ptResgatistas: [],
-        ptGestorArea: '',
-        ptResponsavelAtividade: '',
-        ptSesmt: '',
+        ptGestorArea: {name: '', signatureType: 'typed', signatureData: ''},
+        ptResponsavelAtividade: {name: '', signatureType: 'typed', signatureData: ''},
+        ptSesmt: {name: '', signatureType: 'typed', signatureData: ''},
       },
     },
     mode: 'onChange',
@@ -80,8 +79,8 @@ export default function Home() {
     setEquipment(null);
 
     const [analysisResult, equipmentResult] = await Promise.all([
-        getSafetyAnalysis({ activityDescription: data.activityDescription }),
-        getProtectiveEquipment({ activityDescription: data.activityDescription })
+        getSafetyAnalysis({ activityDescription: data.activityDescription! }),
+        getProtectiveEquipment({ activityDescription: data.activityDescription! })
     ]);
 
     if (analysisResult.error || !analysisResult.data) {
