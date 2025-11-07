@@ -157,7 +157,7 @@ const CheckboxField = ({ form, name, label }: { form: UseFormReturn<SafetyFormVa
                         <RadioGroup
                         onValueChange={field.onChange}
                         defaultValue={field.value}
-                        className="flex items-center space-x-4"
+                        className="flex flex-wrap items-center gap-x-4 gap-y-2"
                         >
                         <FormItem className="flex items-center space-x-2 space-y-0">
                             <FormControl><RadioGroupItem value="typed" /></FormControl>
