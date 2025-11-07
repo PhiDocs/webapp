@@ -203,19 +203,18 @@ function generateAPRPages(formData: SafetyFormValues, analysisData: SafetyAnalys
     if (formData.teamMembers && formData.teamMembers.length > 0) {
         content.push({ text: 'EQUIPE DE TRABALHO', style: 'sectionTitle' });
         const teamBody = [
-            [{ text: 'DATA', style: 'th' }, { text: 'NOME', style: 'th' }, { text: 'FUNÇÃO / EMPRESA', style: 'th' }, { text: 'ASSINATURA', style: 'th' }]
+            [{ text: 'DATA', style: 'th' }, { text: 'NOME', style: 'th' }, { text: 'FUNÇÃO / EMPRESA', style: 'th' }]
         ];
         formData.teamMembers.forEach(m => {
             teamBody.push([
                 { text: getShortDate(m.date), style: 'td' },
                 { text: m.name, style: 'td' },
                 { text: m.role, style: 'td' },
-                { text: '', style: 'td', minHeight: 15 }, // Empty for signature
             ]);
         });
         content.push({
             table: {
-                widths: ['auto', '*', '*', '*'],
+                widths: ['auto', '*', '*'],
                 body: teamBody,
                 dontBreakRows: true,
             },

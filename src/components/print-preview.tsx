@@ -140,10 +140,9 @@ function TeamSection({ data }: { data: SafetyFormValues }) {
       <table className="w-full border-collapse border mt-0 analysis-table">
         <thead className='analysis-table-header'>
           <tr>
-            <th className="text-left w-1/4">DATA</th>
-            <th className="text-left w-1/4">NOME</th>
-            <th className="text-left w-1/4">FUNÇÃO / EMPRESA</th>
-            <th className="text-left w-1/4">ASSINATURA</th>
+            <th className="text-left w-1/3">DATA</th>
+            <th className="text-left w-1/3">NOME</th>
+            <th className="text-left w-1/3">FUNÇÃO / EMPRESA</th>
           </tr>
         </thead>
         <tbody>
@@ -152,7 +151,6 @@ function TeamSection({ data }: { data: SafetyFormValues }) {
               <td className="h-10">{getShortDate(member.date)}</td>
               <td>{member.name}</td>
               <td>{member.role}</td>
-              <td></td>
             </tr>
           ))}
         </tbody>
