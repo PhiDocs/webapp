@@ -1,6 +1,6 @@
 'use client';
 
-import type { TDocumentDefinitions, Content } from 'pdfmake/interfaces';
+import type { TDocumentDefinitions, Content, TableCell } from 'pdfmake/interfaces';
 import type { SafetyFormValues } from '@/lib/types';
 import type { SafetyAnalysisOutput } from '@/ai/flows/generate-safety-analysis';
 import type { ProtectiveEquipmentOutput } from '@/ai/flows/recommend-protective-equipment';
@@ -166,7 +166,7 @@ function generateAPRPages(formData: SafetyFormValues, analysisData: SafetyAnalys
             table: {
                 widths: ['*', '*'],
                 body: [
-                    [{ text: 'EPI NECESSÁRIO A EXECUÇÃO DA ATIVIDADE', style: 'sectionTitle' }, { text: 'EPC NECESSÁRIO A EXECUÇÃO DA ATIVIDADE', style: 'sectionTitle' }],
+                    [{ text: 'EPI NECESSÁRIO', style: 'sectionTitle' }, { text: 'EPC NECESSÁRIO', style: 'sectionTitle' }],
                     [
                         { border: [true, false, true, true], padding: [5,5,5,5], stack: [
                             { ul: epiItems, style: 'td' },
@@ -216,7 +216,7 @@ function generateAPRPages(formData: SafetyFormValues, analysisData: SafetyAnalys
 const Checkbox = (checked: boolean): Content => ({
     canvas: [
       { type: 'rect', x: 0, y: 0, w: 8, h: 8, r: 1, lineColor: '#000', lineWidth: 0.5 },
-      ...(checked ? [{ type: 'rect', x: 1, y: 1, w: 6, h: 6, color: '#000' }] : [])
+      ...(checked ? [{ type: 'rect', x: 1.5, y: 1.5, w: 5, h: 5, color: '#000' }] : [])
     ]
   });
 
@@ -226,60 +226,90 @@ function generatePTPages(formData: SafetyFormValues): Content[] {
     const content: Content[] = [];
 
     // --- Header ---
+    const headerContent: TableCell[][] = [
+        [
+            {
+                text: [
+                    { text: 'LOCAL DA ATIVIDADE: ', bold: true },
+                    ptData.ptLocalAtividade || '...'
+                ], style: 'tdSmall', colSpan: 2, border: [true, true, true, false]
+            },
+            {},
+            {
+                text: [
+                    { text: 'DATA: ', bold: true },
+                    getShortDate(ptData.ptData)
+                ], style: 'tdSmall', border: [true, true, true, false]
+            },
+        ],
+        [
+            {text: '', colSpan: 3, border: [true, false, true, true]},
+            {},
+            {}
+        ],
+        [
+            {
+                 text: [
+                    { text: 'EQUIPAMENTO/ LINHA: ', bold: true },
+                    ptData.ptEquipamentoLinha || '...'
+                ], style: 'tdSmall', colSpan: 2, border: [true, true, true, false]
+            },
+            {},
+            {
+                text: [
+                    { text: 'INÍCIO: ', bold: true },
+                    ptData.ptHoraInicio || '...',
+                    { text: '  FIM: ', bold: true },
+                    ptData.ptHoraFim || '...'
+                ], style: 'tdSmall', border: [true, true, true, false]
+            }
+        ],
+        [
+            {text: '', colSpan: 3, border: [true, false, true, true]},
+            {},
+            {}
+        ],
+        [
+           {
+                 text: [
+                    { text: 'DESCRIÇÃO DA TAREFA: ', bold: true },
+                    ptData.ptDescricaoTarefa || '...'
+                ], style: 'tdSmall', colSpan: 3
+            },
+            {},
+            {}
+        ]
+    ];
+    
+    content.push({ text: 'PERMISSÃO DE TRABALHO', style: 'h1', alignment: 'center', marginBottom: 10 });
     content.push({
         table: {
             widths: ['*', '*', '*'],
-            body: [
-                [
-                    { text: 'PERMISSÃO DE TRABALHO', style: 'h1', colSpan: 3, alignment: 'center' }, {}, {}
-                ],
-                [
-                    { text: 'Local da Atividade: ' + (ptData.ptLocalAtividade || '...'), style: 'td', colSpan: 2 },
-                    {},
-                    { text: 'Data: ' + getShortDate(ptData.ptData), style: 'td' }
-                ],
-                [
-                    { text: 'Equipamento/Linha: ' + (ptData.ptEquipamentoLinha || '...'), style: 'td', colSpan: 2 },
-                    {},
-                    { text: `Início/Fim: ${ptData.ptHoraInicio || '...'} - ${ptData.ptHoraFim || '...'}`, style: 'td' }
-                ],
-                [
-                    { text: 'Descrição da Tarefa: ' + (ptData.ptDescricaoTarefa || '...'), style: 'td', colSpan: 3 },
-                    {},
-                    {}
-                ]
-            ]
+            body: headerContent,
         },
         layout: 'boxLayout',
-        marginBottom: 10
+        marginBottom: 10,
     });
 
     // --- Checklist ---
+    const checklistData = ptData.ptChecklist || {};
     ptChecklistItems.forEach(section => {
-        const itemsContent: Content[][] = [];
-        let currentRow: Content[] = [];
-
-        section.items.forEach((item, index) => {
-            currentRow.push({
-                columns: [
-                    { ...Checkbox(ptData.ptChecklist[item.id]), width: 10 },
-                    { text: item.label, width: '*' }
-                ],
-                columnGap: 5,
-                margin: [0, 2, 0, 2]
-            });
-
-            if ((index + 1) % section.columns === 0 || index === section.items.length - 1) {
-                itemsContent.push(currentRow);
-                currentRow = [];
-            }
-        });
+        const allItems: Content[] = section.items.map(item => ({
+            columns: [
+                { ...Checkbox(checklistData[item.id]), width: 10 },
+                { text: item.label, width: '*' }
+            ],
+            columnGap: 5,
+            margin: [0, 2, 0, 2]
+        }));
         
-        if (currentRow.length > 0) {
-            while (currentRow.length < section.columns) {
-                currentRow.push({ text: '' });
+        const body: Content[][] = [];
+        for (let i = 0; i < allItems.length; i += section.columns) {
+            const row = allItems.slice(i, i + section.columns);
+            while (row.length < section.columns) {
+                row.push({ text: '' });
             }
-            itemsContent.push(currentRow);
+            body.push(row);
         }
 
         content.push(
@@ -287,9 +317,9 @@ function generatePTPages(formData: SafetyFormValues): Content[] {
             {
                 table: {
                     widths: Array(section.columns).fill('*'),
-                    body: itemsContent,
+                    body: body,
                 },
-                layout: 'boxLayout',
+                layout: 'boxLayoutNoTop',
                 marginBottom: 5,
             }
         );
@@ -341,12 +371,13 @@ export async function generatePdf(formData: SafetyFormValues, analysisData: Safe
         },
         styles: {
             h1: { fontSize: 16, bold: true },
-            sectionTitle: { fontSize: 10, bold: true, background: '#E0E0E0', color: '#000', alignment: 'center', margin: [0, 0, 0, 0] },
+            sectionTitle: { fontSize: 10, bold: true, background: '#E0E0E0', color: '#000', alignment: 'center', margin: [0, 0, 0, 0], padding: [0, 2, 0, 2] },
             th: { bold: true, fontSize: 9, alignment: 'center', fillColor: '#E0E0E0' },
             thHeader: { bold: true, fontSize: 7, alignment: 'center' },
             label: { bold: true, fontSize: 7, textTransform: 'uppercase', color: '#555' },
             value: { fontSize: 9 },
             td: { fontSize: 9, alignment: 'left' },
+            tdSmall: { fontSize: 8, alignment: 'left' },
             listItem: { fontSize: 9, margin: [0, 0, 0, 2] },
             cellPadding: { margin: [0, 2, 0, 2] },
         },
@@ -366,12 +397,22 @@ export async function generatePdf(formData: SafetyFormValues, analysisData: Safe
                 paddingRight: (i, node) => (i === (node.table.widths?.length || 0) - 1) ? 5 : 5,
                 paddingTop: () => 4,
                 paddingBottom: () => 4,
+            },
+            boxLayoutNoTop: {
+                 hLineWidth: (i, node) => (i === 0) ? 0 : 0.5,
+                vLineWidth: () => 0.5,
+                hLineColor: () => '#ccc',
+                vLineColor: () => '#ccc',
+                paddingLeft: (i) => i === 0 ? 5 : 5,
+                paddingRight: (i, node) => (i === (node.table.widths?.length || 0) - 1) ? 5 : 5,
+                paddingTop: () => 4,
+                paddingBottom: () => 4,
             }
         }
     };
 
     const docName = formData.documentType === 'APR' ? 'APR' : 'PT';
-    const fileName = `${docName}-${formData.companyName.replace(/ /g, "_")}-${new Date().toLocaleDateString('pt-br').replace(/\//g, '-')}.pdf`;
+    const fileName = `${docName}-${(formData.companyName || 'doc').replace(/ /g, "_")}-${new Date().toLocaleDateString('pt-br').replace(/\//g, '-')}.pdf`;
 
     pdfMake.createPdf(docDefinition).download(fileName);
 }
