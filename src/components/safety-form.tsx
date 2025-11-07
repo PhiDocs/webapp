@@ -1,7 +1,7 @@
 'use client';
 
 import { useForm, useFieldArray, useWatch } from 'react-hook-form';
-import React, { useState, useRef, type ChangeEvent } from 'react';
+import React, { type ChangeEvent } from 'react';
 import type { SafetyFormValues } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import {
@@ -27,19 +27,9 @@ import {
   UserCheck,
   PlusCircle,
   Trash2,
-  Edit,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Separator } from '@/components/ui/separator';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-  DialogClose,
-} from '@/components/ui/dialog';
-import SignatureCanvas from 'react-signature-canvas';
 import { PTForm } from './pt-form';
 
 interface SafetyFormProps {
@@ -49,55 +39,6 @@ interface SafetyFormProps {
   onNewReport: () => void;
 }
 
-function SignatureDialog({
-  onSave,
-  onClear,
-}: {
-  onSave: (dataUrl: string) => void;
-  onClear: () => void;
-}) {
-  const sigPad = useRef<SignatureCanvas>(null);
-
-  const handleSave = () => {
-    if (sigPad.current) {
-      const dataUrl = sigPad.current.getTrimmedCanvas().toDataURL('image/png');
-      onSave(dataUrl);
-    }
-  };
-
-  const handleClear = () => {
-    if (sigPad.current) {
-      sigPad.current.clear();
-      onClear();
-    }
-  };
-
-  return (
-    <DialogContent className="max-w-md">
-      <DialogHeader>
-        <DialogTitle>Assine no campo abaixo</DialogTitle>
-      </DialogHeader>
-      <div className="relative w-full h-48 border rounded-md bg-white">
-        <SignatureCanvas
-          ref={sigPad}
-          penColor="black"
-          canvasProps={{ className: 'w-full h-full' }}
-        />
-      </div>
-      <DialogFooter className="sm:justify-between">
-        <Button type="button" variant="outline" onClick={handleClear}>
-          Limpar
-        </Button>
-        <DialogClose asChild>
-          <Button type="button" onClick={handleSave}>
-            Salvar Assinatura
-          </Button>
-        </DialogClose>
-      </DialogFooter>
-    </DialogContent>
-  );
-}
-
 export function SafetyForm({
   form,
   onSubmit,
@@ -105,10 +46,6 @@ export function SafetyForm({
   onNewReport,
 }: SafetyFormProps) {
   const { toast } = useToast();
-  const [isSignatureDialogOpen, setIsSignatureDialogOpen] = useState(false);
-  const [currentSignatureIndex, setCurrentSignatureIndex] = useState<
-    number | null
-  >(null);
 
   const {
     fields: responsibleFields,
@@ -150,34 +87,10 @@ export function SafetyForm({
     }
   };
 
-  const handleOpenSignatureDialog = (index: number) => {
-    setCurrentSignatureIndex(index);
-    setIsSignatureDialogOpen(true);
-  };
-
-  const handleSaveSignature = (dataUrl: string) => {
-    if (currentSignatureIndex !== null) {
-      form.setValue(`responsiblePersons.${currentSignatureIndex}.signature`, dataUrl, {
-        shouldValidate: true,
-      });
-    }
-    setIsSignatureDialogOpen(false);
-    setCurrentSignatureIndex(null);
-  };
-
-  const handleClearSignature = () => {
-    if (currentSignatureIndex !== null) {
-      form.setValue(`responsiblePersons.${currentSignatureIndex}.signature`, '', {
-        shouldValidate: true,
-      });
-    }
-  };
-
   const documentType = useWatch({ control: form.control, name: 'documentType' });
 
 
   return (
-    <>
       <Card className="w-full">
         <CardContent className="pt-6">
           <Form {...form}>
@@ -195,7 +108,6 @@ export function SafetyForm({
                         value={field.value}
                         onValueChange={(value) => {
                             field.onChange(value);
-                            // Reset other form parts if needed
                         }}
                         className="w-full"
                       >
@@ -392,25 +304,34 @@ export function SafetyForm({
                             )}
                           />
                         </div>
-                        <div className="flex items-center gap-1 mt-8">
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleOpenSignatureDialog(index)}
-                          >
-                            <Edit className="mr-2 h-4 w-4" /> Assinar
-                          </Button>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => removeResponsible(index)}
-                            disabled={responsibleFields.length <= 1}
-                          >
-                            <Trash2 className="h-4 w-4 text-destructive" />
-                          </Button>
-                        </div>
+                         <FormField
+                            control={form.control}
+                            name={`responsiblePersons.${index}.signature`}
+                            render={({ field }) => (
+                              <FormItem className="flex-grow">
+                                <FormLabel className={index !== 0 ? 'sr-only' : ''}>
+                                  Assinatura (Nome)
+                                </FormLabel>
+                                <FormControl>
+                                  <Input
+                                    placeholder="Digite o nome para assinar"
+                                    {...field}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="mt-8"
+                          onClick={() => removeResponsible(index)}
+                          disabled={responsibleFields.length <= 1}
+                        >
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
                       </div>
                     ))}
                     <FormMessage>
@@ -544,12 +465,5 @@ export function SafetyForm({
           </Form>
         </CardContent>
       </Card>
-      <Dialog open={isSignatureDialogOpen} onOpenChange={setIsSignatureDialogOpen}>
-        <SignatureDialog
-          onSave={handleSaveSignature}
-          onClear={handleClearSignature}
-        />
-      </Dialog>
-    </>
   );
 }

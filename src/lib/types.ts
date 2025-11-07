@@ -3,7 +3,7 @@ import { z } from 'zod';
 export const responsiblePersonSchema = z.object({
   name: z.string().min(1, 'Nome do responsável é obrigatório.'),
   role: z.string().min(1, 'Função do responsável é obrigatória.'),
-  signature: z.string().optional(), // Will store as data URL
+  signature: z.string().optional(), // Now a text field for name
 });
 
 export const teamMemberSchema = z.object({

@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { jsPDF } from 'jspdf';
 import type { SafetyAnalysisOutput } from '@/ai/flows/generate-safety-analysis';
 import type { ProtectiveEquipmentOutput } from '@/ai/flows/recommend-protective-equipment';
 import type { SafetyFormValues } from '@/lib/types';
@@ -17,6 +16,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { FileDown, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { generatePdf } from '@/lib/pdf-generator';
 
 import './print/print-layout.css';
 
@@ -114,7 +114,9 @@ export default function Home() {
   const { toast } = useToast();
 
   const handleGeneratePdf = async () => {
-    if (liveFormData.documentType === 'APR' && !analysis) {
+    const formData = form.getValues();
+
+    if (formData.documentType === 'APR' && !analysis) {
       toast({
         variant: 'destructive',
         title: 'Análise de Risco não gerada',
@@ -126,32 +128,7 @@ export default function Home() {
 
     setIsDownloading(true);
     try {
-      const content = document.getElementById('print-content-root');
-
-      if (!content) {
-        throw new Error('Elemento de impressão não encontrado.');
-      }
-      
-      const doc = new jsPDF({
-        orientation: 'p',
-        unit: 'mm',
-        format: 'a4',
-      });
-
-      await doc.html(content, {
-        callback: function (doc) {
-            const printData = form.getValues();
-            const docName = printData.documentType === 'APR' ? 'APR' : 'PT';
-            const fileName = `${docName}-${printData.companyName.replace(/ /g,"_")}-${new Date().toLocaleDateString('pt-br').replace(/\//g, '-')}.pdf`;
-            doc.save(fileName);
-        },
-        margin: [7.5, 7.5, 7.5, 7.5],
-        autoPaging: 'text',
-        width: 195, 
-        windowWidth: 794
-      });
-
-
+      await generatePdf(formData, analysis, equipment);
     } catch (error: any) {
       console.error('Falha ao gerar PDF:', error);
       toast({
@@ -254,7 +231,6 @@ export default function Home() {
                     formData={liveFormData}
                     analysisData={analysis}
                     equipmentData={equipment}
-                    isPrinting={isDownloading}
                   />
                 </div>
               </div>
