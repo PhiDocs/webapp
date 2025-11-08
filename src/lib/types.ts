@@ -57,6 +57,7 @@ export const ptFormSchema = z.object({
   ptObservacao: z.string(),
   ptVisto: z.string(),
   
+  ptColaboradores: z.array(ptTeamMemberSchema),
   ptVigias: z.array(ptTeamMemberSchema),
   ptResgatistas: z.array(ptTeamMemberSchema),
 
@@ -100,6 +101,7 @@ export const formSchema = z.object({
         if (!data.workLocationDetails) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Local da obra/pavimento é obrigatório.", path: ["workLocationDetails"] });
         if (!data.activityDescription || data.activityDescription.length < 10) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "A descrição da atividade deve ter pelo menos 10 caracteres.", path: ["activityDescription"] });
     } else if (data.documentType === 'PT') {
+        if (!data.companyName) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Nome da empresa é obrigatório.", path: ["companyName"] });
         if (!data.pt.ptLocalAtividade) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Local da atividade é obrigatório.", path: ["pt", "ptLocalAtividade"] });
         if (!data.pt.ptData) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Data é obrigatória.", path: ["pt", "ptData"] });
         if (!data.pt.ptHoraInicio) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Hora de início é obrigatória.", path: ["pt", "ptHoraInicio"] });

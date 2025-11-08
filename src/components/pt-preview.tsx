@@ -164,6 +164,8 @@ export function PTPreview({ formData }: PTPreviewProps) {
                 </Section>
             );
         })}
+
+        <TeamTable title="Colaboradores:" members={ptData.ptColaboradores || []} showEmpresa={true} />
         
         {ptData.ptEnableEspacoConfinado && (
             <Section title="TRABALHO EM ESPAÇO CONFINADO - AVALIAÇÃO FEITA PELO SESMT">

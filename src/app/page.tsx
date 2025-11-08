@@ -58,6 +58,7 @@ export default function Home() {
         ptCO2: '',
         ptObservacao: '',
         ptVisto: '',
+        ptColaboradores: [],
         ptVigias: [],
         ptResgatistas: [],
         ptGestorArea: {name: '', signatureType: 'typed', signatureData: ''},

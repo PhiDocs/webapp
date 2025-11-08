@@ -54,10 +54,12 @@ const CheckboxField = ({ form, name, label }: { form: UseFormReturn<SafetyFormVa
     form,
     name,
     title,
+    showEmpresa,
   }: {
     form: UseFormReturn<SafetyFormValues>;
-    name: "pt.ptVigias" | "pt.ptResgatistas";
+    name: "pt.ptVigias" | "pt.ptResgatistas" | "pt.ptColaboradores";
     title: string;
+    showEmpresa: boolean;
   }) => {
     const { control } = form;
     const { fields, append, remove } = useFieldArray({
@@ -81,11 +83,11 @@ const CheckboxField = ({ form, name, label }: { form: UseFormReturn<SafetyFormVa
         <div className="space-y-4">
           {fields.map((item, index) => (
             <div key={item.id} className="flex items-start gap-2">
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 flex-grow">
+              <div className={`grid grid-cols-1 ${showEmpresa ? 'md:grid-cols-4' : 'md:grid-cols-3'} gap-4 flex-grow`}>
                 <FormField control={control} name={`${name}.${index}.name`} render={({ field }) => (<FormItem><FormLabel className={index !== 0 ? 'sr-only' : ''}>Nome</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>)} />
                 <FormField control={control} name={`${name}.${index}.rgCpf`} render={({ field }) => (<FormItem><FormLabel className={index !== 0 ? 'sr-only' : ''}>RG/CPF</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>)} />
                 <FormField control={control} name={`${name}.${index}.func`} render={({ field }) => (<FormItem><FormLabel className={index !== 0 ? 'sr-only' : ''}>Função</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>)} />
-                <FormField control={control} name={`${name}.${index}.empresa`} render={({ field }) => (<FormItem><FormLabel className={index !== 0 ? 'sr-only' : ''}>Empresa</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>)} />
+                {showEmpresa && <FormField control={control} name={`${name}.${index}.empresa`} render={({ field }) => (<FormItem><FormLabel className={index !== 0 ? 'sr-only' : ''}>Empresa</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>)} />}
                 <FormField
                   control={control}
                   name={`${name}.${index}.apto`}
@@ -161,15 +163,15 @@ const CheckboxField = ({ form, name, label }: { form: UseFormReturn<SafetyFormVa
                         >
                         <FormItem className="flex items-center space-x-2 space-y-0">
                             <FormControl><RadioGroupItem value="typed" /></FormControl>
-                            <FormLabel className="font-normal text-sm">Digitar</FormLabel>
+                            <FormLabel className="font-normal text-sm leading-tight">Digitar</FormLabel>
                         </FormItem>
                         <FormItem className="flex items-center space-x-2 space-y-0">
                             <FormControl><RadioGroupItem value="draw" /></FormControl>
-                            <FormLabel className="font-normal text-sm">Desenhar</FormLabel>
+                            <FormLabel className="font-normal text-sm leading-tight">Desenhar</FormLabel>
                         </FormItem>
                         <FormItem className="flex items-center space-x-2 space-y-0">
                             <FormControl><RadioGroupItem value="upload" /></FormControl>
-                            <FormLabel className="font-normal text-sm">Carregar</FormLabel>
+                            <FormLabel className="font-normal text-sm leading-tight">Carregar</FormLabel>
                         </FormItem>
                         </RadioGroup>
                     </FormControl>
@@ -305,6 +307,8 @@ export function PTForm({ form }: PTFormProps) {
           ))}
 
           <Separator />
+          
+          <DynamicTeamSection form={form} name="pt.ptColaboradores" title="Colaboradores" showEmpresa={true} />
 
           {/* Optional Sections Toggles */}
           <div className='space-y-4 rounded-lg border p-4'>
@@ -344,7 +348,7 @@ export function PTForm({ form }: PTFormProps) {
             />
              {enableVigia && (
               <div className="border-t pt-4 mt-4">
-                 <DynamicTeamSection form={form} name="pt.ptVigias" title="Vigias" />
+                 <DynamicTeamSection form={form} name="pt.ptVigias" title="Vigias" showEmpresa={false} />
               </div>
             )}
             <Separator />
@@ -360,7 +364,7 @@ export function PTForm({ form }: PTFormProps) {
             />
             {enableResgatistas && (
                 <div className="border-t pt-4 mt-4">
-                    <DynamicTeamSection form={form} name="pt.ptResgatistas" title="Resgatistas" />
+                    <DynamicTeamSection form={form} name="pt.ptResgatistas" title="Resgatistas" showEmpresa={true} />
                 </div>
             )}
           </div>

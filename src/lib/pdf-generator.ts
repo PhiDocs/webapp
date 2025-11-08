@@ -34,7 +34,14 @@ const getSignatureContent = (signer: PtSigner | any): Content => {
         return { text: signer.signatureData, style: 'signatureTyped', alignment: 'center', margin: [0, 15, 0, 0], border: [false, true, false, false]};
     }
     if (signer.signatureType === 'draw' || signer.signatureType === 'upload') {
-        return { image: signer.signatureData, width: 120, alignment: 'center', margin: [0, 5, 0, 0], border: [false, true, false, false] };
+        try {
+            // Basic validation for base64
+            atob(signer.signatureData.split(',')[1]);
+            return { image: signer.signatureData, width: 120, alignment: 'center', margin: [0, 5, 0, 0], border: [false, true, false, false] };
+        } catch(e) {
+            console.error("Invalid base64 for signature", e);
+            return { text: 'Assinatura inválida', color: 'red', alignment: 'center' };
+        }
     }
     return { text: '', minHeight: 40 };
 };
@@ -328,16 +335,16 @@ function generatePTPages(formData: SafetyFormValues): Content[] {
     const checklistData = ptData.ptChecklist || {};
     ptChecklistItems.forEach(section => {
         if (!section.items) return;
-        const allItems: Content[] = [];
-        section.items.forEach(item => {
-            allItems.push({
+        
+        const allItems: Content[] = section.items.map(item => {
+            return {
                 columns: [
-                    { ...Checkbox(checklistData[item.id]), width: 10 },
+                    { ...Checkbox(!!checklistData[item.id]), width: 10 },
                     { text: item.label, width: '*', style: 'tdSmall' }
                 ],
                 columnGap: 5,
                 margin: [0, 2, 0, 2]
-            });
+            };
         });
         
         const sectionBody: Content[][] = [];
@@ -348,6 +355,7 @@ function generatePTPages(formData: SafetyFormValues): Content[] {
             }
             sectionBody.push(row);
         }
+
 
         if (sectionBody.length > 0) {
             content.push(
@@ -367,31 +375,37 @@ function generatePTPages(formData: SafetyFormValues): Content[] {
     // --- Dynamic Team Tables ---
     const renderTeamTable = (title: string, members: PtTeamMember[], showEmpresa: boolean) => {
         if (!members || members.length === 0) return [];
-        const body: TableCell[][] = [
-            [{ text: 'NOME', style: 'th' }, { text: 'RG/CPF', style: 'th' }, { text: 'FUNÇÃO', style: 'th' }, ...(showEmpresa ? [{ text: 'EMPRESA', style: 'th' }] : []), { text: 'APTO', style: 'th' }]
-        ];
+        const widths = showEmpresa ? ['*', 'auto', 'auto', 'auto', 'auto'] : ['*', 'auto', 'auto', 'auto'];
+        const headers = showEmpresa ? 
+            [{ text: 'NOME', style: 'th' }, { text: 'RG/CPF', style: 'th' }, { text: 'FUNÇÃO', style: 'th' }, { text: 'EMPRESA', style: 'th' }, { text: 'APTO', style: 'th' }] :
+            [{ text: 'NOME', style: 'th' }, { text: 'RG/CPF', style: 'th' }, { text: 'FUNÇÃO', style: 'th' }, { text: 'APTO', style: 'th' }];
+
+        const body: TableCell[][] = [ headers ];
+        
         members.forEach(m => {
             const row: TableCell[] = [
                 { text: m.name, style: 'tdSmall' },
                 { text: m.rgCpf, style: 'tdSmall' },
                 { text: m.func, style: 'tdSmall' },
-                 ...(showEmpresa ? [{ text: m.empresa, style: 'tdSmall' }] : []),
-                {
-                    columns: [
-                        {...Checkbox(m.apto === 'sim'), width: 10}, {text: 'Sim', width: 'auto', style: 'tdSmall'},
-                        {...Checkbox(m.apto === 'nao'), width: 10, margin: [5,0,0,0]}, {text: 'Não', width: 'auto', style: 'tdSmall'}
-                    ],
-                    columnGap: 2,
-                    alignment: 'center'
-                }
             ];
+             if (showEmpresa) {
+                row.push({ text: m.empresa, style: 'tdSmall' });
+             }
+            row.push({
+                columns: [
+                    {...Checkbox(m.apto === 'sim'), width: 10}, {text: 'Sim', width: 'auto', style: 'tdSmall'},
+                    {...Checkbox(m.apto === 'nao'), width: 10, margin: [5,0,0,0]}, {text: 'Não', width: 'auto', style: 'tdSmall'}
+                ],
+                columnGap: 2,
+                alignment: 'center'
+            });
             body.push(row);
         });
         return [
             { text: title, style: 'sectionTitle' },
             {
                 table: {
-                    widths: showEmpresa ? ['*', 'auto', 'auto', 'auto', 'auto'] : ['*', 'auto', 'auto', 'auto'],
+                    widths: widths,
                     body: body,
                     dontBreakRows: true,
                 },
@@ -401,6 +415,7 @@ function generatePTPages(formData: SafetyFormValues): Content[] {
         ];
     };
     
+    content.push(...renderTeamTable('Colaboradores:', ptData.ptColaboradores, true));
     if (ptData.ptEnableVigia) {
         content.push(...renderTeamTable('Vigia(s):', ptData.ptVigias, false));
     }
