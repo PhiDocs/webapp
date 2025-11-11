@@ -31,7 +31,7 @@ const getSignatureContent = (signer: PtSigner | any): Content => {
         return { text: '', minHeight: 40, border: [false, true, false, false] };
     }
     if (signer.signatureType === 'typed') {
-        return { text: signer.signatureData, style: 'signatureTyped', alignment: 'center', margin: [0, 15, 0, 0], border: [false, true, false, false]};
+        return { text: signer.signatureData, alignment: 'center', margin: [0, 15, 0, 0], border: [false, true, false, false], italics: true, fontSize: 16};
     }
     if (signer.signatureType === 'draw' || signer.signatureType === 'upload') {
         try {
@@ -376,20 +376,20 @@ function generatePTPages(formData: SafetyFormValues): Content[] {
     const renderTeamTable = (title: string, members: PtTeamMember[], showEmpresa: boolean) => {
         if (!members || members.length === 0) return [];
         const widths = showEmpresa ? ['*', 'auto', 'auto', 'auto', 'auto'] : ['*', 'auto', 'auto', 'auto'];
-        const headers = showEmpresa ? 
+        const headers: TableCell[] = showEmpresa ? 
             [{ text: 'NOME', style: 'th' }, { text: 'RG/CPF', style: 'th' }, { text: 'FUNÇÃO', style: 'th' }, { text: 'EMPRESA', style: 'th' }, { text: 'APTO', style: 'th' }] :
             [{ text: 'NOME', style: 'th' }, { text: 'RG/CPF', style: 'th' }, { text: 'FUNÇÃO', style: 'th' }, { text: 'APTO', style: 'th' }];
 
         const body: TableCell[][] = [ headers ];
         
         members.forEach(m => {
-            const row: TableCell[] = [
+            const row: Content[] = [
                 { text: m.name, style: 'tdSmall' },
                 { text: m.rgCpf, style: 'tdSmall' },
                 { text: m.func, style: 'tdSmall' },
             ];
              if (showEmpresa) {
-                row.push({ text: m.empresa, style: 'tdSmall' });
+                row.push({ text: m.empresa || '', style: 'tdSmall' });
              }
             row.push({
                 columns: [
@@ -484,7 +484,6 @@ export async function generatePdf(formData: SafetyFormValues, analysisData: Safe
             tdSmall: { fontSize: 8, alignment: 'left' },
             listItem: { fontSize: 9, margin: [0, 0, 0, 2] },
             cellPadding: { margin: [5, 2, 5, 2] },
-            signatureTyped: { italics: true, fontSize: 16 }
         },
         defaultStyle: {
             fontSize: 10,
