@@ -31,7 +31,7 @@ const getSignatureContent = (signer: PtSigner | any): Content => {
         return { text: '', minHeight: 40, border: [false, true, false, false] };
     }
     if (signer.signatureType === 'typed') {
-        return { text: signer.signatureData, alignment: 'center', margin: [0, 15, 0, 0], border: [false, true, false, false], italics: true, fontSize: 16};
+        return { text: signer.signatureData, alignment: 'center', margin: [0, 15, 0, 0], border: [false, true, false, false], italics: true, fontSize: 16 };
     }
     if (signer.signatureType === 'draw' || signer.signatureType === 'upload') {
         try {
@@ -95,27 +95,35 @@ function generateAPRPages(formData: SafetyFormValues, analysisData: SafetyAnalys
 
 
     // --- Work Data Section ---
-    content.push({ text: 'DADOS DA OBRA', style: 'sectionTitle' });
     content.push({
         table: {
-            widths: ['*', '*'],
+            widths: ['*'],
             body: [
-                [
-                    { stack: [{ text: 'NOME:', style: 'label' }, { text: formData.workName || '...', style: 'value' }], style: 'cellPadding' },
-                    { stack: [{ text: 'ENDEREÇO:', style: 'label' }, { text: formData.workAddress || '...', style: 'value' }], style: 'cellPadding' },
-                ],
-                 [
-                    { stack: [{ text: 'PREVISÃO DATA INICIO:', style: 'label' }, { text: getShortDate(formData.startDate), style: 'value' }], style: 'cellPadding' },
-                    { stack: [{ text: 'PREVISÃO DATA TÉRMINO:', style: 'label' }, { text: getShortDate(formData.endDate), style: 'value' }], style: 'cellPadding' },
-                ],
-                [
-                    { stack: [{ text: 'LOCAL DA OBRA / PAVIMENTO:', style: 'label' }, { text: formData.workLocationDetails || '...', style: 'value' }], colSpan: 2, style: 'cellPadding' },
-                    {}
-                ],
-                [
-                    { stack: [{ text: 'DESCRIÇÃO DA ATIVIDADE:', style: 'label' }, { text: formData.activityDescription || '...', style: 'value' }], colSpan: 2, style: 'cellPadding' },
-                    {}
-                ]
+                [{ text: 'DADOS DA OBRA', style: 'sectionTitle' }],
+                [{
+                    table: {
+                        widths: ['*', '*'],
+                        body: [
+                            [
+                                { stack: [{ text: 'NOME:', style: 'label' }, { text: formData.workName || '...', style: 'value' }], style: 'cellPadding' },
+                                { stack: [{ text: 'ENDEREÇO:', style: 'label' }, { text: formData.workAddress || '...', style: 'value' }], style: 'cellPadding' },
+                            ],
+                            [
+                                { stack: [{ text: 'PREVISÃO DATA INICIO:', style: 'label' }, { text: getShortDate(formData.startDate), style: 'value' }], style: 'cellPadding' },
+                                { stack: [{ text: 'PREVISÃO DATA TÉRMINO:', style: 'label' }, { text: getShortDate(formData.endDate), style: 'value' }], style: 'cellPadding' },
+                            ],
+                            [
+                                { stack: [{ text: 'LOCAL DA OBRA / PAVIMENTO:', style: 'label' }, { text: formData.workLocationDetails || '...', style: 'value' }], colSpan: 2, style: 'cellPadding' },
+                                {}
+                            ],
+                            [
+                                { stack: [{ text: 'DESCRIÇÃO DA ATIVIDADE:', style: 'label' }, { text: formData.activityDescription || '...', style: 'value' }], colSpan: 2, style: 'cellPadding' },
+                                {}
+                            ]
+                        ]
+                    },
+                    layout: 'boxLayoutNoTop',
+                }]
             ]
         },
         layout: 'boxLayout',
@@ -123,30 +131,40 @@ function generateAPRPages(formData: SafetyFormValues, analysisData: SafetyAnalys
     });
 
     // --- Responsibles Section ---
-    content.push({ text: 'RESPONSÁVEL PELO ACOMPANHAMENTO DOS SERVIÇOS', style: 'sectionTitle' });
-    const responsibleBody = [
+    const responsibleBody: TableCell[][] = [
         [{ text: 'NOME', style: 'th' }, { text: 'FUNÇÃO', style: 'th' }, { text: 'ASSINATURA', style: 'th' }]
     ];
     formData.responsiblePersons.forEach(p => {
         responsibleBody.push([
-            { text: p.name || '...', style: 'td', alignment: 'center' },
-            { text: p.role || '...', style: 'td', alignment: 'center' },
+            { text: p.name || '...', style: 'td', alignment: 'left' },
+            { text: p.role || '...', style: 'td', alignment: 'left' },
             getSignatureContent(p)
         ]);
     });
+
     content.push({
         table: {
-            widths: ['*', '*', '*'],
-            body: responsibleBody,
+            widths: ['*'],
             dontBreakRows: true,
+            body: [
+                [{ text: 'RESPONSÁVEL PELO ACOMPANHAMENTO DOS SERVIÇOS', style: 'sectionTitle' }],
+                [{
+                    table: {
+                        widths: ['*', '*', '*'],
+                        body: responsibleBody,
+                        dontBreakRows: true,
+                    },
+                    layout: 'boxLayoutNoTop',
+                }]
+            ]
         },
         layout: 'boxLayout',
         marginBottom: 10,
     });
 
+
     // --- Analysis Section ---
-    content.push({ text: 'PROCEDIMENTO OPERACIONAL', style: 'sectionTitle' });
-    const analysisBody = [
+    const analysisBody: TableCell[][] = [
         [
             { text: 'ITEM', style: 'th' },
             { text: 'ATIVIDADES', style: 'th' },
@@ -170,9 +188,19 @@ function generateAPRPages(formData: SafetyFormValues, analysisData: SafetyAnalys
     }
     content.push({
         table: {
-            widths: [35, '*', '*', '*'],
-            body: analysisBody,
+            widths: ['*'],
             dontBreakRows: true,
+            body: [
+                [{ text: 'PROCEDIMENTO OPERACIONAL', style: 'sectionTitle' }],
+                [{
+                    table: {
+                        widths: [35, '*', '*', '*'],
+                        body: analysisBody,
+                        dontBreakRows: true,
+                    },
+                    layout: 'boxLayoutNoTop',
+                }]
+            ]
         },
         layout: 'boxLayout',
         marginBottom: 10,
@@ -208,8 +236,7 @@ function generateAPRPages(formData: SafetyFormValues, analysisData: SafetyAnalys
 
     // --- Team Section ---
     if (formData.teamMembers && formData.teamMembers.length > 0) {
-        content.push({ text: 'EQUIPE DE TRABALHO', style: 'sectionTitle' });
-        const teamBody = [
+        const teamBody: TableCell[][] = [
             [{ text: 'DATA', style: 'th' }, { text: 'NOME', style: 'th' }, { text: 'FUNÇÃO / EMPRESA', style: 'th' }]
         ];
         formData.teamMembers.forEach(m => {
@@ -219,11 +246,20 @@ function generateAPRPages(formData: SafetyFormValues, analysisData: SafetyAnalys
                 { text: m.role, style: 'td' },
             ]);
         });
-        content.push({
+         content.push({
             table: {
-                widths: ['auto', '*', '*'],
-                body: teamBody,
-                dontBreakRows: true,
+                widths: ['*'],
+                body: [
+                    [{ text: 'EQUIPE DE TRABALHO', style: 'sectionTitle' }],
+                    [{
+                        table: {
+                            widths: ['auto', '*', '*'],
+                            body: teamBody,
+                            dontBreakRows: true,
+                        },
+                         layout: 'boxLayoutNoTop',
+                    }]
+                ]
             },
             layout: 'boxLayout',
         });
@@ -348,14 +384,13 @@ function generatePTPages(formData: SafetyFormValues): Content[] {
         });
         
         const sectionBody: Content[][] = [];
-        for (let i = 0; i < allItems.length; i += section.columns) {
+         for (let i = 0; i < allItems.length; i += section.columns) {
             const row: Content[] = allItems.slice(i, i + section.columns);
             while (row.length < section.columns) {
                 row.push({ text: '' }); // Ensure row is full
             }
             sectionBody.push(row);
         }
-
 
         if (sectionBody.length > 0) {
             content.push(
@@ -399,7 +434,7 @@ function generatePTPages(formData: SafetyFormValues): Content[] {
                 columnGap: 2,
                 alignment: 'center'
             });
-            body.push(row);
+            body.push(row as TableCell[]);
         });
         return [
             { text: title, style: 'sectionTitle' },
