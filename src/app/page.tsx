@@ -179,50 +179,41 @@ export default function Home() {
 
   const handleTestN8n = async () => {
     setIsTestingN8n(true);
-    // Esta URL precisa ser substituída pela URL do seu webhook de produção do n8n,
-    // idealmente usando o ngrok para desenvolvimento local.
-    const N8N_TEST_URL = "https://cf2551766b0f.ngrok-free.app/webhook/bafa018f-369f-4f8d-b192-1a0b0e7c3729";
-    
     try {
-        const response = await fetch(N8N_TEST_URL, {
-            method: "POST",
-            headers: { 
-              "Content-Type": "application/json",
-              // Este cabeçalho é a chave para evitar o bloqueio de CORS pelo ngrok em navegadores
-              "ngrok-skip-browser-warning": "true",
-            },
-            body: JSON.stringify({
-                event: "user_created",
-                uid: "123456",
-                email: "teste@exemplo.com",
-                message: "This is a test from the application button."
-            })
-        });
+      const response = await fetch('/api/n8n-webhook', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          event: 'test_connection',
+          message: 'This is a test from the application button.',
+          timestamp: new Date().toISOString(),
+        }),
+      });
 
-        if (response.ok) {
-            toast({
-                title: 'Sucesso!',
-                description: 'Mensagem de teste enviada para o n8n. Verifique seu workflow.',
-            });
-        } else {
-             const errorData = await response.json();
-             toast({
-                variant: 'destructive',
-                title: 'Falha na Conexão com n8n',
-                description: `O n8n respondeu com um erro: ${errorData.message || response.statusText}`,
-            });
-        }
-
-    } catch (error: any) {
+      if (response.ok) {
         toast({
-            variant: 'destructive',
-            title: 'Erro de Rede',
-            description: `Não foi possível conectar ao n8n. Verifique se o ngrok está rodando. Detalhes: ${error.message}`,
+          title: 'Sucesso!',
+          description: 'Mensagem de teste enviada para o n8n. Verifique seu workflow.',
         });
+      } else {
+        const errorData = await response.json();
+        toast({
+          variant: 'destructive',
+          title: 'Falha na Conexão com n8n',
+          description: `O servidor respondeu com um erro: ${errorData.details || response.statusText}`,
+        });
+      }
+    } catch (error: any) {
+      toast({
+        variant: 'destructive',
+        title: 'Erro de Rede',
+        description: `Não foi possível conectar à API de webhook. Detalhes: ${error.message}`,
+      });
     } finally {
-        setIsTestingN8n(false);
+      setIsTestingN8n(false);
     }
   };
+
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -342,5 +333,3 @@ export default function Home() {
     </div>
   );
 }
-
-    

@@ -3,32 +3,32 @@
 import { NextResponse } from 'next/server';
 
 /**
- * Esta é a sua rota de API que atua como uma ponte para o n8n.
- * Ela recebe uma requisição POST do seu próprio aplicativo e a repassa
- * para o webhook do n8n que você configurar.
+ * Rota de API que atua como um proxy para o webhook do n8n.
+ * Recebe uma requisição POST do front-end e a repassa para a URL do webhook
+ * configurada, retornando a resposta ou o erro de forma clara.
  */
 export async function POST(request: Request) {
   /**
-   * Passo 1: Substitua esta URL pela URL do seu webhook de *produção* do n8n.
-   * Se estiver usando o ngrok para desenvolvimento, use a URL do ngrok aqui.
+   * Substitua esta URL pela URL do seu webhook de *produção* do n8n.
+   * Ao usar o ngrok para desenvolvimento, esta deve ser a URL do ngrok.
    */
   const N8N_WEBHOOK_URL = 'https://cf2551766b0f.ngrok-free.app/webhook/bafa018f-369f-4f8d-b192-1a0b0e7c3729';
 
-  if (N8N_WEBHOOK_URL.includes('SEU_WEBHOOK_URL_DO_N8N')) {
+  if (N8N_WEBHOOK_URL.includes('SEU_WEBHOOK_URL_DO_N8N_AQUI')) {
     return NextResponse.json(
       {
         error: 'URL do webhook do n8n não configurada.',
-        message: 'Por favor, edite o arquivo `src/app/api/n8n-webhook/route.ts` e substitua a URL do webhook de produção.',
+        details: 'Edite o arquivo `src/app/api/n8n-webhook/route.ts` e substitua a URL do webhook de produção.',
       },
       { status: 500 }
     );
   }
 
   try {
-    // Pega os dados enviados pelo seu app (a partir da função `handleGeneratePdf` ou do teste)
+    // Pega o corpo da requisição enviada pelo front-end
     const body = await request.json();
 
-    // Envia os dados para o n8n
+    // Repassa a requisição para o n8n
     const n8nResponse = await fetch(N8N_WEBHOOK_URL, {
       method: 'POST',
       headers: {
@@ -37,41 +37,43 @@ export async function POST(request: Request) {
       body: JSON.stringify(body),
     });
 
-    // Verifica se o n8n recebeu os dados com sucesso
+    // Se a resposta do n8n não for 'ok' (ex: status 404, 500), trata como erro
     if (!n8nResponse.ok) {
       const errorText = await n8nResponse.text();
-      console.error('Erro ao enviar dados para o n8n:', errorText);
+      let errorJson = {};
       try {
-        // Tenta fazer o parse do JSON para obter uma mensagem mais estruturada
-        const errorJson = JSON.parse(errorText);
-         return NextResponse.json(
-            { message: 'O n8n retornou um erro.', details: errorJson },
-            { status: n8nResponse.status } 
-        );
+        errorJson = JSON.parse(errorText);
       } catch (e) {
-        // Se não for JSON, retorna o texto do erro
-        return NextResponse.json(
-            { message: 'O n8n retornou um erro não-JSON.', details: errorText },
-            { status: n8nResponse.status } 
-        );
+        // O corpo do erro não era JSON, usa o texto puro
+        errorJson = { message: errorText };
       }
+      
+      console.error('Erro retornado pelo n8n:', errorJson);
+      return NextResponse.json(
+        { 
+          message: 'O servidor do n8n retornou um erro.',
+          details: (errorJson as any).message || errorText,
+        },
+        { status: n8nResponse.status }
+      );
     }
-    
-    const n8nData = await n8nResponse.json();
 
-    // Retorna uma resposta de sucesso para o seu app
+    // Se a resposta do n8n for bem-sucedida, repassa os dados para o front-end
+    const n8nData = await n8nResponse.json();
     return NextResponse.json({
       message: 'Dados enviados para o n8n com sucesso!',
       dataReceivedByN8n: n8nData,
     });
 
   } catch (error: any) {
-    console.error('Erro interno no webhook (provavelmente fetch failed):', error.message);
+    // Erro de rede (ex: ngrok não está rodando, URL inválida, etc.)
+    console.error('Falha de rede ao tentar contatar o n8n:', error.message);
     return NextResponse.json(
-      { error: 'Ocorreu um erro no servidor ao tentar contatar o n8n.', details: error.message },
+      { 
+        error: 'Falha na conexão com o servidor do n8n.',
+        details: error.message 
+      },
       { status: 500 }
     );
   }
 }
-
-    
