@@ -9,10 +9,9 @@ import { NextResponse } from 'next/server';
  */
 export async function POST(request: Request) {
   /**
-   * Substitua esta URL pela URL do seu webhook de *produção* do n8n.
-   * Ao usar o ngrok para desenvolvimento, esta deve ser a URL do ngrok.
+   * Esta é a URL do seu webhook de *produção* do n8n.
    */
-  const N8N_WEBHOOK_URL = 'https://cf2551766b0f.ngrok-free.app/webhook/bafa018f-369f-4f8d-b192-1a0b0e7c3729';
+  const N8N_WEBHOOK_URL = 'https://yshxnalzsqtj226xpgm6uevk.hooks.n8n.cloud/webhook/bafa018f-369f-4f8d-b192-1a0b0e7c3729';
 
   if (N8N_WEBHOOK_URL.includes('SEU_WEBHOOK_URL_DO_N8N_AQUI')) {
     return NextResponse.json(
@@ -66,7 +65,7 @@ export async function POST(request: Request) {
     });
 
   } catch (error: any) {
-    // Erro de rede (ex: ngrok não está rodando, URL inválida, etc.)
+    // Erro de rede (ex: URL inválida, problema de DNS, etc.)
     console.error('Falha de rede ao tentar contatar o n8n:', error.message);
     return NextResponse.json(
       { 
