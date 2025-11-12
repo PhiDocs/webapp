@@ -185,7 +185,7 @@ export default function Home() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           event: 'test_connection',
-          message: 'This is a test from the application button.',
+          message: 'Conexão com n8n funcionando! Teste enviado pelo botão do App.',
           timestamp: new Date().toISOString(),
         }),
       });
