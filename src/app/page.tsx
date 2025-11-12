@@ -33,6 +33,8 @@ async function notifyN8n(data: any) {
     if (!response.ok) {
       const errorDetails = await response.json();
       console.error('Falha ao notificar o n8n:', errorDetails);
+      // Não vamos mostrar um toast de erro aqui para não interromper o usuário
+      // A notificação ao n8n é um processo em segundo plano.
     } else {
       console.log('n8n notificado com sucesso!', await response.json());
     }
@@ -182,7 +184,11 @@ export default function Home() {
     try {
         const response = await fetch(N8N_TEST_URL, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: { 
+              "Content-Type": "application/json",
+              // Este cabeçalho é a chave para evitar o bloqueio de CORS pelo ngrok
+              "ngrok-skip-browser-warning": "true",
+            },
             body: JSON.stringify({
                 event: "user_created",
                 uid: "123456",
