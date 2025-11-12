@@ -179,20 +179,23 @@ export default function Home() {
 
   const handleTestN8n = async () => {
     setIsTestingN8n(true);
-    const N8N_TEST_URL = "https://c62551766b0f.ngrok-free.app/webhook/firebase/hook";
+    // Esta URL precisa ser substituída pela URL do seu webhook de produção do n8n,
+    // idealmente usando o ngrok para desenvolvimento local.
+    const N8N_TEST_URL = "https://cf2551766b0f.ngrok-free.app/webhook/bafa018f-369f-4f8d-b192-1a0b0e7c3729";
     
     try {
         const response = await fetch(N8N_TEST_URL, {
             method: "POST",
             headers: { 
               "Content-Type": "application/json",
-              // Este cabeçalho é a chave para evitar o bloqueio de CORS pelo ngrok
+              // Este cabeçalho é a chave para evitar o bloqueio de CORS pelo ngrok em navegadores
               "ngrok-skip-browser-warning": "true",
             },
             body: JSON.stringify({
                 event: "user_created",
                 uid: "123456",
-                email: "teste@exemplo.com"
+                email: "teste@exemplo.com",
+                message: "This is a test from the application button."
             })
         });
 
@@ -339,3 +342,5 @@ export default function Home() {
     </div>
   );
 }
+
+    
