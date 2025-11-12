@@ -4,7 +4,7 @@ import { useState } from 'react';
 import type { SafetyAnalysisOutput } from '@/ai/flows/generate-safety-analysis';
 import type { ProtectiveEquipmentOutput } from '@/ai/flows/recommend-protective-equipment';
 import type { SafetyFormValues } from '@/lib/types';
-import { getSafetyAnalysis, getProtectiveEquipment } from '@/app/ai-actions';
+import { getSafetyAnalysis, getProtectiveEquipment, testN8nConnection } from '@/app/ai-actions';
 import { Logo } from '@/components/icons/logo';
 import { SafetyForm } from '@/components/safety-form';
 import { Card, CardContent } from '@/components/ui/card';
@@ -14,7 +14,7 @@ import { formSchema } from '@/lib/types';
 import { PrintPreview } from '@/components/print-preview';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
-import { FileDown, Loader2 } from 'lucide-react';
+import { FileDown, Loader2, Zap } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { generatePdf } from '@/lib/pdf-generator';
 
@@ -31,7 +31,8 @@ async function notifyN8n(data: any) {
     });
 
     if (!response.ok) {
-      console.error('Falha ao notificar o n8n:', await response.text());
+      const errorDetails = await response.json();
+      console.error('Falha ao notificar o n8n:', errorDetails);
     } else {
       console.log('n8n notificado com sucesso!', await response.json());
     }
@@ -46,6 +47,7 @@ export default function Home() {
   const [equipment, setEquipment] = useState<ProtectiveEquipmentOutput | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [isTestingN8n, setIsTestingN8n] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const form = useForm<SafetyFormValues>({
@@ -91,6 +93,7 @@ export default function Home() {
   });
 
   const liveFormData = form.watch();
+  const { toast } = useToast();
 
   const handleFormSubmit = async (data: SafetyFormValues) => {
     if (data.documentType !== 'APR') return;
@@ -132,7 +135,6 @@ export default function Home() {
     form.reset();
   };
 
-  const { toast } = useToast();
 
   const handleGeneratePdf = async () => {
     const formData = form.getValues();
@@ -173,6 +175,25 @@ export default function Home() {
     }
   };
 
+  const handleTestN8n = async () => {
+    setIsTestingN8n(true);
+    const result = await testN8nConnection();
+    setIsTestingN8n(false);
+
+    if (result.success) {
+      toast({
+        title: 'Sucesso!',
+        description: 'Mensagem de teste enviada para o n8n.',
+      });
+    } else {
+      toast({
+        variant: 'destructive',
+        title: 'Falha na Conexão com n8n',
+        description: result.error || 'Não foi possível enviar a mensagem de teste.',
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <header className="sticky top-0 z-20 w-full border-b bg-background/80 backdrop-blur-sm">
@@ -183,22 +204,41 @@ export default function Home() {
               Safety Docs AI
             </h1>
           </div>
-          <Button
-            onClick={handleGeneratePdf}
-            disabled={isDownloading || (liveFormData.documentType === 'APR' && !analysis)}
-          >
-            {isDownloading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Baixando...
-              </>
-            ) : (
-              <>
-                <FileDown className="mr-2 h-4 w-4" />
-                Baixar PDF
-              </>
-            )}
-          </Button>
+          <div className="flex items-center gap-2">
+             <Button
+              variant="outline"
+              onClick={handleTestN8n}
+              disabled={isTestingN8n}
+            >
+              {isTestingN8n ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Testando...
+                </>
+              ) : (
+                <>
+                  <Zap className="mr-2 h-4 w-4" />
+                  Testar n8n
+                </>
+              )}
+            </Button>
+            <Button
+              onClick={handleGeneratePdf}
+              disabled={isDownloading || (liveFormData.documentType === 'APR' && !analysis)}
+            >
+              {isDownloading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Baixando...
+                </>
+              ) : (
+                <>
+                  <FileDown className="mr-2 h-4 w-4" />
+                  Baixar PDF
+                </>
+              )}
+            </Button>
+          </div>
         </div>
       </header>
 

@@ -25,7 +25,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    // Pega os dados enviados pelo seu app (a partir da função `handleGeneratePdf`)
+    // Pega os dados enviados pelo seu app (a partir da função `handleGeneratePdf` ou do teste)
     const body = await request.json();
 
     // Envia os dados para o n8n
@@ -41,26 +41,25 @@ export async function POST(request: Request) {
     if (!n8nResponse.ok) {
       const errorText = await n8nResponse.text();
       console.error('Erro ao enviar dados para o n8n:', errorText);
-      // Retorna uma resposta de sucesso mesmo assim para não quebrar a UI,
-      // o erro já foi logado no servidor.
       return NextResponse.json(
         { message: 'Erro ao se comunicar com o n8n (verifique os logs do servidor), mas o processo continuou.', details: errorText },
-        { status: 200 } // Retorna 200 para não mostrar erro para o usuário final.
+        { status: 500 } 
       );
     }
+    
+    const n8nData = await n8nResponse.json();
 
     // Retorna uma resposta de sucesso para o seu app
     return NextResponse.json({
       message: 'Dados enviados para o n8n com sucesso!',
-      dataReceivedByN8n: await n8nResponse.json(),
+      dataReceivedByN8n: n8nData,
     });
 
   } catch (error: any) {
     console.error('Erro interno no webhook (provavelmente fetch failed):', error.message);
-    // Não quebra a experiência do usuário final. Apenas loga o erro.
     return NextResponse.json(
       { error: 'Ocorreu um erro no servidor ao tentar contatar o n8n.', details: error.message },
-      { status: 200 } // Retorna 200 para não mostrar erro para o usuário final.
+      { status: 500 }
     );
   }
 }

@@ -37,3 +37,27 @@ export async function getProtectiveEquipment(data: { activityDescription: string
     return { data: null, error: 'Falha ao gerar recomendações de equipamento. Por favor, tente novamente mais tarde.' };
   }
 }
+
+export async function testN8nConnection(): Promise<{ success: boolean; error?: string; details?: any }> {
+  try {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/n8n-webhook`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ message: 'Conexão com n8n funcionando!', timestamp: new Date().toISOString() }),
+    });
+
+    if (!response.ok) {
+        const errorDetails = await response.json();
+        console.error('Falha ao notificar o n8n (testN8nConnection):', errorDetails);
+        return { success: false, error: 'A API retornou um erro.', details: errorDetails };
+    }
+    
+    const responseData = await response.json();
+    return { success: true, details: responseData };
+  } catch (error: any) {
+    console.error('Erro ao chamar o webhook de teste do n8n:', error);
+    return { success: false, error: 'Falha na conexão com a API de webhook.', details: error.message };
+  }
+}
