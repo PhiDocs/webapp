@@ -40,7 +40,8 @@ export async function getProtectiveEquipment(data: { activityDescription: string
 
 export async function testN8nConnection(): Promise<{ success: boolean; error?: string; details?: any }> {
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/n8n-webhook`, {
+    // Use a relative path for the API call to ensure it works in any environment.
+    const response = await fetch('/api/n8n-webhook', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
