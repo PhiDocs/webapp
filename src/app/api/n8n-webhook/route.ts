@@ -12,7 +12,7 @@ export async function POST(request: Request) {
    * Passo 1: Substitua esta URL pela URL do seu webhook de *produção* do n8n.
    * Você pode encontrar essa URL no seu workflow do n8n, no nó "Webhook".
    */
-  const N8N_WEBHOOK_URL = 'https://cf2551766b0f.ngrok-free.app/webhook/bafa018f-369f-4f8d-b192-1a0b0e7c3729';
+  const N8N_WEBHOOK_URL = 'https://c62551766b0f.ngrok-free.app/webhook/firebase/hook';
 
   if (N8N_WEBHOOK_URL.includes('SEU_WEBHOOK_URL_DO_N8N')) {
     return NextResponse.json(
@@ -41,10 +41,20 @@ export async function POST(request: Request) {
     if (!n8nResponse.ok) {
       const errorText = await n8nResponse.text();
       console.error('Erro ao enviar dados para o n8n:', errorText);
-      return NextResponse.json(
-        { message: 'Erro ao se comunicar com o n8n (verifique os logs do servidor), mas o processo continuou.', details: errorText },
-        { status: 500 } 
-      );
+      try {
+        // Tenta fazer o parse do JSON para obter uma mensagem mais estruturada
+        const errorJson = JSON.parse(errorText);
+         return NextResponse.json(
+            { message: 'O n8n retornou um erro.', details: errorJson },
+            { status: n8nResponse.status } 
+        );
+      } catch (e) {
+        // Se não for JSON, retorna o texto do erro
+        return NextResponse.json(
+            { message: 'O n8n retornou um erro não-JSON.', details: errorText },
+            { status: n8nResponse.status } 
+        );
+      }
     }
     
     const n8nData = await n8nResponse.json();

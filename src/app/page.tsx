@@ -4,7 +4,7 @@ import { useState } from 'react';
 import type { SafetyAnalysisOutput } from '@/ai/flows/generate-safety-analysis';
 import type { ProtectiveEquipmentOutput } from '@/ai/flows/recommend-protective-equipment';
 import type { SafetyFormValues } from '@/lib/types';
-import { getSafetyAnalysis, getProtectiveEquipment, testN8nConnection } from '@/app/ai-actions';
+import { getSafetyAnalysis, getProtectiveEquipment } from '@/app/ai-actions';
 import { Logo } from '@/components/icons/logo';
 import { SafetyForm } from '@/components/safety-form';
 import { Card, CardContent } from '@/components/ui/card';
@@ -177,20 +177,41 @@ export default function Home() {
 
   const handleTestN8n = async () => {
     setIsTestingN8n(true);
-    const result = await testN8nConnection();
-    setIsTestingN8n(false);
+    const N8N_TEST_URL = "https://c62551766b0f.ngrok-free.app/webhook/firebase/hook";
+    
+    try {
+        const response = await fetch(N8N_TEST_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                event: "user_created",
+                uid: "123456",
+                email: "teste@exemplo.com"
+            })
+        });
 
-    if (result.success) {
-      toast({
-        title: 'Sucesso!',
-        description: 'Mensagem de teste enviada para o n8n.',
-      });
-    } else {
-      toast({
-        variant: 'destructive',
-        title: 'Falha na Conexão com n8n',
-        description: result.error || 'Não foi possível enviar a mensagem de teste.',
-      });
+        if (response.ok) {
+            toast({
+                title: 'Sucesso!',
+                description: 'Mensagem de teste enviada para o n8n. Verifique seu workflow.',
+            });
+        } else {
+             const errorData = await response.json();
+             toast({
+                variant: 'destructive',
+                title: 'Falha na Conexão com n8n',
+                description: `O n8n respondeu com um erro: ${errorData.message || response.statusText}`,
+            });
+        }
+
+    } catch (error: any) {
+        toast({
+            variant: 'destructive',
+            title: 'Erro de Rede',
+            description: `Não foi possível conectar ao n8n. Verifique se o ngrok está rodando. Detalhes: ${error.message}`,
+        });
+    } finally {
+        setIsTestingN8n(false);
     }
   };
 
