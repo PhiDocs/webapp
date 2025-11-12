@@ -11,7 +11,7 @@ export async function POST(request: Request) {
    * Você pode encontrar essa URL no seu workflow do n8n, no nó "Webhook".
    * Quando estiver pronto para produção, troque pela URL de produção.
    */
-  const N8N_WEBHOOK_URL = 'https://SEU_WEBHOOK_URL_DO_N8N.com/webhook/test';
+  const N8N_WEBHOOK_URL = 'http://localhost:5678/webhook-test/bafa018f-369f-4f8d-b192-1a0b0e7c3729';
 
   if (N8N_WEBHOOK_URL.includes('SEU_WEBHOOK_URL_DO_N8N')) {
     return NextResponse.json(
