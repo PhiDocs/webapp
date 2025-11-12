@@ -20,6 +20,27 @@ import { generatePdf } from '@/lib/pdf-generator';
 
 import './print/print-layout.css';
 
+async function notifyN8n(data: any) {
+  try {
+    const response = await fetch('/api/n8n-webhook', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      console.error('Falha ao notificar o n8n:', await response.text());
+    } else {
+      console.log('n8n notificado com sucesso!', await response.json());
+    }
+  } catch (error) {
+    console.error('Erro ao chamar o webhook do n8n:', error);
+  }
+}
+
+
 export default function Home() {
   const [analysis, setAnalysis] = useState<SafetyAnalysisOutput | null>(null);
   const [equipment, setEquipment] = useState<ProtectiveEquipmentOutput | null>(null);
@@ -129,6 +150,16 @@ export default function Home() {
     setIsDownloading(true);
     try {
       await generatePdf(formData, analysis, equipment);
+      
+      // Chama o webhook do n8n após o PDF ser gerado com sucesso.
+      await notifyN8n({
+        event: 'pdf_generated',
+        documentType: formData.documentType,
+        formData: formData,
+        analysisData: analysis,
+        equipmentData: equipment,
+      });
+
     } catch (error: any) {
       console.error('Falha ao gerar PDF:', error);
       toast({
