@@ -3,37 +3,45 @@
 import { NextResponse } from 'next/server';
 
 /**
- * Rota de API que atua como um proxy para o webhook do n8n.
- * Recebe uma requisição POST do front-end e a repassa para a URL do webhook
- * configurada, retornando a resposta ou o erro de forma clara.
+ * Rota de API que atua como um proxy para webhooks do n8n.
+ * Recebe uma requisição POST do front-end e a repassa para uma URL de webhook.
+ * - Se `webhookUrl` for fornecido no corpo, ele o usa (para testes no editor).
+ * - Caso contrário, usa a URL de produção padrão.
  */
 export async function POST(request: Request) {
   /**
    * Esta é a URL do seu webhook de *produção* do n8n.
    */
-  const N8N_WEBHOOK_URL = 'https://brave-husky-69.hooks.n8n.cloud/webhook/bafa018f-369f-4f8d-b192-1a0b0e7c3729';
+  const N8N_PRODUCTION_URL = 'https://brave-husky-69.hooks.n8n.cloud/webhook/bafa018f-369f-4f8d-b192-1a0b0e7c3729';
 
-  if (N8N_WEBHOOK_URL.includes('SEU_WEBHOOK_URL_DO_N8N_AQUI')) {
+  let body;
+  try {
+    body = await request.json();
+  } catch (e) {
+    return NextResponse.json({ error: 'Corpo da requisição inválido (não é JSON).' }, { status: 400 });
+  }
+
+  const { payload, webhookUrl } = body;
+  const targetUrl = webhookUrl || N8N_PRODUCTION_URL;
+
+  if (!targetUrl) {
     return NextResponse.json(
       {
         error: 'URL do webhook do n8n não configurada.',
-        details: 'Edite o arquivo `src/app/api/n8n-webhook/route.ts` e substitua a URL do webhook de produção.',
+        details: 'Nenhuma URL de produção ou de teste foi fornecida.',
       },
       { status: 500 }
     );
   }
 
   try {
-    // Pega o corpo da requisição enviada pelo front-end
-    const body = await request.json();
-
-    // Repassa a requisição para o n8n
-    const n8nResponse = await fetch(N8N_WEBHOOK_URL, {
+    // Repassa o payload para o n8n
+    const n8nResponse = await fetch(targetUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(body),
+      body: JSON.stringify(payload),
     });
 
     // Tenta ler a resposta do n8n como JSON, independentemente do status
@@ -41,16 +49,17 @@ export async function POST(request: Request) {
     try {
         n8nData = await n8nResponse.json();
     } catch (e) {
-        // Se a resposta não for JSON, lê como texto.
-        n8nData = { message: await n8nResponse.text() };
+        // Se a resposta não for JSON (ex: vazia), usa o texto do status.
+        n8nData = { message: n8nResponse.statusText || 'Resposta sem corpo JSON.' };
     }
 
-    // Se a resposta do n8n não for 'ok' (ex: status 404, 500), trata como erro
+    // Se a resposta do n8n não for 'ok' (ex: status 404, 500, 504), trata como erro
     if (!n8nResponse.ok) {
       console.error('Erro retornado pelo n8n:', n8nData);
       return NextResponse.json(
         { 
           message: 'O servidor do n8n retornou um erro.',
+          status: n8nResponse.status,
           details: (n8nData as any).message || 'Nenhum detalhe adicional.',
         },
         { status: n8nResponse.status }

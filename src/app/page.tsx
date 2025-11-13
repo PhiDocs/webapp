@@ -14,32 +14,35 @@ import { formSchema } from '@/lib/types';
 import { PrintPreview } from '@/components/print-preview';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
-import { FileDown, Loader2, Zap } from 'lucide-react';
+import { FileDown, Loader2, Zap, FlaskConical } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { generatePdf } from '@/lib/pdf-generator';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 import './print/print-layout.css';
 
-async function notifyN8n(data: any) {
+async function notifyN8n(payload: any, webhookUrl?: string) {
   try {
     const response = await fetch('/api/n8n-webhook', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(data),
+      body: JSON.stringify({ payload, webhookUrl }),
     });
 
     const responseData = await response.json();
     if (!response.ok) {
       console.error('Falha ao notificar o n8n:', responseData);
-      // Não vamos mostrar um toast de erro aqui para não interromper o usuário
-      // A notificação ao n8n é um processo em segundo plano.
+      return { success: false, data: responseData };
     } else {
       console.log('n8n notificado com sucesso!', responseData);
+      return { success: true, data: responseData };
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error('Erro de rede ao chamar o webhook do n8n:', error);
+    return { success: false, data: { error: 'Erro de rede', details: error.message } };
   }
 }
 
@@ -50,6 +53,8 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [isTestingN8n, setIsTestingN8n] = useState(false);
+  const [isTestingEditor, setIsTestingEditor] = useState(false);
+  const [n8nTestUrl, setN8nTestUrl] = useState('');
   const [error, setError] = useState<string | null>(null);
 
   const form = useForm<SafetyFormValues>({
@@ -155,14 +160,15 @@ export default function Home() {
     try {
       await generatePdf(formData, analysis, equipment);
       
-      // Chama o webhook do n8n após o PDF ser gerado com sucesso.
-      await notifyN8n({
+      // Chama o webhook de produção do n8n após o PDF ser gerado com sucesso.
+      const payload = {
         event: 'pdf_generated',
         documentType: formData.documentType,
         formData: formData,
         analysisData: analysis,
         equipmentData: equipment,
-      });
+      };
+      await notifyN8n(payload);
 
     } catch (error: any) {
       console.error('Falha ao gerar PDF:', error);
@@ -177,43 +183,46 @@ export default function Home() {
     }
   };
 
-  const handleTestN8n = async () => {
-    setIsTestingN8n(true);
-    try {
-      // Payload de teste simplificado
-      const testPayload = {
-        message: "Novo teste vindo do App. Se você vê isso, o JSON está chegando!",
-        testId: `test-${Math.random().toString(36).substring(7)}`,
-        timestamp: new Date().toISOString()
-      };
-
-      const response = await fetch('/api/n8n-webhook', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(testPayload),
-      });
-
-      const responseData = await response.json();
-
-      if (response.ok) {
-        toast({
-          title: 'Sucesso!',
-          description: `Requisição enviada. Resposta do servidor: ${JSON.stringify(responseData.message)}`,
-        });
-      } else {
-        toast({
-          variant: 'destructive',
-          title: 'Falha na Conexão com n8n',
-          description: `O servidor proxy respondeu com um erro: ${responseData.details || response.statusText}`,
-        });
+  const handleTestN8n = async (isEditorTest: boolean) => {
+    if (isEditorTest) {
+      if (!n8nTestUrl) {
+          toast({
+              variant: 'destructive',
+              title: 'URL de Teste Faltando',
+              description: 'Por favor, cole a URL de teste do n8n no campo apropriado.',
+          });
+          return;
       }
-    } catch (error: any) {
+      setIsTestingEditor(true);
+    } else {
+      setIsTestingN8n(true);
+    }
+
+    const testPayload = {
+      message: "Conexão com n8n funcionando! Teste enviado pelo botão do App.",
+      testId: `test-${Math.random().toString(36).substring(7)}`,
+      timestamp: new Date().toISOString(),
+      testType: isEditorTest ? 'Editor' : 'Production'
+    };
+
+    const result = await notifyN8n(testPayload, isEditorTest ? n8nTestUrl : undefined);
+
+    if (result.success) {
+      toast({
+        title: 'Sucesso!',
+        description: `Requisição enviada para a URL de ${isEditorTest ? 'teste' : 'produção'}.`,
+      });
+    } else {
       toast({
         variant: 'destructive',
-        title: 'Erro de Rede',
-        description: `Não foi possível conectar à API de webhook. Detalhes: ${error.message}`,
+        title: `Falha na Conexão com n8n (${result.data.status || 'Rede'})`,
+        description: `O servidor respondeu com um erro: ${result.data.details || 'Verifique a URL e o console.'}`,
       });
-    } finally {
+    }
+
+    if (isEditorTest) {
+      setIsTestingEditor(false);
+    } else {
       setIsTestingN8n(false);
     }
   };
@@ -230,23 +239,6 @@ export default function Home() {
             </h1>
           </div>
           <div className="flex items-center gap-2">
-             <Button
-              variant="outline"
-              onClick={handleTestN8n}
-              disabled={isTestingN8n}
-            >
-              {isTestingN8n ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Testando...
-                </>
-              ) : (
-                <>
-                  <Zap className="mr-2 h-4 w-4" />
-                  Testar n8n
-                </>
-              )}
-            </Button>
             <Button
               onClick={handleGeneratePdf}
               disabled={isDownloading || (liveFormData.documentType === 'APR' && !analysis)}
@@ -287,6 +279,67 @@ export default function Home() {
                 isLoading={isLoading}
                 onNewReport={handleNewReport}
               />
+              <Card>
+                <CardContent className='pt-6 space-y-4'>
+                    <h3 className="text-lg font-semibold flex items-center">
+                        <Zap className="mr-2" /> Integração n8n
+                    </h3>
+                    <div className='space-y-2'>
+                        <Label htmlFor='n8n-prod-test'>Teste em Produção</Label>
+                        <Button
+                            id='n8n-prod-test'
+                            variant="outline"
+                            className='w-full'
+                            onClick={() => handleTestN8n(false)}
+                            disabled={isTestingN8n}
+                        >
+                            {isTestingN8n ? (
+                                <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                Testando...
+                                </>
+                            ) : (
+                                <>
+                                <Zap className="mr-2 h-4 w-4" />
+                                Testar Conexão de Produção
+                                </>
+                            )}
+                        </Button>
+                    </div>
+                     <div className='space-y-2'>
+                        <Label htmlFor='n8n-test-url'>URL de Teste do Editor n8n</Label>
+                        <Input
+                            id='n8n-test-url'
+                            placeholder='Cole a "Test URL" do n8n aqui'
+                            value={n8nTestUrl}
+                            onChange={(e) => setN8nTestUrl(e.target.value)}
+                        />
+                     </div>
+                     <div className='space-y-2'>
+                        <Label htmlFor='n8n-editor-test'>Teste no Editor</Label>
+                         <Button
+                            id='n8n-editor-test'
+                            variant="outline"
+                            className='w-full'
+                            onClick={() => handleTestN8n(true)}
+                            disabled={isTestingEditor || !n8nTestUrl}
+                        >
+                            {isTestingEditor ? (
+                                <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                Enviando...
+                                </>
+                            ) : (
+                                <>
+                                <FlaskConical className="mr-2 h-4 w-4" />
+                                Enviar para o Editor
+                                </>
+                            )}
+                        </Button>
+                        <p className='text-xs text-muted-foreground'>Clique em "Listen for test event" no n8n antes de clicar aqui.</p>
+                    </div>
+                </CardContent>
+              </Card>
             </div>
           </ScrollArea>
 
