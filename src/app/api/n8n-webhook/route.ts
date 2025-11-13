@@ -11,7 +11,7 @@ export async function POST(request: Request) {
   /**
    * Esta é a URL do seu webhook de *produção* do n8n.
    */
-  const N8N_WEBHOOK_URL = 'https://little-goose-90.hooks.n8n.cloud/webhook/bafa018f-369f-4f8d-b192-1a0b0e7c3729';
+  const N8N_WEBHOOK_URL = 'https://brave-husky-69.hooks.n8n.cloud/webhook/bafa018f-369f-4f8d-b192-1a0b0e7c3729';
 
   if (N8N_WEBHOOK_URL.includes('SEU_WEBHOOK_URL_DO_N8N_AQUI')) {
     return NextResponse.json(
