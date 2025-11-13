@@ -215,7 +215,7 @@ function generateAPRPages(formData: SafetyFormValues, analysisData: SafetyAnalys
             table: {
                 widths: ['*', '*'],
                 body: [
-                    [{ text: 'EPI NECESSÁRIO', style: 'sectionTitle' }, { text: 'EPC NECESSÁRIO', style: 'sectionTitle' }],
+                    [{ text: 'EPI NECESSÁRIO', style: 'sectionTitle' }, { text: 'EPC NECESSÁrio', style: 'sectionTitle' }],
                     [
                         { border: [true, false, true, true], padding: [5,5,5,5], stack: [
                             { ul: epiItems, style: 'td' },
@@ -487,9 +487,14 @@ function generatePTPages(formData: SafetyFormValues): Content[] {
 
 
 // --- Main PDF Generation Function ---
-export async function generatePdf(formData: SafetyFormValues, analysisData: SafetyAnalysisOutput | null, equipmentData: ProtectiveEquipmentOutput | null) {
-
-    const docDefinition: TDocumentDefinitions = {
+export function generatePdf(
+  formData: SafetyFormValues,
+  analysisData: SafetyAnalysisOutput | null,
+  equipmentData: ProtectiveEquipmentOutput | null
+): Promise<{ fileName: string; dataUrl: string }> {
+  return new Promise((resolve, reject) => {
+    try {
+      const docDefinition: TDocumentDefinitions = {
         pageSize: 'A4',
         pageMargins: [25, 25, 25, 40], // [left, top, right, bottom]
         
@@ -548,10 +553,18 @@ export async function generatePdf(formData: SafetyFormValues, analysisData: Safe
                 paddingBottom: () => 4,
             }
         }
-    };
+      };
 
-    const docName = formData.documentType === 'APR' ? 'APR' : 'PT';
-    const fileName = `${docName}-${(formData.companyName || 'doc').replace(/ /g, "_")}-${new Date().toLocaleDateString('pt-br').replace(/\//g, '-')}.pdf`;
+      const docName = formData.documentType === 'APR' ? 'APR' : 'PT';
+      const fileName = `${docName}-${(formData.companyName || 'doc').replace(/ /g, "_")}-${new Date().toLocaleDateString('pt-br').replace(/\//g, '-')}.pdf`;
 
-    pdfMake.createPdf(docDefinition).download(fileName);
+      const pdfDoc = pdfMake.createPdf(docDefinition);
+      pdfDoc.getDataUrl((dataUrl) => {
+        resolve({ fileName, dataUrl });
+      });
+
+    } catch (error) {
+      reject(error);
+    }
+  });
 }

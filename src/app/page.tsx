@@ -158,25 +158,38 @@ export default function Home() {
 
     setIsDownloading(true);
     try {
-      await generatePdf(formData, analysis, equipment);
+      // 1. Gera o PDF em memória e recebe os dados (base64) e o nome do arquivo.
+      const { fileName, dataUrl } = await generatePdf(formData, analysis, equipment);
       
-      // Chama o webhook de produção do n8n após o PDF ser gerado com sucesso.
+      // 2. Prepara o payload para o n8n, incluindo o PDF como data URL.
       const payload = {
         event: 'pdf_generated',
         documentType: formData.documentType,
+        fileName,
+        pdfDataUrl: dataUrl, // O PDF em si!
         formData: formData,
         analysisData: analysis,
         equipmentData: equipment,
       };
+
+      // 3. Envia os dados (incluindo o PDF) para o webhook de produção do n8n.
       await notifyN8n(payload);
+      
+      // 4. Inicia o download do arquivo no navegador do usuário.
+      const link = document.createElement('a');
+      link.href = dataUrl;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
 
     } catch (error: any) {
-      console.error('Falha ao gerar PDF:', error);
+      console.error('Falha ao gerar ou enviar PDF:', error);
       toast({
         variant: 'destructive',
-        title: 'Erro ao gerar PDF',
+        title: 'Erro ao Processar PDF',
         description:
-          error.message || 'Não foi possível gerar o PDF. Por favor, tente novamente.',
+          error.message || 'Não foi possível gerar ou enviar o PDF. Por favor, tente novamente.',
       });
     } finally {
       setIsDownloading(false);
