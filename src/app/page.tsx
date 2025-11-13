@@ -180,27 +180,31 @@ export default function Home() {
   const handleTestN8n = async () => {
     setIsTestingN8n(true);
     try {
+      const testPayload = {
+        event: 'novo_teste_de_conexao',
+        message: 'Este é um novo teste para garantir que o JSON está chegando.',
+        timestamp: new Date().toISOString(),
+        testId: `test-${Math.random().toString(36).substring(7)}`
+      };
+
       const response = await fetch('/api/n8n-webhook', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          event: 'test_connection',
-          message: 'Conexão com n8n funcionando! Teste enviado pelo botão do App.',
-          timestamp: new Date().toISOString(),
-        }),
+        body: JSON.stringify(testPayload),
       });
+
+      const responseData = await response.json();
 
       if (response.ok) {
         toast({
           title: 'Sucesso!',
-          description: 'Mensagem de teste enviada para o n8n. Verifique seu workflow.',
+          description: `Mensagem de teste enviada. O n8n respondeu: ${JSON.stringify(responseData.message)}`,
         });
       } else {
-        const errorData = await response.json();
         toast({
           variant: 'destructive',
           title: 'Falha na Conexão com n8n',
-          description: `O servidor respondeu com um erro: ${errorData.details || response.statusText}`,
+          description: `O servidor respondeu com um erro: ${responseData.details || response.statusText}`,
         });
       }
     } catch (error: any) {
@@ -333,3 +337,5 @@ export default function Home() {
     </div>
   );
 }
+
+    

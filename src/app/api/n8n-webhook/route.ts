@@ -36,29 +36,28 @@ export async function POST(request: Request) {
       body: JSON.stringify(body),
     });
 
+    // Tenta ler a resposta do n8n como JSON, independentemente do status
+    let n8nData;
+    try {
+        n8nData = await n8nResponse.json();
+    } catch (e) {
+        // Se a resposta não for JSON, lê como texto.
+        n8nData = { message: await n8nResponse.text() };
+    }
+
     // Se a resposta do n8n não for 'ok' (ex: status 404, 500), trata como erro
     if (!n8nResponse.ok) {
-      const errorText = await n8nResponse.text();
-      let errorJson = {};
-      try {
-        errorJson = JSON.parse(errorText);
-      } catch (e) {
-        // O corpo do erro não era JSON, usa o texto puro
-        errorJson = { message: errorText };
-      }
-      
-      console.error('Erro retornado pelo n8n:', errorJson);
+      console.error('Erro retornado pelo n8n:', n8nData);
       return NextResponse.json(
         { 
           message: 'O servidor do n8n retornou um erro.',
-          details: (errorJson as any).message || errorText,
+          details: (n8nData as any).message || 'Nenhum detalhe adicional.',
         },
         { status: n8nResponse.status }
       );
     }
 
     // Se a resposta do n8n for bem-sucedida, repassa os dados para o front-end
-    const n8nData = await n8nResponse.json();
     return NextResponse.json({
       message: 'Dados enviados para o n8n com sucesso!',
       dataReceivedByN8n: n8nData,
@@ -76,3 +75,5 @@ export async function POST(request: Request) {
     );
   }
 }
+
+    
