@@ -30,16 +30,16 @@ async function notifyN8n(data: any) {
       body: JSON.stringify(data),
     });
 
+    const responseData = await response.json();
     if (!response.ok) {
-      const errorDetails = await response.json();
-      console.error('Falha ao notificar o n8n:', errorDetails);
+      console.error('Falha ao notificar o n8n:', responseData);
       // Não vamos mostrar um toast de erro aqui para não interromper o usuário
       // A notificação ao n8n é um processo em segundo plano.
     } else {
-      console.log('n8n notificado com sucesso!', await response.json());
+      console.log('n8n notificado com sucesso!', responseData);
     }
   } catch (error) {
-    console.error('Erro ao chamar o webhook do n8n:', error);
+    console.error('Erro de rede ao chamar o webhook do n8n:', error);
   }
 }
 
@@ -180,11 +180,11 @@ export default function Home() {
   const handleTestN8n = async () => {
     setIsTestingN8n(true);
     try {
+      // Payload de teste simplificado
       const testPayload = {
-        event: 'novo_teste_de_conexao',
-        message: 'Este é um novo teste para garantir que o JSON está chegando.',
-        timestamp: new Date().toISOString(),
-        testId: `test-${Math.random().toString(36).substring(7)}`
+        message: "Novo teste vindo do App. Se você vê isso, o JSON está chegando!",
+        testId: `test-${Math.random().toString(36).substring(7)}`,
+        timestamp: new Date().toISOString()
       };
 
       const response = await fetch('/api/n8n-webhook', {
@@ -198,13 +198,13 @@ export default function Home() {
       if (response.ok) {
         toast({
           title: 'Sucesso!',
-          description: `Mensagem de teste enviada. O n8n respondeu: ${JSON.stringify(responseData.message)}`,
+          description: `Requisição enviada. Resposta do servidor: ${JSON.stringify(responseData.message)}`,
         });
       } else {
         toast({
           variant: 'destructive',
           title: 'Falha na Conexão com n8n',
-          description: `O servidor respondeu com um erro: ${responseData.details || response.statusText}`,
+          description: `O servidor proxy respondeu com um erro: ${responseData.details || response.statusText}`,
         });
       }
     } catch (error: any) {
