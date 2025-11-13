@@ -172,8 +172,9 @@ export default function Home() {
         equipmentData: equipment,
       };
 
-      // 3. Envia os dados (incluindo o PDF) para o webhook de produção do n8n.
-      await notifyN8n(payload);
+      // 3. Envia os dados para a URL de teste (se fornecida) ou para a de produção.
+      const targetWebhookUrl = n8nTestUrl || undefined;
+      await notifyN8n(payload, targetWebhookUrl);
       
       // 4. Inicia o download do arquivo no navegador do usuário.
       const link = document.createElement('a');
@@ -182,6 +183,11 @@ export default function Home() {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+
+      toast({
+        title: 'Sucesso!',
+        description: 'PDF baixado e dados enviados para o n8n.',
+      });
 
     } catch (error: any) {
       console.error('Falha ao gerar ou enviar PDF:', error);
