@@ -264,7 +264,7 @@ export default function Home() {
           </div>
           
           {/* Mobile View Toggles */}
-          <div className="lg:hidden flex items-center gap-1 rounded-md bg-muted p-1">
+          <div className="xl:hidden flex items-center gap-1 rounded-md bg-muted p-1">
               <Button
                 size="sm"
                 variant={mobileView === 'form' ? 'secondary' : 'ghost'}
@@ -285,7 +285,7 @@ export default function Home() {
               </Button>
           </div>
 
-          <div className="hidden lg:flex items-center gap-2">
+          <div className="hidden xl:flex items-center gap-2">
             <Button
               onClick={handleGeneratePdf}
               disabled={isDownloading || (liveFormData.documentType === 'APR' && !analysis)}
@@ -307,8 +307,8 @@ export default function Home() {
       </header>
 
       <main className="flex-grow">
-        <div className="grid grid-cols-1 lg:grid-cols-2 h-[calc(100vh-65px)]">
-          <div className={cn("h-full lg:border-r", mobileView !== 'form' && "hidden lg:block")}>
+        <div className="grid grid-cols-1 xl:grid-cols-2 h-[calc(100vh-65px)]">
+          <div className={cn("h-full xl:border-r", mobileView !== 'form' && "hidden xl:block")}>
             <ScrollArea className="h-full">
                 <div className="p-4 md:p-6 space-y-6">
                 <div className="space-y-2">
@@ -392,7 +392,7 @@ export default function Home() {
             </ScrollArea>
           </div>
           
-          <div className={cn("relative flex-col bg-muted h-full", mobileView === 'preview' ? 'flex' : 'hidden lg:flex')}>
+          <div className={cn("relative flex-col bg-muted h-full", mobileView === 'preview' ? 'flex' : 'hidden xl:flex')}>
             <ScrollArea className="h-full">
               <div className="print-container-wrapper p-4 sm:p-8">
                 {isLoading && (
@@ -433,7 +433,7 @@ export default function Home() {
                 </div>
               </div>
             </ScrollArea>
-             <div className="lg:hidden sticky bottom-0 left-0 right-0 w-full bg-background/80 backdrop-blur-sm p-4 border-t">
+             <div className="xl:hidden sticky bottom-0 left-0 right-0 w-full bg-background/80 backdrop-blur-sm p-4 border-t">
                  <Button
                     onClick={handleGeneratePdf}
                     disabled={isDownloading || (liveFormData.documentType === 'APR' && !analysis)}
