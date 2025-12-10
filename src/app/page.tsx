@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -14,11 +15,13 @@ import { formSchema } from '@/lib/types';
 import { PrintPreview } from '@/components/print-preview';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
-import { FileDown, Loader2, Zap, FlaskConical } from 'lucide-react';
+import { FileDown, Loader2, Zap, FlaskConical, FormInput, Eye } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { generatePdf } from '@/lib/pdf-generator';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { cn } from "@/lib/utils";
+
 
 import './print/print-layout.css';
 
@@ -56,6 +59,7 @@ export default function Home() {
   const [isTestingEditor, setIsTestingEditor] = useState(false);
   const [n8nTestUrl, setN8nTestUrl] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [mobileView, setMobileView] = useState<'form' | 'preview'>('form');
 
   const form = useForm<SafetyFormValues>({
     resolver: zodResolver(formSchema),
@@ -133,6 +137,7 @@ export default function Home() {
     }
 
     setIsLoading(false);
+    setMobileView('preview'); // Switch to preview on mobile after generating
   };
 
   const handleNewReport = () => {
@@ -257,7 +262,30 @@ export default function Home() {
               Safety Docs AI
             </h1>
           </div>
-          <div className="flex items-center gap-2">
+          
+          {/* Mobile View Toggles */}
+          <div className="lg:hidden flex items-center gap-1 rounded-md bg-muted p-1">
+              <Button
+                size="sm"
+                variant={mobileView === 'form' ? 'secondary' : 'ghost'}
+                onClick={() => setMobileView('form')}
+                className="flex-1"
+              >
+                  <FormInput className="mr-2 h-4 w-4" />
+                  Formulário
+              </Button>
+              <Button
+                size="sm"
+                variant={mobileView === 'preview' ? 'secondary' : 'ghost'}
+                onClick={() => setMobileView('preview')}
+                className="flex-1"
+              >
+                  <Eye className="mr-2 h-4 w-4" />
+                  Pré-visualização
+              </Button>
+          </div>
+
+          <div className="hidden lg:flex items-center gap-2">
             <Button
               onClick={handleGeneratePdf}
               disabled={isDownloading || (liveFormData.documentType === 'APR' && !analysis)}
@@ -280,89 +308,91 @@ export default function Home() {
 
       <main className="flex-grow">
         <div className="grid grid-cols-1 lg:grid-cols-2 h-[calc(100vh-65px)]">
-          <ScrollArea className="h-full border-r">
-            <div className="p-4 md:p-6 space-y-6">
-              <div className="space-y-2">
-                <h2 className="text-2xl font-bold tracking-tight text-foreground font-headline">
-                  Gere seu Documento de Segurança
-                </h2>
-                <p className="text-muted-foreground">
-                  Preencha o formulário e veja a pré-visualização ao lado.
-                  Nossa IA irá analisar a atividade com base nas NRs
-                  brasileiras.
-                </p>
-              </div>
-              <SafetyForm
-                form={form}
-                onSubmit={handleFormSubmit}
-                isLoading={isLoading}
-                onNewReport={handleNewReport}
-              />
-              <Card>
-                <CardContent className='pt-6 space-y-4'>
-                    <h3 className="text-lg font-semibold flex items-center">
-                        <Zap className="mr-2" /> Integração n8n
-                    </h3>
-                    <div className='space-y-2'>
-                        <Label htmlFor='n8n-prod-test'>Teste em Produção</Label>
-                        <Button
-                            id='n8n-prod-test'
-                            variant="outline"
-                            className='w-full'
-                            onClick={() => handleTestN8n(false)}
-                            disabled={isTestingN8n}
-                        >
-                            {isTestingN8n ? (
-                                <>
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                Testando...
-                                </>
-                            ) : (
-                                <>
-                                <Zap className="mr-2 h-4 w-4" />
-                                Testar Conexão de Produção
-                                </>
-                            )}
-                        </Button>
-                    </div>
-                     <div className='space-y-2'>
-                        <Label htmlFor='n8n-test-url'>URL de Teste do Editor n8n</Label>
-                        <Input
-                            id='n8n-test-url'
-                            placeholder='Cole a "Test URL" do n8n aqui'
-                            value={n8nTestUrl}
-                            onChange={(e) => setN8nTestUrl(e.target.value)}
-                        />
-                     </div>
-                     <div className='space-y-2'>
-                        <Label htmlFor='n8n-editor-test'>Teste no Editor</Label>
-                         <Button
-                            id='n8n-editor-test'
-                            variant="outline"
-                            className='w-full'
-                            onClick={() => handleTestN8n(true)}
-                            disabled={isTestingEditor || !n8nTestUrl}
-                        >
-                            {isTestingEditor ? (
-                                <>
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                Enviando...
-                                </>
-                            ) : (
-                                <>
-                                <FlaskConical className="mr-2 h-4 w-4" />
-                                Enviar para o Editor
-                                </>
-                            )}
-                        </Button>
-                        <p className='text-xs text-muted-foreground'>Clique em "Listen for test event" no n8n antes de clicar aqui.</p>
-                    </div>
-                </CardContent>
-              </Card>
-            </div>
-          </ScrollArea>
-
-          <div className="relative flex flex-col bg-muted h-full">
+          <div className={cn("h-full lg:border-r", mobileView !== 'form' && "hidden lg:block")}>
+            <ScrollArea className="h-full">
+                <div className="p-4 md:p-6 space-y-6">
+                <div className="space-y-2">
+                    <h2 className="text-2xl font-bold tracking-tight text-foreground font-headline">
+                    Gere seu Documento de Segurança
+                    </h2>
+                    <p className="text-muted-foreground">
+                    Preencha o formulário e veja a pré-visualização ao lado.
+                    Nossa IA irá analisar a atividade com base nas NRs
+                    brasileiras.
+                    </p>
+                </div>
+                <SafetyForm
+                    form={form}
+                    onSubmit={handleFormSubmit}
+                    isLoading={isLoading}
+                    onNewReport={handleNewReport}
+                />
+                <Card>
+                    <CardContent className='pt-6 space-y-4'>
+                        <h3 className="text-lg font-semibold flex items-center">
+                            <Zap className="mr-2" /> Integração n8n
+                        </h3>
+                        <div className='space-y-2'>
+                            <Label htmlFor='n8n-prod-test'>Teste em Produção</Label>
+                            <Button
+                                id='n8n-prod-test'
+                                variant="outline"
+                                className='w-full'
+                                onClick={() => handleTestN8n(false)}
+                                disabled={isTestingN8n}
+                            >
+                                {isTestingN8n ? (
+                                    <>
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    Testando...
+                                    </>
+                                ) : (
+                                    <>
+                                    <Zap className="mr-2 h-4 w-4" />
+                                    Testar Conexão de Produção
+                                    </>
+                                )}
+                            </Button>
+                        </div>
+                        <div className='space-y-2'>
+                            <Label htmlFor='n8n-test-url'>URL de Teste do Editor n8n</Label>
+                            <Input
+                                id='n8n-test-url'
+                                placeholder='Cole a "Test URL" do n8n aqui'
+                                value={n8nTestUrl}
+                                onChange={(e) => setN8nTestUrl(e.target.value)}
+                            />
+                        </div>
+                        <div className='space-y-2'>
+                            <Label htmlFor='n8n-editor-test'>Teste no Editor</Label>
+                            <Button
+                                id='n8n-editor-test'
+                                variant="outline"
+                                className='w-full'
+                                onClick={() => handleTestN8n(true)}
+                                disabled={isTestingEditor || !n8nTestUrl}
+                            >
+                                {isTestingEditor ? (
+                                    <>
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    Enviando...
+                                    </>
+                                ) : (
+                                    <>
+                                    <FlaskConical className="mr-2 h-4 w-4" />
+                                    Enviar para o Editor
+                                    </>
+                                )}
+                            </Button>
+                            <p className='text-xs text-muted-foreground'>Clique em "Listen for test event" no n8n antes de clicar aqui.</p>
+                        </div>
+                    </CardContent>
+                </Card>
+                </div>
+            </ScrollArea>
+          </div>
+          
+          <div className={cn("relative flex-col bg-muted h-full", mobileView === 'preview' ? 'flex' : 'hidden lg:flex')}>
             <ScrollArea className="h-full">
               <div className="print-container-wrapper p-4 sm:p-8">
                 {isLoading && (
@@ -403,9 +433,30 @@ export default function Home() {
                 </div>
               </div>
             </ScrollArea>
+             <div className="lg:hidden sticky bottom-0 left-0 right-0 w-full bg-background/80 backdrop-blur-sm p-4 border-t">
+                 <Button
+                    onClick={handleGeneratePdf}
+                    disabled={isDownloading || (liveFormData.documentType === 'APR' && !analysis)}
+                    className="w-full"
+                >
+                    {isDownloading ? (
+                        <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Baixando...
+                        </>
+                    ) : (
+                        <>
+                        <FileDown className="mr-2 h-4 w-4" />
+                        Baixar PDF
+                        </>
+                    )}
+                </Button>
+            </div>
           </div>
         </div>
       </main>
     </div>
   );
 }
+
+    
