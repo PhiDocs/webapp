@@ -15,10 +15,14 @@
 /* 
   This is the main container for the entire printable document.
   It defines the A4 page dimensions for the on-screen preview.
+  The max-w-full ensures it doesn't overflow on smaller viewports.
+  min-w-[210mm] is added for horizontal scrolling on medium screens.
 */
 .print-document-container {
   width: 210mm;
   min-height: 297mm; /* Ensure at least one page height */
+  max-width: 100%;
+  min-width: 210mm;
   background: white;
   box-shadow: 0 0 15px rgba(0, 0, 0, 0.15);
   color: #333;
