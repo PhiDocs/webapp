@@ -28,7 +28,7 @@ function getShortDate(dateString: string | undefined) {
 
 const getSignatureContent = (signer: PtSigner | any): Content => {
     if (!signer || !signer.signatureData) {
-        return { text: '', minHeight: 40, border: [false, true, false, false] };
+        return { text: '', minHeight: 40, border: [false, false, false, false] };
     }
     if (signer.signatureType === 'typed') {
         return { text: signer.signatureData, alignment: 'center', margin: [0, 15, 0, 0], border: [false, true, false, false], italics: true, fontSize: 16 };
@@ -43,7 +43,7 @@ const getSignatureContent = (signer: PtSigner | any): Content => {
             return { text: 'Assinatura inválida', color: 'red', alignment: 'center' };
         }
     }
-    return { text: '', minHeight: 40 };
+    return { text: '', minHeight: 40, border: [false, false, false, false] };
 };
 
 
@@ -73,7 +73,8 @@ function generateAPRPages(formData: SafetyFormValues, analysisData: SafetyAnalys
                                 ],
                             },
                         ],
-                        margin: [0, 0, 0, 10]
+                        margin: [0, 0, 0, 10],
+                         border: [false, false, false, true],
                     },
                     {
                         table: {
@@ -172,7 +173,7 @@ function generateAPRPages(formData: SafetyFormValues, analysisData: SafetyAnalys
             { text: 'MEDIDAS PREVENTIVAS / RECOMENDAÇÕES DE SEGURANÇA', style: 'th' }
         ]
     ];
-    if (analysisData?.proceduralSteps) {
+    if (analysisData && analysisData.proceduralSteps && analysisData.proceduralSteps.length > 0) {
         analysisData.proceduralSteps.forEach(s => {
             analysisBody.push([
                 { text: s.item, style: 'td', alignment: 'center' },
@@ -196,6 +197,7 @@ function generateAPRPages(formData: SafetyFormValues, analysisData: SafetyAnalys
                     table: {
                         widths: [35, '*', '*', '*'],
                         body: analysisBody,
+                        headerRows: 1,
                         dontBreakRows: true,
                     },
                     layout: 'boxLayoutNoTop',
@@ -215,7 +217,7 @@ function generateAPRPages(formData: SafetyFormValues, analysisData: SafetyAnalys
             table: {
                 widths: ['*', '*'],
                 body: [
-                    [{ text: 'EPI NECESSÁRIO', style: 'sectionTitle' }, { text: 'EPC NECESSÁrio', style: 'sectionTitle' }],
+                    [{ text: 'EPI NECESSÁRIO', style: 'sectionTitle' }, { text: 'EPC NECESSÁRIO', style: 'sectionTitle' }],
                     [
                         { border: [true, false, true, true], padding: [5,5,5,5], stack: [
                             { ul: epiItems, style: 'td' },
@@ -515,8 +517,8 @@ export function generatePdf(
         },
         styles: {
             h1: { fontSize: 16, bold: true },
-            sectionTitle: { fontSize: 10, bold: true, background: '#E0E0E0', color: '#000', alignment: 'center', margin: [0, 0, 0, 0] },
-            th: { bold: true, fontSize: 9, alignment: 'center', fillColor: '#E0E0E0' },
+            sectionTitle: { fontSize: 10, bold: true, background: '#E0E0E0', color: '#000', alignment: 'center', margin: [0, 0, 0, 0], fillColor: '#e0e0e0' },
+            th: { bold: true, fontSize: 9, alignment: 'center', fillColor: '#f2f2f2' },
             thHeader: { bold: true, fontSize: 7, alignment: 'center' },
             label: { bold: true, fontSize: 7, textTransform: 'uppercase', color: '#555' },
             value: { fontSize: 9 },
@@ -537,8 +539,8 @@ export function generatePdf(
                 vLineWidth: () => 0.5,
                 hLineColor: () => '#ccc',
                 vLineColor: () => '#ccc',
-                paddingLeft: (i) => i === 0 ? 5 : 5,
-                paddingRight: (i, node) => (i === (node.table.widths?.length || 0) - 1) ? 5 : 5,
+                paddingLeft: (i) => 5,
+                paddingRight: (i, node) => 5,
                 paddingTop: () => 4,
                 paddingBottom: () => 4,
             },
@@ -547,8 +549,8 @@ export function generatePdf(
                 vLineWidth: () => 0.5,
                 hLineColor: () => '#ccc',
                 vLineColor: () => '#ccc',
-                paddingLeft: (i) => i === 0 ? 5 : 5,
-                paddingRight: (i, node) => (i === (node.table.widths?.length || 0) - 1) ? 5 : 5,
+                paddingLeft: (i) => 5,
+                paddingRight: (i, node) => 5,
                 paddingTop: () => 4,
                 paddingBottom: () => 4,
             }

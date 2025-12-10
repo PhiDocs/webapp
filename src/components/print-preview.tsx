@@ -6,7 +6,7 @@ import type { SafetyAnalysisOutput } from '@/ai/flows/generate-safety-analysis';
 import type { ProtectiveEquipmentOutput } from '@/ai/flows/recommend-protective-equipment';
 import { Logo } from '@/components/icons/logo';
 import { PTPreview } from './pt-preview';
-import { ClipboardList, UserCheck, ShieldCheck, HardHat, Construction } from 'lucide-react';
+import { ClipboardList, UserCheck, ShieldCheck, HardHat, Construction, Users } from 'lucide-react';
 
 
 interface PrintPreviewProps {
@@ -93,7 +93,7 @@ const Section = ({ title, icon, children }: { title: string, icon: React.Element
     return (
         <section className="avoid-break mt-2">
             <h3 className="section-title">
-                <Icon className="inline-block mr-2 h-4 w-4 no-print" />
+                <Icon className="inline-block mr-2 h-4 w-4" />
                 {title}
             </h3>
             <div className="section-content">
@@ -136,7 +136,7 @@ function TeamSection({ data }: { data: SafetyFormValues }) {
   if (teamMembers.length === 0) return null;
 
   return (
-    <Section title="EQUIPE DE TRABALHO" icon={UserCheck}>
+    <Section title="EQUIPE DE TRABALHO" icon={Users}>
       <table className="w-full border-collapse border mt-0 analysis-table">
         <thead className='analysis-table-header'>
           <tr>
