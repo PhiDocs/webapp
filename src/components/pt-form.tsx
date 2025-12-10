@@ -15,7 +15,7 @@ import { Separator } from '@/components/ui/separator';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ptChecklistItems } from '@/lib/pt-checklist-data';
 import { Button } from './ui/button';
-import { PlusCircle, Trash2, Signature } from 'lucide-react';
+import { PlusCircle, Trash2 } from 'lucide-react';
 import { RadioGroup, RadioGroupItem } from './ui/radio-group';
 import { Switch } from './ui/switch';
 import { SignaturePad } from './signature-pad';
