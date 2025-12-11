@@ -65,7 +65,7 @@ function generateAPRPages(formData: SafetyFormValues, analysisData: SafetyAnalys
                             {
                                 // Company Name and Logo
                                 columns: [
-                                    ...(formData.companyLogo && isValidBase64(formData.companyLogo) ? [{ image: formData.companyLogo, width: 70, alignment: 'left' }] : [{width: 70}]),
+                                    ...(formData.companyLogo && isValidBase64(formData.companyLogo) ? [{ image: formData.companyLogo, width: 70, alignment: 'left' }] : [{width: 70, text: ''}]),
                                     {
                                         stack: [
                                             { text: formData.companyName || 'Nome da Empresa', style: 'h1', alignment: 'left' },
