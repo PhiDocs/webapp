@@ -41,7 +41,7 @@ const getSignatureContent = (signer: PtSigner | any): Content => {
         return { text: '', minHeight: 40, border: [false, false, false, true], borderColor: ['#000', '#000', '#000', '#000'] };
     }
     if (signer.signatureType === 'typed') {
-        return { text: signer.signatureData, alignment: 'center', margin: [0, 15, 0, 0], border: [false, true, false, false], italics: true, fontSize: 16 };
+        return { text: signer.signatureData, alignment: 'center', margin: [0, 15, 0, 0], border: [false, false, false, true], borderColor: ['#000', '#000', '#000', '#000'], italics: true, fontSize: 16 };
     }
     if ((signer.signatureType === 'draw' || signer.signatureType === 'upload') && isValidBase64(signer.signatureData)) {
         return { image: signer.signatureData, width: 120, alignment: 'center', margin: [0, 5, 0, 0] };
@@ -65,7 +65,26 @@ function generateAPRPages(formData: SafetyFormValues, analysisData: SafetyAnalys
                             {
                                 // Company Name and Logo
                                 columns: [
-                                    ...(formData.companyLogo && isValidBase64(formData.companyLogo) ? [{ image: formData.companyLogo, width: 70, alignment: 'left' }] : [{width: 70, text: ''}]),
+                                    (formData.companyLogo && isValidBase64(formData.companyLogo) ? { image: formData.companyLogo, width: 70, alignment: 'left' } : {
+                                        // Placeholder SVG for logo - a simple shield
+                                        canvas: [
+                                            {
+                                                type: 'path',
+                                                d: 'M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z',
+                                                lineWidth: 1,
+                                                lineColor: '#555',
+                                            },
+                                            {
+                                                type: 'path',
+                                                d: 'm9 12 2 2 4-4',
+                                                lineWidth: 1,
+                                                lineColor: '#555',
+                                            }
+                                        ],
+                                        width: 40,
+                                        height: 40,
+                                        margin: [15,0,15,0]
+                                    }),
                                     {
                                         stack: [
                                             { text: formData.companyName || 'Nome da Empresa', style: 'h1', alignment: 'left' },
@@ -99,30 +118,38 @@ function generateAPRPages(formData: SafetyFormValues, analysisData: SafetyAnalys
 
 
     // --- Work Data Section ---
-    content.push({ text: 'DADOS DA OBRA', style: 'sectionTitle' });
     content.push({
         table: {
-            widths: ['*', '*'],
+            widths: ['*'],
             body: [
-                [
-                    { stack: [{ text: 'NOME:', style: 'label' }, { text: formData.workName || '...', style: 'value' }], style: 'cellPadding' },
-                    { stack: [{ text: 'ENDEREÇO:', style: 'label' }, { text: formData.workAddress || '...', style: 'value' }], style: 'cellPadding' },
-                ],
-                [
-                    { stack: [{ text: 'PREVISÃO DATA INICIO:', style: 'label' }, { text: getShortDate(formData.startDate), style: 'value' }], style: 'cellPadding' },
-                    { stack: [{ text: 'PREVISÃO DATA TÉRMINO:', style: 'label' }, { text: getShortDate(formData.endDate), style: 'value' }], style: 'cellPadding' },
-                ],
-                [
-                    { stack: [{ text: 'LOCAL DA OBRA / PAVIMENTO:', style: 'label' }, { text: formData.workLocationDetails || '...', style: 'value' }], colSpan: 2, style: 'cellPadding' },
-                    {}
-                ],
-                [
-                    { stack: [{ text: 'DESCRIÇÃO DA ATIVIDADE:', style: 'label' }, { text: formData.activityDescription || '...', style: 'value' }], colSpan: 2, style: 'cellPadding' },
-                    {}
-                ]
+                [{text: 'DADOS DA OBRA', style: 'sectionTitle'}],
+                [{
+                    table: {
+                        widths: ['*', '*'],
+                        body: [
+                            [
+                                { stack: [{ text: 'NOME:', style: 'label' }, { text: formData.workName || '...', style: 'value' }], style: 'cellPadding' },
+                                { stack: [{ text: 'ENDEREÇO:', style: 'label' }, { text: formData.workAddress || '...', style: 'value' }], style: 'cellPadding' },
+                            ],
+                            [
+                                { stack: [{ text: 'PREVISÃO DATA INICIO:', style: 'label' }, { text: getShortDate(formData.startDate), style: 'value' }], style: 'cellPadding' },
+                                { stack: [{ text: 'PREVISÃO DATA TÉRMINO:', style: 'label' }, { text: getShortDate(formData.endDate), style: 'value' }], style: 'cellPadding' },
+                            ],
+                            [
+                                { stack: [{ text: 'LOCAL DA OBRA / PAVIMENTO:', style: 'label' }, { text: formData.workLocationDetails || '...', style: 'value' }], colSpan: 2, style: 'cellPadding' },
+                                {}
+                            ],
+                            [
+                                { stack: [{ text: 'DESCRIÇÃO DA ATIVIDADE:', style: 'label' }, { text: formData.activityDescription || '...', style: 'value' }], colSpan: 2, style: 'cellPadding' },
+                                {}
+                            ]
+                        ]
+                    },
+                    layout: 'boxLayout'
+                }]
             ]
         },
-        layout: 'boxLayoutNoTop',
+        layout: 'sectionLayout',
         marginBottom: 10,
     });
 
@@ -132,20 +159,28 @@ function generateAPRPages(formData: SafetyFormValues, analysisData: SafetyAnalys
     ];
     formData.responsiblePersons.forEach(p => {
         responsibleBody.push([
-            { text: p.name || '...', style: 'td', alignment: 'left' },
-            { text: p.role || '...', style: 'td', alignment: 'left' },
-             {stack: [getSignatureContent(p), {text:''}], border: [true, false, true, true]},
+            { text: p.name || '...', style: 'td', alignment: 'left', margin: [5, 15] },
+            { text: p.role || '...', style: 'td', alignment: 'left', margin: [5, 15] },
+             {stack: [getSignatureContent(p)], border: [true, false, false, false], borderColor: ['#ccc', '#ccc', '#ccc', '#ccc'], margin: [5, 5]},
         ]);
     });
 
-    content.push({ text: 'RESPONSÁVEL PELO ACOMPANHAMENTO DOS SERVIÇOS', style: 'sectionTitle' });
     content.push({
         table: {
-            widths: ['*', '*', '*'],
-            body: responsibleBody,
-            dontBreakRows: true,
+            widths: ['*'],
+            body: [
+                [{text: 'RESPONSÁVEL PELO ACOMPANHAMENTO DOS SERVIÇOS', style: 'sectionTitle'}],
+                [{
+                    table: {
+                        widths: ['*', '*', '*'],
+                        body: responsibleBody,
+                        dontBreakRows: true,
+                    },
+                    layout: 'boxLayout'
+                }]
+            ]
         },
-        layout: 'boxLayoutNoTop',
+        layout: 'sectionLayout',
         marginBottom: 10,
     });
 
@@ -172,18 +207,25 @@ function generateAPRPages(formData: SafetyFormValues, analysisData: SafetyAnalys
             { text: 'A análise de procedimento operacional aparecerá aqui após ser gerada.', style: 'td', colSpan: 4, alignment: 'center', italics: true, margin: [0, 20, 0, 20] }, {}, {}, {}
         ]);
     }
-    content.push({ text: 'PROCEDIMENTO OPERACIONAL', style: 'sectionTitle' });
     content.push({
         table: {
-            widths: [35, '*', '*', '*'],
-            body: analysisBody,
-            headerRows: 1,
-            dontBreakRows: true,
+            widths: ['*'],
+            body: [
+                [{text: 'PROCEDIMENTO OPERACIONAL', style: 'sectionTitle'}],
+                [{
+                    table: {
+                        widths: [35, '*', '*', '*'],
+                        body: analysisBody,
+                        headerRows: 1,
+                        dontBreakRows: true,
+                    },
+                    layout: 'boxLayout'
+                }]
+            ]
         },
-        layout: 'boxLayoutNoTop',
+        layout: 'sectionLayout',
         marginBottom: 10,
     });
-
     // --- Equipment Section ---
     if (equipmentData) {
         const epiItems = equipmentData.epiItems.map(item => ({ text: item, style: 'listItem' }));
@@ -193,25 +235,46 @@ function generateAPRPages(formData: SafetyFormValues, analysisData: SafetyAnalys
             table: {
                 widths: ['*', '*'],
                 body: [
-                    [{ text: 'EPI NECESSÁRIO', style: 'sectionTitle' }, { text: 'EPC NECESSÁRIO', style: 'sectionTitle' }],
-                    [
-                        { border: [true, false, true, true], padding: [5,5,5,5], stack: [
-                            { ul: epiItems, style: 'td' },
-                            { text: `OBS.: ${equipmentData.epiNote}`, style: 'td', italics: true, fontSize: 8, margin: [0, 10, 0, 0] },
-                        ]},
-                        { border: [true, false, true, true], padding: [5,5,5,5], stack: [
-                            { ul: epcItems, style: 'td' },
-                            { text: `OBS.: ${equipmentData.epcNote}`, style: 'td', italics: true, fontSize: 8, margin: [0, 10, 0, 0] },
-                        ]},
-                    ]
+                   [{
+                        table: {
+                           widths: ['*'],
+                           body: [
+                               [{text: 'EPI NECESSÁRIO', style: 'sectionTitle'}],
+                               [{
+                                    stack: [
+                                        { ul: epiItems, style: 'td' },
+                                        { text: `OBS.: ${equipmentData.epiNote}`, style: 'td', italics: true, fontSize: 8, margin: [0, 10, 0, 0] },
+                                    ],
+                                    style: 'cellPadding'
+                               }]
+                           ]
+                        },
+                        layout: 'sectionLayout'
+                   },
+                   {
+                        table: {
+                           widths: ['*'],
+                           body: [
+                               [{text: 'EPC NECESSÁRIO', style: 'sectionTitle'}],
+                               [{
+                                    stack: [
+                                        { ul: epcItems, style: 'td' },
+                                        { text: `OBS.: ${equipmentData.epcNote}`, style: 'td', italics: true, fontSize: 8, margin: [0, 10, 0, 0] },
+                                    ],
+                                     style: 'cellPadding'
+                               }]
+                           ]
+                        },
+                        layout: 'sectionLayout'
+                   }]
                 ],
                 dontBreakRows: true,
             },
             layout: {
-                hLineWidth: (i, node) => (i === 1) ? 0 : 0.5,
-                vLineWidth: (i, node) => (i === 0 || i === node.table.widths?.length) ? 0.5 : 0.5,
-                hLineColor: () => '#ccc',
-                vLineColor: () => '#ccc',
+                hLineWidth: () => 0,
+                vLineWidth: () => 0,
+                paddingLeft: (i) => (i === 0 ? 0 : 4),
+                paddingRight: (i, node) => (i === (node.table.widths?.length || 0) - 1 ? 0 : 4),
             },
             marginBottom: 10,
         });
@@ -229,14 +292,23 @@ function generateAPRPages(formData: SafetyFormValues, analysisData: SafetyAnalys
                 { text: m.role, style: 'td' },
             ]);
         });
-        content.push({ text: 'EQUIPE DE TRABALHO', style: 'sectionTitle' });
         content.push({
             table: {
-                widths: ['auto', '*', '*'],
-                body: teamBody,
-                dontBreakRows: true,
+                widths: ['*'],
+                body: [
+                    [{text: 'EQUIPE DE TRABALHO', style: 'sectionTitle'}],
+                    [{
+                        table: {
+                            widths: ['auto', '*', '*'],
+                            body: teamBody,
+                            dontBreakRows: true,
+                        },
+                        layout: 'boxLayout'
+                    }]
+                ]
             },
-                layout: 'boxLayoutNoTop',
+            layout: 'sectionLayout',
+            marginBottom: 10,
         });
     }
 
@@ -368,22 +440,28 @@ function generatePTPages(formData: SafetyFormValues): Content[] {
         }
 
         if (sectionBody.length > 0) {
-            content.push({ text: section.title, style: 'sectionTitle' });
-            content.push(
-                {
-                    table: {
-                        widths: Array(section.columns).fill('*'),
-                        body: sectionBody,
-                    },
-                    layout: 'boxLayoutNoTop',
-                    marginBottom: 5,
-                }
-            );
+            content.push({
+                table: {
+                    widths: ['*'],
+                    body: [
+                        [{ text: section.title, style: 'sectionTitle' }],
+                        [{
+                            table: {
+                                widths: Array(section.columns).fill('*'),
+                                body: sectionBody,
+                            },
+                            layout: 'boxLayout'
+                        }]
+                    ]
+                },
+                layout: 'sectionLayout',
+                marginBottom: 5,
+            });
         }
     });
 
     // --- Dynamic Team Tables ---
-    const renderTeamTable = (title: string, members: PtTeamMember[], showEmpresa: boolean) => {
+    const renderTeamTable = (title: string, members: PtTeamMember[], showEmpresa: boolean): Content[] => {
         if (!members || members.length === 0) return [];
         const widths = showEmpresa ? ['*', 'auto', 'auto', 'auto', 'auto'] : ['*', 'auto', 'auto', 'auto'];
         const headers: TableCell[] = showEmpresa ? 
@@ -412,14 +490,22 @@ function generatePTPages(formData: SafetyFormValues): Content[] {
             body.push(row as TableCell[]);
         });
         return [
-            { text: title, style: 'sectionTitle' },
             {
                 table: {
-                    widths: widths,
-                    body: body,
-                    dontBreakRows: true,
+                    widths: ['*'],
+                    body: [
+                        [{ text: title, style: 'sectionTitle' }],
+                        [{
+                            table: {
+                                widths: widths,
+                                body: body,
+                                dontBreakRows: true,
+                            },
+                            layout: 'boxLayout'
+                        }]
+                    ]
                 },
-                layout: 'boxLayoutNoTop',
+                layout: 'sectionLayout',
                 marginBottom: 5,
             }
         ];
@@ -435,24 +521,27 @@ function generatePTPages(formData: SafetyFormValues): Content[] {
 
 
     // --- Signatures ---
-    content.push({ text: 'ASSINATURAS', style: 'sectionTitle' });
     content.push({
         table: {
-            widths: ['*', '*', '*'],
+            widths: ['*'],
             body: [
-                [
-                    {stack: [getSignatureContent(ptData.ptGestorArea), {text:''}], border: [true, false, true, true]},
-                    {stack: [getSignatureContent(ptData.ptResponsavelAtividade), {text:''}], border: [true, false, true, true]},
-                    {stack: [getSignatureContent(ptData.ptSesmt), {text:''}], border: [true, false, true, true]},
-                ],
-                [
-                    {text: ptData.ptGestorArea?.name || 'Gestor da Área', style: 'td', alignment: 'center', border: [true, false, true, true]},
-                    {text: ptData.ptResponsavelAtividade?.name || 'Responsável Atividade', style: 'td', alignment: 'center', border: [true, false, true, true]},
-                    {text: ptData.ptSesmt?.name || 'SESMT', style: 'td', alignment: 'center', border: [true, false, true, true]},
-                ]
+                [{text: 'ASSINATURAS', style: 'sectionTitle'}],
+                [{
+                    table: {
+                        widths: ['*', '*', '*'],
+                        body: [
+                            [
+                                {stack: [getSignatureContent(ptData.ptGestorArea), {text: ptData.ptGestorArea?.name || 'Gestor da Área', style: 'td', alignment: 'center', margin:[0,2,0,0] }], border: [false, false, false, false], margin: [5, 5]},
+                                {stack: [getSignatureContent(ptData.ptResponsavelAtividade), {text: ptData.ptResponsavelAtividade?.name || 'Responsável Atividade', style: 'td', alignment: 'center', margin:[0,2,0,0] }], border: [false, false, false, false], margin: [5, 5]},
+                                {stack: [getSignatureContent(ptData.ptSesmt), {text: ptData.ptSesmt?.name || 'SESMT', style: 'td', alignment: 'center', margin:[0,2,0,0] }], border: [false, false, false, false], margin: [5, 5]},
+                            ]
+                        ]
+                    },
+                    layout: 'boxLayout'
+                }]
             ]
         },
-        layout: 'noBorders',
+        layout: 'sectionLayout',
         marginBottom: 10,
     });
 
@@ -498,7 +587,7 @@ export function generatePdf(
             td: { fontSize: 9, alignment: 'left' },
             tdSmall: { fontSize: 8, alignment: 'left' },
             listItem: { fontSize: 9, margin: [0, 0, 0, 2] },
-            cellPadding: { margin: [5, 2, 5, 2] },
+            cellPadding: { margin: [5, 5, 5, 5] },
         },
         defaultStyle: {
             fontSize: 10,
@@ -507,9 +596,30 @@ export function generatePdf(
             alignment: 'left'
         },
         layout: {
+            sectionLayout: {
+                 hLineWidth: () => 0,
+                 vLineWidth: () => 0,
+                 paddingLeft: () => 0,
+                 paddingRight: () => 0,
+                 paddingTop: () => 0,
+                 paddingBottom: () => 0,
+                 // this is where the magic happens
+                 // @ts-ignore
+                 fillColor: (rowIndex, node, columnIndex) => {
+                     // no background color for the content
+                     if(rowIndex === 1) return null;
+                     // section title background
+                     return '#e0e0e0';
+                 },
+                 // A custom layout function to draw rounded corners
+                 // @ts-ignore
+                vLineColor: (rowIndex, node, columnIndex) => '#ccc',
+                // @ts-ignore
+                hLineColor: (rowIndex, node, columnIndex) => '#ccc',
+            },
             boxLayout: {
-                hLineWidth: () => 0.5,
-                vLineWidth: () => 0.5,
+                hLineWidth: (i, node) => (i === 0 || i === node.table.body.length) ? 0.5 : 0.5,
+                vLineWidth: (i, node) => (i === 0 || i === node.table.widths?.length) ? 0.5 : 0.5,
                 hLineColor: () => '#ccc',
                 vLineColor: () => '#ccc',
                 paddingLeft: (i) => 5,
@@ -517,16 +627,6 @@ export function generatePdf(
                 paddingTop: () => 4,
                 paddingBottom: () => 4,
             },
-            boxLayoutNoTop: {
-                 hLineWidth: (i, node) => (i === 0) ? 0 : 0.5,
-                vLineWidth: () => 0.5,
-                hLineColor: () => '#ccc',
-                vLineColor: () => '#ccc',
-                paddingLeft: (i) => 5,
-                paddingRight: (i, node) => 5,
-                paddingTop: () => 4,
-                paddingBottom: () => 4,
-            }
         }
       };
 

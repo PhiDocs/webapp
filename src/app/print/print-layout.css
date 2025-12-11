@@ -26,6 +26,7 @@
   color: #333;
   font-size: 9pt;
   border-radius: 0.5rem; /* Rounded corners for the page */
+  overflow-x: auto;
 }
 
 /* 
@@ -148,6 +149,7 @@ table.analysis-table td {
         min-height: 0;
         height: auto;
         border-radius: 0;
+        overflow: visible;
     }
     .page-content-wrapper {
         padding: 0;
