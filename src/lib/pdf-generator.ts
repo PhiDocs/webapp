@@ -28,7 +28,7 @@ function getShortDate(dateString: string | undefined) {
 
 const getSignatureContent = (signer: PtSigner | any): Content => {
     if (!signer || !signer.signatureData) {
-        return { text: '', minHeight: 40, border: [false, false, false, false] };
+        return { text: '', minHeight: 40, border: [false, false, false, true], borderColor: ['#000', '#000', '#000', '#000'] };
     }
     if (signer.signatureType === 'typed') {
         return { text: signer.signatureData, alignment: 'center', margin: [0, 15, 0, 0], border: [false, true, false, false], italics: true, fontSize: 16 };
@@ -37,7 +37,7 @@ const getSignatureContent = (signer: PtSigner | any): Content => {
         try {
             // Basic validation for base64
             atob(signer.signatureData.split(',')[1]);
-            return { image: signer.signatureData, width: 120, alignment: 'center', margin: [0, 5, 0, 0], border: [false, true, false, false] };
+            return { image: signer.signatureData, width: 120, alignment: 'center', margin: [0, 5, 0, 0] };
         } catch(e) {
             console.error("Invalid base64 for signature", e);
             return { text: 'Assinatura inválida', color: 'red', alignment: 'center' };
@@ -62,7 +62,7 @@ function generateAPRPages(formData: SafetyFormValues, analysisData: SafetyAnalys
                             {
                                 // Company Name and Logo
                                 columns: [
-                                    ...(formData.companyLogo ? [{ image: formData.companyLogo, width: 70, alignment: 'left' }] : []),
+                                    ...(formData.companyLogo ? [{ image: formData.companyLogo, width: 70, alignment: 'left' }] : [{width: 70}]),
                                     {
                                         stack: [
                                             { text: formData.companyName || 'Nome da Empresa', style: 'h1', alignment: 'left' },
@@ -96,38 +96,30 @@ function generateAPRPages(formData: SafetyFormValues, analysisData: SafetyAnalys
 
 
     // --- Work Data Section ---
+    content.push({ text: 'DADOS DA OBRA', style: 'sectionTitle' });
     content.push({
         table: {
-            widths: ['*'],
+            widths: ['*', '*'],
             body: [
-                [{ text: 'DADOS DA OBRA', style: 'sectionTitle' }],
-                [{
-                    table: {
-                        widths: ['*', '*'],
-                        body: [
-                            [
-                                { stack: [{ text: 'NOME:', style: 'label' }, { text: formData.workName || '...', style: 'value' }], style: 'cellPadding' },
-                                { stack: [{ text: 'ENDEREÇO:', style: 'label' }, { text: formData.workAddress || '...', style: 'value' }], style: 'cellPadding' },
-                            ],
-                            [
-                                { stack: [{ text: 'PREVISÃO DATA INICIO:', style: 'label' }, { text: getShortDate(formData.startDate), style: 'value' }], style: 'cellPadding' },
-                                { stack: [{ text: 'PREVISÃO DATA TÉRMINO:', style: 'label' }, { text: getShortDate(formData.endDate), style: 'value' }], style: 'cellPadding' },
-                            ],
-                            [
-                                { stack: [{ text: 'LOCAL DA OBRA / PAVIMENTO:', style: 'label' }, { text: formData.workLocationDetails || '...', style: 'value' }], colSpan: 2, style: 'cellPadding' },
-                                {}
-                            ],
-                            [
-                                { stack: [{ text: 'DESCRIÇÃO DA ATIVIDADE:', style: 'label' }, { text: formData.activityDescription || '...', style: 'value' }], colSpan: 2, style: 'cellPadding' },
-                                {}
-                            ]
-                        ]
-                    },
-                    layout: 'boxLayoutNoTop',
-                }]
+                [
+                    { stack: [{ text: 'NOME:', style: 'label' }, { text: formData.workName || '...', style: 'value' }], style: 'cellPadding' },
+                    { stack: [{ text: 'ENDEREÇO:', style: 'label' }, { text: formData.workAddress || '...', style: 'value' }], style: 'cellPadding' },
+                ],
+                [
+                    { stack: [{ text: 'PREVISÃO DATA INICIO:', style: 'label' }, { text: getShortDate(formData.startDate), style: 'value' }], style: 'cellPadding' },
+                    { stack: [{ text: 'PREVISÃO DATA TÉRMINO:', style: 'label' }, { text: getShortDate(formData.endDate), style: 'value' }], style: 'cellPadding' },
+                ],
+                [
+                    { stack: [{ text: 'LOCAL DA OBRA / PAVIMENTO:', style: 'label' }, { text: formData.workLocationDetails || '...', style: 'value' }], colSpan: 2, style: 'cellPadding' },
+                    {}
+                ],
+                [
+                    { stack: [{ text: 'DESCRIÇÃO DA ATIVIDADE:', style: 'label' }, { text: formData.activityDescription || '...', style: 'value' }], colSpan: 2, style: 'cellPadding' },
+                    {}
+                ]
             ]
         },
-        layout: 'boxLayout',
+        layout: 'boxLayoutNoTop',
         marginBottom: 10,
     });
 
@@ -139,32 +131,23 @@ function generateAPRPages(formData: SafetyFormValues, analysisData: SafetyAnalys
         responsibleBody.push([
             { text: p.name || '...', style: 'td', alignment: 'left' },
             { text: p.role || '...', style: 'td', alignment: 'left' },
-            getSignatureContent(p)
+             {stack: [getSignatureContent(p), {text:''}], border: [true, false, true, true]},
         ]);
     });
 
+    content.push({ text: 'RESPONSÁVEL PELO ACOMPANHAMENTO DOS SERVIÇOS', style: 'sectionTitle' });
     content.push({
         table: {
-            widths: ['*'],
+            widths: ['*', '*', '*'],
+            body: responsibleBody,
             dontBreakRows: true,
-            body: [
-                [{ text: 'RESPONSÁVEL PELO ACOMPANHAMENTO DOS SERVIÇOS', style: 'sectionTitle' }],
-                [{
-                    table: {
-                        widths: ['*', '*', '*'],
-                        body: responsibleBody,
-                        dontBreakRows: true,
-                    },
-                    layout: 'boxLayoutNoTop',
-                }]
-            ]
         },
-        layout: 'boxLayout',
+        layout: 'boxLayoutNoTop',
         marginBottom: 10,
     });
 
-
     // --- Analysis Section ---
+    const analysisSection: Content[] = [];
     const analysisBody: TableCell[][] = [
         [
             { text: 'ITEM', style: 'th' },
@@ -187,26 +170,18 @@ function generateAPRPages(formData: SafetyFormValues, analysisData: SafetyAnalys
             { text: 'A análise de procedimento operacional aparecerá aqui após ser gerada.', style: 'td', colSpan: 4, alignment: 'center', italics: true, margin: [0, 20, 0, 20] }, {}, {}, {}
         ]);
     }
-    content.push({
+    analysisSection.push({ text: 'PROCEDIMENTO OPERACIONAL', style: 'sectionTitle' });
+    analysisSection.push({
         table: {
-            widths: ['*'],
+            widths: [35, '*', '*', '*'],
+            body: analysisBody,
+            headerRows: 1,
             dontBreakRows: true,
-            body: [
-                [{ text: 'PROCEDIMENTO OPERACIONAL', style: 'sectionTitle' }],
-                [{
-                    table: {
-                        widths: [35, '*', '*', '*'],
-                        body: analysisBody,
-                        headerRows: 1,
-                        dontBreakRows: true,
-                    },
-                    layout: 'boxLayoutNoTop',
-                }]
-            ]
         },
-        layout: 'boxLayout',
+        layout: 'boxLayoutNoTop',
         marginBottom: 10,
     });
+    content.push(...analysisSection);
 
     // --- Equipment Section ---
     if (equipmentData) {
@@ -231,7 +206,12 @@ function generateAPRPages(formData: SafetyFormValues, analysisData: SafetyAnalys
                 ],
                 dontBreakRows: true,
             },
-            layout: 'boxLayout',
+            layout: {
+                hLineWidth: (i, node) => (i === 1) ? 0 : 0.5,
+                vLineWidth: (i, node) => (i === 0 || i === node.table.widths?.length) ? 0.5 : 0.5,
+                hLineColor: () => '#ccc',
+                vLineColor: () => '#ccc',
+            },
             marginBottom: 10,
         });
     }
@@ -248,22 +228,14 @@ function generateAPRPages(formData: SafetyFormValues, analysisData: SafetyAnalys
                 { text: m.role, style: 'td' },
             ]);
         });
-         content.push({
+        content.push({ text: 'EQUIPE DE TRABALHO', style: 'sectionTitle' });
+        content.push({
             table: {
-                widths: ['*'],
-                body: [
-                    [{ text: 'EQUIPE DE TRABALHO', style: 'sectionTitle' }],
-                    [{
-                        table: {
-                            widths: ['auto', '*', '*'],
-                            body: teamBody,
-                            dontBreakRows: true,
-                        },
-                         layout: 'boxLayoutNoTop',
-                    }]
-                ]
+                widths: ['auto', '*', '*'],
+                body: teamBody,
+                dontBreakRows: true,
             },
-            layout: 'boxLayout',
+                layout: 'boxLayoutNoTop',
         });
     }
 
@@ -395,8 +367,8 @@ function generatePTPages(formData: SafetyFormValues): Content[] {
         }
 
         if (sectionBody.length > 0) {
+            content.push({ text: section.title, style: 'sectionTitle' });
             content.push(
-                { text: section.title, style: 'sectionTitle' },
                 {
                     table: {
                         widths: Array(section.columns).fill('*'),
@@ -468,14 +440,14 @@ function generatePTPages(formData: SafetyFormValues): Content[] {
             widths: ['*', '*', '*'],
             body: [
                 [
-                    getSignatureContent(ptData.ptGestorArea),
-                    getSignatureContent(ptData.ptResponsavelAtividade),
-                    getSignatureContent(ptData.ptSesmt),
+                    {stack: [getSignatureContent(ptData.ptGestorArea), {text:''}], border: [true, false, true, true]},
+                    {stack: [getSignatureContent(ptData.ptResponsavelAtividade), {text:''}], border: [true, false, true, true]},
+                    {stack: [getSignatureContent(ptData.ptSesmt), {text:''}], border: [true, false, true, true]},
                 ],
                 [
-                    {text: ptData.ptGestorArea?.name || 'Gestor da Área', style: 'td', alignment: 'center', border: [false, false, false, false]},
-                    {text: ptData.ptResponsavelAtividade?.name || 'Responsável Atividade', style: 'td', alignment: 'center', border: [false, false, false, false]},
-                    {text: ptData.ptSesmt?.name || 'SESMT', style: 'td', alignment: 'center', border: [false, false, false, false]},
+                    {text: ptData.ptGestorArea?.name || 'Gestor da Área', style: 'td', alignment: 'center', border: [true, false, true, true]},
+                    {text: ptData.ptResponsavelAtividade?.name || 'Responsável Atividade', style: 'td', alignment: 'center', border: [true, false, true, true]},
+                    {text: ptData.ptSesmt?.name || 'SESMT', style: 'td', alignment: 'center', border: [true, false, true, true]},
                 ]
             ]
         },

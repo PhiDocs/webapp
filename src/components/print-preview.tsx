@@ -39,7 +39,7 @@ function APRHeader({ data }: { data: SafetyFormValues }) {
           {data.companyLogo ? (
             <img src={data.companyLogo} alt="Company Logo" className="h-16 w-auto max-w-[120px] object-contain" />
           ) : (
-             <Logo className="h-12 w-12 text-gray-700 no-print" />
+             <Logo className="h-12 w-12 text-gray-700" />
           )}
           <div className='flex-1 min-w-0'>
             <h1 className="text-xl font-bold text-gray-800 break-words">{data.companyName || 'Nome da Empresa'}</h1>
@@ -92,7 +92,7 @@ const Section = ({ title, icon, children }: { title: string, icon: React.Element
     const Icon = icon;
     return (
         <section className="avoid-break mt-2">
-            <h3 className="section-title">
+            <h3 className="section-title flex items-center justify-center">
                 <Icon className="inline-block mr-2 h-4 w-4" />
                 {title}
             </h3>
@@ -192,7 +192,7 @@ function EquipmentSection({ data }: { data: ProtectiveEquipmentOutput | null }) 
   return (
     <div className='grid grid-cols-2 gap-4'>
         <Section title="EPI NECESSÁRIO" icon={HardHat}>
-            <div className='p-2 border border-t-0 rounded-b-md'>
+            <div className='p-2'>
                 <ul className="list-disc pl-4 space-y-1 text-sm">
                     {data.epiItems.map((item, index) => <li key={`epi-${index}`}>{item}</li>)}
                 </ul>
@@ -200,7 +200,7 @@ function EquipmentSection({ data }: { data: ProtectiveEquipmentOutput | null }) 
             </div>
         </Section>
         <Section title="EPC NECESSÁRIO" icon={Construction}>
-            <div className='p-2 border border-t-0 rounded-b-md'>
+            <div className='p-2'>
                 <ul className="list-disc pl-4 space-y-1 text-sm">
                     {data.epcItems.map((item, index) => <li key={`epc-${index}`}>{item}</li>)}
                 </ul>
