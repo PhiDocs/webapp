@@ -4,12 +4,15 @@ import { useEffect, useState } from 'react';
 import './print-layout.css';
 import type { SafetyFormValues } from '@/lib/types';
 import type { SafetyAnalysisOutput } from '@/ai/flows/generate-safety-analysis';
-import { PrintPreviewContent } from '@/components/print-preview';
+import type { ProtectiveEquipmentOutput } from '@/ai/flows/recommend-protective-equipment';
+import { PrintPreview } from '@/components/print-preview';
 
 
-type PrintData = SafetyFormValues & Partial<SafetyAnalysisOutput> & {
-  date: string;
-};
+type PrintData = {
+  formData: SafetyFormValues;
+  analysisData: SafetyAnalysisOutput | null;
+  equipmentData: ProtectiveEquipmentOutput | null;
+}
 
 // This page is no longer used for active PDF generation,
 // but can be kept for direct previewing if needed.
@@ -54,7 +57,7 @@ export default function PrintPage() {
   return (
     <html lang="en">
       <head>
-        <title>{`${data.documentType} - ${data.companyName} - ${data.date}`}</title>
+        <title>{`${data.formData.documentType} - ${data.formData.companyName}`}</title>
          <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
@@ -76,7 +79,7 @@ export default function PrintPage() {
       </head>
       <body className="print-body">
         <div className="print-bg">
-            <PrintPreviewContent formData={data} analysisData={data} />
+            <PrintPreview formData={data.formData} analysisData={data.analysisData} equipmentData={data.equipmentData} />
         </div>
       </body>
     </html>
