@@ -2,10 +2,11 @@
 'use client';
 
 import { useState } from 'react';
-import type { SafetyAnalysisOutput } from '@/ai/flows/generateSafetyAnalysis';
+import type { SafetyAnalysisOutput } from '@/ai/flows/generate-safety-analysis';
 import type { ProtectiveEquipmentOutput } from '@/ai/flows/recommend-protective-equipment';
 import type { SafetyFormValues } from '@/lib/types';
 import { getSafetyAnalysis, getProtectiveEquipment } from '@/server/ai-actions';
+import { generatePdfOnServer } from '@/server/pdf-actions';
 import { Logo } from '@/components/icons/logo';
 import { SafetyForm } from '@/components/safety-form';
 import { Card, CardContent } from '@/components/ui/card';
@@ -17,7 +18,6 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { FileDown, Loader2, Zap, FlaskConical, FormInput, Eye } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { generatePdf } from '@/lib/pdf-generator';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { cn } from "@/lib/utils";
@@ -176,9 +176,13 @@ export default function Home() {
 
     setIsDownloading(true);
     try {
-      // 1. Gera o PDF em memória e recebe os dados (base64) e o nome do arquivo.
-      const { fileName, dataUrl } = await generatePdf(formData, analysis, equipment);
+      // 1. Chama a Server Action para gerar o PDF no servidor
+      const { fileName, dataUrl, error } = await generatePdfOnServer(formData, analysis, equipment);
       
+      if (error || !dataUrl) {
+          throw new Error(error || "A geração do PDF falhou no servidor.");
+      }
+
       // 2. Prepara o payload para o n8n, incluindo o PDF como data URL.
       const payload = {
         event: 'pdf_generated',
@@ -470,5 +474,7 @@ export default function Home() {
       </main>
     </div>
   );
+
+    
 
     
