@@ -14,6 +14,16 @@ if (pdfMake.vfs) {
     pdfMake.vfs = pdfFonts.pdfMake.vfs;
 }
 
+const isValidBase64 = (str: string | undefined): boolean => {
+    if (!str || !str.includes(',')) return false;
+    try {
+        atob(str.split(',')[1]);
+        return true;
+    } catch (e) {
+        console.error("Invalid Base64 string detected:", str.substring(0, 50) + "...");
+        return false;
+    }
+}
 
 function getShortDate(dateString: string | undefined) {
     if (!dateString) return '...';
@@ -33,17 +43,10 @@ const getSignatureContent = (signer: PtSigner | any): Content => {
     if (signer.signatureType === 'typed') {
         return { text: signer.signatureData, alignment: 'center', margin: [0, 15, 0, 0], border: [false, true, false, false], italics: true, fontSize: 16 };
     }
-    if (signer.signatureType === 'draw' || signer.signatureType === 'upload') {
-        try {
-            // Basic validation for base64
-            atob(signer.signatureData.split(',')[1]);
-            return { image: signer.signatureData, width: 120, alignment: 'center', margin: [0, 5, 0, 0] };
-        } catch(e) {
-            console.error("Invalid base64 for signature", e);
-            return { text: 'Assinatura inválida', color: 'red', alignment: 'center' };
-        }
+    if ((signer.signatureType === 'draw' || signer.signatureType === 'upload') && isValidBase64(signer.signatureData)) {
+        return { image: signer.signatureData, width: 120, alignment: 'center', margin: [0, 5, 0, 0] };
     }
-    return { text: '', minHeight: 40, border: [false, false, false, false] };
+    return { text: 'Assinatura inválida', color: 'red', alignment: 'center', minHeight: 40 };
 };
 
 
@@ -62,7 +65,7 @@ function generateAPRPages(formData: SafetyFormValues, analysisData: SafetyAnalys
                             {
                                 // Company Name and Logo
                                 columns: [
-                                    ...(formData.companyLogo ? [{ image: formData.companyLogo, width: 70, alignment: 'left' }] : [{width: 70}]),
+                                    ...(formData.companyLogo && isValidBase64(formData.companyLogo) ? [{ image: formData.companyLogo, width: 70, alignment: 'left' }] : [{width: 70}]),
                                     {
                                         stack: [
                                             { text: formData.companyName || 'Nome da Empresa', style: 'h1', alignment: 'left' },
@@ -147,7 +150,6 @@ function generateAPRPages(formData: SafetyFormValues, analysisData: SafetyAnalys
     });
 
     // --- Analysis Section ---
-    const analysisSection: Content[] = [];
     const analysisBody: TableCell[][] = [
         [
             { text: 'ITEM', style: 'th' },
@@ -170,8 +172,8 @@ function generateAPRPages(formData: SafetyFormValues, analysisData: SafetyAnalys
             { text: 'A análise de procedimento operacional aparecerá aqui após ser gerada.', style: 'td', colSpan: 4, alignment: 'center', italics: true, margin: [0, 20, 0, 20] }, {}, {}, {}
         ]);
     }
-    analysisSection.push({ text: 'PROCEDIMENTO OPERACIONAL', style: 'sectionTitle' });
-    analysisSection.push({
+    content.push({ text: 'PROCEDIMENTO OPERACIONAL', style: 'sectionTitle' });
+    content.push({
         table: {
             widths: [35, '*', '*', '*'],
             body: analysisBody,
@@ -181,7 +183,6 @@ function generateAPRPages(formData: SafetyFormValues, analysisData: SafetyAnalys
         layout: 'boxLayoutNoTop',
         marginBottom: 10,
     });
-    content.push(...analysisSection);
 
     // --- Equipment Section ---
     if (equipmentData) {
@@ -258,7 +259,7 @@ function generatePTPages(formData: SafetyFormValues): Content[] {
     const headerContent: TableCell[][] = [
         [
             {
-                ...(companyLogo ? { image: companyLogo, width: 70, alignment: 'center', rowSpan: 2 } : {text: '', rowSpan: 2}),
+                ...(companyLogo && isValidBase64(companyLogo) ? { image: companyLogo, width: 70, alignment: 'center', rowSpan: 2 } : {text: '', rowSpan: 2}),
                 style: 'cellPadding',
                 border: [true, true, true, true],
             },
@@ -535,9 +536,14 @@ export function generatePdf(
       const pdfDoc = pdfMake.createPdf(docDefinition);
       pdfDoc.getDataUrl((dataUrl) => {
         resolve({ fileName, dataUrl });
+      }, (err) => {
+          // This second callback for errors is not standard in pdfmake,
+          // but we keep the logic within the promise.
+          reject(err);
       });
 
     } catch (error) {
+      console.error("Error during PDF document definition:", error);
       reject(error);
     }
   });
