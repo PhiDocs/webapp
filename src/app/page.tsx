@@ -2,7 +2,7 @@
 'use client';
 
 import { useState } from 'react';
-import type { SafetyAnalysisOutput } from '@/ai/flows/generate-safety-analysis';
+import type { SafetyAnalysisOutput } from '@/ai/flows/generateSafetyAnalysis';
 import type { ProtectiveEquipmentOutput } from '@/ai/flows/recommend-protective-equipment';
 import type { SafetyFormValues } from '@/lib/types';
 import { getSafetyAnalysis, getProtectiveEquipment } from '@/app/ai-actions';
@@ -470,4 +470,5 @@ export default function Home() {
       </main>
     </div>
   );
-}
+
+    
