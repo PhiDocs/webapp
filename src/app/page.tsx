@@ -5,7 +5,7 @@ import { useState } from 'react';
 import type { SafetyAnalysisOutput } from '@/ai/flows/generateSafetyAnalysis';
 import type { ProtectiveEquipmentOutput } from '@/ai/flows/recommend-protective-equipment';
 import type { SafetyFormValues } from '@/lib/types';
-import { getSafetyAnalysis, getProtectiveEquipment } from '@/app/ai-actions';
+import { getSafetyAnalysis, getProtectiveEquipment } from '@/server/ai-actions';
 import { Logo } from '@/components/icons/logo';
 import { SafetyForm } from '@/components/safety-form';
 import { Card, CardContent } from '@/components/ui/card';

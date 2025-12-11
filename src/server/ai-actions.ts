@@ -37,5 +37,3 @@ export async function getProtectiveEquipment(data: { activityDescription: string
     return { data: null, error: 'Falha ao gerar recomendações de equipamento. Por favor, tente novamente mais tarde.' };
   }
 }
-
-    
