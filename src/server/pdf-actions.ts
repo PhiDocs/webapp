@@ -3,7 +3,7 @@
 
 import type { SafetyAnalysisOutput } from '@/ai/flows/generate-safety-analysis';
 import type { ProtectiveEquipmentOutput } from '@/ai/flows/recommend-protective-equipment';
-import { generatePdf } from '@/lib/pdf-generator';
+import { generatePdf } from '@/lib/pdf/generator';
 import type { SafetyFormValues } from '@/lib/types';
 
 
@@ -26,4 +26,5 @@ export async function generatePdfOnServer(
   }
 }
 
+    
     

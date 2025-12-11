@@ -2,7 +2,7 @@
 
 import React from 'react';
 import type { SafetyFormValues, PtTeamMember, PtSigner } from '@/lib/types';
-import { ptChecklistItems } from '@/lib/pt-checklist-data';
+import { ptChecklistItems } from '@/lib/data/pt-checklist';
 
 interface PTPreviewProps {
   formData: SafetyFormValues;
@@ -213,3 +213,5 @@ export function PTPreview({ formData }: PTPreviewProps) {
     </div>
   );
 }
+
+    
