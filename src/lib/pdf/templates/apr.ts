@@ -37,6 +37,7 @@ const getSignatureContent = (signer: PtSigner | any): Content => {
     if ((signer.signatureType === SIGNATURE_TYPES.DRAW || signer.signatureType === SIGNATURE_TYPES.UPLOAD) && isValidBase64(signer.signatureData)) {
         return { image: signer.signatureData, width: 120, alignment: 'center', margin: [0, 5, 0, 0] };
     }
+    // Fallback for any other case to prevent pdfmake from hanging on an empty {}
     return { text: '', minHeight: 40, border: [false, false, false, true], borderColor: ['#000', '#000', '#000', '#000'] };
 };
 
