@@ -9,9 +9,6 @@ import { generateAPRPages } from './templates/apr';
 import { generatePTPages } from './templates/pt';
 import { DOCUMENT_TYPES } from '@/lib/constants';
 
-// Import pdfmake and fonts for server-side usage
-import PdfPrinter from 'pdfmake';
-import * as pdfFonts from 'pdfmake/build/vfs_fonts.js';
 
 // Main PDF Generation Function (Server-Side)
 export async function generatePdf(
@@ -20,18 +17,23 @@ export async function generatePdf(
   equipmentData: ProtectiveEquipmentOutput | null
 ): Promise<{ fileName: string; dataUrl: string }> {
   
+  // Dynamically import pdfmake and fonts ONLY on the server when the function is called.
+  // This is the key to fixing the ENOENT error with fontkit in Next.js server environments.
+  const pdfmake = await import('pdfmake');
+  const vfsFonts = await import('pdfmake/build/vfs_fonts.js');
+
   return new Promise((resolve, reject) => {
     try {
       const fonts = {
         Roboto: {
-          normal: Buffer.from(pdfFonts.pdfMake.vfs['Roboto-Regular.ttf'], 'base64'),
-          bold: Buffer.from(pdfFonts.pdfMake.vfs['Roboto-Medium.ttf'], 'base64'),
-          italics: Buffer.from(pdfFonts.pdfMake.vfs['Roboto-Italic.ttf'], 'base64'),
-          bolditalics: Buffer.from(pdfFonts.pdfMake.vfs['Roboto-MediumItalic.ttf'], 'base64'),
+          normal: Buffer.from(vfsFonts.pdfMake.vfs['Roboto-Regular.ttf'], 'base64'),
+          bold: Buffer.from(vfsFonts.pdfMake.vfs['Roboto-Medium.ttf'], 'base64'),
+          italics: Buffer.from(vfsFonts.pdfMake.vfs['Roboto-Italic.ttf'], 'base64'),
+          bolditalics: Buffer.from(vfsFonts.pdfMake.vfs['Roboto-MediumItalic.ttf'], 'base64'),
         }
       };
-
-      const printer = new PdfPrinter(fonts);
+      
+      const printer = new pdfmake.default(fonts);
 
       const docDefinition: TDocumentDefinitions = {
         pageSize: 'A4',
