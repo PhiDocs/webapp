@@ -241,6 +241,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <Header
+        className="no-print"
         mobileView={mobileView}
         setMobileView={setMobileView}
         onGeneratePdf={handlePrint}
