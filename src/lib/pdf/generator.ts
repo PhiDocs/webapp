@@ -10,8 +10,8 @@ import { generatePTPages } from './templates/pt';
 import { DOCUMENT_TYPES } from '@/lib/constants';
 
 // Import pdfmake and fonts for server-side usage
-const Pdfmake = require('pdfmake');
-const pdfFonts = require('pdfmake/build/vfs_fonts.js');
+import PdfPrinter from 'pdfmake';
+import * as pdfFonts from 'pdfmake/build/vfs_fonts.js';
 
 // Main PDF Generation Function (Server-Side)
 export async function generatePdf(
@@ -22,14 +22,16 @@ export async function generatePdf(
   
   return new Promise((resolve, reject) => {
     try {
-      const printer = new Pdfmake({
+      const fonts = {
         Roboto: {
           normal: Buffer.from(pdfFonts.pdfMake.vfs['Roboto-Regular.ttf'], 'base64'),
           bold: Buffer.from(pdfFonts.pdfMake.vfs['Roboto-Medium.ttf'], 'base64'),
           italics: Buffer.from(pdfFonts.pdfMake.vfs['Roboto-Italic.ttf'], 'base64'),
           bolditalics: Buffer.from(pdfFonts.pdfMake.vfs['Roboto-MediumItalic.ttf'], 'base64'),
         }
-      });
+      };
+
+      const printer = new PdfPrinter(fonts);
 
       const docDefinition: TDocumentDefinitions = {
         pageSize: 'A4',
@@ -106,6 +108,10 @@ export async function generatePdf(
         const result = Buffer.concat(chunks);
         const dataUrl = `data:application/pdf;base64,${result.toString('base64')}`;
         resolve({ fileName, dataUrl });
+      });
+
+      pdfDoc.on('error', (err) => {
+        reject(err);
       });
 
       pdfDoc.end();
