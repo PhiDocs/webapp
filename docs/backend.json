@@ -1,0 +1,43 @@
+{
+  "collections": {
+    "users": {
+      "description": "Stores user information, including authentication details and roles.",
+      "fields": {
+        "uid": "string (document ID, from Firebase Auth)",
+        "email": "string",
+        "name": "string",
+        "role": "string ('admin' or 'user')",
+        "companyId": "string (reference to companies collection)"
+      }
+    },
+    "companies": {
+      "description": "Stores information about each company using the system.",
+      "fields": {
+        "id": "string (document ID)",
+        "name": "string",
+        "ownerUid": "string (reference to the admin user who owns it)"
+      }
+    },
+    "works": {
+      "description": "Stores information about each specific job or construction site.",
+      "fields": {
+        "id": "string (document ID)",
+        "name": "string",
+        "address": "string",
+        "companyId": "string (reference to companies collection)"
+      }
+    },
+    "documents": {
+      "description": "Stores all generated safety documents (APRs and PTs).",
+      "fields": {
+        "id": "string (document ID)",
+        "workId": "string (reference to works collection)",
+        "type": "string ('APR' or 'PT')",
+        "createdAt": "timestamp",
+        "formData": "object",
+        "analysisData": "object (for APRs)",
+        "equipmentData": "object (for APRs)"
+      }
+    }
+  }
+}
