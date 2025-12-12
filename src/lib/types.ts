@@ -1,26 +1,8 @@
 import { z } from 'zod';
 import { DOCUMENT_TYPES, PT_FIT_STATUS, SIGNATURE_TYPES } from './constants';
+import { ptBr } from './data/strings';
 
-const validationMessages = {
-  responsibleName: 'Nome do responsável é obrigatório.',
-  responsibleRole: 'Função do responsável é obrigatória.',
-  teamDate: 'Data é obrigatória.',
-  teamName: 'Nome do membro da equipe é obrigatório.',
-  teamRole: 'Função/Empresa é obrigatória.',
-  atLeastOneResponsible: 'Adicione pelo menos um responsável.',
-  companyName: 'Nome da empresa é obrigatório.',
-  workName: 'Nome da obra é obrigatório.',
-  workAddress: 'Endereço da obra é obrigatório.',
-  startDate: 'Data de início é obrigatória.',
-  endDate: 'Data de término é obrigatória.',
-  endDateBeforeStartDate: 'A data de término não pode ser anterior à data de início.',
-  workLocation: 'Local da obra/pavimento é obrigatório.',
-  activityDescription: 'A descrição da atividade deve ter pelo menos 10 caracteres.',
-  ptLocation: 'Local da atividade é obrigatório.',
-  ptDate: 'Data é obrigatória.',
-  ptStartTime: 'Hora de início é obrigatória.',
-};
-
+const validationMessages = ptBr.validations;
 
 const signatureTypeSchema = z.enum([
     SIGNATURE_TYPES.TYPED, 
@@ -147,3 +129,19 @@ export type TeamMember = z.infer<typeof teamMemberSchema>;
 export type PtFormValues = z.infer<typeof ptFormSchema>;
 export type PtTeamMember = z.infer<typeof ptTeamMemberSchema>;
 export type PtSigner = z.infer<typeof ptSignerSchema>;
+
+
+// --- Auth Schemas ---
+export const loginSchema = z.object({
+  email: z.string().min(1, validationMessages.emailRequired).email(validationMessages.invalidEmail),
+  password: z.string().min(1, validationMessages.passwordRequired),
+});
+export type LoginValues = z.infer<typeof loginSchema>;
+
+
+export const signupSchema = z.object({
+  name: z.string().min(1, validationMessages.nameRequired),
+  email: z.string().min(1, validationMessages.emailRequired).email(validationMessages.invalidEmail),
+  password: z.string().min(6, validationMessages.passwordMinLength),
+});
+export type SignupValues = z.infer<typeof signupSchema>;

@@ -180,31 +180,29 @@ export default function Home() {
 
   const handlePrint = () => {
     setIsPrinting(true);
-    
-    // Trigger browser print
     generatePdfOnClient();
-
-    // Notify n8n in the background
     try {
-      const formData = form.getValues();
-      const payload = {
-        event: N8N_EVENTS.PDF_GENERATED,
-        documentType: formData.documentType,
-        formData: formData,
-        analysisData: analysis,
-        equipmentData: equipment,
-      };
-      notifyN8n(payload);
+        const formData = form.getValues();
+        const payload = {
+            event: N8N_EVENTS.PDF_GENERATED,
+            documentType: formData.documentType,
+            formData: formData,
+            analysisData: analysis,
+            equipmentData: equipment,
+        };
+        notifyN8n(payload);
+        toast({
+            title: ptBr.toasts.success.pdfDownloaded,
+            description: ptBr.toasts.success.pdfDownloadedDescription,
+        });
     } catch (error) {
-       console.error("Failed to notify n8n:", error);
+        console.error("Failed to notify n8n:", error);
+        toast({
+            variant: 'destructive',
+            title: ptBr.toasts.errors.n8nConnectionFailed,
+            description: ptBr.errors.n8nCheckUrl
+        });
     }
-    
-    toast({
-        title: ptBr.toasts.success.pdfDownloaded,
-        description: ptBr.toasts.success.pdfDownloadedDescription,
-    });
-    
-    // Reset printing state after a delay
     setTimeout(() => setIsPrinting(false), 2000);
   };
 
