@@ -179,34 +179,14 @@ export default function Home() {
   };
 
   const handlePrint = () => {
-    const formData = form.getValues();
-    const parsedData = formSchema.safeParse(formData);
-
-    if (!parsedData.success) {
-      const errorMessages = parsedData.error.errors.map(err => `${err.path.join('.')} - ${err.message}`).join('; ');
-      toast({
-        variant: 'destructive',
-        title: ptBr.validations.invalidFormData.split(':')[0],
-        description: errorMessages,
-      });
-      return;
-    }
-
-    if (formData.documentType === DOCUMENT_TYPES.APR && !analysis) {
-      toast({
-        variant: 'destructive',
-        title: ptBr.toasts.errors.noAnalysis,
-        description: ptBr.toasts.errors.noAnalysisDescription,
-      });
-      return;
-    }
-
     setIsPrinting(true);
-
+    
+    // Trigger browser print
     generatePdfOnClient();
 
-    // Fire-and-forget notification to n8n
+    // Notify n8n in the background
     try {
+      const formData = form.getValues();
       const payload = {
         event: N8N_EVENTS.PDF_GENERATED,
         documentType: formData.documentType,
@@ -215,19 +195,19 @@ export default function Home() {
         equipmentData: equipment,
       };
       notifyN8n(payload);
-
-      toast({
+    } catch (error) {
+       console.error("Failed to notify n8n:", error);
+    }
+    
+    toast({
         title: ptBr.toasts.success.pdfDownloaded,
         description: ptBr.toasts.success.pdfDownloadedDescription,
-      });
-    } catch (error: any) {
-      console.error(ptBr.errors.n8nCheckUrl, error);
-      // Don't show an error toast for n8n failure, as it's a background task
-    } finally {
-      // Use a timeout to allow the print dialog to appear before resetting state
-      setTimeout(() => setIsPrinting(false), 2000);
-    }
+    });
+    
+    // Reset printing state after a delay
+    setTimeout(() => setIsPrinting(false), 2000);
   };
+
 
   return (
     <>
@@ -252,7 +232,7 @@ export default function Home() {
                   mobileView={mobileView}
               />
           </div>
-          <div className="h-full no-print">
+          <div className="h-full no-print bg-muted">
               <PreviewPanel
                   isLoading={isLoading}
                   error={error}

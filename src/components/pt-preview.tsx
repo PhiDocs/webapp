@@ -93,6 +93,10 @@ const TeamTable = ({ title, members, showEmpresa = false }: { title: string, mem
 
 
 export function PTPreview({ formData }: PTPreviewProps) {
+  if (!formData?.pt) {
+    return null; // or a placeholder component
+  }
+
   const { pt: ptData, companyLogo, companyName } = formData;
   const checklist = ptData.ptChecklist || {};
 
