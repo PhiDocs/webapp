@@ -15,6 +15,8 @@ import { FormPanel } from '@/components/form-panel';
 import { PreviewPanel } from '@/components/preview-panel';
 import { ptBr } from '@/lib/data/strings';
 import { DOCUMENT_TYPES, N8N_EVENTS, PT_FIT_STATUS, SIGNATURE_TYPES } from '@/lib/constants';
+import { PrintPreview } from '@/components/print-preview';
+import { generatePdfOnClient } from '@/lib/pdf/generator';
 
 import './print/print-layout.css';
 
@@ -204,7 +206,7 @@ export default function Home() {
   
     setIsPrinting(true);
     try {
-      // Notify n8n in the background
+      // Notify n8n in the background (no longer sending PDF data)
       const payload = {
         event: N8N_EVENTS.PDF_GENERATED,
         documentType: formData.documentType,
