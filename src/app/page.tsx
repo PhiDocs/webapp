@@ -16,11 +16,22 @@ import { formSchema } from '@/lib/types';
 import { PrintPreview } from '@/components/print-preview';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
-import { FileDown, Loader2, Zap, FlaskConical, FormInput, Eye } from 'lucide-react';
+import { FileDown, Loader2, Zap, FlaskConical, FormInput, Eye, RefreshCcw } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { cn } from "@/lib/utils";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 
 
 import './print/print-layout.css';
@@ -328,21 +339,44 @@ export default function Home() {
           <div className={cn("h-full xl:border-r", mobileView !== 'form' && "hidden xl:block")}>
             <ScrollArea className="h-full">
                 <div className="p-4 md:p-6 space-y-6">
-                <div className="space-y-2">
-                    <h2 className="text-2xl font-bold tracking-tight text-foreground font-headline">
-                    Gere seu Documento de Segurança
-                    </h2>
-                    <p className="text-muted-foreground">
-                    Preencha o formulário e veja a pré-visualização ao lado.
-                    Nossa IA irá analisar a atividade com base nas NRs
-                    brasileiras.
-                    </p>
+                <div className="flex justify-between items-start">
+                  <div className="space-y-2">
+                      <h2 className="text-2xl font-bold tracking-tight text-foreground font-headline">
+                      Gere seu Documento de Segurança
+                      </h2>
+                      <p className="text-muted-foreground">
+                      Preencha o formulário e veja a pré-visualização ao lado.
+                      Nossa IA irá analisar a atividade com base nas NRs
+                      brasileiras.
+                      </p>
+                  </div>
+                   <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="outline"
+                        >
+                          <RefreshCcw className="mr-2 h-4 w-4" />
+                          Começar Novo Relatório
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Esta ação não pode ser desfeita. Isso limpará todos os dados do formulário e a análise de IA gerada.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                          <AlertDialogAction onClick={handleNewReport}>Continuar</AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                 </div>
                 <SafetyForm
                     form={form}
                     onSubmit={handleFormSubmit}
                     isLoading={isLoading}
-                    onNewReport={handleNewReport}
                 />
                 <Card>
                     <CardContent className='pt-6 space-y-4'>
@@ -474,9 +508,4 @@ export default function Home() {
       </main>
     </div>
   );
-
-    
-
-    
-
-    
+}

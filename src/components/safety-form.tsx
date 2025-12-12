@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useForm, useFieldArray, useWatch } from 'react-hook-form';
@@ -38,7 +39,6 @@ interface SafetyFormProps {
   form: ReturnType<typeof useForm<SafetyFormValues>>;
   onSubmit: (data: SafetyFormValues) => void;
   isLoading: boolean;
-  onNewReport: () => void;
 }
 
 const SignatureField = ({ form, fieldPrefix }: { form: ReturnType<typeof useForm<SafetyFormValues>>, fieldPrefix: string }) => {
@@ -128,7 +128,6 @@ export function SafetyForm({
   form,
   onSubmit,
   isLoading,
-  onNewReport,
 }: SafetyFormProps) {
   const { toast } = useToast();
 
@@ -519,15 +518,6 @@ export function SafetyForm({
                   </div>
                 </div>
               )}
-              
-              <Button
-                type="button"
-                onClick={onNewReport}
-                variant="outline"
-                className="w-full"
-              >
-                Começar Novo Relatório
-              </Button>
             </form>
           </Form>
         </CardContent>
