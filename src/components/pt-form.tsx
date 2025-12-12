@@ -21,6 +21,7 @@ import { Switch } from './ui/switch';
 import { SignaturePad } from './signature-pad';
 import { ChangeEvent } from 'react';
 import { ptBr } from '@/lib/data/strings';
+import { PT_FIT_STATUS, SIGNATURE_TYPES } from '@/lib/constants';
 
 
 interface PTFormProps {
@@ -76,7 +77,7 @@ const CheckboxField = ({ form, name, label }: { form: UseFormReturn<SafetyFormVa
             type="button"
             variant="outline"
             size="sm"
-            onClick={() => append({ name: '', rgCpf: '', func: '', empresa: '', apto: '' })}
+            onClick={() => append({ name: '', rgCpf: '', func: '', empresa: '', apto: PT_FIT_STATUS.EMPTY })}
           >
             <PlusCircle className="mr-2 h-4 w-4" /> {ptBr.actions.add}
           </Button>
@@ -96,8 +97,8 @@ const CheckboxField = ({ form, name, label }: { form: UseFormReturn<SafetyFormVa
                     <FormItem className="space-y-2"><FormLabel className={index !== 0 ? 'sr-only' : ''}>{ptBr.ptForm.isFit}</FormLabel>
                       <FormControl>
                         <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex items-center space-x-4">
-                          <FormItem className="flex items-center space-x-2 space-y-0"><FormControl><RadioGroupItem value="sim" /></FormControl><FormLabel className="font-normal">{ptBr.ptForm.yes}</FormLabel></FormItem>
-                          <FormItem className="flex items-center space-x-2 space-y-0"><FormControl><RadioGroupItem value="nao" /></FormControl><FormLabel className="font-normal">{ptBr.ptForm.no}</FormLabel></FormItem>
+                          <FormItem className="flex items-center space-x-2 space-y-0"><FormControl><RadioGroupItem value={PT_FIT_STATUS.YES} /></FormControl><FormLabel className="font-normal">{ptBr.ptForm.yes}</FormLabel></FormItem>
+                          <FormItem className="flex items-center space-x-2 space-y-0"><FormControl><RadioGroupItem value={PT_FIT_STATUS.NO} /></FormControl><FormLabel className="font-normal">{ptBr.ptForm.no}</FormLabel></FormItem>
                         </RadioGroup>
                       </FormControl>
                     </FormItem>
@@ -163,15 +164,15 @@ const CheckboxField = ({ form, name, label }: { form: UseFormReturn<SafetyFormVa
                         className="flex flex-wrap items-center gap-x-4 gap-y-2"
                         >
                         <FormItem className="flex items-center space-x-2 space-y-0">
-                            <FormControl><RadioGroupItem value="typed" /></FormControl>
+                            <FormControl><RadioGroupItem value={SIGNATURE_TYPES.TYPED} /></FormControl>
                             <FormLabel className="font-normal text-sm leading-tight">{ptBr.safetyForm.signatureTyped}</FormLabel>
                         </FormItem>
                         <FormItem className="flex items-center space-x-2 space-y-0">
-                            <FormControl><RadioGroupItem value="draw" /></FormControl>
+                            <FormControl><RadioGroupItem value={SIGNATURE_TYPES.DRAW} /></FormControl>
                             <FormLabel className="font-normal text-sm leading-tight">{ptBr.safetyForm.signatureDraw}</FormLabel>
                         </FormItem>
                         <FormItem className="flex items-center space-x-2 space-y-0">
-                            <FormControl><RadioGroupItem value="upload" /></FormControl>
+                            <FormControl><RadioGroupItem value={SIGNATURE_TYPES.UPLOAD} /></FormControl>
                             <FormLabel className="font-normal text-sm leading-tight">{ptBr.safetyForm.signatureUpload}</FormLabel>
                         </FormItem>
                         </RadioGroup>
@@ -185,18 +186,18 @@ const CheckboxField = ({ form, name, label }: { form: UseFormReturn<SafetyFormVa
                 name={`${fieldPrefix}.signatureData` as any}
                 render={({ field }) => (
                     <FormItem>
-                    {signatureType === 'typed' && (
+                    {signatureType === SIGNATURE_TYPES.TYPED && (
                         <FormControl>
                         <Input placeholder={ptBr.safetyForm.signatureTypedPlaceholder} {...field} />
                         </FormControl>
                     )}
-                    {signatureType === 'draw' && (
+                    {signatureType === SIGNATURE_TYPES.DRAW && (
                         <SignaturePad
                         value={field.value}
                         onChange={field.onChange}
                         />
                     )}
-                    {signatureType === 'upload' && (
+                    {signatureType === SIGNATURE_TYPES.UPLOAD && (
                         <FormControl>
                             <Input type="file" accept="image/png, image/jpeg" onChange={(e) => handleFileUpload(e, field)} />
                         </FormControl>

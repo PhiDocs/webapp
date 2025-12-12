@@ -8,6 +8,7 @@ import { Logo } from '@/components/icons/logo';
 import { PTPreview } from './pt-preview';
 import { ClipboardList, UserCheck, ShieldCheck, HardHat, Construction, Users } from 'lucide-react';
 import { ptBr } from '@/lib/data/strings';
+import { DOCUMENT_TYPES, SIGNATURE_TYPES } from '@/lib/constants';
 
 
 interface PrintPreviewProps {
@@ -21,12 +22,12 @@ const SignaturePreview = ({ signatureData, signatureType }: { signatureData?: st
         return <div className="h-12 w-full border-b border-dashed"></div>;
     }
 
-    if (signatureType === 'typed') {
+    if (signatureType === SIGNATURE_TYPES.TYPED) {
         return <p className="font-serif italic text-lg text-center h-12 flex items-center justify-center">{signatureData}</p>;
     }
 
-    if (signatureType === 'draw' || signatureType === 'upload') {
-        return <img src={signatureData} alt="Assinatura" className="h-12 object-contain mx-auto" />;
+    if (signatureType === SIGNATURE_TYPES.DRAW || signatureType === SIGNATURE_TYPES.UPLOAD) {
+        return <img src={signatureData} alt={ptBr.other.signatureAlt} className="h-12 object-contain mx-auto" />;
     }
 
     return <div className="h-12 w-full border-b border-dashed"></div>;
@@ -38,7 +39,7 @@ function APRHeader({ data }: { data: SafetyFormValues }) {
       <div className="flex items-start justify-between gap-4 border-b pb-2">
         <div className="flex items-start gap-4 flex-1 min-w-0">
           {data.companyLogo ? (
-            <img src={data.companyLogo} alt="Company Logo" className="h-16 w-auto max-w-[120px] object-contain" />
+            <img src={data.companyLogo} alt={ptBr.other.companyLogoAlt} className="h-16 w-auto max-w-[120px] object-contain" />
           ) : (
              <Logo className="h-12 w-12 text-gray-700" />
           )}
@@ -279,7 +280,7 @@ export function PrintPreview({ formData, analysisData, equipmentData }: PrintPre
   return (
       <div id="print-content-root">
            <div className="print-document-container">
-              {documentType === 'APR' ? (
+              {documentType === DOCUMENT_TYPES.APR ? (
                   <APRPreviewContent formData={formData} analysisData={analysisData} equipmentData={equipmentData} />
               ) : (
                   <PTPreview formData={formData} />
@@ -288,5 +289,3 @@ export function PrintPreview({ formData, analysisData, equipmentData }: PrintPre
       </div>
   );
 }
-
-    

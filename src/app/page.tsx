@@ -15,6 +15,7 @@ import { Header } from '@/components/header';
 import { FormPanel } from '@/components/form-panel';
 import { PreviewPanel } from '@/components/preview-panel';
 import { ptBr } from '@/lib/data/strings';
+import { DOCUMENT_TYPES, N8N_EVENTS, PT_FIT_STATUS, SIGNATURE_TYPES } from '@/lib/constants';
 
 import './print/print-layout.css';
 
@@ -29,7 +30,7 @@ export default function Home() {
   const form = useForm<SafetyFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      documentType: 'APR',
+      documentType: DOCUMENT_TYPES.APR,
       companyName: ptBr.defaultValues.companyName,
       workName: ptBr.defaultValues.workName,
       workAddress: ptBr.defaultValues.workAddress,
@@ -38,8 +39,8 @@ export default function Home() {
       workLocationDetails: ptBr.defaultValues.workLocationDetails,
       activityDescription: ptBr.defaultValues.activityDescription,
       responsiblePersons: [
-        { name: ptBr.defaultValues.responsible1Name, role: ptBr.defaultValues.responsible1Role, signatureType: 'typed', signatureData: ptBr.defaultValues.responsible1Name },
-        { name: ptBr.defaultValues.responsible2Name, role: ptBr.defaultValues.responsible2Role, signatureType: 'typed', signatureData: ptBr.defaultValues.responsible2Name }
+        { name: ptBr.defaultValues.responsible1Name, role: ptBr.defaultValues.responsible1Role, signatureType: SIGNATURE_TYPES.TYPED, signatureData: ptBr.defaultValues.responsible1Name },
+        { name: ptBr.defaultValues.responsible2Name, role: ptBr.defaultValues.responsible2Role, signatureType: SIGNATURE_TYPES.TYPED, signatureData: ptBr.defaultValues.responsible2Name }
       ],
       teamMembers: [
         { date: '2024-08-01', name: ptBr.defaultValues.teamMember1Name, role: ptBr.defaultValues.teamMember1Role },
@@ -69,13 +70,13 @@ export default function Home() {
         ptObservacao: '',
         ptVisto: '',
         ptColaboradores: [
-            { name: ptBr.defaultValues.collaborator1Name, rgCpf: ptBr.defaultValues.collaborator1Rg, func: ptBr.defaultValues.collaborator1Func, empresa: ptBr.defaultValues.collaborator1Company, apto: 'sim' }
+            { name: ptBr.defaultValues.collaborator1Name, rgCpf: ptBr.defaultValues.collaborator1Rg, func: ptBr.defaultValues.collaborator1Func, empresa: ptBr.defaultValues.collaborator1Company, apto: PT_FIT_STATUS.YES }
         ],
         ptVigias: [],
         ptResgatistas: [],
-        ptGestorArea: {name: ptBr.defaultValues.areaManagerName, signatureType: 'typed', signatureData: ptBr.defaultValues.areaManagerName},
-        ptResponsavelAtividade: {name: ptBr.defaultValues.activityResponsibleName, signatureType: 'typed', signatureData: ptBr.defaultValues.activityResponsibleName},
-        ptSesmt: {name: ptBr.defaultValues.sesmtName, signatureType: 'typed', signatureData: ptBr.defaultValues.sesmtName},
+        ptGestorArea: {name: ptBr.defaultValues.areaManagerName, signatureType: SIGNATURE_TYPES.TYPED, signatureData: ptBr.defaultValues.areaManagerName},
+        ptResponsavelAtividade: {name: ptBr.defaultValues.activityResponsibleName, signatureType: SIGNATURE_TYPES.TYPED, signatureData: ptBr.defaultValues.activityResponsibleName},
+        ptSesmt: {name: ptBr.defaultValues.sesmtName, signatureType: SIGNATURE_TYPES.TYPED, signatureData: ptBr.defaultValues.sesmtName},
       },
     },
     mode: 'onChange',
@@ -85,7 +86,7 @@ export default function Home() {
   const { toast } = useToast();
 
   const handleFormSubmit = async (data: SafetyFormValues) => {
-    if (data.documentType !== 'APR') return;
+    if (data.documentType !== DOCUMENT_TYPES.APR) return;
 
     setIsLoading(true);
     setError(null);
@@ -128,7 +129,7 @@ export default function Home() {
   const handleGeneratePdf = async () => {
     const formData = form.getValues();
 
-    if (formData.documentType === 'APR' && !analysis) {
+    if (formData.documentType === DOCUMENT_TYPES.APR && !analysis) {
       toast({
         variant: 'destructive',
         title: ptBr.toasts.errors.noAnalysis,
@@ -142,11 +143,11 @@ export default function Home() {
       const { fileName, dataUrl, error } = await generatePdfOnServer(formData, analysis, equipment);
       
       if (error || !dataUrl) {
-          throw new Error(error || "A geração do PDF falhou no servidor.");
+          throw new Error(error || ptBr.errors.pdfGenerationFailed);
       }
 
       const payload = {
-        event: 'pdf_generated',
+        event: N8N_EVENTS.PDF_GENERATED,
         documentType: formData.documentType,
         fileName,
         pdfDataUrl: dataUrl,
@@ -170,7 +171,7 @@ export default function Home() {
       });
 
     } catch (error: any) {
-      console.error('Falha ao gerar ou enviar PDF:', error);
+      console.error(ptBr.errors.pdfProcessingError, error);
       toast({
         variant: 'destructive',
         title: ptBr.toasts.errors.pdfError,
@@ -189,8 +190,8 @@ export default function Home() {
         setMobileView={setMobileView}
         onGeneratePdf={handleGeneratePdf}
         isDownloading={isDownloading}
-        isAprReady={!!(liveFormData.documentType === 'APR' && analysis)}
-        isPtReady={liveFormData.documentType === 'PT'}
+        isAprReady={!!(liveFormData.documentType === DOCUMENT_TYPES.APR && analysis)}
+        isPtReady={liveFormData.documentType === DOCUMENT_TYPES.PT}
       />
 
       <main className="flex-grow">
@@ -211,13 +212,11 @@ export default function Home() {
             mobileView={mobileView}
             isDownloading={isDownloading}
             onGeneratePdf={handleGeneratePdf}
-            isAprReady={!!(liveFormData.documentType === 'APR' && analysis)}
-            isPtReady={liveFormData.documentType === 'PT'}
+            isAprReady={!!(liveFormData.documentType === DOCUMENT_TYPES.APR && analysis)}
+            isPtReady={liveFormData.documentType === DOCUMENT_TYPES.PT}
           />
         </div>
       </main>
     </div>
   );
 }
-
-    

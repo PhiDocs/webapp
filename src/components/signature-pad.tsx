@@ -40,7 +40,7 @@ export function SignaturePad({ value, onChange }: SignaturePadProps) {
     <div>
       <div className="relative w-full h-24 border rounded-md bg-gray-50 flex items-center justify-center">
         {value ? (
-          <img src={value} alt="Signature" className="max-h-full max-w-full" />
+          <img src={value} alt={ptBr.other.signatureAlt} className="max-h-full max-w-full" />
         ) : (
           <p className="text-sm text-muted-foreground">{ptBr.printPreview.signature.placeholder}</p>
         )}
@@ -81,5 +81,3 @@ export function SignaturePad({ value, onChange }: SignaturePadProps) {
     </div>
   );
 }
-
-    

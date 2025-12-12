@@ -1,8 +1,8 @@
-
 import type { Content, TableCell } from 'pdfmake/interfaces';
 import type { SafetyFormValues, PtSigner } from '@/lib/types';
 import type { SafetyAnalysisOutput } from '@/ai/flows/generate-safety-analysis';
 import type { ProtectiveEquipmentOutput } from '@/ai/flows/recommend-protective-equipment';
+import { SIGNATURE_TYPES } from '@/lib/constants';
 
 
 const isValidBase64 = (str: string | undefined): boolean => {
@@ -31,10 +31,10 @@ const getSignatureContent = (signer: PtSigner | any): Content => {
     if (!signer || !signer.signatureData) {
         return { text: '', minHeight: 40, border: [false, false, false, true], borderColor: ['#000', '#000', '#000', '#000'] };
     }
-    if (signer.signatureType === 'typed') {
+    if (signer.signatureType === SIGNATURE_TYPES.TYPED) {
         return { text: signer.signatureData, alignment: 'center', margin: [0, 15, 0, 0], border: [false, false, false, true], borderColor: ['#000', '#000', '#000', '#000'], italics: true, fontSize: 16 };
     }
-    if ((signer.signatureType === 'draw' || signer.signatureType === 'upload') && isValidBase64(signer.signatureData)) {
+    if ((signer.signatureType === SIGNATURE_TYPES.DRAW || signer.signatureType === SIGNATURE_TYPES.UPLOAD) && isValidBase64(signer.signatureData)) {
         return { image: signer.signatureData, width: 120, alignment: 'center', margin: [0, 5, 0, 0] };
     }
     return { text: '', minHeight: 40, border: [false, false, false, true], borderColor: ['#000', '#000', '#000', '#000'] };
@@ -304,6 +304,3 @@ export function generateAPRPages(formData: SafetyFormValues, analysisData: Safet
 
     return content;
 }
-
-    
-    

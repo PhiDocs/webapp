@@ -1,8 +1,8 @@
-
 import type { Content, TableCell } from 'pdfmake/interfaces';
 import type { SafetyFormValues, PtTeamMember, PtSigner } from '@/lib/types';
 import { ptChecklistItems } from '@/lib/data/pt-checklist';
 import { ptBr } from '@/lib/data/strings';
+import { PT_FIT_STATUS, SIGNATURE_TYPES } from '@/lib/constants';
 
 const isValidBase64 = (str: string | undefined): boolean => {
     if (!str || !str.includes(',')) return false;
@@ -30,10 +30,10 @@ const getSignatureContent = (signer: PtSigner | any): Content => {
     if (!signer || !signer.signatureData) {
         return { text: '', minHeight: 40, border: [false, false, false, true], borderColor: ['#000', '#000', '#000', '#000'] };
     }
-    if (signer.signatureType === 'typed') {
+    if (signer.signatureType === SIGNATURE_TYPES.TYPED) {
         return { text: signer.signatureData, alignment: 'center', margin: [0, 15, 0, 0], border: [false, false, false, true], borderColor: ['#000', '#000', '#000', '#000'], italics: true, fontSize: 16 };
     }
-    if ((signer.signatureType === 'draw' || signer.signatureType === 'upload') && isValidBase64(signer.signatureData)) {
+    if ((signer.signatureType === SIGNATURE_TYPES.DRAW || signer.signatureType === SIGNATURE_TYPES.UPLOAD) && isValidBase64(signer.signatureData)) {
         return { image: signer.signatureData, width: 120, alignment: 'center', margin: [0, 5, 0, 0] };
     }
     return { text: '', minHeight: 40, border: [false, false, false, true], borderColor: ['#000', '#000', '#000', '#000'] };
@@ -205,8 +205,8 @@ export function generatePTPages(formData: SafetyFormValues): Content[] {
              }
             row.push({
                 columns: [
-                    {...Checkbox(m.apto === 'sim'), width: 10}, {text: 'Sim', width: 'auto', style: 'tdSmall'},
-                    {...Checkbox(m.apto === 'nao'), width: 10, margin: [5,0,0,0]}, {text: 'Não', width: 'auto', style: 'tdSmall'}
+                    {...Checkbox(m.apto === PT_FIT_STATUS.YES), width: 10}, {text: 'Sim', width: 'auto', style: 'tdSmall'},
+                    {...Checkbox(m.apto === PT_FIT_STATUS.NO), width: 10, margin: [5,0,0,0]}, {text: 'Não', width: 'auto', style: 'tdSmall'}
                 ],
                 columnGap: 2,
                 alignment: 'center'

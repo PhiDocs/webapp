@@ -1,6 +1,13 @@
 'use server';
 
-import { ptBr } from '@/lib/data/strings';
+const N8N_ERROR_MESSAGES = {
+  WEBHOOK_NOT_CONFIGURED: 'URL do webhook do n8n não configurada.',
+  NO_URL_PROVIDED: 'Nenhuma URL de produção ou de teste foi fornecida.',
+  RESPONSE_ERROR: 'O servidor do n8n retornou um erro.',
+  NO_DETAILS: 'Nenhum detalhe adicional.',
+  NO_JSON_RESPONSE: 'Resposta sem corpo JSON.',
+  CONNECTION_ERROR: 'Falha na conexão com o servidor do n8n.',
+};
 
 /**
  * Envia um payload para um webhook do n8n.
@@ -11,13 +18,13 @@ export async function notifyN8n(payload: any, webhookUrl?: string) {
   const targetUrl = webhookUrl || N8N_PRODUCTION_URL;
 
   if (!targetUrl) {
-    const errorMsg = ptBr.validations.n8nWebhookNotConfigured;
+    const errorMsg = N8N_ERROR_MESSAGES.WEBHOOK_NOT_CONFIGURED;
     console.error(errorMsg);
     return {
       success: false,
       data: {
         error: errorMsg,
-        details: ptBr.validations.n8nNoUrlProvided,
+        details: N8N_ERROR_MESSAGES.NO_URL_PROVIDED,
       },
     };
   }
@@ -33,40 +40,37 @@ export async function notifyN8n(payload: any, webhookUrl?: string) {
     try {
         n8nData = await n8nResponse.json();
     } catch (e) {
-        n8nData = { message: n8nResponse.statusText || ptBr.validations.n8nNoJsonResponse };
+        n8nData = { message: n8nResponse.statusText || N8N_ERROR_MESSAGES.NO_JSON_RESPONSE };
     }
 
     if (!n8nResponse.ok) {
-      console.error('Erro retornado pelo n8n:', n8nData);
+      console.error(N8N_ERROR_MESSAGES.RESPONSE_ERROR, n8nData);
       return {
         success: false,
         data: {
-          message: ptBr.validations.n8nResponseError,
+          message: N8N_ERROR_MESSAGES.RESPONSE_ERROR,
           status: n8nResponse.status,
-          details: (n8nData as any).message || ptBr.validations.n8nNoDetails,
+          details: (n8nData as any).message || N8N_ERROR_MESSAGES.NO_DETAILS,
         },
       };
     }
 
-    console.log('n8n notificado com sucesso!', n8nData);
     return {
       success: true,
       data: {
-        message: 'Dados enviados para o n8n com sucesso!',
+        message: 'Data sent to n8n successfully.',
         dataReceivedByN8n: n8nData,
       },
     };
 
   } catch (error: any) {
-    console.error('Falha de rede ao tentar contatar o n8n:', error.message);
+    console.error(N8N_ERROR_MESSAGES.CONNECTION_ERROR, error.message);
     return {
         success: false,
         data: {
-            error: ptBr.validations.n8nConnectionError,
+            error: N8N_ERROR_MESSAGES.CONNECTION_ERROR,
             details: error.message
         }
     };
   }
 }
-
-    

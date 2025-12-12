@@ -78,5 +78,3 @@ export function Header({
     </header>
   );
 }
-
-    

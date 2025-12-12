@@ -4,6 +4,7 @@ import React from 'react';
 import type { SafetyFormValues, PtTeamMember, PtSigner } from '@/lib/types';
 import { ptChecklistItems } from '@/lib/data/pt-checklist';
 import { ptBr } from '@/lib/data/strings';
+import { PT_FIT_STATUS, SIGNATURE_TYPES } from '@/lib/constants';
 
 interface PTPreviewProps {
   formData: SafetyFormValues;
@@ -17,11 +18,11 @@ const SignaturePreview = ({ signer, label }: { signer?: PtSigner, label: string 
         if (!signatureData) {
             return <div className="h-12 w-full"></div>;
         }
-        if (signatureType === 'typed') {
+        if (signatureType === SIGNATURE_TYPES.TYPED) {
             return <p className="font-serif italic text-sm text-center h-12 flex items-center justify-center">{signatureData}</p>;
         }
-        if (signatureType === 'draw' || signatureType === 'upload') {
-            return <img src={signatureData} alt="Assinatura" className="h-12 w-full object-contain mx-auto" />;
+        if (signatureType === SIGNATURE_TYPES.DRAW || signatureType === SIGNATURE_TYPES.UPLOAD) {
+            return <img src={signatureData} alt={ptBr.other.signatureAlt} className="h-12 w-full object-contain mx-auto" />;
         }
         return <div className="h-12 w-full"></div>;
     }
@@ -78,8 +79,8 @@ const TeamTable = ({ title, members, showEmpresa = false }: { title: string, mem
                             {showEmpresa && <td>{m.empresa}</td>}
                             <td className='text-center'>
                                 <div className='flex items-center justify-center gap-2'>
-                                    <CheckboxDisplay checked={m.apto === 'sim'} /> {ptBr.ptForm.yes}
-                                    <CheckboxDisplay checked={m.apto === 'nao'} /> {ptBr.ptForm.no}
+                                    <CheckboxDisplay checked={m.apto === PT_FIT_STATUS.YES} /> {ptBr.ptForm.yes}
+                                    <CheckboxDisplay checked={m.apto === PT_FIT_STATUS.NO} /> {ptBr.ptForm.no}
                                 </div>
                             </td>
                         </tr>
@@ -107,7 +108,7 @@ export function PTPreview({ formData }: PTPreviewProps) {
                 <tr>
                     <td rowSpan={2} className="w-1/4 align-middle text-center">
                          {companyLogo ? (
-                           <img src={companyLogo} alt="Company Logo" className="h-16 w-auto max-w-[120px] object-contain mx-auto" />
+                           <img src={companyLogo} alt={ptBr.other.companyLogoAlt} className="h-16 w-auto max-w-[120px] object-contain mx-auto" />
                          ) : <div className="h-16 w-auto"></div>}
                     </td>
                     <td rowSpan={2} className="w-1/2 text-center">

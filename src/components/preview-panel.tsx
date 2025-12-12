@@ -102,5 +102,3 @@ export function PreviewPanel({
     </div>
   );
 }
-
-    

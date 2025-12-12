@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useForm, useFieldArray, useWatch } from 'react-hook-form';
@@ -35,6 +34,7 @@ import { PTForm } from './pt-form';
 import { SignaturePad } from './signature-pad';
 import { RadioGroup, RadioGroupItem } from './ui/radio-group';
 import { ptBr } from '@/lib/data/strings';
+import { DOCUMENT_TYPES, SIGNATURE_TYPES } from '@/lib/constants';
 
 interface SafetyFormProps {
   form: ReturnType<typeof useForm<SafetyFormValues>>;
@@ -79,15 +79,15 @@ const SignatureField = ({ form, fieldPrefix }: { form: ReturnType<typeof useForm
                   className="flex items-center space-x-4"
                 >
                   <FormItem className="flex items-center space-x-2 space-y-0">
-                    <FormControl><RadioGroupItem value="typed" /></FormControl>
+                    <FormControl><RadioGroupItem value={SIGNATURE_TYPES.TYPED} /></FormControl>
                     <FormLabel className="font-normal text-sm">{ptBr.safetyForm.signatureTyped}</FormLabel>
                   </FormItem>
                   <FormItem className="flex items-center space-x-2 space-y-0">
-                    <FormControl><RadioGroupItem value="draw" /></FormControl>
+                    <FormControl><RadioGroupItem value={SIGNATURE_TYPES.DRAW} /></FormControl>
                     <FormLabel className="font-normal text-sm">{ptBr.safetyForm.signatureDraw}</FormLabel>
                   </FormItem>
                    <FormItem className="flex items-center space-x-2 space-y-0">
-                    <FormControl><RadioGroupItem value="upload" /></FormControl>
+                    <FormControl><RadioGroupItem value={SIGNATURE_TYPES.UPLOAD} /></FormControl>
                     <FormLabel className="font-normal text-sm">{ptBr.safetyForm.signatureUpload}</FormLabel>
                   </FormItem>
                 </RadioGroup>
@@ -101,18 +101,18 @@ const SignatureField = ({ form, fieldPrefix }: { form: ReturnType<typeof useForm
           name={`${fieldPrefix}.signatureData` as any}
           render={({ field }) => (
             <FormItem>
-              {signatureType === 'typed' && (
+              {signatureType === SIGNATURE_TYPES.TYPED && (
                 <FormControl>
                   <Input placeholder={ptBr.safetyForm.signatureTypedPlaceholder} {...field} />
                 </FormControl>
               )}
-              {signatureType === 'draw' && (
+              {signatureType === SIGNATURE_TYPES.DRAW && (
                 <SignaturePad
                   value={field.value}
                   onChange={field.onChange}
                 />
               )}
-              {signatureType === 'upload' && (
+              {signatureType === SIGNATURE_TYPES.UPLOAD && (
                  <FormControl>
                     <Input type="file" accept="image/png, image/jpeg" onChange={(e) => handleFileUpload(e, field)} />
                 </FormControl>
@@ -197,8 +197,8 @@ export function SafetyForm({
                         className="w-full"
                       >
                         <TabsList className="grid w-full grid-cols-2">
-                          <TabsTrigger value="APR">{ptBr.documentType.apr}</TabsTrigger>
-                          <TabsTrigger value="PT">{ptBr.documentType.pt}</TabsTrigger>
+                          <TabsTrigger value={DOCUMENT_TYPES.APR}>{ptBr.documentType.apr}</TabsTrigger>
+                          <TabsTrigger value={DOCUMENT_TYPES.PT}>{ptBr.documentType.pt}</TabsTrigger>
                         </TabsList>
                       </Tabs>
                     </FormControl>
@@ -246,7 +246,7 @@ export function SafetyForm({
                 />
               </div>
 
-              {documentType === 'PT' ? (
+              {documentType === DOCUMENT_TYPES.PT ? (
                 <PTForm form={form} />
               ) : (
                 <div className="space-y-8">
@@ -342,7 +342,7 @@ export function SafetyForm({
                       variant="outline"
                       size="sm"
                       onClick={() =>
-                        appendResponsible({ name: '', role: '', signatureType: 'typed', signatureData: '' })
+                        appendResponsible({ name: '', role: '', signatureType: SIGNATURE_TYPES.TYPED, signatureData: '' })
                       }
                     >
                       <PlusCircle className="mr-2 h-4 w-4" /> {ptBr.actions.addResponsible}
@@ -523,5 +523,3 @@ export function SafetyForm({
       </Card>
   );
 }
-
-    

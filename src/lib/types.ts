@@ -2,13 +2,18 @@
 
 import { z } from 'zod';
 import { ptBr } from './data/strings';
+import { DOCUMENT_TYPES, PT_FIT_STATUS, SIGNATURE_TYPES } from './constants';
 
-const signatureTypeSchema = z.enum(['typed', 'draw', 'upload']);
+const signatureTypeSchema = z.enum([
+    SIGNATURE_TYPES.TYPED, 
+    SIGNATURE_TYPES.DRAW, 
+    SIGNATURE_TYPES.UPLOAD
+]);
 
 export const responsiblePersonSchema = z.object({
   name: z.string().min(1, ptBr.validations.responsibleName),
   role: z.string().min(1, ptBr.validations.responsibleRole),
-  signatureType: signatureTypeSchema.default('typed'),
+  signatureType: signatureTypeSchema.default(SIGNATURE_TYPES.TYPED),
   signatureData: z.string().optional(),
 });
 
@@ -25,12 +30,12 @@ export const ptTeamMemberSchema = z.object({
   rgCpf: z.string(),
   func: z.string(),
   empresa: z.string(),
-  apto: z.enum(['sim', 'nao', '']),
+  apto: z.enum([PT_FIT_STATUS.YES, PT_FIT_STATUS.NO, PT_FIT_STATUS.EMPTY]),
 });
 
 const ptSignerSchema = z.object({
     name: z.string().optional(),
-    signatureType: signatureTypeSchema.default('typed'),
+    signatureType: signatureTypeSchema.default(SIGNATURE_TYPES.TYPED),
     signatureData: z.string().optional(),
 });
 
@@ -70,7 +75,7 @@ export const ptFormSchema = z.object({
 
 
 export const formSchema = z.object({
-  documentType: z.enum(['APR', 'PT']),
+  documentType: z.enum([DOCUMENT_TYPES.APR, DOCUMENT_TYPES.PT]),
   
   companyName: z.string(),
   companyLogo: z.string().optional(),
@@ -93,7 +98,7 @@ export const formSchema = z.object({
   // PT Form Data
   pt: ptFormSchema,
 }).superRefine((data, ctx) => {
-    if (data.documentType === 'APR') {
+    if (data.documentType === DOCUMENT_TYPES.APR) {
         if (!data.companyName) ctx.addIssue({ code: z.ZodIssueCode.custom, message: ptBr.validations.companyName, path: ["companyName"] });
         if (!data.workName) ctx.addIssue({ code: z.ZodIssueCode.custom, message: ptBr.validations.workName, path: ["workName"] });
         if (!data.workAddress) ctx.addIssue({ code: z.ZodIssueCode.custom, message: ptBr.validations.workAddress, path: ["workAddress"] });
@@ -101,7 +106,7 @@ export const formSchema = z.object({
         if (!data.endDate) ctx.addIssue({ code: z.ZodIssueCode.custom, message: ptBr.validations.endDate, path: ["endDate"] });
         if (!data.workLocationDetails) ctx.addIssue({ code: z.ZodIssueCode.custom, message: ptBr.validations.workLocation, path: ["workLocationDetails"] });
         if (!data.activityDescription || data.activityDescription.length < 10) ctx.addIssue({ code: z.ZodIssueCode.custom, message: ptBr.validations.activityDescription, path: ["activityDescription"] });
-    } else if (data.documentType === 'PT') {
+    } else if (data.documentType === DOCUMENT_TYPES.PT) {
         if (!data.companyName) ctx.addIssue({ code: z.ZodIssueCode.custom, message: ptBr.validations.companyName, path: ["companyName"] });
         if (!data.pt.ptLocalAtividade) ctx.addIssue({ code: z.ZodIssueCode.custom, message: ptBr.validations.ptLocation, path: ["pt", "ptLocalAtividade"] });
         if (!data.pt.ptData) ctx.addIssue({ code: z.ZodIssueCode.custom, message: ptBr.validations.ptDate, path: ["pt", "ptData"] });

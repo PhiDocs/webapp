@@ -1,10 +1,10 @@
-
 import type { TDocumentDefinitions } from 'pdfmake/interfaces';
 import type { SafetyFormValues } from '@/lib/types';
 import type { SafetyAnalysisOutput } from '@/ai/flows/generate-safety-analysis';
 import type { ProtectiveEquipmentOutput } from '@/ai/flows/recommend-protective-equipment';
 import { generateAPRPages } from './templates/apr';
 import { generatePTPages } from './templates/pt';
+import { DOCUMENT_TYPES } from '@/lib/constants';
 
 // Import pdfmake and fonts
 import pdfMake from "pdfmake/build/pdfmake";
@@ -28,7 +28,7 @@ export async function generatePdf(
         pageSize: 'A4',
         pageMargins: [25, 25, 25, 40], // [left, top, right, bottom]
         
-        content: formData.documentType === 'APR'
+        content: formData.documentType === DOCUMENT_TYPES.APR
             ? generateAPRPages(formData, analysisData, equipmentData)
             : generatePTPages(formData),
 
@@ -85,7 +85,7 @@ export async function generatePdf(
         }
       };
 
-      const docName = formData.documentType === 'APR' ? 'APR' : 'PT';
+      const docName = formData.documentType === DOCUMENT_TYPES.APR ? DOCUMENT_TYPES.APR : DOCUMENT_TYPES.PT;
       const fileName = `${docName}-${(formData.companyName || 'doc').replace(/ /g, "_")}-${new Date().toLocaleDateString('pt-br').replace(/\//g, '-')}.pdf`;
 
       const pdfDoc = pdfMake.createPdf(docDefinition);
@@ -104,6 +104,3 @@ export async function generatePdf(
     }
   });
 }
-
-    
-    

@@ -51,7 +51,7 @@ function N8nIntegrationCard({}: N8nIntegrationCardProps) {
     }
 
     const testPayload = {
-      message: "Conexão com n8n funcionando! Teste enviado pelo botão do App.",
+      message: ptBr.n8n.testMessage,
       testId: `test-${Math.random().toString(36).substring(7)}`,
       timestamp: new Date().toISOString(),
       testType: isEditorTest ? 'Editor' : 'Production'
@@ -68,7 +68,7 @@ function N8nIntegrationCard({}: N8nIntegrationCardProps) {
       toast({
         variant: 'destructive',
         title: `${ptBr.toasts.errors.n8nConnectionFailed} (${result.data.status || ptBr.toasts.errors.n8nConnectionFailedNetwork})`,
-        description: ptBr.toasts.errors.n8nConnectionFailedDescription.replace('{{details}}', result.data.details || 'Verifique a URL e o console.'),
+        description: ptBr.toasts.errors.n8nConnectionFailedDescription.replace('{{details}}', result.data.details || ptBr.errors.n8nCheckUrl),
       });
     }
 
@@ -200,5 +200,3 @@ export function FormPanel({ form, onNewReport, onSubmit, isLoading, mobileView }
     </div>
   );
 }
-
-    

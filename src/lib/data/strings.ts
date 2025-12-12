@@ -43,7 +43,7 @@ export const ptBr = {
       description: 'Aguarde enquanto nossa IA prepara seu relatório.',
     },
     error: {
-      title: 'Erro',
+      title: 'Erro na Pré-visualização',
     },
   },
   safetyForm: {
@@ -271,6 +271,7 @@ export const ptBr = {
     testUrl: 'URL de Teste do Editor n8n',
     testUrlPlaceholder: 'Cole a "Test URL" do n8n aqui',
     editorHelpText: 'Clique em "Listen for test event" no n8n antes de clicar aqui.',
+    testMessage: 'Conexão com n8n funcionando! Teste enviado pelo botão do App.',
   },
   toasts: {
     errors: {
@@ -326,6 +327,11 @@ export const ptBr = {
     n8nNoJsonResponse: 'Resposta sem corpo JSON.',
     n8nConnectionError: 'Falha na conexão com o servidor do n8n.',
   },
+  errors: {
+    pdfGenerationFailed: 'A geração do PDF falhou no servidor.',
+    pdfProcessingError: 'Falha ao gerar ou enviar PDF:',
+    n8nCheckUrl: 'Verifique a URL e o console.',
+  },
   defaultValues: {
     companyName: 'Engenharia Delta',
     workName: 'Construção Edifício Alpha',
@@ -353,8 +359,8 @@ export const ptBr = {
   },
   other: {
     imageTooLarge: 'Imagem muito grande (máx 1MB).',
-    invalidDate: 'Data inválida'
+    invalidDate: 'Data inválida',
+    signatureAlt: 'Assinatura',
+    companyLogoAlt: 'Logo da Empresa',
   }
 };
-
-    
