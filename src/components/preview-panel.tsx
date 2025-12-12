@@ -39,9 +39,9 @@ export function PreviewPanel({
   const canDownload = isPtReady || isAprReady;
 
   return (
-    <div className={cn("relative flex-col bg-muted h-full no-print", mobileView === 'preview' ? 'flex' : 'hidden xl:flex')}>
+    <div className={cn("relative flex-col bg-muted h-full", mobileView === 'preview' ? 'flex' : 'hidden xl:flex')}>
       <ScrollArea className="h-full">
-        <div className="print-container-wrapper p-4 sm:p-8">
+        <div className="flex flex-col items-center w-full p-4 sm:p-8">
           {isLoading && (
             <div className="absolute inset-0 bg-muted/80 backdrop-blur-sm z-10 flex flex-col items-center justify-center rounded-lg">
               <div className="flex flex-col items-center gap-4 text-center p-6 bg-background rounded-xl shadow-2xl">

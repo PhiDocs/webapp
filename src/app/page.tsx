@@ -18,9 +18,6 @@ import { DOCUMENT_TYPES, N8N_EVENTS, PT_FIT_STATUS, SIGNATURE_TYPES } from '@/li
 import { PrintPreview } from '@/components/print-preview';
 import { generatePdfOnClient } from '@/lib/pdf/generator';
 
-import './print/print-layout.css';
-
-
 export default function Home() {
   const [analysis, setAnalysis] = useState<SafetyAnalysisOutput | null>({
     proceduralSteps: [
@@ -246,7 +243,7 @@ export default function Home() {
         />
 
         <main className="flex-grow grid grid-cols-1 xl:grid-cols-2 h-[calc(100vh-65px)]">
-          <div className="h-full">
+          <div className="h-full no-print">
               <FormPanel
                   form={form}
                   onNewReport={handleNewReport}
@@ -255,7 +252,7 @@ export default function Home() {
                   mobileView={mobileView}
               />
           </div>
-          <div className="h-full">
+          <div className="h-full no-print">
               <PreviewPanel
                   isLoading={isLoading}
                   error={error}

@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import type { SafetyFormValues, PtSigner } from '@/lib/types';
+import type { SafetyFormValues } from '@/lib/types';
 import type { SafetyAnalysisOutput } from '@/ai/flows/generate-safety-analysis';
 import type { ProtectiveEquipmentOutput } from '@/ai/flows/recommend-protective-equipment';
 import { Logo } from '@/components/icons/logo';
@@ -72,21 +72,12 @@ function PrintFooter() {
     }, []);
 
     return (
-        <div className="print-footer avoid-break">
-            <div className="footer-content-wrapper">
-                <div className="flex justify-between items-center w-full text-xs text-gray-500">
-                    <div className="text-left">
-                        <p>{ptBr.printPreview.footer.mte}</p>
-                    </div>
-                    <div className="text-center">
-                        <p>{ptBr.printPreview.footer.date} {date}</p>
-                    </div>
-                    <div className="text-right">
-                       {/* Page numbers are now handled by pdfmake */}
-                    </div>
-                </div>
+        <footer className="print-footer avoid-break mt-4 text-xs text-gray-500 border-t pt-2">
+            <div className="flex justify-between items-center w-full">
+                <p>{ptBr.printPreview.footer.mte}</p>
+                <p>{ptBr.printPreview.footer.date} {date}</p>
             </div>
-        </div>
+        </footer>
     );
 }
 
@@ -110,7 +101,7 @@ function ResponsiblesSection({ data }: { data: SafetyFormValues }) {
   return (
     <Section title={ptBr.printPreview.apr.responsibles} icon={UserCheck}>
       <table className="w-full border-collapse border mt-0 analysis-table">
-        <thead className='analysis-table-header'>
+        <thead>
           <tr>
             <th className="text-left w-[40%]">{ptBr.printPreview.apr.name}</th>
             <th className="text-left w-[30%]">{ptBr.printPreview.apr.role}</th>
@@ -140,7 +131,7 @@ function TeamSection({ data }: { data: SafetyFormValues }) {
   return (
     <Section title={ptBr.printPreview.apr.team} icon={Users}>
       <table className="w-full border-collapse border mt-0 analysis-table">
-        <thead className='analysis-table-header'>
+        <thead>
           <tr>
             <th className="text-left w-1/3">{ptBr.printPreview.apr.date}</th>
             <th className="text-left w-1/3">{ptBr.printPreview.apr.name}</th>
@@ -165,7 +156,7 @@ function AnalysisTable({ steps }: { steps: any[] }) {
   return (
      <Section title={ptBr.printPreview.apr.operationalProcedure} icon={ShieldCheck}>
         <table className="w-full border-collapse text-xs analysis-table">
-            <thead className='analysis-table-header'>
+            <thead>
                 <tr>
                     <th className="p-1 text-left w-[5%]">{ptBr.printPreview.apr.item}</th>
                     <th className="p-1 text-left w-[25%]">{ptBr.printPreview.apr.activities}</th>
@@ -175,7 +166,7 @@ function AnalysisTable({ steps }: { steps: any[] }) {
             </thead>
             <tbody>
               {steps.map((step: any, index: number) => (
-                <tr key={`proc-step-${step.item || index}`} className="procedural-step-row">
+                <tr key={`proc-step-${step.item || index}`}>
                   <td className="p-2 align-top text-center">{step.item}</td>
                   <td className="p-2 align-top">{step.activity}</td>
                   <td className="p-2 align-top">{step.potentialRisks}</td>
@@ -192,7 +183,7 @@ function EquipmentSection({ data }: { data: ProtectiveEquipmentOutput | null }) 
   if (!data) return null;
 
   return (
-    <div className='grid grid-cols-2 gap-4'>
+    <div className='grid grid-cols-2 gap-4 avoid-break'>
         <Section title={ptBr.printPreview.apr.requiredEpi} icon={HardHat}>
             <div className='p-2'>
                 <ul className="list-disc pl-4 space-y-1 text-sm">
@@ -232,7 +223,7 @@ export function APRPreviewContent({ formData, analysisData, equipmentData }: { f
     return (
         <div className="page-content-wrapper">
             <APRHeader data={formData} />
-             <main className='print-main'>
+             <main className='print-main flex flex-col gap-4'>
                 <Section title={ptBr.printPreview.apr.workData} icon={ClipboardList}>
                      <table className="w-full border-collapse info-grid">
                         <tbody>
@@ -278,14 +269,12 @@ export function PrintPreview({ formData, analysisData, equipmentData }: PrintPre
   const documentType = formData?.documentType;
 
   return (
-      <div id="print-content-root">
-           <div className="print-document-container">
-              {documentType === DOCUMENT_TYPES.APR ? (
-                  <APRPreviewContent formData={formData} analysisData={analysisData} equipmentData={equipmentData} />
-              ) : (
-                  <PTPreview formData={formData} />
-              )}
-          </div>
+      <div id="print-content-root" className="print-document-container w-[210mm] min-h-[297mm] bg-white shadow-lg rounded-lg text-gray-800 font-sans">
+          {documentType === DOCUMENT_TYPES.APR ? (
+              <APRPreviewContent formData={formData} analysisData={analysisData} equipmentData={equipmentData} />
+          ) : (
+              <PTPreview formData={formData} />
+          )}
       </div>
   );
 }

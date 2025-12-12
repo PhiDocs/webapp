@@ -2,9 +2,8 @@
 
 /**
  * Triggers the browser's print functionality.
+ * This is the sole method for generating a PDF or printing.
  */
 export function generatePdfOnClient(): void {
-  // This directly triggers the browser's print dialog.
-  // The layout is controlled by @media print CSS rules.
   window.print();
 }
