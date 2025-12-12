@@ -92,10 +92,6 @@ export async function generatePdf(
       
       pdfDoc.getDataUrl((dataUrl) => {
         resolve({ fileName, dataUrl });
-      }, (err: any) => {
-          // This second callback for errors is not standard in pdfmake,
-          // but we keep the logic within the promise.
-          reject(err);
       });
 
     } catch (error) {
