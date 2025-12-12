@@ -15,7 +15,6 @@ import { FormPanel } from '@/components/form-panel';
 import { PreviewPanel } from '@/components/preview-panel';
 import { ptBr } from '@/lib/data/strings';
 import { DOCUMENT_TYPES, N8N_EVENTS, PT_FIT_STATUS, SIGNATURE_TYPES } from '@/lib/constants';
-import { generatePdfOnClient } from '@/lib/pdf/generator';
 
 import './print/print-layout.css';
 
@@ -60,7 +59,7 @@ export default function Home() {
     "epcNote": "Todos os Equipamentos de Proteção Coletiva (EPC), devem ser verificados quanto a integridade e conformidade com o projeto específico antes de iniciar a atividade."
   });
   const [isLoading, setIsLoading] = useState(false);
-  const [isDownloading, setIsDownloading] = useState(false);
+  const [isPrinting, setIsPrinting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [mobileView, setMobileView] = useState<'form' | 'preview'>('form');
 
@@ -180,10 +179,10 @@ export default function Home() {
     form.reset();
   };
 
-  const handleGeneratePdf = async () => {
+  const handlePrint = async () => {
     const formData = form.getValues();
-     const parsedData = formSchema.safeParse(formData);
-
+    const parsedData = formSchema.safeParse(formData);
+  
     if (!parsedData.success) {
       const errorMessage = parsedData.error.errors.map((e) => e.message).join(', ');
       toast({
@@ -193,7 +192,7 @@ export default function Home() {
       });
       return;
     }
-
+  
     if (formData.documentType === DOCUMENT_TYPES.APR && !analysis) {
       toast({
         variant: 'destructive',
@@ -202,38 +201,27 @@ export default function Home() {
       });
       return;
     }
-
-    setIsDownloading(true);
+  
+    setIsPrinting(true);
     try {
-      // Generate PDF on the client
-      const { fileName, dataUrl } = await generatePdfOnClient(parsedData.data, analysis, equipment);
-      
+      // Notify n8n in the background
       const payload = {
         event: N8N_EVENTS.PDF_GENERATED,
         documentType: formData.documentType,
-        fileName,
-        pdfDataUrl: dataUrl,
         formData: formData,
         analysisData: analysis,
         equipmentData: equipment,
       };
-
-      // Notify n8n in the background
       await notifyN8n(payload);
-      
-      // Trigger download
-      const link = document.createElement('a');
-      link.href = dataUrl;
-      link.download = fileName;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-
+  
       toast({
         title: ptBr.toasts.success.pdfDownloaded,
         description: ptBr.toasts.success.pdfDownloadedDescription,
       });
-
+  
+      // Trigger browser print dialog
+      setTimeout(() => window.print(), 500);
+  
     } catch (error: any) {
       console.error(ptBr.errors.pdfProcessingError, error);
       toast({
@@ -243,17 +231,18 @@ export default function Home() {
           error.message || ptBr.toasts.errors.pdfErrorDescription,
       });
     } finally {
-      setIsDownloading(false);
+      // A short delay to allow the print dialog to open before resetting state
+      setTimeout(() => setIsPrinting(false), 1000);
     }
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col no-print">
       <Header
         mobileView={mobileView}
         setMobileView={setMobileView}
-        onGeneratePdf={handleGeneratePdf}
-        isDownloading={isDownloading}
+        onGeneratePdf={handlePrint}
+        isDownloading={isPrinting}
         isAprReady={!!(liveFormData.documentType === DOCUMENT_TYPES.APR && analysis)}
         isPtReady={liveFormData.documentType === DOCUMENT_TYPES.PT}
       />
@@ -274,13 +263,20 @@ export default function Home() {
             analysisData={analysis}
             equipmentData={equipment}
             mobileView={mobileView}
-            isDownloading={isDownloading}
-            onGeneratePdf={handleGeneratePdf}
+            isDownloading={isPrinting}
+            onGeneratePdf={handlePrint}
             isAprReady={!!(liveFormData.documentType === DOCUMENT_TYPES.APR && analysis)}
             isPtReady={liveFormData.documentType === DOCUMENT_TYPES.PT}
           />
         </div>
       </main>
+      <div className="print-only">
+        <PrintPreview
+          formData={liveFormData}
+          analysisData={analysis}
+          equipmentData={equipment}
+        />
+      </div>
     </div>
   );
 }

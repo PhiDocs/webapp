@@ -2,7 +2,7 @@
 
 import { Logo } from '@/components/icons/logo';
 import { Button } from '@/components/ui/button';
-import { FileDown, Loader2, FormInput, Eye } from 'lucide-react';
+import { Printer, Loader2, FormInput, Eye } from 'lucide-react';
 import { ptBr } from '@/lib/data/strings';
 
 interface HeaderProps {
@@ -68,7 +68,7 @@ export function Header({
               </>
             ) : (
               <>
-                <FileDown className="mr-2 h-4 w-4" />
+                <Printer className="mr-2 h-4 w-4" />
                 {ptBr.actions.generatePdf}
               </>
             )}

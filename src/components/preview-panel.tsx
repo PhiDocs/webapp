@@ -7,7 +7,7 @@ import { PrintPreview } from '@/components/print-preview';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { FileDown, Loader2 } from 'lucide-react';
+import { Printer, Loader2 } from 'lucide-react';
 import { cn } from "@/lib/utils";
 import { ptBr } from '@/lib/data/strings';
 
@@ -70,14 +70,15 @@ export function PreviewPanel({
               </Card>
             </div>
           )}
-
-          <div id="print-content-root">
+          
+          <div id="print-content-root" className="print-only:block hidden xl:block">
             <PrintPreview
-              formData={liveFormData}
-              analysisData={analysisData}
-              equipmentData={equipmentData}
+                formData={liveFormData}
+                analysisData={analysisData}
+                equipmentData={equipmentData}
             />
           </div>
+
         </div>
       </ScrollArea>
       <div className="xl:hidden sticky bottom-0 left-0 right-0 w-full bg-background/80 backdrop-blur-sm p-4 border-t">
@@ -93,7 +94,7 @@ export function PreviewPanel({
                   </>
               ) : (
                   <>
-                  <FileDown className="mr-2 h-4 w-4" />
+                  <Printer className="mr-2 h-4 w-4" />
                   {ptBr.actions.generatePdf}
                   </>
               )}

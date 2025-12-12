@@ -69,27 +69,23 @@
 
 @media print {
     @page {
-        size: A4 portrait;
-        margin: 15mm;
+        size: A4;
+        margin: 10mm;
     }
-    
-    html, body {
-        width: 210mm;
-        height: 297mm;
-        font-size: 9pt;
-        background: white;
-        color: black;
+    body {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
     }
-    .print-container-wrapper {
-        background: none;
-        padding: 0;
+    .no-print {
+        display: none !important;
     }
-    .print-document-container {
-        box-shadow: none;
-        width: 100%;
-        min-height: 0;
+    .print-only {
+        display: block !important;
     }
-    .page-content-wrapper {
-        padding: 0;
+}
+
+@layer components {
+    .print-only {
+        display: none;
     }
 }
