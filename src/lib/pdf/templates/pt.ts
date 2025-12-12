@@ -1,51 +1,10 @@
 import type { Content, TableCell } from 'pdfmake/interfaces';
-import type { SafetyFormValues, PtTeamMember, PtSigner } from '@/lib/types';
+import type { SafetyFormValues, PtTeamMember } from '@/lib/types';
 import { ptChecklistItems } from '@/lib/data/pt-checklist';
 import { ptBr } from '@/lib/data/strings';
-import { PT_FIT_STATUS, SIGNATURE_TYPES } from '@/lib/constants';
+import { PT_FIT_STATUS } from '@/lib/constants';
+import { getShortDate, getSignatureContent, isValidBase64, Checkbox } from '@/lib/pdf/pdf-utils';
 
-const isValidBase64 = (str: string | undefined): boolean => {
-    if (!str || !str.includes(',')) return false;
-    try {
-        atob(str.split(',')[1]);
-        return true;
-    } catch (e) {
-        console.error("Invalid Base64 string detected:", str.substring(0, 50) + "...");
-        return false;
-    }
-}
-
-function getShortDate(dateString: string | undefined) {
-    if (!dateString) return '...';
-    try {
-        const date = new Date(dateString);
-        const zonedDate = new Date(date.valueOf() + date.getTimezoneOffset() * 60 * 1000);
-        return zonedDate.toLocaleDateString('pt-BR');
-    } catch (e) {
-        return 'Data inválida';
-    }
-}
-
-const getSignatureContent = (signer: PtSigner | any): Content => {
-    if (!signer || !signer.signatureData) {
-        return { text: '', minHeight: 40, border: [false, false, false, true], borderColor: ['#000', '#000', '#000', '#000'] };
-    }
-    if (signer.signatureType === SIGNATURE_TYPES.TYPED) {
-        return { text: signer.signatureData, alignment: 'center', margin: [0, 15, 0, 0], border: [false, false, false, true], borderColor: ['#000', '#000', '#000', '#000'], italics: true, fontSize: 16 };
-    }
-    if ((signer.signatureType === SIGNATURE_TYPES.DRAW || signer.signatureType === SIGNATURE_TYPES.UPLOAD) && isValidBase64(signer.signatureData)) {
-        return { image: signer.signatureData, width: 120, alignment: 'center', margin: [0, 5, 0, 0] };
-    }
-    // Fallback for any other case to prevent pdfmake from hanging on an empty {}
-    return { text: '', minHeight: 40, border: [false, false, false, true], borderColor: ['#000', '#000', '#000', '#000'] };
-};
-
-const Checkbox = (checked: boolean): Content => ({
-    canvas: [
-      { type: 'rect', x: 0, y: 0, w: 8, h: 8, r: 1, lineColor: '#000', lineWidth: 0.5 },
-      ...(checked ? [{ type: 'rect', x: 1.5, y: 1.5, w: 5, h: 5, color: '#000' }] : [])
-    ]
-  });
 
 // --- PT Document Generation ---
 export function generatePTPages(formData: SafetyFormValues): Content[] {

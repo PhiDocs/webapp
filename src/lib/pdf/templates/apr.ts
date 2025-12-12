@@ -1,45 +1,8 @@
 import type { Content, TableCell } from 'pdfmake/interfaces';
-import type { SafetyFormValues, PtSigner } from '@/lib/types';
+import type { SafetyFormValues } from '@/lib/types';
 import type { SafetyAnalysisOutput } from '@/ai/flows/generate-safety-analysis';
 import type { ProtectiveEquipmentOutput } from '@/ai/flows/recommend-protective-equipment';
-import { SIGNATURE_TYPES } from '@/lib/constants';
-
-
-const isValidBase64 = (str: string | undefined): boolean => {
-    if (!str || !str.includes(',')) return false;
-    try {
-        atob(str.split(',')[1]);
-        return true;
-    } catch (e) {
-        console.error("Invalid Base64 string detected:", str.substring(0, 50) + "...");
-        return false;
-    }
-}
-
-function getShortDate(dateString: string | undefined) {
-    if (!dateString) return '...';
-    try {
-        const date = new Date(dateString);
-        const zonedDate = new Date(date.valueOf() + date.getTimezoneOffset() * 60 * 1000);
-        return zonedDate.toLocaleDateString('pt-BR');
-    } catch (e) {
-        return 'Data inválida';
-    }
-}
-
-const getSignatureContent = (signer: PtSigner | any): Content => {
-    if (!signer || !signer.signatureData) {
-        return { text: '', minHeight: 40, border: [false, false, false, true], borderColor: ['#000', '#000', '#000', '#000'] };
-    }
-    if (signer.signatureType === SIGNATURE_TYPES.TYPED) {
-        return { text: signer.signatureData, alignment: 'center', margin: [0, 15, 0, 0], border: [false, false, false, true], borderColor: ['#000', '#000', '#000', '#000'], italics: true, fontSize: 16 };
-    }
-    if ((signer.signatureType === SIGNATURE_TYPES.DRAW || signer.signatureType === SIGNATURE_TYPES.UPLOAD) && isValidBase64(signer.signatureData)) {
-        return { image: signer.signatureData, width: 120, alignment: 'center', margin: [0, 5, 0, 0] };
-    }
-    // Fallback for any other case to prevent pdfmake from hanging on an empty {}
-    return { text: '', minHeight: 40, border: [false, false, false, true], borderColor: ['#000', '#000', '#000', '#000'] };
-};
+import { getShortDate, getSignatureContent, isValidBase64 } from '@/lib/pdf/pdf-utils';
 
 // --- APR Document Generation ---
 export function generateAPRPages(formData: SafetyFormValues, analysisData: SafetyAnalysisOutput | null, equipmentData: ProtectiveEquipmentOutput | null): Content[] {
