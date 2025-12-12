@@ -1,3 +1,4 @@
+
 'use server';
 
 import { generateSafetyAnalysis, type SafetyAnalysisOutput } from '@/ai/flows/generate-safety-analysis';
@@ -43,5 +44,3 @@ export async function getProtectiveEquipment(data: { activityDescription: string
     return { data: null, error: ptBr.validations.equipmentRecommendationFailed };
   }
 }
-
-    

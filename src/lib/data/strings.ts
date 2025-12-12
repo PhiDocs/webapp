@@ -274,6 +274,7 @@ export const ptBr = {
   },
   toasts: {
     errors: {
+      fetchAnalysis: 'Falha ao gerar Análise',
       fetchEpi: 'Falha ao buscar EPIs/EPCs',
       fetchEpiDescription: 'Não foi possível gerar as recomendações de equipamento.',
       noAnalysis: 'Análise de Risco não gerada',
@@ -315,7 +316,7 @@ export const ptBr = {
     ptDate: 'Data é obrigatória.',
     ptStartTime: 'Hora de início é obrigatória.',
     invalidInput: 'Entrada inválida: {{details}}',
-    safetyAnalysisFailed: 'Falha ao gerar a análise de segurança. Por favor, tente novamente mais tarde.',
+    safetyAnalysisFailed: 'Falha ao gerar a análise de segurança. A IA pode estar sobrecarregada. Por favor, tente novamente mais tarde.',
     equipmentRecommendationFailed: 'Falha ao gerar recomendações de equipamento. Por favor, tente novamente mais tarde.',
     invalidFormData: 'Dados do formulário inválidos: {{details}}',
     pdfServerError: 'Falha ao gerar o PDF no servidor: {{details}}',
@@ -330,6 +331,7 @@ export const ptBr = {
     pdfGenerationFailed: 'A geração do PDF falhou no servidor.',
     pdfProcessingError: 'Falha ao gerar ou enviar PDF:',
     n8nCheckUrl: 'Verifique a URL e o console.',
+    unexpectedError: 'Ocorreu um erro inesperado. Tente novamente.',
   },
   defaultValues: {
     companyName: 'Engenharia Delta',
@@ -363,5 +365,3 @@ export const ptBr = {
     companyLogoAlt: 'Logo da Empresa',
   }
 };
-
-    

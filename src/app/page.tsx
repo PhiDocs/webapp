@@ -93,26 +93,43 @@ export default function Home() {
     setAnalysis(null);
     setEquipment(null);
 
-    const [analysisResult, equipmentResult] = await Promise.all([
-        getSafetyAnalysis({ activityDescription: data.activityDescription! }),
-        getProtectiveEquipment({ activityDescription: data.activityDescription! })
-    ]);
+    try {
+      const [analysisResult, equipmentResult] = await Promise.all([
+          getSafetyAnalysis({ activityDescription: data.activityDescription! }),
+          getProtectiveEquipment({ activityDescription: data.activityDescription! })
+      ]);
 
-    if (analysisResult.error || !analysisResult.data) {
-      setError(analysisResult.error || ptBr.validations.safetyAnalysisFailed);
-    } else {
-      setAnalysis(analysisResult.data);
-    }
-    
-    if (equipmentResult.error || !equipmentResult.data) {
-        console.error(equipmentResult.error);
+      if (analysisResult.error || !analysisResult.data) {
+        const errorMsg = analysisResult.error || ptBr.validations.safetyAnalysisFailed;
+        setError(errorMsg);
         toast({
             variant: 'destructive',
-            title: ptBr.toasts.errors.fetchEpi,
-            description: equipmentResult.error || ptBr.validations.equipmentRecommendationFailed,
+            title: ptBr.toasts.errors.fetchAnalysis,
+            description: errorMsg,
         });
-    } else {
-        setEquipment(equipmentResult.data);
+      } else {
+        setAnalysis(analysisResult.data);
+      }
+      
+      if (equipmentResult.error || !equipmentResult.data) {
+          const errorMsg = equipmentResult.error || ptBr.validations.equipmentRecommendationFailed;
+          console.error(errorMsg);
+          toast({
+              variant: 'destructive',
+              title: ptBr.toasts.errors.fetchEpi,
+              description: errorMsg,
+          });
+      } else {
+          setEquipment(equipmentResult.data);
+      }
+    } catch (e: any) {
+        const errorMsg = e.message || ptBr.errors.unexpectedError;
+        setError(errorMsg);
+        toast({
+            variant: 'destructive',
+            title: ptBr.toasts.errors.fetchAnalysis,
+            description: errorMsg,
+        });
     }
 
     setIsLoading(false);
