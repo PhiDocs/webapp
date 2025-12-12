@@ -14,7 +14,7 @@ const N8N_ERROR_MESSAGES = {
  * Usa a URL de produção por padrão, mas pode receber uma URL de teste.
  */
 export async function notifyN8n(payload: any, webhookUrl?: string) {
-  const N8N_PRODUCTION_URL = 'https://brave-husky-69.hooks.n8n.cloud/webhook/bafa018f-369f-4f8d-b192-1a0b0e7c3729';
+  const N8N_PRODUCTION_URL = process.env.N8N_PRODUCTION_URL;
   const targetUrl = webhookUrl || N8N_PRODUCTION_URL;
 
   if (!targetUrl) {
