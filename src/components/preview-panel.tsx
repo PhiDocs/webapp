@@ -71,7 +71,7 @@ export function PreviewPanel({
             </div>
           )}
           
-          <div id="print-content-root" className="print-only:block hidden xl:block">
+          <div id="print-content-root">
             <PrintPreview
                 formData={liveFormData}
                 analysisData={analysisData}

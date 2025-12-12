@@ -239,7 +239,7 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col no-print">
+    <div className="min-h-screen bg-background flex flex-col">
       <Header
         mobileView={mobileView}
         setMobileView={setMobileView}
@@ -249,27 +249,29 @@ export default function Home() {
         isPtReady={liveFormData.documentType === DOCUMENT_TYPES.PT}
       />
 
-      <main className="flex-grow">
-        <div className="grid grid-cols-1 xl:grid-cols-2 h-[calc(100vh-65px)]">
-          <FormPanel
-            form={form}
-            onNewReport={handleNewReport}
-            onSubmit={handleFormSubmit}
-            isLoading={isLoading}
-            mobileView={mobileView}
-          />
-          <PreviewPanel
-            isLoading={isLoading}
-            error={error}
-            liveFormData={liveFormData}
-            analysisData={analysis}
-            equipmentData={equipment}
-            mobileView={mobileView}
-            isDownloading={isPrinting}
-            onGeneratePdf={handlePrint}
-            isAprReady={!!(liveFormData.documentType === DOCUMENT_TYPES.APR && analysis)}
-            isPtReady={liveFormData.documentType === DOCUMENT_TYPES.PT}
-          />
+      <main className="flex-grow grid grid-cols-1 xl:grid-cols-2 h-[calc(100vh-65px)]">
+        <div className="no-print">
+            <FormPanel
+                form={form}
+                onNewReport={handleNewReport}
+                onSubmit={handleFormSubmit}
+                isLoading={isLoading}
+                mobileView={mobileView}
+            />
+        </div>
+        <div className="no-print">
+            <PreviewPanel
+                isLoading={isLoading}
+                error={error}
+                liveFormData={liveFormData}
+                analysisData={analysis}
+                equipmentData={equipment}
+                mobileView={mobileView}
+                isDownloading={isPrinting}
+                onGeneratePdf={handlePrint}
+                isAprReady={!!(liveFormData.documentType === DOCUMENT_TYPES.APR && analysis)}
+                isPtReady={liveFormData.documentType === DOCUMENT_TYPES.PT}
+            />
         </div>
       </main>
       <div className="print-only">
