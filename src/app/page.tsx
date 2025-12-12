@@ -205,8 +205,12 @@ export default function Home() {
     }
   
     setIsPrinting(true);
+  
+    // Trigger browser print dialog
+    generatePdfOnClient();
+  
     try {
-      // Notify n8n in the background (no longer sending PDF data)
+      // Notify n8n in the background (fire-and-forget)
       const payload = {
         event: N8N_EVENTS.PDF_GENERATED,
         documentType: formData.documentType,
@@ -214,16 +218,12 @@ export default function Home() {
         analysisData: analysis,
         equipmentData: equipment,
       };
-      await notifyN8n(payload);
+      notifyN8n(payload);
   
       toast({
         title: ptBr.toasts.success.pdfDownloaded,
         description: ptBr.toasts.success.pdfDownloadedDescription,
       });
-  
-      // Trigger browser print dialog
-      setTimeout(() => window.print(), 500);
-  
     } catch (error: any) {
       console.error(ptBr.errors.pdfProcessingError, error);
       toast({
@@ -250,7 +250,7 @@ export default function Home() {
       />
 
       <main className="flex-grow grid grid-cols-1 xl:grid-cols-2 h-[calc(100vh-65px)]">
-        <div className="no-print">
+        <div className="no-print h-full">
             <FormPanel
                 form={form}
                 onNewReport={handleNewReport}
@@ -259,7 +259,7 @@ export default function Home() {
                 mobileView={mobileView}
             />
         </div>
-        <div className="no-print">
+        <div className="no-print h-full">
             <PreviewPanel
                 isLoading={isLoading}
                 error={error}

@@ -71,7 +71,7 @@ export function PreviewPanel({
             </div>
           )}
           
-          <div id="print-content-root">
+          <div className="xl:block">
             <PrintPreview
                 formData={liveFormData}
                 analysisData={analysisData}
