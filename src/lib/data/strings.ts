@@ -1,4 +1,3 @@
-'use client';
 
 export const ptBr = {
   documentType: {
@@ -364,3 +363,5 @@ export const ptBr = {
     companyLogoAlt: 'Logo da Empresa',
   }
 };
+
+    
