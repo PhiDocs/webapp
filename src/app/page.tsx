@@ -14,6 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Header } from '@/components/header';
 import { FormPanel } from '@/components/form-panel';
 import { PreviewPanel } from '@/components/preview-panel';
+import { ptBr } from '@/lib/data/strings';
 
 import './print/print-layout.css';
 
@@ -29,28 +30,28 @@ export default function Home() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       documentType: 'APR',
-      companyName: 'Engenharia Delta',
-      workName: 'Construção Edifício Alpha',
-      workAddress: 'Av. Principal, 123, São Paulo, SP',
+      companyName: ptBr.defaultValues.companyName,
+      workName: ptBr.defaultValues.workName,
+      workAddress: ptBr.defaultValues.workAddress,
       startDate: '2024-08-01',
       endDate: '2024-12-31',
-      workLocationDetails: 'Todos os pavimentos',
-      activityDescription: 'Montagem de andaime para trabalhos na fachada do prédio, incluindo instalação de plataformas de trabalho e guarda-corpos. A atividade será realizada em todos os lados do edifício, começando pela face norte, até uma altura máxima de 50 metros.',
+      workLocationDetails: ptBr.defaultValues.workLocationDetails,
+      activityDescription: ptBr.defaultValues.activityDescription,
       responsiblePersons: [
-        { name: 'João Silva', role: 'Técnico de Segurança', signatureType: 'typed', signatureData: 'João Silva' },
-        { name: 'Maria Souza', role: 'Engenheira Chefe', signatureType: 'typed', signatureData: 'Maria Souza' }
+        { name: ptBr.defaultValues.responsible1Name, role: ptBr.defaultValues.responsible1Role, signatureType: 'typed', signatureData: ptBr.defaultValues.responsible1Name },
+        { name: ptBr.defaultValues.responsible2Name, role: ptBr.defaultValues.responsible2Role, signatureType: 'typed', signatureData: ptBr.defaultValues.responsible2Name }
       ],
       teamMembers: [
-        { date: '2024-08-01', name: 'Carlos Pereira', role: 'Montador de Andaime' },
-        { date: '2024-08-01', name: 'Ana Costa', role: 'Ajudante' },
+        { date: '2024-08-01', name: ptBr.defaultValues.teamMember1Name, role: ptBr.defaultValues.teamMember1Role },
+        { date: '2024-08-01', name: ptBr.defaultValues.teamMember2Name, role: ptBr.defaultValues.teamMember2Role },
       ],
       pt: {
-        ptLocalAtividade: 'Torre B, 5º Andar',
-        ptEquipamentoLinha: 'Sistema de Ventilação Central',
+        ptLocalAtividade: ptBr.defaultValues.ptLocation,
+        ptEquipamentoLinha: ptBr.defaultValues.ptEquipment,
         ptData: new Date().toISOString().split('T')[0],
         ptHoraInicio: '09:00',
         ptHoraFim: '17:00',
-        ptDescricaoTarefa: 'Manutenção preventiva no motor do exaustor principal.',
+        ptDescricaoTarefa: ptBr.defaultValues.ptTaskDescription,
         ptChecklist: {
           trabalho_frio: true,
           eletricidade: true,
@@ -68,13 +69,13 @@ export default function Home() {
         ptObservacao: '',
         ptVisto: '',
         ptColaboradores: [
-            { name: 'Pedro Martins', rgCpf: '12.345.678-9', func: 'Eletricista', empresa: 'Engenharia Delta', apto: 'sim' }
+            { name: ptBr.defaultValues.collaborator1Name, rgCpf: ptBr.defaultValues.collaborator1Rg, func: ptBr.defaultValues.collaborator1Func, empresa: ptBr.defaultValues.collaborator1Company, apto: 'sim' }
         ],
         ptVigias: [],
         ptResgatistas: [],
-        ptGestorArea: {name: 'Lucas Mendes', signatureType: 'typed', signatureData: 'Lucas Mendes'},
-        ptResponsavelAtividade: {name: 'Fernanda Lima', signatureType: 'typed', signatureData: 'Fernanda Lima'},
-        ptSesmt: {name: 'João Silva', signatureType: 'typed', signatureData: 'João Silva'},
+        ptGestorArea: {name: ptBr.defaultValues.areaManagerName, signatureType: 'typed', signatureData: ptBr.defaultValues.areaManagerName},
+        ptResponsavelAtividade: {name: ptBr.defaultValues.activityResponsibleName, signatureType: 'typed', signatureData: ptBr.defaultValues.activityResponsibleName},
+        ptSesmt: {name: ptBr.defaultValues.sesmtName, signatureType: 'typed', signatureData: ptBr.defaultValues.sesmtName},
       },
     },
     mode: 'onChange',
@@ -97,7 +98,7 @@ export default function Home() {
     ]);
 
     if (analysisResult.error || !analysisResult.data) {
-      setError(analysisResult.error || 'An unknown error occurred during safety analysis.');
+      setError(analysisResult.error || ptBr.validations.safetyAnalysisFailed);
     } else {
       setAnalysis(analysisResult.data);
     }
@@ -106,8 +107,8 @@ export default function Home() {
         console.error(equipmentResult.error);
         toast({
             variant: 'destructive',
-            title: 'Falha ao buscar EPIs/EPCs',
-            description: equipmentResult.error || 'Não foi possível gerar as recomendações de equipamento.',
+            title: ptBr.toasts.errors.fetchEpi,
+            description: equipmentResult.error || ptBr.validations.equipmentRecommendationFailed,
         });
     } else {
         setEquipment(equipmentResult.data);
@@ -130,9 +131,8 @@ export default function Home() {
     if (formData.documentType === 'APR' && !analysis) {
       toast({
         variant: 'destructive',
-        title: 'Análise de Risco não gerada',
-        description:
-          'Por favor, gere a análise da atividade antes de baixar o PDF.',
+        title: ptBr.toasts.errors.noAnalysis,
+        description: ptBr.toasts.errors.noAnalysisDescription,
       });
       return;
     }
@@ -165,17 +165,17 @@ export default function Home() {
       document.body.removeChild(link);
 
       toast({
-        title: 'Sucesso!',
-        description: 'PDF baixado e dados enviados para o n8n.',
+        title: ptBr.toasts.success.pdfDownloaded,
+        description: ptBr.toasts.success.pdfDownloadedDescription,
       });
 
     } catch (error: any) {
       console.error('Falha ao gerar ou enviar PDF:', error);
       toast({
         variant: 'destructive',
-        title: 'Erro ao Processar PDF',
+        title: ptBr.toasts.errors.pdfError,
         description:
-          error.message || 'Não foi possível gerar ou enviar o PDF. Por favor, tente novamente.',
+          error.message || ptBr.toasts.errors.pdfErrorDescription,
       });
     } finally {
       setIsDownloading(false);
@@ -219,3 +219,5 @@ export default function Home() {
     </div>
   );
 }
+
+    

@@ -5,6 +5,7 @@ import type { SafetyAnalysisOutput } from '@/ai/flows/generate-safety-analysis';
 import type { ProtectiveEquipmentOutput } from '@/ai/flows/recommend-protective-equipment';
 import { generatePdf } from '@/lib/pdf/generator';
 import { formSchema, type SafetyFormValues } from '@/lib/types';
+import { ptBr } from '@/lib/data/strings';
 
 
 export async function generatePdfOnServer(
@@ -21,7 +22,7 @@ export async function generatePdfOnServer(
     return {
       fileName: '',
       dataUrl: '',
-      error: `Dados do formulário inválidos: ${errorMessage}`,
+      error: ptBr.validations.invalidFormData.replace('{{details}}', errorMessage),
     };
   }
 
@@ -33,7 +34,9 @@ export async function generatePdfOnServer(
     return { 
         fileName: '', 
         dataUrl: '', 
-        error: `Falha ao gerar o PDF no servidor: ${error.message}` 
+        error: ptBr.validations.pdfServerError.replace('{{details}}', error.message),
     };
   }
 }
+
+    

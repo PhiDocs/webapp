@@ -34,6 +34,7 @@ import { Separator } from '@/components/ui/separator';
 import { PTForm } from './pt-form';
 import { SignaturePad } from './signature-pad';
 import { RadioGroup, RadioGroupItem } from './ui/radio-group';
+import { ptBr } from '@/lib/data/strings';
 
 interface SafetyFormProps {
   form: ReturnType<typeof useForm<SafetyFormValues>>;
@@ -51,7 +52,7 @@ const SignatureField = ({ form, fieldPrefix }: { form: ReturnType<typeof useForm
         const file = e.target.files?.[0];
         if (file) {
             if (file.size > 1 * 1024 * 1024) { // 1MB limit
-                form.setError(`${fieldPrefix}.signatureData` as any, { type: 'manual', message: 'Imagem muito grande (máx 1MB).' });
+                form.setError(`${fieldPrefix}.signatureData` as any, { type: 'manual', message: ptBr.other.imageTooLarge });
                 return;
             }
             const reader = new FileReader();
@@ -70,7 +71,7 @@ const SignatureField = ({ form, fieldPrefix }: { form: ReturnType<typeof useForm
           name={`${fieldPrefix}.signatureType` as any}
           render={({ field }) => (
             <FormItem className="space-y-2">
-              <FormLabel className="text-xs">Método de Assinatura</FormLabel>
+              <FormLabel className="text-xs">{ptBr.safetyForm.signatureMethod}</FormLabel>
               <FormControl>
                 <RadioGroup
                   onValueChange={field.onChange}
@@ -79,15 +80,15 @@ const SignatureField = ({ form, fieldPrefix }: { form: ReturnType<typeof useForm
                 >
                   <FormItem className="flex items-center space-x-2 space-y-0">
                     <FormControl><RadioGroupItem value="typed" /></FormControl>
-                    <FormLabel className="font-normal text-sm">Digitar</FormLabel>
+                    <FormLabel className="font-normal text-sm">{ptBr.safetyForm.signatureTyped}</FormLabel>
                   </FormItem>
                   <FormItem className="flex items-center space-x-2 space-y-0">
                     <FormControl><RadioGroupItem value="draw" /></FormControl>
-                    <FormLabel className="font-normal text-sm">Desenhar</FormLabel>
+                    <FormLabel className="font-normal text-sm">{ptBr.safetyForm.signatureDraw}</FormLabel>
                   </FormItem>
                    <FormItem className="flex items-center space-x-2 space-y-0">
                     <FormControl><RadioGroupItem value="upload" /></FormControl>
-                    <FormLabel className="font-normal text-sm">Carregar</FormLabel>
+                    <FormLabel className="font-normal text-sm">{ptBr.safetyForm.signatureUpload}</FormLabel>
                   </FormItem>
                 </RadioGroup>
               </FormControl>
@@ -102,7 +103,7 @@ const SignatureField = ({ form, fieldPrefix }: { form: ReturnType<typeof useForm
             <FormItem>
               {signatureType === 'typed' && (
                 <FormControl>
-                  <Input placeholder="Digite o nome para assinar" {...field} />
+                  <Input placeholder={ptBr.safetyForm.signatureTypedPlaceholder} {...field} />
                 </FormControl>
               )}
               {signatureType === 'draw' && (
@@ -156,8 +157,8 @@ export function SafetyForm({
         // 2MB limit
         toast({
           variant: 'destructive',
-          title: 'Arquivo muito grande',
-          description: 'Por favor, envie um logo menor que 2MB.',
+          title: ptBr.toasts.errors.fileTooLarge,
+          description: ptBr.toasts.errors.fileTooLargeDescription,
         });
         return;
       }
@@ -185,7 +186,7 @@ export function SafetyForm({
                 render={({ field }) => (
                   <FormItem className="space-y-3">
                     <FormLabel>
-                      <FileText className="inline-block mr-2" /> Tipo de Documento
+                      <FileText className="inline-block mr-2" /> {ptBr.safetyForm.documentType}
                     </FormLabel>
                     <FormControl>
                       <Tabs
@@ -196,8 +197,8 @@ export function SafetyForm({
                         className="w-full"
                       >
                         <TabsList className="grid w-full grid-cols-2">
-                          <TabsTrigger value="APR">APR</TabsTrigger>
-                          <TabsTrigger value="PT">PT</TabsTrigger>
+                          <TabsTrigger value="APR">{ptBr.documentType.apr}</TabsTrigger>
+                          <TabsTrigger value="PT">{ptBr.documentType.pt}</TabsTrigger>
                         </TabsList>
                       </Tabs>
                     </FormControl>
@@ -208,7 +209,7 @@ export function SafetyForm({
 
               <Separator />
               <h3 className="text-lg font-semibold flex items-center">
-                <Building2 className="mr-2" /> Dados da Empresa
+                <Building2 className="mr-2" /> {ptBr.safetyForm.companyData}
               </h3>
 
               <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -217,9 +218,9 @@ export function SafetyForm({
                   name="companyName"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Nome da Empresa</FormLabel>
+                      <FormLabel>{ptBr.safetyForm.companyName}</FormLabel>
                       <FormControl>
-                        <Input placeholder="Sua Empresa Inc." {...field} />
+                        <Input placeholder={ptBr.safetyForm.companyNamePlaceholder} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -230,7 +231,7 @@ export function SafetyForm({
                   name="companyLogo"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Logo da Empresa (Opcional)</FormLabel>
+                      <FormLabel>{ptBr.safetyForm.companyLogo}</FormLabel>
                       <FormControl>
                         <Input
                           type="file"
@@ -238,7 +239,7 @@ export function SafetyForm({
                           onChange={handleLogoChange}
                         />
                       </FormControl>
-                      <FormDescription>Max 2MB. PNG ou JPG.</FormDescription>
+                      <FormDescription>{ptBr.safetyForm.companyLogoDescription}</FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -251,7 +252,7 @@ export function SafetyForm({
                 <div className="space-y-8">
                   <Separator />
                   <h3 className="text-lg font-semibold flex items-center">
-                    <Briefcase className="mr-2" /> Dados da Obra
+                    <Briefcase className="mr-2" /> {ptBr.safetyForm.workData}
                   </h3>
 
                   <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
@@ -260,10 +261,10 @@ export function SafetyForm({
                       name="workName"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Nome da Obra</FormLabel>
+                          <FormLabel>{ptBr.safetyForm.workName}</FormLabel>
                           <FormControl>
                             <Input
-                              placeholder="e.g., Neodent Supernova"
+                              placeholder={ptBr.safetyForm.workNamePlaceholder}
                               {...field}
                             />
                           </FormControl>
@@ -276,10 +277,10 @@ export function SafetyForm({
                       name="workAddress"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Endereço</FormLabel>
+                          <FormLabel>{ptBr.safetyForm.workAddress}</FormLabel>
                           <FormControl>
                             <Input
-                              placeholder="e.g., Av. Juscelino Kubitschek"
+                              placeholder={ptBr.safetyForm.workAddressPlaceholder}
                               {...field}
                             />
                           </FormControl>
@@ -294,7 +295,7 @@ export function SafetyForm({
                       name="startDate"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Data de Início</FormLabel>
+                          <FormLabel>{ptBr.safetyForm.startDate}</FormLabel>
                           <FormControl>
                             <Input type="date" {...field} />
                           </FormControl>
@@ -307,7 +308,7 @@ export function SafetyForm({
                       name="endDate"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Data de Término</FormLabel>
+                          <FormLabel>{ptBr.safetyForm.endDate}</FormLabel>
                           <FormControl>
                             <Input type="date" {...field} />
                           </FormControl>
@@ -322,11 +323,10 @@ export function SafetyForm({
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>
-                          <MapPin className="inline-block mr-2" /> Local da Obra /
-                          Pavimento
+                          <MapPin className="inline-block mr-2" /> {ptBr.safetyForm.workLocation}
                         </FormLabel>
                         <FormControl>
-                          <Input placeholder="e.g., Pavimento 2" {...field} />
+                          <Input placeholder={ptBr.safetyForm.workLocationPlaceholder} {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -335,7 +335,7 @@ export function SafetyForm({
                   <Separator />
                   <div className="flex items-center justify-between">
                     <h3 className="text-lg font-semibold flex items-center">
-                      <UserCheck className="mr-2" /> Responsáveis
+                      <UserCheck className="mr-2" /> {ptBr.safetyForm.responsibles}
                     </h3>
                     <Button
                       type="button"
@@ -345,7 +345,7 @@ export function SafetyForm({
                         appendResponsible({ name: '', role: '', signatureType: 'typed', signatureData: '' })
                       }
                     >
-                      <PlusCircle className="mr-2 h-4 w-4" /> Adicionar
+                      <PlusCircle className="mr-2 h-4 w-4" /> {ptBr.actions.addResponsible}
                     </Button>
                   </div>
                   <div className="space-y-4">
@@ -358,10 +358,10 @@ export function SafetyForm({
                                 name={`responsiblePersons.${index}.name`}
                                 render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Nome do Responsável</FormLabel>
+                                    <FormLabel>{ptBr.safetyForm.responsibleName}</FormLabel>
                                     <FormControl>
                                     <Input
-                                        placeholder="Nome do responsável"
+                                        placeholder={ptBr.safetyForm.responsibleNamePlaceholder}
                                         {...field}
                                     />
                                     </FormControl>
@@ -374,10 +374,10 @@ export function SafetyForm({
                                 name={`responsiblePersons.${index}.role`}
                                 render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Função</FormLabel>
+                                    <FormLabel>{ptBr.safetyForm.responsibleRole}</FormLabel>
                                     <FormControl>
                                     <Input
-                                        placeholder="e.g., Técnico de Segurança"
+                                        placeholder={ptBr.safetyForm.responsibleRolePlaceholder}
                                         {...field}
                                     />
                                     </FormControl>
@@ -411,12 +411,11 @@ export function SafetyForm({
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>
-                          <BookOpen className="inline-block mr-2" /> Descrição da
-                          Atividade
+                          <BookOpen className="inline-block mr-2" /> {ptBr.safetyForm.activityDescription}
                         </FormLabel>
                         <FormControl>
                           <Textarea
-                            placeholder="Descreva a atividade de trabalho em detalhes. Ex: 'Instalação de tubulações de ar condicionado na fachada do 3º andar utilizando andaime'."
+                            placeholder={ptBr.safetyForm.activityDescriptionPlaceholder}
                             className="resize-y min-h-[120px]"
                             {...field}
                           />
@@ -427,14 +426,14 @@ export function SafetyForm({
                   />
                   <Button type="submit" disabled={isLoading} className="w-full">
                     {isLoading
-                      ? 'Gerando Análise...'
-                      : 'Gerar Análise de Segurança'}
+                      ? ptBr.actions.generatingAnalysis
+                      : ptBr.actions.generateAnalysis}
                   </Button>
                   <Separator />
 
                   <div className="flex items-center justify-between">
                     <h3 className="text-lg font-semibold flex items-center">
-                      <Users className="mr-2" /> Equipe de Trabalho
+                      <Users className="mr-2" /> {ptBr.safetyForm.team}
                     </h3>
                     <Button
                       type="button"
@@ -444,7 +443,7 @@ export function SafetyForm({
                         appendTeamMember({ date: '', name: '', role: '' })
                       }
                     >
-                      <PlusCircle className="mr-2 h-4 w-4" /> Adicionar Membro
+                      <PlusCircle className="mr-2 h-4 w-4" /> {ptBr.actions.addMember}
                     </Button>
                   </div>
 
@@ -458,7 +457,7 @@ export function SafetyForm({
                             render={({ field }) => (
                               <FormItem>
                                 <FormLabel className={index !== 0 ? 'sr-only' : ''}>
-                                  Data
+                                  {ptBr.safetyForm.teamDate}
                                 </FormLabel>
                                 <FormControl>
                                   <Input type="date" {...field} />
@@ -473,10 +472,10 @@ export function SafetyForm({
                             render={({ field }) => (
                               <FormItem>
                                 <FormLabel className={index !== 0 ? 'sr-only' : ''}>
-                                  Nome
+                                  {ptBr.safetyForm.teamName}
                                 </FormLabel>
                                 <FormControl>
-                                  <Input placeholder="Nome do membro" {...field} />
+                                  <Input placeholder={ptBr.safetyForm.teamNamePlaceholder} {...field} />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -488,11 +487,11 @@ export function SafetyForm({
                             render={({ field }) => (
                               <FormItem>
                                 <FormLabel className={index !== 0 ? 'sr-only' : ''}>
-                                  Função/Empresa
+                                  {ptBr.safetyForm.teamRole}
                                 </FormLabel>
                                 <FormControl>
                                   <Input
-                                    placeholder="e.g., Eletricista"
+                                    placeholder={ptBr.safetyForm.teamRolePlaceholder}
                                     {...field}
                                   />
                                 </FormControl>
@@ -524,3 +523,5 @@ export function SafetyForm({
       </Card>
   );
 }
+
+    

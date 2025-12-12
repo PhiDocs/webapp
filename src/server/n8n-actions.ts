@@ -1,5 +1,7 @@
 'use server';
 
+import { ptBr } from '@/lib/data/strings';
+
 /**
  * Envia um payload para um webhook do n8n.
  * Usa a URL de produção por padrão, mas pode receber uma URL de teste.
@@ -9,13 +11,13 @@ export async function notifyN8n(payload: any, webhookUrl?: string) {
   const targetUrl = webhookUrl || N8N_PRODUCTION_URL;
 
   if (!targetUrl) {
-    const errorMsg = 'URL do webhook do n8n não configurada.';
+    const errorMsg = ptBr.validations.n8nWebhookNotConfigured;
     console.error(errorMsg);
     return {
       success: false,
       data: {
         error: errorMsg,
-        details: 'Nenhuma URL de produção ou de teste foi fornecida.',
+        details: ptBr.validations.n8nNoUrlProvided,
       },
     };
   }
@@ -31,7 +33,7 @@ export async function notifyN8n(payload: any, webhookUrl?: string) {
     try {
         n8nData = await n8nResponse.json();
     } catch (e) {
-        n8nData = { message: n8nResponse.statusText || 'Resposta sem corpo JSON.' };
+        n8nData = { message: n8nResponse.statusText || ptBr.validations.n8nNoJsonResponse };
     }
 
     if (!n8nResponse.ok) {
@@ -39,9 +41,9 @@ export async function notifyN8n(payload: any, webhookUrl?: string) {
       return {
         success: false,
         data: {
-          message: 'O servidor do n8n retornou um erro.',
+          message: ptBr.validations.n8nResponseError,
           status: n8nResponse.status,
-          details: (n8nData as any).message || 'Nenhum detalhe adicional.',
+          details: (n8nData as any).message || ptBr.validations.n8nNoDetails,
         },
       };
     }
@@ -60,9 +62,11 @@ export async function notifyN8n(payload: any, webhookUrl?: string) {
     return {
         success: false,
         data: {
-            error: 'Falha na conexão com o servidor do n8n.',
+            error: ptBr.validations.n8nConnectionError,
             details: error.message
         }
     };
   }
 }
+
+    

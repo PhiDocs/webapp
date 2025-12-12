@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Signature, Trash2, Check } from 'lucide-react';
+import { ptBr } from '@/lib/data/strings';
 
 interface SignaturePadProps {
   value?: string;
@@ -41,7 +42,7 @@ export function SignaturePad({ value, onChange }: SignaturePadProps) {
         {value ? (
           <img src={value} alt="Signature" className="max-h-full max-w-full" />
         ) : (
-          <p className="text-sm text-muted-foreground">Sem assinatura</p>
+          <p className="text-sm text-muted-foreground">{ptBr.printPreview.signature.placeholder}</p>
         )}
          <Button
             type="button"
@@ -51,14 +52,14 @@ export function SignaturePad({ value, onChange }: SignaturePadProps) {
             onClick={() => setIsOpen(true)}
         >
             <Signature className="h-4 w-4" />
-            <span className="sr-only">Abrir para assinar</span>
+            <span className="sr-only">{ptBr.actions.openSignaturePad}</span>
         </Button>
       </div>
       
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>Desenhe sua Assinatura</DialogTitle>
+            <DialogTitle>{ptBr.printPreview.signature.drawTitle}</DialogTitle>
           </DialogHeader>
           <div className="relative w-full aspect-video border rounded-md bg-white">
             <SignatureCanvas
@@ -69,10 +70,10 @@ export function SignaturePad({ value, onChange }: SignaturePadProps) {
           </div>
           <DialogFooter className='gap-2 sm:justify-end'>
             <Button variant="outline" onClick={handleClear}>
-              <Trash2 className="mr-2 h-4 w-4" /> Limpar
+              <Trash2 className="mr-2 h-4 w-4" /> {ptBr.actions.clear}
             </Button>
             <Button onClick={handleSave}>
-              <Check className="mr-2 h-4 w-4" /> Salvar Assinatura
+              <Check className="mr-2 h-4 w-4" /> {ptBr.actions.saveSignature}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -80,3 +81,5 @@ export function SignaturePad({ value, onChange }: SignaturePadProps) {
     </div>
   );
 }
+
+    

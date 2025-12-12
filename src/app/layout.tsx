@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import { Toaster } from "@/components/ui/toaster";
+import { ptBr } from "@/lib/data/strings";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Safety Docs AI",
+  title: ptBr.header.title,
   description: "Generate professional safety documents (APR, APT) with AI assistance.",
 };
 
@@ -29,3 +30,5 @@ export default function RootLayout({
     </html>
   );
 }
+
+    

@@ -1,20 +1,21 @@
 'use client';
 
 import { z } from 'zod';
+import { ptBr } from './data/strings';
 
 const signatureTypeSchema = z.enum(['typed', 'draw', 'upload']);
 
 export const responsiblePersonSchema = z.object({
-  name: z.string().min(1, 'Nome do responsável é obrigatório.'),
-  role: z.string().min(1, 'Função do responsável é obrigatória.'),
+  name: z.string().min(1, ptBr.validations.responsibleName),
+  role: z.string().min(1, ptBr.validations.responsibleRole),
   signatureType: signatureTypeSchema.default('typed'),
   signatureData: z.string().optional(),
 });
 
 export const teamMemberSchema = z.object({
-  date: z.string().min(1, 'Data é obrigatória.'),
-  name: z.string().min(1, 'Nome do membro da equipe é obrigatório.'),
-  role: z.string().min(1, 'Função/Empresa é obrigatória.'),
+  date: z.string().min(1, ptBr.validations.teamDate),
+  name: z.string().min(1, ptBr.validations.teamName),
+  role: z.string().min(1, ptBr.validations.teamRole),
 });
 
 export const ptChecklistSchema = z.record(z.boolean());
@@ -84,7 +85,7 @@ export const formSchema = z.object({
   activityDescription: z.string().optional(),
   
   // Responsible Person (APR)
-  responsiblePersons: z.array(responsiblePersonSchema).min(1, 'Adicione pelo menos um responsável.'),
+  responsiblePersons: z.array(responsiblePersonSchema).min(1, ptBr.validations.atLeastOneResponsible),
 
   // Team (APR)
   teamMembers: z.array(teamMemberSchema).optional(),
@@ -93,18 +94,18 @@ export const formSchema = z.object({
   pt: ptFormSchema,
 }).superRefine((data, ctx) => {
     if (data.documentType === 'APR') {
-        if (!data.companyName) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Nome da empresa é obrigatório.", path: ["companyName"] });
-        if (!data.workName) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Nome da obra é obrigatório.", path: ["workName"] });
-        if (!data.workAddress) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Endereço da obra é obrigatório.", path: ["workAddress"] });
-        if (!data.startDate) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Data de início é obrigatória.", path: ["startDate"] });
-        if (!data.endDate) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Data de término é obrigatória.", path: ["endDate"] });
-        if (!data.workLocationDetails) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Local da obra/pavimento é obrigatório.", path: ["workLocationDetails"] });
-        if (!data.activityDescription || data.activityDescription.length < 10) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "A descrição da atividade deve ter pelo menos 10 caracteres.", path: ["activityDescription"] });
+        if (!data.companyName) ctx.addIssue({ code: z.ZodIssueCode.custom, message: ptBr.validations.companyName, path: ["companyName"] });
+        if (!data.workName) ctx.addIssue({ code: z.ZodIssueCode.custom, message: ptBr.validations.workName, path: ["workName"] });
+        if (!data.workAddress) ctx.addIssue({ code: z.ZodIssueCode.custom, message: ptBr.validations.workAddress, path: ["workAddress"] });
+        if (!data.startDate) ctx.addIssue({ code: z.ZodIssueCode.custom, message: ptBr.validations.startDate, path: ["startDate"] });
+        if (!data.endDate) ctx.addIssue({ code: z.ZodIssueCode.custom, message: ptBr.validations.endDate, path: ["endDate"] });
+        if (!data.workLocationDetails) ctx.addIssue({ code: z.ZodIssueCode.custom, message: ptBr.validations.workLocation, path: ["workLocationDetails"] });
+        if (!data.activityDescription || data.activityDescription.length < 10) ctx.addIssue({ code: z.ZodIssueCode.custom, message: ptBr.validations.activityDescription, path: ["activityDescription"] });
     } else if (data.documentType === 'PT') {
-        if (!data.companyName) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Nome da empresa é obrigatório.", path: ["companyName"] });
-        if (!data.pt.ptLocalAtividade) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Local da atividade é obrigatório.", path: ["pt", "ptLocalAtividade"] });
-        if (!data.pt.ptData) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Data é obrigatória.", path: ["pt", "ptData"] });
-        if (!data.pt.ptHoraInicio) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Hora de início é obrigatória.", path: ["pt", "ptHoraInicio"] });
+        if (!data.companyName) ctx.addIssue({ code: z.ZodIssueCode.custom, message: ptBr.validations.companyName, path: ["companyName"] });
+        if (!data.pt.ptLocalAtividade) ctx.addIssue({ code: z.ZodIssueCode.custom, message: ptBr.validations.ptLocation, path: ["pt", "ptLocalAtividade"] });
+        if (!data.pt.ptData) ctx.addIssue({ code: z.ZodIssueCode.custom, message: ptBr.validations.ptDate, path: ["pt", "ptData"] });
+        if (!data.pt.ptHoraInicio) ctx.addIssue({ code: z.ZodIssueCode.custom, message: ptBr.validations.ptStartTime, path: ["pt", "ptHoraInicio"] });
     }
 });
 
@@ -114,3 +115,5 @@ export type TeamMember = z.infer<typeof teamMemberSchema>;
 export type PtFormValues = z.infer<typeof ptFormSchema>;
 export type PtTeamMember = z.infer<typeof ptTeamMemberSchema>;
 export type PtSigner = z.infer<typeof ptSignerSchema>;
+
+    

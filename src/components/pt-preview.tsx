@@ -3,6 +3,7 @@
 import React from 'react';
 import type { SafetyFormValues, PtTeamMember, PtSigner } from '@/lib/types';
 import { ptChecklistItems } from '@/lib/data/pt-checklist';
+import { ptBr } from '@/lib/data/strings';
 
 interface PTPreviewProps {
   formData: SafetyFormValues;
@@ -61,11 +62,11 @@ const TeamTable = ({ title, members, showEmpresa = false }: { title: string, mem
             <table className="w-full border-collapse info-grid text-xs">
                 <thead className='text-center font-bold'>
                     <tr>
-                        <td className='w-1/3'>NOME</td>
-                        <td className='w-1/4'>RG/CPF</td>
-                        <td className='w-1/4'>FUNÇÃO</td>
-                        {showEmpresa && <td className='w-1/5'>EMPRESA</td>}
-                        <td className='w-1/6'>APTO</td>
+                        <td className='w-1/3'>{ptBr.ptForm.name}</td>
+                        <td className='w-1/4'>{ptBr.ptForm.rgCpf}</td>
+                        <td className='w-1/4'>{ptBr.ptForm.role}</td>
+                        {showEmpresa && <td className='w-1/5'>{ptBr.ptForm.company}</td>}
+                        <td className='w-1/6'>{ptBr.ptForm.isFit}</td>
                     </tr>
                 </thead>
                 <tbody>
@@ -77,8 +78,8 @@ const TeamTable = ({ title, members, showEmpresa = false }: { title: string, mem
                             {showEmpresa && <td>{m.empresa}</td>}
                             <td className='text-center'>
                                 <div className='flex items-center justify-center gap-2'>
-                                    <CheckboxDisplay checked={m.apto === 'sim'} /> Sim
-                                    <CheckboxDisplay checked={m.apto === 'nao'} /> Não
+                                    <CheckboxDisplay checked={m.apto === 'sim'} /> {ptBr.ptForm.yes}
+                                    <CheckboxDisplay checked={m.apto === 'nao'} /> {ptBr.ptForm.no}
                                 </div>
                             </td>
                         </tr>
@@ -110,37 +111,37 @@ export function PTPreview({ formData }: PTPreviewProps) {
                          ) : <div className="h-16 w-auto"></div>}
                     </td>
                     <td rowSpan={2} className="w-1/2 text-center">
-                        <h1 className="text-lg font-bold">PERMISSÃO DE TRABALHO</h1>
-                        <p className="text-xs font-bold text-red-600">Obrigatória estar junto a APT diariamente</p>
+                        <h1 className="text-lg font-bold">{ptBr.printPreview.pt.title}</h1>
+                        <p className="text-xs font-bold text-red-600">{ptBr.printPreview.pt.subtitle}</p>
                     </td>
                     <td className="w-1/4 !p-1 text-center">
-                        <span className='font-bold'>{companyName || 'Nome da Empresa'}</span>
+                        <span className='font-bold'>{companyName || ptBr.printPreview.pt.companyName}</span>
                     </td>
                 </tr>
                  <tr>
                     <td className="!p-0">
                         <div className='flex text-xs'>
-                            <div className="flex-1 p-1 border-r border-black"><strong>DATA:</strong> {ptData.ptData}</div>
-                            <div className="flex-1 p-1"><strong>HORA:</strong></div>
+                            <div className="flex-1 p-1 border-r border-black"><strong>{ptBr.printPreview.pt.date}</strong> {ptData.ptData}</div>
+                            <div className="flex-1 p-1"><strong>{ptBr.printPreview.pt.time}</strong></div>
                         </div>
                     </td>
                 </tr>
                  <tr>
                     <td colSpan={2} className='!p-1'>
-                        <TextLine label="LOCAL DA ATIVIDADE" value={ptData.ptLocalAtividade} />
+                        <TextLine label={ptBr.printPreview.pt.location} value={ptData.ptLocalAtividade} />
                     </td>
                     <td className='!p-1'>
                         <div className='flex text-xs'>
-                            <div className="flex-1 p-1 border-r border-black"><strong>INÍCIO:</strong> {ptData.ptHoraInicio}</div>
-                            <div className="flex-1 p-1"><strong>FIM:</strong> {ptData.ptHoraFim}</div>
+                            <div className="flex-1 p-1 border-r border-black"><strong>{ptBr.printPreview.pt.startTime}</strong> {ptData.ptHoraInicio}</div>
+                            <div className="flex-1 p-1"><strong>{ptBr.printPreview.pt.endTime}</strong> {ptData.ptHoraFim}</div>
                         </div>
                     </td>
                  </tr>
                  <tr>
-                    <td colSpan={3} className='!p-1'><TextLine label="EQUIPAMENTO/ LINHA" value={ptData.ptEquipamentoLinha} /></td>
+                    <td colSpan={3} className='!p-1'><TextLine label={ptBr.printPreview.pt.equipment} value={ptData.ptEquipamentoLinha} /></td>
                  </tr>
                   <tr>
-                    <td colSpan={3} className='!p-1'><TextLine label="DESCRIÇÃO DA TAREFA" value={ptData.ptDescricaoTarefa} /></td>
+                    <td colSpan={3} className='!p-1'><TextLine label={ptBr.printPreview.pt.taskDescription} value={ptData.ptDescricaoTarefa} /></td>
                  </tr>
             </tbody>
         </table>
@@ -149,15 +150,15 @@ export function PTPreview({ formData }: PTPreviewProps) {
       <main className="print-main text-xs space-y-1">
         {ptChecklistItems.map(section => {
             const checkedItems = section.items.filter(item => checklist[item.id]);
-            if (checkedItems.length === 0 && !section.alwaysShow) return null;
+            if (checkedItems.length === 0) return null;
 
             return (
-                <Section key={section.id} title={section.title}>
+                <Section key={section.id} title={ptBr.ptChecklist.titles[section.id as keyof typeof ptBr.ptChecklist.titles]}>
                     <div className={`grid ${section.columns === 3 ? 'grid-cols-3' : section.columns === 2 ? 'grid-cols-2' : 'grid-cols-1'} gap-x-4 p-1 border border-black border-t-0`}>
                        {section.items.map(item => (
                            <div key={item.id} className="flex items-center space-x-1.5">
                                <CheckboxDisplay checked={!!checklist[item.id]} />
-                               <span>{item.label}</span>
+                               <span>{ptBr.ptChecklist.items[item.id as keyof typeof ptBr.ptChecklist.items]}</span>
                            </div>
                        ))}
                     </div>
@@ -165,19 +166,19 @@ export function PTPreview({ formData }: PTPreviewProps) {
             );
         })}
 
-        <TeamTable title="Colaboradores:" members={ptData.ptColaboradores || []} showEmpresa={true} />
+        <TeamTable title={ptBr.printPreview.pt.collaborators} members={ptData.ptColaboradores || []} showEmpresa={true} />
         
         {ptData.ptEnableEspacoConfinado && (
-            <Section title="TRABALHO EM ESPAÇO CONFINADO - AVALIAÇÃO FEITA PELO SESMT">
+            <Section title={ptBr.printPreview.pt.confinedSpaceTitle}>
                 <table className="w-full border-collapse info-grid text-xs">
                     <thead className='text-center'>
                         <tr className='font-bold'>
-                            <td>Oxigênio</td>
-                            <td>L.E.</td>
-                            <td>H²S</td>
-                            <td>CO²</td>
-                            <td className='w-1/4'>Observação</td>
-                            <td className='w-1/6'>Visto</td>
+                            <td>{ptBr.printPreview.pt.oxygen}</td>
+                            <td>{ptBr.printPreview.pt.le}</td>
+                            <td>{ptBr.printPreview.pt.h2s}</td>
+                            <td>{ptBr.printPreview.pt.co2}</td>
+                            <td className='w-1/4'>{ptBr.printPreview.pt.observation}</td>
+                            <td className='w-1/6'>{ptBr.printPreview.pt.signature}</td>
                         </tr>
                     </thead>
                     <tbody className='text-center'>
@@ -195,23 +196,21 @@ export function PTPreview({ formData }: PTPreviewProps) {
         )}
         
         {ptData.ptEnableVigia && (
-            <TeamTable title="Vigia(s):" members={ptData.ptVigias || []} showEmpresa={false} />
+            <TeamTable title={ptBr.printPreview.pt.lookouts} members={ptData.ptVigias || []} showEmpresa={false} />
         )}
 
         {ptData.ptEnableResgatistas && (
-            <TeamTable title="Resgatistas:" members={ptData.ptResgatistas || []} showEmpresa={true} />
+            <TeamTable title={ptBr.printPreview.pt.rescuers} members={ptData.ptResgatistas || []} showEmpresa={true} />
         )}
 
-        <Section title="ASSINATURAS" className="!mt-4">
+        <Section title={ptBr.printPreview.pt.signatures} className="!mt-4">
              <div className="grid grid-cols-3 gap-2 pt-2 text-center border border-black border-t-0 text-xs">
-                <SignaturePreview signer={ptData.ptGestorArea} label="Gestor da Área" />
-                <SignaturePreview signer={ptData.ptResponsavelAtividade} label="Responsável pela Atividade" />
-                <SignaturePreview signer={ptData.ptSesmt} label="SESMT" />
+                <SignaturePreview signer={ptData.ptGestorArea} label={ptBr.printPreview.pt.areaManager} />
+                <SignaturePreview signer={ptData.ptResponsavelAtividade} label={ptBr.printPreview.pt.activityResponsible} />
+                <SignaturePreview signer={ptData.ptSesmt} label={ptBr.printPreview.pt.sesmt} />
              </div>
         </Section>
       </main>
     </div>
   );
 }
-
-    

@@ -20,6 +20,7 @@ import { RadioGroup, RadioGroupItem } from './ui/radio-group';
 import { Switch } from './ui/switch';
 import { SignaturePad } from './signature-pad';
 import { ChangeEvent } from 'react';
+import { ptBr } from '@/lib/data/strings';
 
 
 interface PTFormProps {
@@ -77,26 +78,26 @@ const CheckboxField = ({ form, name, label }: { form: UseFormReturn<SafetyFormVa
             size="sm"
             onClick={() => append({ name: '', rgCpf: '', func: '', empresa: '', apto: '' })}
           >
-            <PlusCircle className="mr-2 h-4 w-4" /> Adicionar
+            <PlusCircle className="mr-2 h-4 w-4" /> {ptBr.actions.add}
           </Button>
         </div>
         <div className="space-y-4">
           {fields.map((item, index) => (
             <div key={item.id} className="flex items-start gap-2">
               <div className={`grid grid-cols-1 ${showEmpresa ? 'md:grid-cols-4' : 'md:grid-cols-3'} gap-4 flex-grow`}>
-                <FormField control={control} name={`${name}.${index}.name`} render={({ field }) => (<FormItem><FormLabel className={index !== 0 ? 'sr-only' : ''}>Nome</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>)} />
-                <FormField control={control} name={`${name}.${index}.rgCpf`} render={({ field }) => (<FormItem><FormLabel className={index !== 0 ? 'sr-only' : ''}>RG/CPF</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>)} />
-                <FormField control={control} name={`${name}.${index}.func`} render={({ field }) => (<FormItem><FormLabel className={index !== 0 ? 'sr-only' : ''}>Função</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>)} />
-                {showEmpresa && <FormField control={control} name={`${name}.${index}.empresa`} render={({ field }) => (<FormItem><FormLabel className={index !== 0 ? 'sr-only' : ''}>Empresa</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>)} />}
+                <FormField control={control} name={`${name}.${index}.name`} render={({ field }) => (<FormItem><FormLabel className={index !== 0 ? 'sr-only' : ''}>{ptBr.ptForm.name}</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>)} />
+                <FormField control={control} name={`${name}.${index}.rgCpf`} render={({ field }) => (<FormItem><FormLabel className={index !== 0 ? 'sr-only' : ''}>{ptBr.ptForm.rgCpf}</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>)} />
+                <FormField control={control} name={`${name}.${index}.func`} render={({ field }) => (<FormItem><FormLabel className={index !== 0 ? 'sr-only' : ''}>{ptBr.ptForm.role}</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>)} />
+                {showEmpresa && <FormField control={control} name={`${name}.${index}.empresa`} render={({ field }) => (<FormItem><FormLabel className={index !== 0 ? 'sr-only' : ''}>{ptBr.ptForm.company}</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>)} />}
                 <FormField
                   control={control}
                   name={`${name}.${index}.apto`}
                   render={({ field }) => (
-                    <FormItem className="space-y-2"><FormLabel className={index !== 0 ? 'sr-only' : ''}>Apto</FormLabel>
+                    <FormItem className="space-y-2"><FormLabel className={index !== 0 ? 'sr-only' : ''}>{ptBr.ptForm.isFit}</FormLabel>
                       <FormControl>
                         <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex items-center space-x-4">
-                          <FormItem className="flex items-center space-x-2 space-y-0"><FormControl><RadioGroupItem value="sim" /></FormControl><FormLabel className="font-normal">Sim</FormLabel></FormItem>
-                          <FormItem className="flex items-center space-x-2 space-y-0"><FormControl><RadioGroupItem value="nao" /></FormControl><FormLabel className="font-normal">Não</FormLabel></FormItem>
+                          <FormItem className="flex items-center space-x-2 space-y-0"><FormControl><RadioGroupItem value="sim" /></FormControl><FormLabel className="font-normal">{ptBr.ptForm.yes}</FormLabel></FormItem>
+                          <FormItem className="flex items-center space-x-2 space-y-0"><FormControl><RadioGroupItem value="nao" /></FormControl><FormLabel className="font-normal">{ptBr.ptForm.no}</FormLabel></FormItem>
                         </RadioGroup>
                       </FormControl>
                     </FormItem>
@@ -123,7 +124,7 @@ const CheckboxField = ({ form, name, label }: { form: UseFormReturn<SafetyFormVa
         const file = e.target.files?.[0];
         if (file) {
             if (file.size > 1 * 1024 * 1024) { // 1MB limit
-                form.setError(`${fieldPrefix}.signatureData` as any, { type: 'manual', message: 'Imagem muito grande (máx 1MB).' });
+                form.setError(`${fieldPrefix}.signatureData` as any, { type: 'manual', message: ptBr.other.imageTooLarge });
                 return;
             }
             const reader = new FileReader();
@@ -143,8 +144,8 @@ const CheckboxField = ({ form, name, label }: { form: UseFormReturn<SafetyFormVa
                 name={`${fieldPrefix}.name` as any}
                 render={({ field }) => (
                     <FormItem>
-                    <FormLabel className='text-xs font-normal'>Nome do Assinante</FormLabel>
-                    <FormControl><Input {...field} placeholder="Nome do assinante" /></FormControl>
+                    <FormLabel className='text-xs font-normal'>{ptBr.ptForm.signerName}</FormLabel>
+                    <FormControl><Input {...field} placeholder={ptBr.ptForm.signerNamePlaceholder} /></FormControl>
                     <FormMessage />
                     </FormItem>
             )}/>
@@ -154,7 +155,7 @@ const CheckboxField = ({ form, name, label }: { form: UseFormReturn<SafetyFormVa
                 name={`${fieldPrefix}.signatureType` as any}
                 render={({ field }) => (
                     <FormItem className="space-y-2">
-                    <FormLabel className="text-xs">Método de Assinatura</FormLabel>
+                    <FormLabel className="text-xs">{ptBr.safetyForm.signatureMethod}</FormLabel>
                     <FormControl>
                         <RadioGroup
                         onValueChange={field.onChange}
@@ -163,15 +164,15 @@ const CheckboxField = ({ form, name, label }: { form: UseFormReturn<SafetyFormVa
                         >
                         <FormItem className="flex items-center space-x-2 space-y-0">
                             <FormControl><RadioGroupItem value="typed" /></FormControl>
-                            <FormLabel className="font-normal text-sm leading-tight">Digitar</FormLabel>
+                            <FormLabel className="font-normal text-sm leading-tight">{ptBr.safetyForm.signatureTyped}</FormLabel>
                         </FormItem>
                         <FormItem className="flex items-center space-x-2 space-y-0">
                             <FormControl><RadioGroupItem value="draw" /></FormControl>
-                            <FormLabel className="font-normal text-sm leading-tight">Desenhar</FormLabel>
+                            <FormLabel className="font-normal text-sm leading-tight">{ptBr.safetyForm.signatureDraw}</FormLabel>
                         </FormItem>
                         <FormItem className="flex items-center space-x-2 space-y-0">
                             <FormControl><RadioGroupItem value="upload" /></FormControl>
-                            <FormLabel className="font-normal text-sm leading-tight">Carregar</FormLabel>
+                            <FormLabel className="font-normal text-sm leading-tight">{ptBr.safetyForm.signatureUpload}</FormLabel>
                         </FormItem>
                         </RadioGroup>
                     </FormControl>
@@ -186,7 +187,7 @@ const CheckboxField = ({ form, name, label }: { form: UseFormReturn<SafetyFormVa
                     <FormItem>
                     {signatureType === 'typed' && (
                         <FormControl>
-                        <Input placeholder="Digite o nome para assinar" {...field} />
+                        <Input placeholder={ptBr.safetyForm.signatureTypedPlaceholder} {...field} />
                         </FormControl>
                     )}
                     {signatureType === 'draw' && (
@@ -220,7 +221,7 @@ export function PTForm({ form }: PTFormProps) {
     return (
         <div className="space-y-6">
           <Separator />
-          <h3 className="text-lg font-semibold">Preencha os Dados da Permissão de Trabalho (PT)</h3>
+          <h3 className="text-lg font-semibold">{ptBr.ptForm.title}</h3>
           
           {/* Header Info */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -229,7 +230,7 @@ export function PTForm({ form }: PTFormProps) {
                   name="pt.ptLocalAtividade"
                   render={({ field }) => (
                       <FormItem>
-                          <FormLabel>Local da Atividade</FormLabel>
+                          <FormLabel>{ptBr.ptForm.location}</FormLabel>
                           <FormControl><Input {...field} /></FormControl>
                           <FormMessage />
                       </FormItem>
@@ -240,7 +241,7 @@ export function PTForm({ form }: PTFormProps) {
                   name="pt.ptEquipamentoLinha"
                   render={({ field }) => (
                       <FormItem>
-                          <FormLabel>Equipamento / Linha</FormLabel>
+                          <FormLabel>{ptBr.ptForm.equipment}</FormLabel>
                           <FormControl><Input {...field} /></FormControl>
                           <FormMessage />
                       </FormItem>
@@ -251,7 +252,7 @@ export function PTForm({ form }: PTFormProps) {
                   name="pt.ptData"
                   render={({ field }) => (
                       <FormItem>
-                          <FormLabel>Data</FormLabel>
+                          <FormLabel>{ptBr.ptForm.date}</FormLabel>
                           <FormControl><Input type="date" {...field} /></FormControl>
                           <FormMessage />
                       </FormItem>
@@ -263,7 +264,7 @@ export function PTForm({ form }: PTFormProps) {
                     name="pt.ptHoraInicio"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Início</FormLabel>
+                            <FormLabel>{ptBr.ptForm.startTime}</FormLabel>
                             <FormControl><Input type="time" {...field} /></FormControl>
                             <FormMessage />
                         </FormItem>
@@ -274,7 +275,7 @@ export function PTForm({ form }: PTFormProps) {
                     name="pt.ptHoraFim"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Fim</FormLabel>
+                            <FormLabel>{ptBr.ptForm.endTime}</FormLabel>
                             <FormControl><Input type="time" {...field} /></FormControl>
                             <FormMessage />
                         </FormItem>
@@ -287,7 +288,7 @@ export function PTForm({ form }: PTFormProps) {
               name="pt.ptDescricaoTarefa"
               render={({ field }) => (
                   <FormItem>
-                      <FormLabel>Descrição da Tarefa</FormLabel>
+                      <FormLabel>{ptBr.ptForm.taskDescription}</FormLabel>
                       <FormControl><Input {...field} /></FormControl>
                       <FormMessage />
                   </FormItem>
@@ -297,10 +298,10 @@ export function PTForm({ form }: PTFormProps) {
           {/* Checklist sections */}
           {ptChecklistItems.map((section) => (
             <div key={section.id}>
-                <SectionTitle>{section.title}</SectionTitle>
+                <SectionTitle>{ptBr.ptChecklist.titles[section.id as keyof typeof ptBr.ptChecklist.titles]}</SectionTitle>
                 <div className={`grid grid-cols-1 ${section.columns === 2 ? 'md:grid-cols-2' : ''} ${section.columns === 3 ? 'md:grid-cols-3' : ''} gap-x-8 gap-y-3`}>
                     {section.items.map((item) => (
-                       <CheckboxField key={item.id} form={form} name={`pt.ptChecklist.${item.id}`} label={item.label} />
+                       <CheckboxField key={item.id} form={form} name={`pt.ptChecklist.${item.id}`} label={ptBr.ptChecklist.items[item.id as keyof typeof ptBr.ptChecklist.items]} />
                     ))}
                 </div>
             </div>
@@ -308,7 +309,7 @@ export function PTForm({ form }: PTFormProps) {
 
           <Separator />
           
-          <DynamicTeamSection form={form} name="pt.ptColaboradores" title="Colaboradores" showEmpresa={true} />
+          <DynamicTeamSection form={form} name="pt.ptColaboradores" title={ptBr.ptForm.collaborators} showEmpresa={true} />
 
           {/* Optional Sections Toggles */}
           <div className='space-y-4 rounded-lg border p-4'>
@@ -317,21 +318,21 @@ export function PTForm({ form }: PTFormProps) {
               name="pt.ptEnableEspacoConfinado"
               render={({ field }) => (
                 <FormItem className="flex flex-row items-center justify-between">
-                  <FormLabel>Necessita Avaliação de Espaço Confinado?</FormLabel>
+                  <FormLabel>{ptBr.ptForm.confinedSpace}</FormLabel>
                   <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
                 </FormItem>
               )}
             />
             {enableEspacoConfinado && (
               <div className="border-t pt-4 mt-4">
-                  <SectionTitle>Trabalho em Espaço Confinado - Avaliação</SectionTitle>
+                  <SectionTitle>{ptBr.ptForm.confinedSpaceTitle}</SectionTitle>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    <FormField control={control} name="pt.ptOxigenio" render={({ field }) => (<FormItem><FormLabel>Oxigênio</FormLabel><FormControl><Input {...field} placeholder='Ex: 19,5 a 23%' /></FormControl></FormItem>)} />
-                    <FormField control={control} name="pt.ptLE" render={({ field }) => (<FormItem><FormLabel>L.E.</FormLabel><FormControl><Input {...field} placeholder='Ex: <10%' /></FormControl></FormItem>)} />
-                    <FormField control={control} name="pt.ptH2S" render={({ field }) => (<FormItem><FormLabel>H²S</FormLabel><FormControl><Input {...field} placeholder='Ex: 8 PPM' /></FormControl></FormItem>)} />
-                    <FormField control={control} name="pt.ptCO2" render={({ field }) => (<FormItem><FormLabel>CO²</FormLabel><FormControl><Input {...field} placeholder='Ex: 39 PPM' /></FormControl></FormItem>)} />
-                    <FormField control={control} name="pt.ptObservacao" render={({ field }) => (<FormItem><FormLabel>Observação</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>)} />
-                    <FormField control={control} name="pt.ptVisto" render={({ field }) => (<FormItem><FormLabel>Visto</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>)} />
+                    <FormField control={control} name="pt.ptOxigenio" render={({ field }) => (<FormItem><FormLabel>{ptBr.ptForm.oxygen}</FormLabel><FormControl><Input {...field} placeholder={ptBr.ptForm.oxygenPlaceholder} /></FormControl></FormItem>)} />
+                    <FormField control={control} name="pt.ptLE" render={({ field }) => (<FormItem><FormLabel>{ptBr.ptForm.le}</FormLabel><FormControl><Input {...field} placeholder={ptBr.ptForm.lePlaceholder} /></FormControl></FormItem>)} />
+                    <FormField control={control} name="pt.ptH2S" render={({ field }) => (<FormItem><FormLabel>{ptBr.ptForm.h2s}</FormLabel><FormControl><Input {...field} placeholder={ptBr.ptForm.h2sPlaceholder} /></FormControl></FormItem>)} />
+                    <FormField control={control} name="pt.ptCO2" render={({ field }) => (<FormItem><FormLabel>{ptBr.ptForm.co2}</FormLabel><FormControl><Input {...field} placeholder={ptBr.ptForm.co2Placeholder} /></FormControl></FormItem>)} />
+                    <FormField control={control} name="pt.ptObservacao" render={({ field }) => (<FormItem><FormLabel>{ptBr.ptForm.observation}</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>)} />
+                    <FormField control={control} name="pt.ptVisto" render={({ field }) => (<FormItem><FormLabel>{ptBr.ptForm.signature}</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>)} />
                   </div>
               </div>
             )}
@@ -341,14 +342,14 @@ export function PTForm({ form }: PTFormProps) {
               name="pt.ptEnableVigia"
               render={({ field }) => (
                 <FormItem className="flex flex-row items-center justify-between">
-                  <FormLabel>Necessita Vigia?</FormLabel>
+                  <FormLabel>{ptBr.ptForm.needsLookout}</FormLabel>
                   <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
                 </FormItem>
               )}
             />
              {enableVigia && (
               <div className="border-t pt-4 mt-4">
-                 <DynamicTeamSection form={form} name="pt.ptVigias" title="Vigias" showEmpresa={false} />
+                 <DynamicTeamSection form={form} name="pt.ptVigias" title={ptBr.ptForm.lookouts} showEmpresa={false} />
               </div>
             )}
             <Separator />
@@ -357,29 +358,27 @@ export function PTForm({ form }: PTFormProps) {
               name="pt.ptEnableResgatistas"
               render={({ field }) => (
                 <FormItem className="flex flex-row items-center justify-between">
-                  <FormLabel>Necessita Equipe de Resgate?</FormLabel>
+                  <FormLabel>{ptBr.ptForm.needsRescueTeam}</FormLabel>
                   <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
                 </FormItem>
               )}
             />
             {enableResgatistas && (
                 <div className="border-t pt-4 mt-4">
-                    <DynamicTeamSection form={form} name="pt.ptResgatistas" title="Resgatistas" showEmpresa={true} />
+                    <DynamicTeamSection form={form} name="pt.ptResgatistas" title={ptBr.ptForm.rescueTeam} showEmpresa={true} />
                 </div>
             )}
           </div>
           
            {/* Signatures */}
-          <SectionTitle>Assinaturas</SectionTitle>
+          <SectionTitle>{ptBr.ptForm.signatures}</SectionTitle>
            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <SignatureField form={form} fieldPrefix="pt.ptGestorArea" label="Gestor da Área" />
-                <SignatureField form={form} fieldPrefix="pt.ptResponsavelAtividade" label="Responsável pela Atividade" />
-                <SignatureField form={form} fieldPrefix="pt.ptSesmt" label="SESMT" />
+                <SignatureField form={form} fieldPrefix="pt.ptGestorArea" label={ptBr.ptForm.areaManager} />
+                <SignatureField form={form} fieldPrefix="pt.ptResponsavelAtividade" label={ptBr.ptForm.activityResponsible} />
+                <SignatureField form={form} fieldPrefix="pt.ptSesmt" label={ptBr.ptForm.sesmt} />
            </div>
 
 
         </div>
       );
 }
-
-    

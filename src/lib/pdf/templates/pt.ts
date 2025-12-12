@@ -2,6 +2,7 @@
 import type { Content, TableCell } from 'pdfmake/interfaces';
 import type { SafetyFormValues, PtTeamMember, PtSigner } from '@/lib/types';
 import { ptChecklistItems } from '@/lib/data/pt-checklist';
+import { ptBr } from '@/lib/data/strings';
 
 const isValidBase64 = (str: string | undefined): boolean => {
     if (!str || !str.includes(',')) return false;
@@ -139,13 +140,14 @@ export function generatePTPages(formData: SafetyFormValues): Content[] {
     // --- Checklist ---
     const checklistData = ptData.ptChecklist || {};
     ptChecklistItems.forEach(section => {
-        if (!section.items) return;
+        const checkedItems = section.items.filter(item => checklistData[item.id]);
+        if (checkedItems.length === 0) return;
         
         const allItems: Content[] = section.items.map(item => {
             return {
                 columns: [
                     { ...Checkbox(!!checklistData[item.id]), width: 10 },
-                    { text: item.label, width: '*', style: 'tdSmall' }
+                    { text: ptBr.ptChecklist.items[item.id as keyof typeof ptBr.ptChecklist.items], width: '*', style: 'tdSmall' }
                 ],
                 columnGap: 5,
                 margin: [0, 2, 0, 2]
@@ -166,7 +168,7 @@ export function generatePTPages(formData: SafetyFormValues): Content[] {
                 table: {
                     widths: ['*'],
                     body: [
-                        [{ text: section.title, style: 'sectionTitle' }],
+                        [{ text: ptBr.ptChecklist.titles[section.id as keyof typeof ptBr.ptChecklist.titles], style: 'sectionTitle' }],
                         [{
                             table: {
                                 widths: Array(section.columns).fill('*'),
@@ -270,6 +272,3 @@ export function generatePTPages(formData: SafetyFormValues): Content[] {
 
     return content;
 }
-
-    
-    

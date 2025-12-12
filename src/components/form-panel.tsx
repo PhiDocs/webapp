@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useToast } from '@/hooks/use-toast';
 import { notifyN8n } from '@/server/n8n-actions';
+import { ptBr } from '@/lib/data/strings';
 
 
 interface N8nIntegrationCardProps {}
@@ -39,8 +40,8 @@ function N8nIntegrationCard({}: N8nIntegrationCardProps) {
       if (!n8nTestUrl) {
           toast({
               variant: 'destructive',
-              title: 'URL de Teste Faltando',
-              description: 'Por favor, cole a URL de teste do n8n no campo apropriado.',
+              title: ptBr.toasts.errors.n8nTestUrlMissing,
+              description: ptBr.toasts.errors.n8nTestUrlMissingDescription,
           });
           return;
       }
@@ -60,14 +61,14 @@ function N8nIntegrationCard({}: N8nIntegrationCardProps) {
 
     if (result.success) {
       toast({
-        title: 'Sucesso!',
-        description: `Requisição enviada para a URL de ${isEditorTest ? 'teste' : 'produção'}.`,
+        title: ptBr.toasts.success.n8nConnection,
+        description: ptBr.toasts.success.n8nConnectionDescription.replace('{{target}}', isEditorTest ? ptBr.toasts.success.n8nTest : ptBr.toasts.success.n8nProduction),
       });
     } else {
       toast({
         variant: 'destructive',
-        title: `Falha na Conexão com n8n (${result.data.status || 'Rede'})`,
-        description: `O servidor respondeu com um erro: ${result.data.details || 'Verifique a URL e o console.'}`,
+        title: `${ptBr.toasts.errors.n8nConnectionFailed} (${result.data.status || ptBr.toasts.errors.n8nConnectionFailedNetwork})`,
+        description: ptBr.toasts.errors.n8nConnectionFailedDescription.replace('{{details}}', result.data.details || 'Verifique a URL e o console.'),
       });
     }
 
@@ -82,10 +83,10 @@ function N8nIntegrationCard({}: N8nIntegrationCardProps) {
         <Card>
             <CardContent className='pt-6 space-y-4'>
                 <h3 className="text-lg font-semibold flex items-center">
-                    <Zap className="mr-2" /> Integração n8n
+                    <Zap className="mr-2" /> {ptBr.n8n.title}
                 </h3>
                 <div className='space-y-2'>
-                    <Label htmlFor='n8n-prod-test'>Teste em Produção</Label>
+                    <Label htmlFor='n8n-prod-test'>{ptBr.n8n.productionTest}</Label>
                     <Button
                         id='n8n-prod-test'
                         variant="outline"
@@ -96,27 +97,27 @@ function N8nIntegrationCard({}: N8nIntegrationCardProps) {
                         {isTestingN8n ? (
                             <>
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Testando...
+                            {ptBr.actions.testingConnection}
                             </>
                         ) : (
                             <>
                             <Zap className="mr-2 h-4 w-4" />
-                            Testar Conexão de Produção
+                            {ptBr.actions.testConnection}
                             </>
                         )}
                     </Button>
                 </div>
                 <div className='space-y-2'>
-                    <Label htmlFor='n8n-test-url'>URL de Teste do Editor n8n</Label>
+                    <Label htmlFor='n8n-test-url'>{ptBr.n8n.testUrl}</Label>
                     <Input
                         id='n8n-test-url'
-                        placeholder='Cole a "Test URL" do n8n aqui'
+                        placeholder={ptBr.n8n.testUrlPlaceholder}
                         value={n8nTestUrl}
                         onChange={(e) => setN8nTestUrl(e.target.value)}
                     />
                 </div>
                 <div className='space-y-2'>
-                    <Label htmlFor='n8n-editor-test'>Teste no Editor</Label>
+                    <Label htmlFor='n8n-editor-test'>{ptBr.n8n.editorTest}</Label>
                     <Button
                         id='n8n-editor-test'
                         variant="outline"
@@ -127,16 +128,16 @@ function N8nIntegrationCard({}: N8nIntegrationCardProps) {
                         {isTestingEditor ? (
                             <>
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Enviando...
+                            {ptBr.actions.sendingToEditor}
                             </>
                         ) : (
                             <>
                             <FlaskConical className="mr-2 h-4 w-4" />
-                            Enviar para o Editor
+                            {ptBr.actions.sendToEditor}
                             </>
                         )}
                     </Button>
-                    <p className='text-xs text-muted-foreground'>Clique em "Listen for test event" no n8n antes de clicar aqui.</p>
+                    <p className='text-xs text-muted-foreground'>{ptBr.n8n.editorHelpText}</p>
                 </div>
             </CardContent>
         </Card>
@@ -159,12 +160,10 @@ export function FormPanel({ form, onNewReport, onSubmit, isLoading, mobileView }
           <div className="flex justify-between items-start">
             <div className="space-y-2">
                 <h2 className="text-2xl font-bold tracking-tight text-foreground font-headline">
-                Gere seu Documento de Segurança
+                {ptBr.formPanel.title}
                 </h2>
                 <p className="text-muted-foreground">
-                Preencha o formulário e veja a pré-visualização ao lado.
-                Nossa IA irá analisar a atividade com base nas NRs
-                brasileiras.
+                {ptBr.formPanel.description}
                 </p>
             </div>
               <AlertDialog>
@@ -173,19 +172,19 @@ export function FormPanel({ form, onNewReport, onSubmit, isLoading, mobileView }
                     variant="outline"
                   >
                     <RefreshCcw className="mr-2 h-4 w-4" />
-                    Começar Novo Relatório
+                    {ptBr.actions.startNewReport}
                   </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
+                    <AlertDialogTitle>{ptBr.formPanel.newReportConfirmation.title}</AlertDialogTitle>
                     <AlertDialogDescription>
-                      Esta ação não pode ser desfeita. Isso limpará todos os dados do formulário e a análise de IA gerada.
+                      {ptBr.formPanel.newReportConfirmation.description}
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
-                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                    <AlertDialogAction onClick={onNewReport}>Continuar</AlertDialogAction>
+                    <AlertDialogCancel>{ptBr.actions.cancel}</AlertDialogCancel>
+                    <AlertDialogAction onClick={onNewReport}>{ptBr.actions.continue}</AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>
@@ -201,3 +200,5 @@ export function FormPanel({ form, onNewReport, onSubmit, isLoading, mobileView }
     </div>
   );
 }
+
+    

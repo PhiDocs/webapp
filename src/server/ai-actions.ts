@@ -3,13 +3,14 @@
 import { generateSafetyAnalysis, type SafetyAnalysisOutput } from '@/ai/flows/generate-safety-analysis';
 import { recommendProtectiveEquipment, type ProtectiveEquipmentOutput } from '@/ai/flows/recommend-protective-equipment';
 import { formSchema } from '@/lib/types';
+import { ptBr } from '@/lib/data/strings';
 
 export async function getSafetyAnalysis(data: { activityDescription: string }): Promise<{ data: SafetyAnalysisOutput | null; error: string | null }> {
   const parsed = formSchema.partial().safeParse({ activityDescription: data.activityDescription });
   
   if (!parsed.success) {
     const errorMessage = parsed.error.errors.map((e) => e.message).join(', ');
-    return { data: null, error: `Entrada inválida: ${errorMessage}` };
+    return { data: null, error: ptBr.validations.invalidInput.replace('{{details}}', errorMessage) };
   }
 
   try {
@@ -17,7 +18,7 @@ export async function getSafetyAnalysis(data: { activityDescription: string }): 
     return { data: analysis, error: null };
   } catch (e) {
     console.error(e);
-    return { data: null, error: 'Falha ao gerar a análise de segurança. Por favor, tente novamente mais tarde.' };
+    return { data: null, error: ptBr.validations.safetyAnalysisFailed };
   }
 }
 
@@ -26,7 +27,7 @@ export async function getProtectiveEquipment(data: { activityDescription: string
 
   if (!parsed.success) {
     const errorMessage = parsed.error.errors.map((e) => e.message).join(', ');
-    return { data: null, error: `Entrada inválida: ${errorMessage}` };
+    return { data: null, error: ptBr.validations.invalidInput.replace('{{details}}', errorMessage) };
   }
 
   try {
@@ -34,6 +35,8 @@ export async function getProtectiveEquipment(data: { activityDescription: string
     return { data: equipment, error: null };
   } catch (e) {
     console.error(e);
-    return { data: null, error: 'Falha ao gerar recomendações de equipamento. Por favor, tente novamente mais tarde.' };
+    return { data: null, error: ptBr.validations.equipmentRecommendationFailed };
   }
 }
+
+    

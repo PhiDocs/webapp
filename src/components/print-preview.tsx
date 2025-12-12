@@ -7,6 +7,7 @@ import type { ProtectiveEquipmentOutput } from '@/ai/flows/recommend-protective-
 import { Logo } from '@/components/icons/logo';
 import { PTPreview } from './pt-preview';
 import { ClipboardList, UserCheck, ShieldCheck, HardHat, Construction, Users } from 'lucide-react';
+import { ptBr } from '@/lib/data/strings';
 
 
 interface PrintPreviewProps {
@@ -42,19 +43,19 @@ function APRHeader({ data }: { data: SafetyFormValues }) {
              <Logo className="h-12 w-12 text-gray-700" />
           )}
           <div className='flex-1 min-w-0'>
-            <h1 className="text-xl font-bold text-gray-800 break-words">{data.companyName || 'Nome da Empresa'}</h1>
+            <h1 className="text-xl font-bold text-gray-800 break-words">{data.companyName || '...'}</h1>
             <p className='text-sm mt-2 font-bold'>
-              APR - Analise Preliminar de Risco
+              {ptBr.printPreview.apr.title}
             </p>
           </div>
         </div>
         <div className="flex flex-row gap-2 shrink-0">
           <div className='border p-1 text-center min-w-[100px] rounded-t-md'>
-            <p className='text-xs font-bold'>APR Nº</p>
+            <p className='text-xs font-bold'>{ptBr.printPreview.apr.aprNumber}</p>
             <p className='text-sm'>&nbsp;</p>
           </div>
           <div className='border p-1 text-center min-w-[100px] rounded-t-md'>
-            <p className='text-xs font-bold'>Revisão</p>
+            <p className='text-xs font-bold'>{ptBr.printPreview.apr.review}</p>
             <p className='text-sm'>01</p>
           </div>
         </div>
@@ -74,10 +75,10 @@ function PrintFooter() {
             <div className="footer-content-wrapper">
                 <div className="flex justify-between items-center w-full text-xs text-gray-500">
                     <div className="text-left">
-                        <p>Deve ser disponibilizado a qualquer tempo para a Inspeção do Trabalho - MTE</p>
+                        <p>{ptBr.printPreview.footer.mte}</p>
                     </div>
                     <div className="text-center">
-                        <p>Data: {date}</p>
+                        <p>{ptBr.printPreview.footer.date} {date}</p>
                     </div>
                     <div className="text-right">
                        {/* Page numbers are now handled by pdfmake */}
@@ -106,13 +107,13 @@ const Section = ({ title, icon, children }: { title: string, icon: React.Element
 
 function ResponsiblesSection({ data }: { data: SafetyFormValues }) {
   return (
-    <Section title="RESPONSÁVEL PELO ACOMPANHAMENTO DOS SERVIÇOS" icon={UserCheck}>
+    <Section title={ptBr.printPreview.apr.responsibles} icon={UserCheck}>
       <table className="w-full border-collapse border mt-0 analysis-table">
         <thead className='analysis-table-header'>
           <tr>
-            <th className="text-left w-[40%]">NOME</th>
-            <th className="text-left w-[30%]">FUNÇÃO</th>
-            <th className="text-left w-[30%]">ASSINATURA</th>
+            <th className="text-left w-[40%]">{ptBr.printPreview.apr.name}</th>
+            <th className="text-left w-[30%]">{ptBr.printPreview.apr.role}</th>
+            <th className="text-left w-[30%]">{ptBr.printPreview.apr.signature}</th>
           </tr>
         </thead>
         <tbody>
@@ -136,13 +137,13 @@ function TeamSection({ data }: { data: SafetyFormValues }) {
   if (teamMembers.length === 0) return null;
 
   return (
-    <Section title="EQUIPE DE TRABALHO" icon={Users}>
+    <Section title={ptBr.printPreview.apr.team} icon={Users}>
       <table className="w-full border-collapse border mt-0 analysis-table">
         <thead className='analysis-table-header'>
           <tr>
-            <th className="text-left w-1/3">DATA</th>
-            <th className="text-left w-1/3">NOME</th>
-            <th className="text-left w-1/3">FUNÇÃO / EMPRESA</th>
+            <th className="text-left w-1/3">{ptBr.printPreview.apr.date}</th>
+            <th className="text-left w-1/3">{ptBr.printPreview.apr.name}</th>
+            <th className="text-left w-1/3">{ptBr.printPreview.apr.role}</th>
           </tr>
         </thead>
         <tbody>
@@ -161,14 +162,14 @@ function TeamSection({ data }: { data: SafetyFormValues }) {
 
 function AnalysisTable({ steps }: { steps: any[] }) {
   return (
-     <Section title="PROCEDIMENTO OPERACIONAL" icon={ShieldCheck}>
+     <Section title={ptBr.printPreview.apr.operationalProcedure} icon={ShieldCheck}>
         <table className="w-full border-collapse text-xs analysis-table">
             <thead className='analysis-table-header'>
                 <tr>
-                    <th className="p-1 text-left w-[5%]">ITEM</th>
-                    <th className="p-1 text-left w-[25%]">ATIVIDADES</th>
-                    <th className="p-1 text-left w-[25%]">RISCOS POTENCIAIS</th>
-                    <th className="p-1 text-left w-[45%]">MEDIDAS PREVENTIVAS / RECOMENDAÇÕES DE SEGURANÇA</th>
+                    <th className="p-1 text-left w-[5%]">{ptBr.printPreview.apr.item}</th>
+                    <th className="p-1 text-left w-[25%]">{ptBr.printPreview.apr.activities}</th>
+                    <th className="p-1 text-left w-[25%]">{ptBr.printPreview.apr.potentialRisks}</th>
+                    <th className="p-1 text-left w-[45%]">{ptBr.printPreview.apr.preventiveMeasures}</th>
                 </tr>
             </thead>
             <tbody>
@@ -191,20 +192,20 @@ function EquipmentSection({ data }: { data: ProtectiveEquipmentOutput | null }) 
 
   return (
     <div className='grid grid-cols-2 gap-4'>
-        <Section title="EPI NECESSÁRIO" icon={HardHat}>
+        <Section title={ptBr.printPreview.apr.requiredEpi} icon={HardHat}>
             <div className='p-2'>
                 <ul className="list-disc pl-4 space-y-1 text-sm">
                     {data.epiItems.map((item, index) => <li key={`epi-${index}`}>{item}</li>)}
                 </ul>
-                <p className="text-xs italic mt-2"><strong>OBS.:</strong> {data.epiNote}</p>
+                <p className="text-xs italic mt-2"><strong>{ptBr.printPreview.apr.obs}</strong> {data.epiNote}</p>
             </div>
         </Section>
-        <Section title="EPC NECESSÁRIO" icon={Construction}>
+        <Section title={ptBr.printPreview.apr.requiredEpc} icon={Construction}>
             <div className='p-2'>
                 <ul className="list-disc pl-4 space-y-1 text-sm">
                     {data.epcItems.map((item, index) => <li key={`epc-${index}`}>{item}</li>)}
                 </ul>
-                 <p className="text-xs italic mt-2"><strong>OBS.:</strong> {data.epcNote}</p>
+                 <p className="text-xs italic mt-2"><strong>{ptBr.printPreview.apr.obs}</strong> {data.epcNote}</p>
             </div>
         </Section>
     </div>
@@ -218,7 +219,7 @@ function getShortDate(dateString: string | undefined) {
     const zonedDate = new Date(date.valueOf() + date.getTimezoneOffset() * 60 * 1000);
     return zonedDate.toLocaleDateString('pt-BR');
   } catch (e) {
-    return 'Data inválida'
+    return ptBr.other.invalidDate;
   }
 }
 
@@ -231,22 +232,22 @@ export function APRPreviewContent({ formData, analysisData, equipmentData }: { f
         <div className="page-content-wrapper">
             <APRHeader data={formData} />
              <main className='print-main'>
-                <Section title="DADOS DA OBRA" icon={ClipboardList}>
+                <Section title={ptBr.printPreview.apr.workData} icon={ClipboardList}>
                      <table className="w-full border-collapse info-grid">
                         <tbody>
                             <tr>
-                                <td className="w-1/2"><strong>NOME:</strong>{formData.workName || '...'}</td>
-                                <td className="w-1/2"><strong>ENDEREÇO:</strong>{formData.workAddress || '...'}</td>
+                                <td className="w-1/2"><strong>{ptBr.printPreview.apr.workName}</strong>{formData.workName || '...'}</td>
+                                <td className="w-1/2"><strong>{ptBr.printPreview.apr.workAddress}</strong>{formData.workAddress || '...'}</td>
                             </tr>
                             <tr>
-                                <td><strong>PREVISÃO DATA INICIO:</strong>{getShortDate(formData.startDate)}</td>
-                                <td><strong>PREVISÃO DATA TÉRMINO:</strong>{getShortDate(formData.endDate)}</td>
+                                <td><strong>{ptBr.printPreview.apr.startDate}</strong>{getShortDate(formData.startDate)}</td>
+                                <td><strong>{ptBr.printPreview.apr.endDate}</strong>{getShortDate(formData.endDate)}</td>
                             </tr>
                             <tr>
-                                <td colSpan={2}><strong>LOCAL DA OBRA / PAVIMENTO:</strong>{formData.workLocationDetails || '...'}</td>
+                                <td colSpan={2}><strong>{ptBr.printPreview.apr.workLocation}</strong>{formData.workLocationDetails || '...'}</td>
                             </tr>
                             <tr>
-                                <td colSpan={2}><strong>Descrição da atividade:</strong>{formData.activityDescription || '...'}</td>
+                                <td colSpan={2}><strong>{ptBr.printPreview.apr.activityDescription}</strong>{formData.activityDescription || '...'}</td>
                             </tr>
                         </tbody>
                     </table>
@@ -257,9 +258,9 @@ export function APRPreviewContent({ formData, analysisData, equipmentData }: { f
                 {showAnalysis ? (
                    <AnalysisTable steps={analysisData.proceduralSteps} />
                 ) : (
-                    <Section title="PROCEDIMENTO OPERACIONAL" icon={ShieldCheck}>
+                    <Section title={ptBr.printPreview.apr.operationalProcedure} icon={ShieldCheck}>
                         <div className="text-center text-gray-500 italic py-8 border-2 border-dashed rounded-lg">
-                            A análise de procedimento operacional aparecerá aqui após ser gerada.
+                            {ptBr.printPreview.apr.analysisPlaceholder}
                         </div>
                     </Section>
                 )}
@@ -287,3 +288,5 @@ export function PrintPreview({ formData, analysisData, equipmentData }: PrintPre
       </div>
   );
 }
+
+    

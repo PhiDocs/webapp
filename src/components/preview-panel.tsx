@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { FileDown, Loader2 } from 'lucide-react';
 import { cn } from "@/lib/utils";
+import { ptBr } from '@/lib/data/strings';
 
 interface PreviewPanelProps {
   isLoading: boolean;
@@ -46,10 +47,10 @@ export function PreviewPanel({
               <div className="flex flex-col items-center gap-4 text-center p-6 bg-background rounded-xl shadow-2xl">
                 <Loader2 className="h-12 w-12 animate-spin text-primary" />
                 <h3 className="text-xl font-semibold">
-                  Gerando Análise...
+                  {ptBr.previewPanel.loading.title}
                 </h3>
                 <p className="text-muted-foreground">
-                  Aguarde enquanto nossa IA prepara seu relatório.
+                  {ptBr.previewPanel.loading.description}
                 </p>
               </div>
             </div>
@@ -60,7 +61,7 @@ export function PreviewPanel({
               <Card className="flex h-full min-h-[400px] w-full flex-col items-center justify-center bg-destructive/10 border-destructive">
                 <CardContent className="flex flex-col items-center justify-center gap-4 text-center p-6">
                   <h3 className="text-xl font-semibold text-destructive-foreground">
-                    Erro
+                    {ptBr.previewPanel.error.title}
                   </h3>
                   <p className="text-destructive-foreground/80">
                     {error}
@@ -88,12 +89,12 @@ export function PreviewPanel({
               {isDownloading ? (
                   <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Baixando...
+                  {ptBr.actions.generatingPdf}
                   </>
               ) : (
                   <>
                   <FileDown className="mr-2 h-4 w-4" />
-                  Baixar PDF
+                  {ptBr.actions.generatePdf}
                   </>
               )}
           </Button>
@@ -101,3 +102,5 @@ export function PreviewPanel({
     </div>
   );
 }
+
+    

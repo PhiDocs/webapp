@@ -3,6 +3,7 @@
 import { Logo } from '@/components/icons/logo';
 import { Button } from '@/components/ui/button';
 import { FileDown, Loader2, FormInput, Eye } from 'lucide-react';
+import { ptBr } from '@/lib/data/strings';
 
 interface HeaderProps {
   mobileView: 'form' | 'preview';
@@ -29,7 +30,7 @@ export function Header({
         <div className="flex items-center gap-3">
           <Logo className="h-8 w-8 text-primary" />
           <h1 className="text-xl font-bold text-foreground font-headline">
-            Safety Docs AI
+            {ptBr.header.title}
           </h1>
         </div>
         
@@ -42,7 +43,7 @@ export function Header({
               className="flex-1"
             >
                 <FormInput className="mr-2 h-4 w-4" />
-                Formulário
+                {ptBr.header.form}
             </Button>
             <Button
               size="sm"
@@ -51,7 +52,7 @@ export function Header({
               className="flex-1"
             >
                 <Eye className="mr-2 h-4 w-4" />
-                Pré-visualização
+                {ptBr.header.preview}
             </Button>
         </div>
 
@@ -63,12 +64,12 @@ export function Header({
             {isDownloading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Baixando...
+                {ptBr.actions.generatingPdf}
               </>
             ) : (
               <>
                 <FileDown className="mr-2 h-4 w-4" />
-                Baixar PDF
+                {ptBr.actions.generatePdf}
               </>
             )}
           </Button>
@@ -77,3 +78,5 @@ export function Header({
     </header>
   );
 }
+
+    
