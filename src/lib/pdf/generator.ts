@@ -1,4 +1,6 @@
 
+'use server';
+
 import type { TDocumentDefinitions } from 'pdfmake/interfaces';
 import type { SafetyFormValues } from '@/lib/types';
 import type { SafetyAnalysisOutput } from '@/ai/flows/generate-safety-analysis';
@@ -7,11 +9,9 @@ import { generateAPRPages } from './templates/apr';
 import { generatePTPages } from './templates/pt';
 import { DOCUMENT_TYPES } from '@/lib/constants';
 
-// Import pdfmake and fonts
-import pdfMake from "pdfmake/build/pdfmake";
-import pdfFonts from "pdfmake/build/vfs_fonts";
-pdfMake.vfs = pdfFonts.pdfMake.vfs;
-
+// Import pdfmake and fonts for server-side usage
+const Pdfmake = require('pdfmake');
+const pdfFonts = require('pdfmake/build/vfs_fonts.js');
 
 // Main PDF Generation Function (Server-Side)
 export async function generatePdf(
@@ -22,6 +22,15 @@ export async function generatePdf(
   
   return new Promise((resolve, reject) => {
     try {
+      const printer = new Pdfmake({
+        Roboto: {
+          normal: Buffer.from(pdfFonts.pdfMake.vfs['Roboto-Regular.ttf'], 'base64'),
+          bold: Buffer.from(pdfFonts.pdfMake.vfs['Roboto-Medium.ttf'], 'base64'),
+          italics: Buffer.from(pdfFonts.pdfMake.vfs['Roboto-Italic.ttf'], 'base64'),
+          bolditalics: Buffer.from(pdfFonts.pdfMake.vfs['Roboto-MediumItalic.ttf'], 'base64'),
+        }
+      });
+
       const docDefinition: TDocumentDefinitions = {
         pageSize: 'A4',
         pageMargins: [25, 25, 25, 40], // [left, top, right, bottom]
@@ -86,13 +95,20 @@ export async function generatePdf(
       const docName = formData.documentType === DOCUMENT_TYPES.APR ? DOCUMENT_TYPES.APR : DOCUMENT_TYPES.PT;
       const fileName = `${docName}-${(formData.companyName || 'doc').replace(/ /g, "_")}-${new Date().toLocaleDateString('pt-br').replace(/\//g, '-')}.pdf`;
 
-      const pdfDoc = pdfMake.createPdf(docDefinition);
+      const pdfDoc = printer.createPdfKitDocument(docDefinition);
       
-      pdfDoc.getDataUrl((dataUrl) => {
-        resolve({ fileName, dataUrl });
-      }, (err) => {
-          reject(err);
+      const chunks: Buffer[] = [];
+      pdfDoc.on('data', chunk => {
+        chunks.push(chunk);
       });
+
+      pdfDoc.on('end', () => {
+        const result = Buffer.concat(chunks);
+        const dataUrl = `data:application/pdf;base64,${result.toString('base64')}`;
+        resolve({ fileName, dataUrl });
+      });
+
+      pdfDoc.end();
 
     } catch (error) {
       console.error("Error during PDF document definition:", error);
