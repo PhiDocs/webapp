@@ -13,6 +13,7 @@ const validationMessages = {
   workAddress: 'Endereço da obra é obrigatório.',
   startDate: 'Data de início é obrigatória.',
   endDate: 'Data de término é obrigatória.',
+  endDateBeforeStartDate: 'A data de término não pode ser anterior à data de início.',
   workLocation: 'Local da obra/pavimento é obrigatório.',
   activityDescription: 'A descrição da atividade deve ter pelo menos 10 caracteres.',
   ptLocation: 'Local da atividade é obrigatório.',
@@ -123,6 +124,15 @@ export const formSchema = z.object({
         if (!data.endDate) ctx.addIssue({ code: z.ZodIssueCode.custom, message: validationMessages.endDate, path: ["endDate"] });
         if (!data.workLocationDetails) ctx.addIssue({ code: z.ZodIssueCode.custom, message: validationMessages.workLocation, path: ["workLocationDetails"] });
         if (!data.activityDescription || data.activityDescription.length < 10) ctx.addIssue({ code: z.ZodIssueCode.custom, message: validationMessages.activityDescription, path: ["activityDescription"] });
+
+        if (data.startDate && data.endDate && new Date(data.endDate) < new Date(data.startDate)) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: validationMessages.endDateBeforeStartDate,
+            path: ['endDate'],
+          });
+        }
+
     } else if (data.documentType === DOCUMENT_TYPES.PT) {
         if (!data.companyName) ctx.addIssue({ code: z.ZodIssueCode.custom, message: validationMessages.companyName, path: ["companyName"] });
         if (!data.pt.ptLocalAtividade) ctx.addIssue({ code: z.ZodIssueCode.custom, message: validationMessages.ptLocation, path: ["pt", "ptLocalAtividade"] });
