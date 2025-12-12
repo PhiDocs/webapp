@@ -39,7 +39,7 @@ export function PreviewPanel({
   const canDownload = isPtReady || isAprReady;
 
   return (
-    <div className={cn("relative flex-col bg-muted h-full", mobileView === 'preview' ? 'flex' : 'hidden xl:flex')}>
+    <div className={cn("relative flex-col bg-muted h-full no-print", mobileView === 'preview' ? 'flex' : 'hidden xl:flex')}>
       <ScrollArea className="h-full">
         <div className="print-container-wrapper p-4 sm:p-8">
           {isLoading && (
@@ -71,13 +71,11 @@ export function PreviewPanel({
             </div>
           )}
           
-          <div className="xl:block">
-            <PrintPreview
-                formData={liveFormData}
-                analysisData={analysisData}
-                equipmentData={equipmentData}
-            />
-          </div>
+          <PrintPreview
+              formData={liveFormData}
+              analysisData={analysisData}
+              equipmentData={equipmentData}
+          />
 
         </div>
       </ScrollArea>
