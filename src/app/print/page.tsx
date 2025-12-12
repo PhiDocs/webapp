@@ -55,7 +55,7 @@ export default function PrintPage() {
   }
 
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning={true}>
       <head>
         <title>{`${data.formData.documentType} - ${data.formData.companyName}`}</title>
          <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -77,7 +77,7 @@ export default function PrintPage() {
             }
         ` }} />
       </head>
-      <body className="print-body">
+      <body className="print-body" suppressHydrationWarning={true}>
         <div className="print-bg">
             <PrintPreview formData={data.formData} analysisData={data.analysisData} equipmentData={data.equipmentData} />
         </div>
