@@ -269,7 +269,7 @@ export function PrintPreview({ formData, analysisData, equipmentData }: PrintPre
   const documentType = formData?.documentType;
 
   return (
-      <div id="print-content-root" className="print-document-container w-[210mm] min-h-[297mm] bg-white shadow-lg rounded-lg text-gray-800 font-sans p-[15mm]">
+      <div id="print-content-root" className="print-document-container w-[210mm] min-h-[297mm] bg-white shadow-lg rounded-lg text-gray-800 font-sans p-[15mm] print:p-0">
           {documentType === DOCUMENT_TYPES.APR ? (
               <APRPreviewContent formData={formData} analysisData={analysisData} equipmentData={equipmentData} />
           ) : (
