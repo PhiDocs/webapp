@@ -14,22 +14,20 @@ export async function generatePdfOnServer(
     equipmentData: ProtectiveEquipmentOutput | null
 ): Promise<{ fileName: string; dataUrl: string; error?: string }> {
 
-  // The validation is already done on the client before calling this action.
-  // Parsing here can cause module loading issues between server/client components.
-  // const parsed = formSchema.safeParse(formData);
-  // if (!parsed.success) {
-  //   const errorMessage = parsed.error.errors.map((e) => e.message).join(', ');
-  //   console.error('Falha na validação do PDF no servidor:', errorMessage);
-  //   return {
-  //     fileName: '',
-  //     dataUrl: '',
-  //     error: ptBr.validations.invalidFormData.replace('{{details}}', errorMessage),
-  //   };
-  // }
+  const parsed = formSchema.safeParse(formData);
+  if (!parsed.success) {
+    const errorMessage = parsed.error.errors.map((e) => e.message).join(', ');
+    console.error('Falha na validação do PDF no servidor:', errorMessage);
+    return {
+      fileName: '',
+      dataUrl: '',
+      error: ptBr.validations.invalidFormData.replace('{{details}}', errorMessage),
+    };
+  }
 
   try {
-    // We pass the raw formData, assuming it's been validated on the client.
-    const { fileName, dataUrl } = await generatePdf(formData, analysisData, equipmentData);
+    // We pass the parsed.data to ensure we're using the validated and typed data
+    const { fileName, dataUrl } = await generatePdf(parsed.data, analysisData, equipmentData);
     return { fileName, dataUrl };
   } catch (error: any) {
     console.error('Falha ao gerar o PDF no servidor:', error);

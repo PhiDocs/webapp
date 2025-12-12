@@ -1,6 +1,25 @@
 import { z } from 'zod';
-import { ptBr } from './data/strings';
 import { DOCUMENT_TYPES, PT_FIT_STATUS, SIGNATURE_TYPES } from './constants';
+
+const validationMessages = {
+  responsibleName: 'Nome do responsável é obrigatório.',
+  responsibleRole: 'Função do responsável é obrigatória.',
+  teamDate: 'Data é obrigatória.',
+  teamName: 'Nome do membro da equipe é obrigatório.',
+  teamRole: 'Função/Empresa é obrigatória.',
+  atLeastOneResponsible: 'Adicione pelo menos um responsável.',
+  companyName: 'Nome da empresa é obrigatório.',
+  workName: 'Nome da obra é obrigatório.',
+  workAddress: 'Endereço da obra é obrigatório.',
+  startDate: 'Data de início é obrigatória.',
+  endDate: 'Data de término é obrigatória.',
+  workLocation: 'Local da obra/pavimento é obrigatório.',
+  activityDescription: 'A descrição da atividade deve ter pelo menos 10 caracteres.',
+  ptLocation: 'Local da atividade é obrigatório.',
+  ptDate: 'Data é obrigatória.',
+  ptStartTime: 'Hora de início é obrigatória.',
+};
+
 
 const signatureTypeSchema = z.enum([
     SIGNATURE_TYPES.TYPED, 
@@ -9,16 +28,16 @@ const signatureTypeSchema = z.enum([
 ]);
 
 export const responsiblePersonSchema = z.object({
-  name: z.string().min(1, ptBr.validations.responsibleName),
-  role: z.string().min(1, ptBr.validations.responsibleRole),
+  name: z.string().min(1, validationMessages.responsibleName),
+  role: z.string().min(1, validationMessages.responsibleRole),
   signatureType: signatureTypeSchema.default(SIGNATURE_TYPES.TYPED),
   signatureData: z.string().optional(),
 });
 
 export const teamMemberSchema = z.object({
-  date: z.string().min(1, ptBr.validations.teamDate),
-  name: z.string().min(1, ptBr.validations.teamName),
-  role: z.string().min(1, ptBr.validations.teamRole),
+  date: z.string().min(1, validationMessages.teamDate),
+  name: z.string().min(1, validationMessages.teamName),
+  role: z.string().min(1, validationMessages.teamRole),
 });
 
 export const ptChecklistSchema = z.record(z.boolean());
@@ -88,7 +107,7 @@ export const formSchema = z.object({
   activityDescription: z.string().optional(),
   
   // Responsible Person (APR)
-  responsiblePersons: z.array(responsiblePersonSchema).min(1, ptBr.validations.atLeastOneResponsible),
+  responsiblePersons: z.array(responsiblePersonSchema).min(1, validationMessages.atLeastOneResponsible),
 
   // Team (APR)
   teamMembers: z.array(teamMemberSchema).optional(),
@@ -97,18 +116,18 @@ export const formSchema = z.object({
   pt: ptFormSchema,
 }).superRefine((data, ctx) => {
     if (data.documentType === DOCUMENT_TYPES.APR) {
-        if (!data.companyName) ctx.addIssue({ code: z.ZodIssueCode.custom, message: ptBr.validations.companyName, path: ["companyName"] });
-        if (!data.workName) ctx.addIssue({ code: z.ZodIssueCode.custom, message: ptBr.validations.workName, path: ["workName"] });
-        if (!data.workAddress) ctx.addIssue({ code: z.ZodIssueCode.custom, message: ptBr.validations.workAddress, path: ["workAddress"] });
-        if (!data.startDate) ctx.addIssue({ code: z.ZodIssueCode.custom, message: ptBr.validations.startDate, path: ["startDate"] });
-        if (!data.endDate) ctx.addIssue({ code: z.ZodIssueCode.custom, message: ptBr.validations.endDate, path: ["endDate"] });
-        if (!data.workLocationDetails) ctx.addIssue({ code: z.ZodIssueCode.custom, message: ptBr.validations.workLocation, path: ["workLocationDetails"] });
-        if (!data.activityDescription || data.activityDescription.length < 10) ctx.addIssue({ code: z.ZodIssueCode.custom, message: ptBr.validations.activityDescription, path: ["activityDescription"] });
+        if (!data.companyName) ctx.addIssue({ code: z.ZodIssueCode.custom, message: validationMessages.companyName, path: ["companyName"] });
+        if (!data.workName) ctx.addIssue({ code: z.ZodIssueCode.custom, message: validationMessages.workName, path: ["workName"] });
+        if (!data.workAddress) ctx.addIssue({ code: z.ZodIssueCode.custom, message: validationMessages.workAddress, path: ["workAddress"] });
+        if (!data.startDate) ctx.addIssue({ code: z.ZodIssueCode.custom, message: validationMessages.startDate, path: ["startDate"] });
+        if (!data.endDate) ctx.addIssue({ code: z.ZodIssueCode.custom, message: validationMessages.endDate, path: ["endDate"] });
+        if (!data.workLocationDetails) ctx.addIssue({ code: z.ZodIssueCode.custom, message: validationMessages.workLocation, path: ["workLocationDetails"] });
+        if (!data.activityDescription || data.activityDescription.length < 10) ctx.addIssue({ code: z.ZodIssueCode.custom, message: validationMessages.activityDescription, path: ["activityDescription"] });
     } else if (data.documentType === DOCUMENT_TYPES.PT) {
-        if (!data.companyName) ctx.addIssue({ code: z.ZodIssueCode.custom, message: ptBr.validations.companyName, path: ["companyName"] });
-        if (!data.pt.ptLocalAtividade) ctx.addIssue({ code: z.ZodIssueCode.custom, message: ptBr.validations.ptLocation, path: ["pt", "ptLocalAtividade"] });
-        if (!data.pt.ptData) ctx.addIssue({ code: z.ZodIssueCode.custom, message: ptBr.validations.ptDate, path: ["pt", "ptData"] });
-        if (!data.pt.ptHoraInicio) ctx.addIssue({ code: z.ZodIssueCode.custom, message: ptBr.validations.ptStartTime, path: ["pt", "ptHoraInicio"] });
+        if (!data.companyName) ctx.addIssue({ code: z.ZodIssueCode.custom, message: validationMessages.companyName, path: ["companyName"] });
+        if (!data.pt.ptLocalAtividade) ctx.addIssue({ code: z.ZodIssueCode.custom, message: validationMessages.ptLocation, path: ["pt", "ptLocalAtividade"] });
+        if (!data.pt.ptData) ctx.addIssue({ code: z.ZodIssueCode.custom, message: validationMessages.ptDate, path: ["pt", "ptData"] });
+        if (!data.pt.ptHoraInicio) ctx.addIssue({ code: z.ZodIssueCode.custom, message: validationMessages.ptStartTime, path: ["pt", "ptHoraInicio"] });
     }
 });
 
