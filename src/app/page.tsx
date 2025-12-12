@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -8,44 +7,21 @@ import type { SafetyFormValues } from '@/lib/types';
 import { getSafetyAnalysis, getProtectiveEquipment } from '@/server/ai-actions';
 import { generatePdfOnServer } from '@/server/pdf-actions';
 import { notifyN8n } from '@/server/n8n-actions';
-import { Logo } from '@/components/icons/logo';
-import { SafetyForm } from '@/components/safety-form';
-import { Card, CardContent } from '@/components/ui/card';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { formSchema } from '@/lib/types';
-import { PrintPreview } from '@/components/print-preview';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Button } from '@/components/ui/button';
-import { FileDown, Loader2, Zap, FlaskConical, FormInput, Eye, RefreshCcw } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { cn } from "@/lib/utils";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
-
+import { Header } from '@/components/header';
+import { FormPanel } from '@/components/form-panel';
+import { PreviewPanel } from '@/components/preview-panel';
 
 import './print/print-layout.css';
-
 
 export default function Home() {
   const [analysis, setAnalysis] = useState<SafetyAnalysisOutput | null>(null);
   const [equipment, setEquipment] = useState<ProtectiveEquipmentOutput | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
-  const [isTestingN8n, setIsTestingN8n] = useState(false);
-  const [isTestingEditor, setIsTestingEditor] = useState(false);
-  const [n8nTestUrl, setN8nTestUrl] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [mobileView, setMobileView] = useState<'form' | 'preview'>('form');
 
@@ -138,7 +114,7 @@ export default function Home() {
     }
 
     setIsLoading(false);
-    setMobileView('preview'); // Switch to preview on mobile after generating
+    setMobileView('preview');
   };
 
   const handleNewReport = () => {
@@ -147,7 +123,6 @@ export default function Home() {
     setError(null);
     form.reset();
   };
-
 
   const handleGeneratePdf = async () => {
     const formData = form.getValues();
@@ -164,29 +139,24 @@ export default function Home() {
 
     setIsDownloading(true);
     try {
-      // 1. Chama a Server Action para gerar o PDF no servidor
       const { fileName, dataUrl, error } = await generatePdfOnServer(formData, analysis, equipment);
       
       if (error || !dataUrl) {
           throw new Error(error || "A geração do PDF falhou no servidor.");
       }
 
-      // 2. Prepara o payload para o n8n, incluindo o PDF como data URL.
       const payload = {
         event: 'pdf_generated',
         documentType: formData.documentType,
         fileName,
-        pdfDataUrl: dataUrl, // O PDF em si!
+        pdfDataUrl: dataUrl,
         formData: formData,
         analysisData: analysis,
         equipmentData: equipment,
       };
 
-      // 3. Envia os dados para a URL de teste (se fornecida) ou para a de produção.
-      const targetWebhookUrl = n8nTestUrl || undefined;
-      await notifyN8n(payload, targetWebhookUrl);
+      await notifyN8n(payload);
       
-      // 4. Inicia o download do arquivo no navegador do usuário.
       const link = document.createElement('a');
       link.href = dataUrl;
       link.download = fileName;
@@ -212,275 +182,38 @@ export default function Home() {
     }
   };
 
-  const handleTestN8n = async (isEditorTest: boolean) => {
-    if (isEditorTest) {
-      if (!n8nTestUrl) {
-          toast({
-              variant: 'destructive',
-              title: 'URL de Teste Faltando',
-              description: 'Por favor, cole a URL de teste do n8n no campo apropriado.',
-          });
-          return;
-      }
-      setIsTestingEditor(true);
-    } else {
-      setIsTestingN8n(true);
-    }
-
-    const testPayload = {
-      message: "Conexão com n8n funcionando! Teste enviado pelo botão do App.",
-      testId: `test-${Math.random().toString(36).substring(7)}`,
-      timestamp: new Date().toISOString(),
-      testType: isEditorTest ? 'Editor' : 'Production'
-    };
-
-    const result = await notifyN8n(testPayload, isEditorTest ? n8nTestUrl : undefined);
-
-    if (result.success) {
-      toast({
-        title: 'Sucesso!',
-        description: `Requisição enviada para a URL de ${isEditorTest ? 'teste' : 'produção'}.`,
-      });
-    } else {
-      toast({
-        variant: 'destructive',
-        title: `Falha na Conexão com n8n (${result.data.status || 'Rede'})`,
-        description: `O servidor respondeu com um erro: ${result.data.details || 'Verifique a URL e o console.'}`,
-      });
-    }
-
-    if (isEditorTest) {
-      setIsTestingEditor(false);
-    } else {
-      setIsTestingN8n(false);
-    }
-  };
-
-
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <header className="sticky top-0 z-20 w-full border-b bg-background/80 backdrop-blur-sm">
-        <div className="container mx-auto flex h-16 items-center justify-between px-4 md:px-6">
-          <div className="flex items-center gap-3">
-            <Logo className="h-8 w-8 text-primary" />
-            <h1 className="text-xl font-bold text-foreground font-headline">
-              Safety Docs AI
-            </h1>
-          </div>
-          
-          {/* Mobile View Toggles */}
-          <div className="xl:hidden flex items-center gap-1 rounded-md bg-muted p-1">
-              <Button
-                size="sm"
-                variant={mobileView === 'form' ? 'secondary' : 'ghost'}
-                onClick={() => setMobileView('form')}
-                className="flex-1"
-              >
-                  <FormInput className="mr-2 h-4 w-4" />
-                  Formulário
-              </Button>
-              <Button
-                size="sm"
-                variant={mobileView === 'preview' ? 'secondary' : 'ghost'}
-                onClick={() => setMobileView('preview')}
-                className="flex-1"
-              >
-                  <Eye className="mr-2 h-4 w-4" />
-                  Pré-visualização
-              </Button>
-          </div>
-
-          <div className="hidden xl:flex items-center gap-2">
-            <Button
-              onClick={handleGeneratePdf}
-              disabled={isDownloading || (liveFormData.documentType === 'APR' && !analysis)}
-            >
-              {isDownloading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Baixando...
-                </>
-              ) : (
-                <>
-                  <FileDown className="mr-2 h-4 w-4" />
-                  Baixar PDF
-                </>
-              )}
-            </Button>
-          </div>
-        </div>
-      </header>
+      <Header
+        mobileView={mobileView}
+        setMobileView={setMobileView}
+        onGeneratePdf={handleGeneratePdf}
+        isDownloading={isDownloading}
+        isAprReady={!!(liveFormData.documentType === 'APR' && analysis)}
+        isPtReady={liveFormData.documentType === 'PT'}
+      />
 
       <main className="flex-grow">
         <div className="grid grid-cols-1 xl:grid-cols-2 h-[calc(100vh-65px)]">
-          <div className={cn("h-full xl:border-r", mobileView !== 'form' && "hidden xl:block")}>
-            <ScrollArea className="h-full">
-                <div className="p-4 md:p-6 space-y-6">
-                <div className="flex justify-between items-start">
-                  <div className="space-y-2">
-                      <h2 className="text-2xl font-bold tracking-tight text-foreground font-headline">
-                      Gere seu Documento de Segurança
-                      </h2>
-                      <p className="text-muted-foreground">
-                      Preencha o formulário e veja a pré-visualização ao lado.
-                      Nossa IA irá analisar a atividade com base nas NRs
-                      brasileiras.
-                      </p>
-                  </div>
-                   <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button
-                          variant="outline"
-                        >
-                          <RefreshCcw className="mr-2 h-4 w-4" />
-                          Começar Novo Relatório
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            Esta ação não pode ser desfeita. Isso limpará todos os dados do formulário e a análise de IA gerada.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                          <AlertDialogAction onClick={handleNewReport}>Continuar</AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                </div>
-                <SafetyForm
-                    form={form}
-                    onSubmit={handleFormSubmit}
-                    isLoading={isLoading}
-                />
-                <Card>
-                    <CardContent className='pt-6 space-y-4'>
-                        <h3 className="text-lg font-semibold flex items-center">
-                            <Zap className="mr-2" /> Integração n8n
-                        </h3>
-                        <div className='space-y-2'>
-                            <Label htmlFor='n8n-prod-test'>Teste em Produção</Label>
-                            <Button
-                                id='n8n-prod-test'
-                                variant="outline"
-                                className='w-full'
-                                onClick={() => handleTestN8n(false)}
-                                disabled={isTestingN8n}
-                            >
-                                {isTestingN8n ? (
-                                    <>
-                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                    Testando...
-                                    </>
-                                ) : (
-                                    <>
-                                    <Zap className="mr-2 h-4 w-4" />
-                                    Testar Conexão de Produção
-                                    </>
-                                )}
-                            </Button>
-                        </div>
-                        <div className='space-y-2'>
-                            <Label htmlFor='n8n-test-url'>URL de Teste do Editor n8n</Label>
-                            <Input
-                                id='n8n-test-url'
-                                placeholder='Cole a "Test URL" do n8n aqui'
-                                value={n8nTestUrl}
-                                onChange={(e) => setN8nTestUrl(e.target.value)}
-                            />
-                        </div>
-                        <div className='space-y-2'>
-                            <Label htmlFor='n8n-editor-test'>Teste no Editor</Label>
-                            <Button
-                                id='n8n-editor-test'
-                                variant="outline"
-                                className='w-full'
-                                onClick={() => handleTestN8n(true)}
-                                disabled={isTestingEditor || !n8nTestUrl}
-                            >
-                                {isTestingEditor ? (
-                                    <>
-                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                    Enviando...
-                                    </>
-                                ) : (
-                                    <>
-                                    <FlaskConical className="mr-2 h-4 w-4" />
-                                    Enviar para o Editor
-                                    </>
-                                )}
-                            </Button>
-                            <p className='text-xs text-muted-foreground'>Clique em "Listen for test event" no n8n antes de clicar aqui.</p>
-                        </div>
-                    </CardContent>
-                </Card>
-                </div>
-            </ScrollArea>
-          </div>
-          
-          <div className={cn("relative flex-col bg-muted h-full", mobileView === 'preview' ? 'flex' : 'hidden xl:flex')}>
-            <ScrollArea className="h-full">
-              <div className="print-container-wrapper p-4 sm:p-8">
-                {isLoading && (
-                  <div className="absolute inset-0 bg-muted/80 backdrop-blur-sm z-10 flex flex-col items-center justify-center rounded-lg">
-                    <div className="flex flex-col items-center gap-4 text-center p-6 bg-background rounded-xl shadow-2xl">
-                      <Loader2 className="h-12 w-12 animate-spin text-primary" />
-                      <h3 className="text-xl font-semibold">
-                        Gerando Análise...
-                      </h3>
-                      <p className="text-muted-foreground">
-                        Aguarde enquanto nossa IA prepara seu relatório.
-                      </p>
-                    </div>
-                  </div>
-                )}
-
-                {error && (
-                  <div className="w-[210mm] min-h-[297mm] mx-auto bg-white shadow-lg flex items-center justify-center">
-                    <Card className="flex h-full min-h-[400px] w-full flex-col items-center justify-center bg-destructive/10 border-destructive">
-                      <CardContent className="flex flex-col items-center justify-center gap-4 text-center p-6">
-                        <h3 className="text-xl font-semibold text-destructive-foreground">
-                          Erro
-                        </h3>
-                        <p className="text-destructive-foreground/80">
-                          {error}
-                        </p>
-                      </CardContent>
-                    </Card>
-                  </div>
-                )}
-
-                <div id="print-content-root">
-                  <PrintPreview
-                    formData={liveFormData}
-                    analysisData={analysis}
-                    equipmentData={equipment}
-                  />
-                </div>
-              </div>
-            </ScrollArea>
-             <div className="xl:hidden sticky bottom-0 left-0 right-0 w-full bg-background/80 backdrop-blur-sm p-4 border-t">
-                 <Button
-                    onClick={handleGeneratePdf}
-                    disabled={isDownloading || (liveFormData.documentType === 'APR' && !analysis)}
-                    className="w-full"
-                >
-                    {isDownloading ? (
-                        <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Baixando...
-                        </>
-                    ) : (
-                        <>
-                        <FileDown className="mr-2 h-4 w-4" />
-                        Baixar PDF
-                        </>
-                    )}
-                </Button>
-            </div>
-          </div>
+          <FormPanel
+            form={form}
+            onNewReport={handleNewReport}
+            onSubmit={handleFormSubmit}
+            isLoading={isLoading}
+            mobileView={mobileView}
+          />
+          <PreviewPanel
+            isLoading={isLoading}
+            error={error}
+            liveFormData={liveFormData}
+            analysisData={analysis}
+            equipmentData={equipment}
+            mobileView={mobileView}
+            isDownloading={isDownloading}
+            onGeneratePdf={handleGeneratePdf}
+            isAprReady={!!(liveFormData.documentType === 'APR' && analysis)}
+            isPtReady={liveFormData.documentType === 'PT'}
+          />
         </div>
       </main>
     </div>
