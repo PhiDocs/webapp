@@ -181,20 +181,20 @@ export default function Home() {
     form.reset();
   };
 
-  const handlePrint = async () => {
+  const handlePrint = () => {
     const formData = form.getValues();
     const parsedData = formSchema.safeParse(formData);
-  
+
     if (!parsedData.success) {
-      const errorMessage = parsedData.error.errors.map((e) => e.message).join(', ');
+      const errorMessages = parsedData.error.errors.map(err => `${err.path.join('.')} - ${err.message}`).join('; ');
       toast({
         variant: 'destructive',
         title: ptBr.validations.invalidFormData.split(':')[0],
-        description: errorMessage,
+        description: errorMessages,
       });
       return;
     }
-  
+
     if (formData.documentType === DOCUMENT_TYPES.APR && !analysis) {
       toast({
         variant: 'destructive',
@@ -203,14 +203,13 @@ export default function Home() {
       });
       return;
     }
-  
+
     setIsPrinting(true);
-  
-    // Trigger browser print dialog
+
     generatePdfOnClient();
-  
+
+    // Fire-and-forget notification to n8n
     try {
-      // Notify n8n in the background (fire-and-forget)
       const payload = {
         event: N8N_EVENTS.PDF_GENERATED,
         documentType: formData.documentType,
@@ -219,62 +218,59 @@ export default function Home() {
         equipmentData: equipment,
       };
       notifyN8n(payload);
-  
+
       toast({
         title: ptBr.toasts.success.pdfDownloaded,
         description: ptBr.toasts.success.pdfDownloadedDescription,
       });
     } catch (error: any) {
-      console.error(ptBr.errors.pdfProcessingError, error);
-      toast({
-        variant: 'destructive',
-        title: ptBr.toasts.errors.pdfError,
-        description:
-          error.message || ptBr.toasts.errors.pdfErrorDescription,
-      });
+      console.error(ptBr.errors.n8nCheckUrl, error);
+      // Don't show an error toast for n8n failure, as it's a background task
     } finally {
-      // A short delay to allow the print dialog to open before resetting state
-      setTimeout(() => setIsPrinting(false), 1000);
+      // Use a timeout to allow the print dialog to appear before resetting state
+      setTimeout(() => setIsPrinting(false), 2000);
     }
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <Header
-        className="no-print"
-        mobileView={mobileView}
-        setMobileView={setMobileView}
-        onGeneratePdf={handlePrint}
-        isDownloading={isPrinting}
-        isAprReady={!!(liveFormData.documentType === DOCUMENT_TYPES.APR && analysis)}
-        isPtReady={liveFormData.documentType === DOCUMENT_TYPES.PT}
-      />
+    <>
+      <div className="min-h-screen bg-background flex flex-col no-print">
+        <Header
+          className="no-print"
+          mobileView={mobileView}
+          setMobileView={setMobileView}
+          onGeneratePdf={handlePrint}
+          isDownloading={isPrinting}
+          isAprReady={!!(liveFormData.documentType === DOCUMENT_TYPES.APR && analysis)}
+          isPtReady={liveFormData.documentType === DOCUMENT_TYPES.PT}
+        />
 
-      <main className="flex-grow grid grid-cols-1 xl:grid-cols-2 h-[calc(100vh-65px)]">
-        <div className="no-print h-full">
-            <FormPanel
-                form={form}
-                onNewReport={handleNewReport}
-                onSubmit={handleFormSubmit}
-                isLoading={isLoading}
-                mobileView={mobileView}
-            />
-        </div>
-        <div className="no-print h-full">
-            <PreviewPanel
-                isLoading={isLoading}
-                error={error}
-                liveFormData={liveFormData}
-                analysisData={analysis}
-                equipmentData={equipment}
-                mobileView={mobileView}
-                isDownloading={isPrinting}
-                onGeneratePdf={handlePrint}
-                isAprReady={!!(liveFormData.documentType === DOCUMENT_TYPES.APR && analysis)}
-                isPtReady={liveFormData.documentType === DOCUMENT_TYPES.PT}
-            />
-        </div>
-      </main>
+        <main className="flex-grow grid grid-cols-1 xl:grid-cols-2 h-[calc(100vh-65px)]">
+          <div className="h-full">
+              <FormPanel
+                  form={form}
+                  onNewReport={handleNewReport}
+                  onSubmit={handleFormSubmit}
+                  isLoading={isLoading}
+                  mobileView={mobileView}
+              />
+          </div>
+          <div className="h-full">
+              <PreviewPanel
+                  isLoading={isLoading}
+                  error={error}
+                  liveFormData={liveFormData}
+                  analysisData={analysis}
+                  equipmentData={equipment}
+                  mobileView={mobileView}
+                  isDownloading={isPrinting}
+                  onGeneratePdf={handlePrint}
+                  isAprReady={!!(liveFormData.documentType === DOCUMENT_TYPES.APR && analysis)}
+                  isPtReady={liveFormData.documentType === DOCUMENT_TYPES.PT}
+              />
+          </div>
+        </main>
+      </div>
       <div className="print-only">
         <PrintPreview
           formData={liveFormData}
@@ -282,6 +278,6 @@ export default function Home() {
           equipmentData={equipment}
         />
       </div>
-    </div>
+    </>
   );
 }
