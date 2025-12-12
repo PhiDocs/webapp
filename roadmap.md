@@ -26,6 +26,13 @@ Após análise, tomamos as seguintes decisões-chave para garantir que o projeto
     - **Flexibilidade:** A lógica de negócio da aplicação (ex: Server Actions) não saberá que está usando o Firebase. Ela apenas chamará métodos de um repositório (ex: `userRepository.create()`). Isso nos dá a liberdade de, no futuro, trocar o Firebase por um banco SQL (ou qualquer outro) apenas reescrevendo a camada de repositório, sem impactar o resto da aplicação.
     - **Organização e Testabilidade:** Separa claramente as responsabilidades no código e facilita a criação de testes automatizados.
 
+### 3. Padrão de Design: Camada de Serviço (Service Layer)
+
+- **Decisão:** Lógica de comunicação com APIs de terceiros (como n8n) será abstraída em "Serviços".
+- **Justificativa:**
+    - **Organização e Reuso:** Centraliza a lógica de `fetch`, tratamento de erros e formatação de requisições em um único local (`src/services`).
+    - **Separação de Responsabilidades:** As Server Actions se tornam mais limpas, delegando a responsabilidade da comunicação de rede para o serviço correspondente.
+
 ## Roteiro de Implementação (Passo a Passo)
 
 A implementação será dividida em fases para garantir um desenvolvimento incremental e controlado.
