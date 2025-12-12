@@ -2,11 +2,16 @@
 
 import { generateSafetyAnalysis, type SafetyAnalysisOutput } from '@/ai/flows/generate-safety-analysis';
 import { recommendProtectiveEquipment, type ProtectiveEquipmentOutput } from '@/ai/flows/recommend-protective-equipment';
-import { formSchema } from '@/lib/types';
+import { z } from 'zod';
 import { ptBr } from '@/lib/data/strings';
 
+// Define a schema specifically for the input of these functions
+const activitySchema = z.object({
+    activityDescription: z.string().min(10, ptBr.validations.activityDescription),
+});
+
 export async function getSafetyAnalysis(data: { activityDescription: string }): Promise<{ data: SafetyAnalysisOutput | null; error: string | null }> {
-  const parsed = formSchema.partial().safeParse({ activityDescription: data.activityDescription });
+  const parsed = activitySchema.safeParse(data);
   
   if (!parsed.success) {
     const errorMessage = parsed.error.errors.map((e) => e.message).join(', ');
@@ -23,7 +28,7 @@ export async function getSafetyAnalysis(data: { activityDescription: string }): 
 }
 
 export async function getProtectiveEquipment(data: { activityDescription: string }): Promise<{ data: ProtectiveEquipmentOutput | null; error: string | null }> {
-    const parsed = formSchema.partial().safeParse({ activityDescription: data.activityDescription });
+  const parsed = activitySchema.safeParse(data);
 
   if (!parsed.success) {
     const errorMessage = parsed.error.errors.map((e) => e.message).join(', ');
