@@ -1,3 +1,4 @@
+
 import type { TDocumentDefinitions } from 'pdfmake/interfaces';
 import type { SafetyFormValues } from '@/lib/types';
 import type { SafetyAnalysisOutput } from '@/ai/flows/generate-safety-analysis';
@@ -89,6 +90,8 @@ export async function generatePdf(
       
       pdfDoc.getDataUrl((dataUrl) => {
         resolve({ fileName, dataUrl });
+      }, (err) => {
+          reject(err);
       });
 
     } catch (error) {
