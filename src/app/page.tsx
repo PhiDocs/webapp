@@ -7,6 +7,7 @@ import type { ProtectiveEquipmentOutput } from '@/ai/flows/recommend-protective-
 import type { SafetyFormValues } from '@/lib/types';
 import { getSafetyAnalysis, getProtectiveEquipment } from '@/server/ai-actions';
 import { generatePdfOnServer } from '@/server/pdf-actions';
+import { notifyN8n } from '@/server/n8n-actions';
 import { Logo } from '@/components/icons/logo';
 import { SafetyForm } from '@/components/safety-form';
 import { Card, CardContent } from '@/components/ui/card';
@@ -35,30 +36,6 @@ import {
 
 
 import './print/print-layout.css';
-
-async function notifyN8n(payload: any, webhookUrl?: string) {
-  try {
-    const response = await fetch('/api/n8n-webhook', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ payload, webhookUrl }),
-    });
-
-    const responseData = await response.json();
-    if (!response.ok) {
-      console.error('Falha ao notificar o n8n:', responseData);
-      return { success: false, data: responseData };
-    } else {
-      console.log('n8n notificado com sucesso!', responseData);
-      return { success: true, data: responseData };
-    }
-  } catch (error: any) {
-    console.error('Erro de rede ao chamar o webhook do n8n:', error);
-    return { success: false, data: { error: 'Erro de rede', details: error.message } };
-  }
-}
 
 
 export default function Home() {
