@@ -9,11 +9,8 @@ import { DOCUMENT_TYPES } from '@/lib/constants';
 // Import pdfmake and fonts
 import pdfMake from "pdfmake/build/pdfmake";
 import pdfFonts from "pdfmake/build/vfs_fonts";
+pdfMake.vfs = pdfFonts.pdfMake.vfs;
 
-// pdfmake is expecting pdfMake.vfs to be populated, so we do it here
-if (pdfMake.vfs) {
-    pdfMake.vfs = pdfFonts.pdfMake.vfs;
-}
 
 // Main PDF Generation Function (Server-Side)
 export async function generatePdf(
