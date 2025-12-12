@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import type { TDocumentDefinitions } from 'pdfmake/interfaces';
-import type { SafetyAnalysisOutput } from '@/ai/flows/generate-safety-analysis';
-import type { ProtectiveEquipmentOutput } from '@/ai/flows/recommend-protective-equipment';
+import type { SafetyAnalysisOutput } from '@/ai/flows/generateSafetyAnalysis';
+import type { ProtectiveEquipmentOutput } from '@/ai/flows/recommendProtectiveEquipment';
 import type { SafetyFormValues } from '@/lib/types';
 import { getSafetyAnalysis, getProtectiveEquipment } from '@/server/ai-actions';
 import { notifyN8n } from '@/server/n8n-actions';
