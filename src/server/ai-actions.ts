@@ -2,16 +2,14 @@
 
 import { generateSafetyAnalysis, type SafetyAnalysisOutput } from '@/ai/flows/generate-safety-analysis';
 import { recommendProtectiveEquipment, type ProtectiveEquipmentOutput } from '@/ai/flows/recommend-protective-equipment';
-import { z } from 'zod';
-
-const actionSchema = z.object({
-  activityDescription: z.string().min(10, 'A descrição da atividade deve ter pelo menos 10 caracteres.'),
-});
+import { formSchema } from '@/lib/types';
 
 export async function getSafetyAnalysis(data: { activityDescription: string }): Promise<{ data: SafetyAnalysisOutput | null; error: string | null }> {
-  const parsed = actionSchema.safeParse(data);
+  const parsed = formSchema.partial().safeParse({ activityDescription: data.activityDescription });
+  
   if (!parsed.success) {
-    return { data: null, error: 'Entrada inválida.' };
+    const errorMessage = parsed.error.errors.map((e) => e.message).join(', ');
+    return { data: null, error: `Entrada inválida: ${errorMessage}` };
   }
 
   try {
@@ -24,9 +22,11 @@ export async function getSafetyAnalysis(data: { activityDescription: string }): 
 }
 
 export async function getProtectiveEquipment(data: { activityDescription: string }): Promise<{ data: ProtectiveEquipmentOutput | null; error: string | null }> {
-  const parsed = actionSchema.safeParse(data);
+    const parsed = formSchema.partial().safeParse({ activityDescription: data.activityDescription });
+
   if (!parsed.success) {
-    return { data: null, error: 'Entrada inválida.' };
+    const errorMessage = parsed.error.errors.map((e) => e.message).join(', ');
+    return { data: null, error: `Entrada inválida: ${errorMessage}` };
   }
 
   try {
