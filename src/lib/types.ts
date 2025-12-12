@@ -70,7 +70,7 @@ export const ptFormSchema = z.object({
 
 
 export const formSchema = z.object({
-  documentType: z.enum(['APR', 'PT'], { required_error: 'Please select a document type.' }),
+  documentType: z.enum(['APR', 'PT']),
   
   companyName: z.string(),
   companyLogo: z.string().optional(),
@@ -115,5 +115,3 @@ export type TeamMember = z.infer<typeof teamMemberSchema>;
 export type PtFormValues = z.infer<typeof ptFormSchema>;
 export type PtTeamMember = z.infer<typeof ptTeamMemberSchema>;
 export type PtSigner = z.infer<typeof ptSignerSchema>;
-
-    
