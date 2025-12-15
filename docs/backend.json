@@ -1,43 +1,73 @@
 {
-  "collections": {
-    "users": {
-      "description": "Stores user information, including authentication details and roles.",
-      "fields": {
-        "uid": "string (document ID, from Firebase Auth)",
-        "email": "string",
-        "name": "string",
-        "role": "string ('admin' or 'user')",
-        "companyId": "string (reference to companies collection)"
-      }
+  "entities": {
+    "user": {
+      "title": "User",
+      "description": "Represents a user in the system.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "The user's unique ID from Firebase Auth." },
+        "name": { "type": "string", "description": "The user's full name." },
+        "email": { "type": "string", "format": "email", "description": "The user's email address." },
+        "role": { "type": "string", "enum": ["admin", "user"], "description": "The user's role." },
+        "companyId": { "type": "string", "description": "ID of the company the user belongs to." }
+      },
+      "required": ["uid", "name", "email", "role"]
     },
-    "companies": {
-      "description": "Stores information about each company using the system.",
-      "fields": {
-        "id": "string (document ID)",
-        "name": "string",
-        "ownerUid": "string (reference to the admin user who owns it)"
-      }
+    "company": {
+      "title": "Company",
+      "description": "Represents a company using the system.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "description": "The name of the company." },
+        "ownerUid": { "type": "string", "description": "The UID of the admin user who owns the company." }
+      },
+      "required": ["name", "ownerUid"]
     },
-    "works": {
-      "description": "Stores information about each specific job or construction site.",
-      "fields": {
-        "id": "string (document ID)",
-        "name": "string",
-        "address": "string",
-        "companyId": "string (reference to companies collection)"
-      }
+    "work": {
+      "title": "Work",
+      "description": "Represents a specific job or construction site.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "description": "The name of the work/site." },
+        "address": { "type": "string", "description": "The address of the work/site." },
+        "companyId": { "type": "string", "description": "The ID of the company this work belongs to." }
+      },
+      "required": ["name", "companyId"]
     },
-    "documents": {
-      "description": "Stores all generated safety documents (APRs and PTs).",
-      "fields": {
-        "id": "string (document ID)",
-        "workId": "string (reference to works collection)",
-        "type": "string ('APR' or 'PT')",
-        "createdAt": "timestamp",
-        "formData": "object",
-        "analysisData": "object (for APRs)",
-        "equipmentData": "object (for APRs)"
-      }
+    "document": {
+      "title": "Safety Document",
+      "description": "Represents a generated safety document (APR or PT).",
+      "type": "object",
+      "properties": {
+        "workId": { "type": "string", "description": "The ID of the work this document is for." },
+        "type": { "type": "string", "enum": ["APR", "PT"], "description": "The type of document." },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Timestamp of creation." },
+        "formData": { "type": "object", "description": "The raw form data used to generate the document." },
+        "analysisData": { "type": "object", "description": "The AI-generated analysis data for APRs." },
+        "equipmentData": { "type": "object", "description": "The AI-generated equipment recommendations for APRs." }
+      },
+      "required": ["workId", "type", "createdAt", "formData"]
+    }
+  },
+  "auth": {
+    "providers": ["email"]
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/user" },
+      "description": "Stores public profiles for users."
+    },
+    "/companies/{companyId}": {
+      "schema": { "$ref": "#/entities/company" },
+      "description": "Stores information about each company."
+    },
+    "/works/{workId}": {
+      "schema": { "$ref": "#/entities/work" },
+      "description": "Stores information about each work site, belonging to a company."
+    },
+    "/documents/{documentId}": {
+      "schema": { "$ref": "#/entities/document" },
+      "description": "Stores all generated safety documents."
     }
   }
 }

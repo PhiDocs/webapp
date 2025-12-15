@@ -2,8 +2,23 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
+    
+    // As regras mais específicas devem vir primeiro.
+
+    // Coleção de Usuários (users)
+    // Permite a um usuário criar seu próprio perfil ao se cadastrar.
+    // Permite a um usuário ler e atualizar seus próprios dados.
+    match /users/{userId} {
+      allow read, update, delete: if request.auth != null && request.auth.uid == userId;
+      allow create: if request.auth != null;
+    }
+
+    // Regra geral para as outras coleções.
+    // Permite leitura e escrita em qualquer outro documento
+    // apenas se o usuário estiver autenticado.
+    // Vamos refinar isso conforme o app crescer.
     match /{document=**} {
-      allow read, write: if true;
+      allow read, write: if request.auth != null;
     }
   }
 }
