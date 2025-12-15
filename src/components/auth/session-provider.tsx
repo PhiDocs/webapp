@@ -34,8 +34,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     return () => unsubscribe();
   }, []);
 
-  // While the session is being verified, show a loading screen.
-  // The middleware handles all redirects, so this component just needs
+  // The middleware handles all redirects. This component just needs
   // to prevent rendering children until the user state is confirmed.
   if (isLoading) {
     return (
@@ -47,8 +46,8 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
 
   // Once loading is complete, provide the session context to children.
   return (
-    <SessionContext.Provider value={{ user, isLoading }}>
+    <SessionContext.Provider value={{ user, isLoading: false }}>
       {children}
-    </Session-context.Provider>
+    </SessionContext.Provider>
   );
 }

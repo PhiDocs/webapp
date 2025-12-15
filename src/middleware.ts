@@ -1,13 +1,17 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import * as jose from 'jose';
 
-const FIREBASE_PROJECT_ID = 'studio-2124642360-17967'; // Replace with your Firebase Project ID
+const FIREBASE_PROJECT_ID = 'safety-docs-ai-app'; // Hardcoded Project ID
 const JWKS_URI = `https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com`;
 
 // Routes that do not require authentication
 const PUBLIC_ROUTES = ['/login', '/signup'];
 
 async function verifyIdToken(token: string) {
+    if (!FIREBASE_PROJECT_ID) {
+        console.error('Firebase Project ID is not set.');
+        return null;
+    }
     try {
         const JWKS = jose.createRemoteJWKSet(new URL(JWKS_URI));
         
@@ -31,7 +35,7 @@ export async function middleware(request: NextRequest) {
   
   // 1. If trying to access a public route
   if (isPublicRoute) {
-    // If user has a session, redirect them to the home page
+    // If user has a valid session, redirect them to the home page
     if (sessionCookie?.value) {
         const session = await verifyIdToken(sessionCookie.value);
         if (session) {
@@ -43,12 +47,12 @@ export async function middleware(request: NextRequest) {
   }
 
   // 2. If trying to access a protected route
-  // If user does not have a session, redirect to login
+  // If user does not have a session cookie, redirect to login
   if (!sessionCookie?.value) {
     return NextResponse.redirect(new URL('/login', request.url));
   }
 
-  // If user has a session, verify it
+  // If user has a session cookie, verify it
   const session = await verifyIdToken(sessionCookie.value);
   if (!session) {
       // If verification fails, redirect to login and clear the invalid cookie
@@ -57,7 +61,7 @@ export async function middleware(request: NextRequest) {
       return response;
   }
 
-  // 3. If session is valid, allow access
+  // 3. If session is valid and user is on a protected route, allow access
   return NextResponse.next();
 }
 
