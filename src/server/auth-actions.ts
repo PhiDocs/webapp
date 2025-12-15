@@ -5,7 +5,7 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
 } from 'firebase/auth';
-import { doc, setDoc, collection, addDoc } from 'firebase/firestore';
+import { doc, setDoc, collection, addDoc, updateDoc } from 'firebase/firestore';
 import { loginSchema, signupSchema, type LoginValues, type SignupValues } from '@/lib/types';
 import { ptBr } from '@/lib/data/strings';
 
@@ -73,12 +73,12 @@ export async function signUp(
     console.error('Firebase SignUp Error:', error);
     await logErrorToFirestore(error, 'signUp', email);
     const friendlyMessage = getFirebaseAuthErrorMessage(error.code);
-    return { error: friendlyMessage, data: null };
+    return { error: `Falha no cadastro: ${friendlyMessage} (Detalhe: ${error.message})`, data: null };
   }
 }
 
 /**
- * Autentica um usuário com e-mail e senha.
+ * Autentica um usuário com e-mail e senha e atualiza seu último login.
  */
 export async function signIn(
   values: LoginValues
@@ -93,11 +93,19 @@ export async function signIn(
 
   try {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    return { error: null, data: { uid: userCredential.user.uid } };
+    const user = userCredential.user;
+    
+    // Atualiza a data do último login no perfil do usuário
+    const userDocRef = doc(db, 'users', user.uid);
+    await updateDoc(userDocRef, {
+      lastSession: new Date().toISOString(),
+    });
+
+    return { error: null, data: { uid: user.uid } };
   } catch (error: any) {
     console.error('Firebase SignIn Error:', error);
     await logErrorToFirestore(error, 'signIn', email);
     const friendlyMessage = getFirebaseAuthErrorMessage(error.code);
-    return { error: friendlyMessage, data: null };
+    return { error: `Falha na autenticação: ${friendlyMessage} (Detalhe: ${error.message})`, data: null };
   }
 }

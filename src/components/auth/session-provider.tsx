@@ -8,7 +8,7 @@ import { Loader2 } from 'lucide-react';
 
 // Define the public and protected routes
 const PUBLIC_ROUTES = ['/login', '/signup'];
-const PROTECTED_ROUTE_PREFIX = '/'; // All other routes are protected
+const ROOT_ROUTE = '/';
 
 interface SessionContextType {
   user: User | null;
@@ -25,53 +25,11 @@ export function useSession() {
   return context;
 }
 
-function AuthHandler({ children }: { children: ReactNode }) {
-  const { user, isLoading } = useSession();
-  const router = useRouter();
-  const pathname = usePathname();
-
-  useEffect(() => {
-    if (isLoading) return; // Wait until the session is loaded
-
-    const isPublicRoute = PUBLIC_ROUTES.includes(pathname);
-    const isProtectedRoute = pathname.startsWith(PROTECTED_ROUTE_PREFIX) && !isPublicRoute;
-
-    // If user is not authenticated and tries to access a protected route
-    if (!user && isProtectedRoute) {
-      router.replace('/login');
-    }
-
-    // If user is authenticated and tries to access a public route
-    if (user && isPublicRoute) {
-      router.replace('/');
-    }
-  }, [user, isLoading, pathname, router]);
-
-  // Show a loading spinner while authentication state is being determined
-  if (isLoading) {
-    return (
-      <div className="flex h-screen w-full items-center justify-center bg-background">
-        <Loader2 className="h-10 w-10 animate-spin text-primary" />
-      </div>
-    );
-  }
-
-  // Prevent rendering of protected pages before redirection
-  if (!user && !PUBLIC_ROUTES.includes(pathname)) {
-      return (
-        <div className="flex h-screen w-full items-center justify-center bg-background">
-            <Loader2 className="h-10 w-10 animate-spin text-primary" />
-        </div>
-      );
-  }
-
-  return <>{children}</>;
-}
-
-
 export function SessionProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true); // Start as true
+  const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
@@ -79,12 +37,44 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       setIsLoading(false);
     });
 
+    // Cleanup subscription on unmount
     return () => unsubscribe();
   }, []);
 
+  useEffect(() => {
+    // Don't do anything while loading
+    if (isLoading) return;
+
+    const isPublicRoute = PUBLIC_ROUTES.includes(pathname);
+    
+    // If user is not logged in and trying to access a protected route, redirect to login
+    if (!user && !isPublicRoute) {
+      router.replace('/login');
+    }
+    
+    // If user is logged in and trying to access a public route, redirect to home
+    if (user && isPublicRoute) {
+      router.replace(ROOT_ROUTE);
+    }
+
+  }, [user, isLoading, pathname, router]);
+
+
+  // While loading, or if we need to redirect, show a loading screen.
+  // This prevents a flash of the old page content.
+  const isPublicRoute = PUBLIC_ROUTES.includes(pathname);
+  if (isLoading || (!user && !isPublicRoute) || (user && isPublicRoute)) {
+    return (
+        <div className="flex h-screen w-full items-center justify-center bg-background">
+            <Loader2 className="h-10 w-10 animate-spin text-primary" />
+        </div>
+    );
+  }
+
+  // If we are here, it's safe to render the children
   return (
     <SessionContext.Provider value={{ user, isLoading }}>
-      <AuthHandler>{children}</AuthHandler>
+      {children}
     </SessionContext.Provider>
   );
 }
