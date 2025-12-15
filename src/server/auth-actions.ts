@@ -23,7 +23,8 @@ const getFirebaseAuthErrorMessage = (errorCode: string): string => {
     case 'auth/invalid-credential':
       return 'Credenciais inválidas. Verifique seu e-mail e senha.';
     default:
-      return ptBr.errors.unexpectedError;
+      // Retorna o próprio código de erro se não for um dos erros conhecidos
+      return `Erro não mapeado: ${errorCode}`;
   }
 };
 
@@ -57,8 +58,10 @@ export async function signUp(
     return { error: null, data: { uid: user.uid } };
   } catch (error: any) {
     console.error('Firebase SignUp Error:', error);
-    const errorMessage = getFirebaseAuthErrorMessage(error.code);
-    return { error: errorMessage, data: null };
+    // Alteração: Agora retornamos a mensagem de erro original para depuração.
+    const errorMessage = getFirebaseAuthErrorMessage(error.code || 'UNKNOWN_ERROR');
+    const finalErrorMessage = `${ptBr.validations.authFailed.replace('{{details}}', errorMessage)} (Detalhe: ${error.message || 'Sem detalhes'})`;
+    return { error: finalErrorMessage, data: null };
   }
 }
 
@@ -81,7 +84,8 @@ export async function signIn(
     return { error: null, data: { uid: userCredential.user.uid } };
   } catch (error: any) {
     console.error('Firebase SignIn Error:', error);
-    const errorMessage = getFirebaseAuthErrorMessage(error.code);
-    return { error: errorMessage, data: null };
+    const errorMessage = getFirebaseAuthErrorMessage(error.code || 'UNKNOWN_ERROR');
+     const finalErrorMessage = `${ptBr.validations.authFailed.replace('{{details}}', errorMessage)} (Detalhe: ${error.message || 'Sem detalhes'})`;
+    return { error: finalErrorMessage, data: null };
   }
 }
