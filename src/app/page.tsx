@@ -17,7 +17,6 @@ import { ptBr } from '@/lib/data/strings';
 import { DOCUMENT_TYPES, N8N_EVENTS, PT_FIT_STATUS, SIGNATURE_TYPES } from '@/lib/constants';
 import { PrintPreview } from '@/components/print-preview';
 import { generatePdfOnClient } from '@/lib/pdf/generator';
-import { AuthGuard } from '@/components/auth/session-provider';
 
 export default function Home() {
   const [analysis, setAnalysis] = useState<SafetyAnalysisOutput | null>({
@@ -200,7 +199,7 @@ export default function Home() {
 
 
   return (
-    <AuthGuard>
+    <>
       <div className="min-h-screen bg-background flex flex-col no-print">
         <Header
           className="no-print"
@@ -245,6 +244,6 @@ export default function Home() {
           equipmentData={equipment}
         />
       </div>
-    </AuthGuard>
+    </>
   );
 }
