@@ -9,9 +9,10 @@
         "name": { "type": "string", "description": "The user's full name." },
         "email": { "type": "string", "format": "email", "description": "The user's email address." },
         "role": { "type": "string", "enum": ["admin", "user"], "description": "The user's role." },
-        "companyId": { "type": "string", "description": "ID of the company the user belongs to." }
+        "companyId": { "type": "string", "description": "ID of the company the user belongs to." },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Timestamp of creation." }
       },
-      "required": ["uid", "name", "email", "role"]
+      "required": ["uid", "name", "email", "role", "createdAt"]
     },
     "company": {
       "title": "Company",

@@ -47,6 +47,7 @@ export async function signUp(
     // TODO: Usar o UserRepository para criar o usuário no Firestore
     // Por enquanto, vamos criar diretamente para validar o fluxo
     await setDoc(doc(db, 'users', user.uid), {
+      uid: user.uid,
       name: name,
       email: email,
       role: 'user', // Por padrão, todo novo usuário é 'user'
