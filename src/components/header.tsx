@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import { Logo } from '@/components/icons/logo';
 import { Button } from '@/components/ui/button';
 import { Printer, Loader2, FormInput, Eye } from 'lucide-react';
@@ -14,6 +15,7 @@ interface HeaderProps {
   isAprReady: boolean;
   isPtReady: boolean;
   className?: string;
+  children?: React.ReactNode;
 }
 
 export function Header({
@@ -24,6 +26,7 @@ export function Header({
   isAprReady,
   isPtReady,
   className,
+  children
 }: HeaderProps) {
   const canDownload = isPtReady || isAprReady;
 
@@ -59,7 +62,7 @@ export function Header({
             </Button>
         </div>
 
-        <div className="hidden xl:flex items-center gap-2">
+        <div className="hidden xl:flex items-center gap-4">
           <Button
             onClick={onGeneratePdf}
             disabled={isDownloading || !canDownload}
@@ -76,6 +79,7 @@ export function Header({
               </>
             )}
           </Button>
+          {children}
         </div>
       </div>
     </header>

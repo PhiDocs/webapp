@@ -4,6 +4,8 @@ import { auth, db } from '@/firebase/config';
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
+  signOut as firebaseSignOut,
+  updateProfile,
 } from 'firebase/auth';
 import { doc, setDoc, collection, addDoc, updateDoc } from 'firebase/firestore';
 import { loginSchema, signupSchema, type LoginValues, type SignupValues } from '@/lib/types';
@@ -60,6 +62,10 @@ export async function signUp(
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
 
+    // Atualiza o perfil de autenticação do Firebase com o nome
+    await updateProfile(user, { displayName: name });
+
+    // Cria o documento do usuário no Firestore
     await setDoc(doc(db, 'users', user.uid), {
       uid: user.uid,
       name: name,
@@ -73,7 +79,7 @@ export async function signUp(
     console.error('Firebase SignUp Error:', error);
     await logErrorToFirestore(error, 'signUp', email);
     const friendlyMessage = getFirebaseAuthErrorMessage(error.code);
-    return { error: `Falha no cadastro: ${friendlyMessage} (Detalhe: ${error.message})`, data: null };
+    return { error: `Falha no cadastro: ${friendlyMessage}`, data: null };
   }
 }
 
@@ -106,6 +112,20 @@ export async function signIn(
     console.error('Firebase SignIn Error:', error);
     await logErrorToFirestore(error, 'signIn', email);
     const friendlyMessage = getFirebaseAuthErrorMessage(error.code);
-    return { error: `Falha na autenticação: ${friendlyMessage} (Detalhe: ${error.message})`, data: null };
+    return { error: `Falha na autenticação: ${friendlyMessage}`, data: null };
   }
+}
+
+/**
+ * Desloga o usuário atual.
+ */
+export async function signOut(): Promise<{ error: string | null }> {
+    try {
+        await firebaseSignOut(auth);
+        return { error: null };
+    } catch (error: any) {
+        console.error('Firebase SignOut Error:', error);
+        await logErrorToFirestore(error, 'signOut');
+        return { error: 'Falha ao fazer logout.' };
+    }
 }
