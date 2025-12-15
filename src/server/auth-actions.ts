@@ -5,7 +5,7 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
 } from 'firebase/auth';
-import { doc, setDoc } from 'firebase/firestore';
+import { doc, setDoc, collection, addDoc } from 'firebase/firestore';
 import { loginSchema, signupSchema, type LoginValues, type SignupValues } from '@/lib/types';
 import { ptBr } from '@/lib/data/strings';
 
@@ -23,9 +23,24 @@ const getFirebaseAuthErrorMessage = (errorCode: string): string => {
     case 'auth/invalid-credential':
       return 'Credenciais inválidas. Verifique seu e-mail e senha.';
     default:
-      // Retorna o próprio código de erro se não for um dos erros conhecidos
-      return `Erro não mapeado: ${errorCode}`;
+      return ptBr.errors.unexpectedError;
   }
+};
+
+// Função auxiliar para logar erros no Firestore
+const logErrorToFirestore = async (error: any, functionName: string, email?: string) => {
+    try {
+        await addDoc(collection(db, 'errorLogs'), {
+            timestamp: new Date().toISOString(),
+            functionName,
+            userEmail: email || 'N/A',
+            errorCode: error.code || 'UNKNOWN_CODE',
+            errorMessage: error.message || 'No error message available.',
+            stackTrace: error.stack || 'No stack trace available.',
+        });
+    } catch (logError) {
+        console.error('CRITICAL: Failed to log error to Firestore.', logError);
+    }
 };
 
 /**
@@ -45,23 +60,20 @@ export async function signUp(
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
 
-    // TODO: Usar o UserRepository para criar o usuário no Firestore
-    // Por enquanto, vamos criar diretamente para validar o fluxo
     await setDoc(doc(db, 'users', user.uid), {
       uid: user.uid,
       name: name,
       email: email,
-      role: 'user', // Por padrão, todo novo usuário é 'user'
+      role: 'user', 
       createdAt: new Date().toISOString(),
     });
 
     return { error: null, data: { uid: user.uid } };
   } catch (error: any) {
     console.error('Firebase SignUp Error:', error);
-    // Alteração: Agora retornamos a mensagem de erro original para depuração.
-    const errorMessage = getFirebaseAuthErrorMessage(error.code || 'UNKNOWN_ERROR');
-    const finalErrorMessage = `${ptBr.validations.authFailed.replace('{{details}}', errorMessage)} (Detalhe: ${error.message || 'Sem detalhes'})`;
-    return { error: finalErrorMessage, data: null };
+    await logErrorToFirestore(error, 'signUp', email);
+    const friendlyMessage = getFirebaseAuthErrorMessage(error.code);
+    return { error: friendlyMessage, data: null };
   }
 }
 
@@ -84,8 +96,8 @@ export async function signIn(
     return { error: null, data: { uid: userCredential.user.uid } };
   } catch (error: any) {
     console.error('Firebase SignIn Error:', error);
-    const errorMessage = getFirebaseAuthErrorMessage(error.code || 'UNKNOWN_ERROR');
-     const finalErrorMessage = `${ptBr.validations.authFailed.replace('{{details}}', errorMessage)} (Detalhe: ${error.message || 'Sem detalhes'})`;
-    return { error: finalErrorMessage, data: null };
+    await logErrorToFirestore(error, 'signIn', email);
+    const friendlyMessage = getFirebaseAuthErrorMessage(error.code);
+    return { error: friendlyMessage, data: null };
   }
 }

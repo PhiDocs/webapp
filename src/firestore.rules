@@ -5,6 +5,15 @@ service cloud.firestore {
     
     // As regras mais específicas devem vir primeiro.
 
+    // Coleção de Logs de Erro (errorLogs)
+    // Permite que qualquer pessoa crie um log de erro.
+    // Isso é útil para capturar erros que ocorrem antes mesmo do usuário estar autenticado.
+    // Ninguém pode ler, atualizar ou deletar logs para manter a integridade.
+    match /errorLogs/{logId} {
+      allow create: if true;
+      allow read, update, delete: if false;
+    }
+    
     // Coleção de Usuários (users)
     // Permite a um usuário ler, atualizar e deletar seus próprios dados.
     match /users/{userId} {

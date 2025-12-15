@@ -5,12 +5,12 @@ import { getAuth } from "firebase/auth";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  "projectId": "safety-docs-ai-app",
-  "appId": "1:358826943144:web:84534f3c7a264a1e9564f8",
-  "apiKey": "AIzaSyBwWb27-kYV2e3sN6u_H74kL8s1nB3m1s4",
-  "authDomain": "safety-docs-ai-app.firebaseapp.com",
-  "storageBucket": "safety-docs-ai-app.appspot.com",
-  "messagingSenderId": "358826943144"
+  apiKey: "AIzaSyDYj4WCoDv7DnFMVdeF0zVXlk7KpPJvTxI",
+  authDomain: "studio-2124642360-17967.firebaseapp.com",
+  projectId: "studio-2124642360-17967",
+  storageBucket: "studio-2124642360-17967.firebasestorage.app",
+  messagingSenderId: "83458107599",
+  appId: "1:83458107599:web:3c6b1c505241d472672fba"
 };
 
 

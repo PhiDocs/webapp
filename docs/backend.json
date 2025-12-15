@@ -48,6 +48,20 @@
         "equipmentData": { "type": "object", "description": "The AI-generated equipment recommendations for APRs." }
       },
       "required": ["workId", "type", "createdAt", "formData"]
+    },
+    "errorLog": {
+        "title": "Error Log",
+        "description": "Represents a log of an error that occurred in the application for debugging purposes.",
+        "type": "object",
+        "properties": {
+            "timestamp": { "type": "string", "format": "date-time", "description": "When the error occurred." },
+            "functionName": { "type": "string", "description": "The name of the function where the error was caught (e.g., 'signUp', 'signIn')." },
+            "userEmail": { "type": "string", "description": "The email of the user involved, if available." },
+            "errorCode": { "type": "string", "description": "The specific error code from Firebase or other services." },
+            "errorMessage": { "type": "string", "description": "The detailed error message." },
+            "stackTrace": { "type": "string", "description": "The stack trace of the error, if available." }
+        },
+        "required": ["timestamp", "functionName", "errorMessage"]
     }
   },
   "auth": {
@@ -69,6 +83,10 @@
     "/documents/{documentId}": {
       "schema": { "$ref": "#/entities/document" },
       "description": "Stores all generated safety documents."
+    },
+    "/errorLogs/{logId}": {
+        "schema": { "$ref": "#/entities/errorLog" },
+        "description": "Stores application errors for debugging."
     }
   }
 }
