@@ -10,6 +10,7 @@ import {
 import { doc, setDoc, collection, addDoc, updateDoc } from 'firebase/firestore';
 import { loginSchema, signupSchema, type LoginValues, type SignupValues } from '@/lib/types';
 import { ptBr } from '@/lib/data/strings';
+import { cookies } from 'next/headers';
 
 // Mapeamento de erros do Firebase para mensagens amigáveis
 const getFirebaseAuthErrorMessage = (errorCode: string): string => {
@@ -62,10 +63,8 @@ export async function signUp(
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
 
-    // Atualiza o perfil de autenticação do Firebase com o nome
     await updateProfile(user, { displayName: name });
 
-    // Cria o documento do usuário no Firestore
     await setDoc(doc(db, 'users', user.uid), {
       uid: user.uid,
       name: name,
@@ -84,7 +83,7 @@ export async function signUp(
 }
 
 /**
- * Autentica um usuário com e-mail e senha e atualiza seu último login.
+ * Autentica um usuário com e-mail e senha, atualiza seu último login e cria um cookie de sessão.
  */
 export async function signIn(
   values: LoginValues
@@ -101,11 +100,22 @@ export async function signIn(
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
     
-    // Atualiza a data do último login no perfil do usuário
     const userDocRef = doc(db, 'users', user.uid);
     await updateDoc(userDocRef, {
       lastSession: new Date().toISOString(),
     });
+
+    // Create session cookie
+    const idToken = await user.getIdToken();
+    const expiresIn = 60 * 60 * 24 * 5 * 1000; // 5 days
+    
+    cookies().set('session', idToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: expiresIn,
+      path: '/',
+    });
+
 
     return { error: null, data: { uid: user.uid } };
   } catch (error: any) {
@@ -117,11 +127,12 @@ export async function signIn(
 }
 
 /**
- * Desloga o usuário atual.
+ * Desloga o usuário atual e remove o cookie de sessão.
  */
 export async function signOut(): Promise<{ error: string | null }> {
     try {
         await firebaseSignOut(auth);
+        cookies().delete('session');
         return { error: null };
     } catch (error: any) {
         console.error('Firebase SignOut Error:', error);

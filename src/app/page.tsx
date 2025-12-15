@@ -21,6 +21,7 @@ import { signOut } from '@/server/auth-actions';
 import { useSession } from '@/components/auth/session-provider';
 import { Button } from '@/components/ui/button';
 import { LogOut } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 export default function Home() {
   const [analysis, setAnalysis] = useState<SafetyAnalysisOutput | null>({
@@ -67,6 +68,7 @@ export default function Home() {
   const [mobileView, setMobileView] = useState<'form' | 'preview'>('form');
 
   const { user } = useSession();
+  const router = useRouter();
 
   const form = useForm<SafetyFormValues>({
     resolver: zodResolver(formSchema),
@@ -205,6 +207,7 @@ export default function Home() {
 
   const handleSignOut = async () => {
     await signOut();
+    router.refresh();
   };
 
 

@@ -58,10 +58,9 @@ export function LoginForm() {
         title: ptBr.toasts.success.loginSuccess,
         description: ptBr.toasts.success.loginSuccessDescription,
       });
-      // Redirect to the home page after a successful login.
-      // Using replace() is better for auth flows as it prevents the user
-      // from navigating back to the login page.
-      router.replace('/'); 
+      // The middleware will handle the redirect. We just need to refresh the page
+      // for the middleware to re-evaluate and redirect correctly.
+      router.refresh(); 
     }
     // No need to set isLoading to false here for the success case,
     // as the page will be navigating away.
