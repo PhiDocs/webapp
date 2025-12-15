@@ -191,17 +191,8 @@ export default function Home() {
             equipmentData: equipment,
         };
         notifyN8n(payload);
-        toast({
-            title: ptBr.toasts.success.pdfDownloaded,
-            description: ptBr.toasts.success.pdfDownloadedDescription,
-        });
     } catch (error) {
         console.error("Failed to notify n8n:", error);
-        toast({
-            variant: 'destructive',
-            title: ptBr.toasts.errors.n8nConnectionFailed,
-            description: ptBr.errors.n8nCheckUrl
-        });
     }
     setTimeout(() => setIsPrinting(false), 2000);
   };
