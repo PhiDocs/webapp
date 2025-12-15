@@ -6,7 +6,7 @@ import { onAuthStateChanged, type User } from 'firebase/auth';
 import { auth } from '@/firebase/config';
 import { Loader2 } from 'lucide-react';
 
-// Define the public and protected routes
+// Defina as rotas públicas e a rota raiz
 const PUBLIC_ROUTES = ['/login', '/signup'];
 const ROOT_ROUTE = '/';
 
@@ -27,32 +27,32 @@ export function useSession() {
 
 export function SessionProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true); // Start as true
+  const [isLoading, setIsLoading] = useState(true); // Começa como true
   const router = useRouter();
   const pathname = usePathname();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       setUser(firebaseUser);
-      setIsLoading(false);
+      setIsLoading(false); // Só se torna false após a primeira verificação
     });
 
-    // Cleanup subscription on unmount
+    // Limpa a inscrição ao desmontar
     return () => unsubscribe();
   }, []);
 
   useEffect(() => {
-    // Don't do anything while loading
+    // Não faz nada enquanto o estado de autenticação está sendo carregado
     if (isLoading) return;
 
     const isPublicRoute = PUBLIC_ROUTES.includes(pathname);
     
-    // If user is not logged in and trying to access a protected route, redirect to login
+    // Se o usuário não está logado e tenta acessar uma rota protegida, redireciona para o login
     if (!user && !isPublicRoute) {
       router.replace('/login');
     }
     
-    // If user is logged in and trying to access a public route, redirect to home
+    // Se o usuário está logado e tenta acessar uma rota pública (login/signup), redireciona para a home
     if (user && isPublicRoute) {
       router.replace(ROOT_ROUTE);
     }
@@ -60,8 +60,8 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   }, [user, isLoading, pathname, router]);
 
 
-  // While loading, or if we need to redirect, show a loading screen.
-  // This prevents a flash of the old page content.
+  // Enquanto carrega, ou se um redirecionamento for iminente, mostre uma tela de carregamento.
+  // Isso previne o "flash" do conteúdo antigo e o loop de redirecionamento.
   const isPublicRoute = PUBLIC_ROUTES.includes(pathname);
   if (isLoading || (!user && !isPublicRoute) || (user && isPublicRoute)) {
     return (
@@ -71,7 +71,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     );
   }
 
-  // If we are here, it's safe to render the children
+  // Se chegamos aqui, é seguro renderizar a página solicitada
   return (
     <SessionContext.Provider value={{ user, isLoading }}>
       {children}
