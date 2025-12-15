@@ -52,15 +52,19 @@ export function LoginForm() {
         title: ptBr.toasts.errors.authError,
         description: result.error,
       });
+      setIsLoading(false);
     } else {
       toast({
         title: ptBr.toasts.success.loginSuccess,
         description: ptBr.toasts.success.loginSuccessDescription,
       });
-      // TODO: Redirect to a protected dashboard page
-      router.push('/'); 
+      // Redirect to the home page after a successful login.
+      // Using replace() is better for auth flows as it prevents the user
+      // from navigating back to the login page.
+      router.replace('/'); 
     }
-    setIsLoading(false);
+    // No need to set isLoading to false here for the success case,
+    // as the page will be navigating away.
   };
 
   return (
