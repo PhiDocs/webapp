@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { signOut } from '@/server/auth-actions';
 import { Button } from '@/components/ui/button';
 import { LogOut, LayoutDashboard, FileText } from 'lucide-react';
@@ -31,6 +32,7 @@ function getInitials(name?: string | null): string {
 
 export function UserNav() {
   const { user } = useSession();
+  const router = useRouter();
 
   const handleSignOut = async () => {
     await signOut();
@@ -38,11 +40,15 @@ export function UserNav() {
     window.location.href = '/login';
   };
   
-  // O SessionProvider agora garante que o user não será nulo nesta área.
-  // Se for nulo, o middleware já redirecionou ou a tela de loading está ativa.
   if (!user) {
     return null;
   }
+
+  const handleAdminPanelClick = () => {
+    if (user.role === 'admin' && user.companyId) {
+      router.push(`/company/${user.companyId}`);
+    }
+  };
 
   return (
     <DropdownMenu>
@@ -71,11 +77,9 @@ export function UserNav() {
                 </Link>
             </DropdownMenuItem>
             {user.role === 'admin' && user.companyId && (
-                <DropdownMenuItem asChild>
-                    <Link href={`/company/${user.companyId}`}>
-                        <LayoutDashboard className="mr-2 h-4 w-4" />
-                        <span>Painel do Admin</span>
-                    </Link>
+                <DropdownMenuItem onClick={handleAdminPanelClick}>
+                    <LayoutDashboard className="mr-2 h-4 w-4" />
+                    <span>Painel do Admin</span>
                 </DropdownMenuItem>
             )}
             <DropdownMenuSeparator />

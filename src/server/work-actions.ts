@@ -16,6 +16,13 @@ export async function getWorks(companyId: string) {
         const works = await WorkRepository.getAllByCompany(companyId);
         return { success: true, data: works };
     } catch (error: any) {
+        console.error("Error fetching works: ", error);
+        // Firebase geralmente lança um erro com um código específico quando um índice é necessário.
+        // O código de erro para um índice ausente é 'failed-precondition'.
+        if (error.code === 'failed-precondition') {
+             await ErrorLogRepository.log(error, 'getWorks-IndexMissing');
+             return { success: false, error: 'Um índice do Firestore é necessário para esta consulta. Verifique os logs do servidor para o link de criação do índice.' };
+        }
         await ErrorLogRepository.log(error, 'getWorks');
         return { success: false, error: 'Falha ao buscar obras.' };
     }
