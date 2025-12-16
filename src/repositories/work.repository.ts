@@ -1,5 +1,7 @@
+'use server';
+
 import admin from '@/firebase/admin-config';
-import type { Work } from '@/lib/types';
+import type { Work, WorkFormValues } from '@/lib/types';
 
 const workCollection = admin.firestore().collection('works');
 
@@ -29,7 +31,7 @@ export const WorkRepository = {
    * @param data - Dados da obra (ex: { name: string, address: string, companyId: string }).
    * @returns O ID da obra criada.
    */
-  async create(data: { name: string, address: string, companyId: string }): Promise<string> {
+  async create(data: WorkFormValues): Promise<string> {
     const workRef = await workCollection.add({
       ...data,
       createdAt: new Date().toISOString(),
@@ -42,7 +44,7 @@ export const WorkRepository = {
    * @param workId - O ID da obra a ser atualizada.
    * @param data - Os campos a serem atualizados.
    */
-  async update(workId: string, data: { [key: string]: any }): Promise<void> {
+  async update(workId: string, data: Partial<WorkFormValues>): Promise<void> {
     await workCollection.doc(workId).update(data);
   },
 
