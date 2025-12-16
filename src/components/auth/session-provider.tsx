@@ -78,16 +78,18 @@ export function SessionProvider({ children }: { children: ReactNode }) {
             companyId: firestoreProfile.companyId,
           });
         } else {
-            // Isso pode acontecer se o documento do Firestore ainda não foi criado.
-            // Para evitar um estado inconsistente, deslogamos.
+            // Isso pode acontecer se o documento do Firestore ainda não foi criado
+            // ou se houver uma falha de rede. Para evitar um estado inconsistente,
+            // deslogamos o usuário. O middleware o redirecionará para o login.
             console.warn(`Firestore profile for user ${fbUser.uid} not found. Signing out.`);
-            await auth.signOut();
+            await auth.signOut(); // Limpa a sessão do cliente
             setUser(null);
         }
       } else {
         // Se não houver usuário Firebase, limpa nosso estado de perfil
         setUser(null);
       }
+      // Garante que o carregamento só termine após todas as operações
       setIsLoading(false);
     });
 
@@ -95,7 +97,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   }, []);
 
   // Mostra um loader global apenas na primeira carga
-  if (isLoading) {
+  if (isLoading && user === null) {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-background">
         <Loader2 className="h-10 w-10 animate-spin text-primary" />

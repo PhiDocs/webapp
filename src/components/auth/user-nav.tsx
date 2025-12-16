@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { signOut } from '@/server/auth-actions';
 import { Button } from '@/components/ui/button';
-import { LogOut, LayoutDashboard } from 'lucide-react';
+import { LogOut, LayoutDashboard, FileText } from 'lucide-react';
 import { useSession } from './session-provider';
 import { auth } from '@/firebase/config';
 import {
@@ -33,7 +33,6 @@ function getInitials(name?: string | null): string {
 
 
 export function UserNav() {
-  const router = useRouter();
   const { user, isLoading } = useSession();
 
   const handleSignOut = async () => {
@@ -46,14 +45,10 @@ export function UserNav() {
     return <Skeleton className="h-9 w-9 rounded-full" />;
   }
 
+  // Se, após o carregamento, não houver usuário, não renderizamos nada.
+  // O middleware já irá redirecionar para a página de login.
   if (!user) {
-    // Este caso agora só deve acontecer se o usuário estiver genuinamente deslogado
-    // após o carregamento inicial.
-    return (
-      <Button variant="outline" size="sm" onClick={() => router.push('/login')}>
-        Entrar
-      </Button>
-    )
+    return null;
   }
 
   return (
@@ -78,8 +73,7 @@ export function UserNav() {
             <DropdownMenuSeparator />
              <DropdownMenuItem asChild>
                 <Link href="/">
-                    {/* Alterei o ícone para algo que faça mais sentido para relatórios */}
-                    <LogOut className="mr-2 h-4 w-4" /> 
+                    <FileText className="mr-2 h-4 w-4" /> 
                     <span>Relatórios</span>
                 </Link>
             </DropdownMenuItem>
