@@ -15,7 +15,7 @@ Este é um projeto Next.js para gerar documentos de segurança do trabalho, como
 
 O sistema usa **Firebase Custom Claims** para diferenciar os papéis dos usuários. Um *custom claim* é um metadado seguro anexado ao token de um usuário que só pode ser definido pelo servidor.
 
--   **Admin:** Um usuário com as claims `{ role: 'admin', companyId: '...' }`. Apenas administradores podem acessar a rota `/admin` para gerenciar empresas.
+-   **Admin:** Um usuário com as claims `{ role: 'admin', companyId: '...' }`. Apenas administradores podem acessar a rota `/company/[companyId]` para gerenciar sua empresa.
 -   **Usuário:** Um usuário sem a claim de `admin`. Eles são redirecionados para a página principal (`/`) para gerar documentos.
 
 A verificação é feita no `middleware.ts`, que lê os claims do cookie de sessão em cada requisição e aplica os redirecionamentos necessários.
@@ -37,14 +37,15 @@ Use o script `scripts/create-company.js` para registrar uma nova empresa e seu p
 
 ### Método 2: Promover um Usuário Existente para Admin
 
-Se você já tem um usuário criado e deseja torná-lo um administrador.
+Se você já tem um usuário criado e deseja torná-lo um administrador de uma empresa.
 
 1.  **Pré-requisitos:** Certifique-se de que seu arquivo `.env` está preenchido.
-2.  **Uso:**
+2.  **Encontre o ID da Empresa:** No console do Firebase, vá para a coleção `companies` e copie o ID do documento da empresa à qual você quer associar o admin.
+3.  **Uso:**
     ```bash
-    node scripts/set-admin.js "email.do.usuario.existente@example.com"
+    node scripts/set-admin.js "email.do.usuario.existente@example.com" "ID_DA_EMPRESA_COPIADO_DO_FIRESTORE"
     ```
-    Este script encontrará o usuário pelo e-mail e definirá seu *custom claim* para `{ role: 'admin' }`.
+    Este script encontrará o usuário pelo e-mail e definirá (ou atualizará) suas *custom claims* para `{ role: 'admin', companyId: '...' }`.
 
 > **Importante:** Após executar qualquer um desses scripts e alterar os papéis, o usuário precisa **fazer logout e login novamente** para que seu token de sessão seja atualizado com os novos *custom claims*.
 

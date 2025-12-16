@@ -21,9 +21,9 @@ if (!admin.apps.length) {
   }
 }
 
-async function setAdminRole(email) {
+async function setAdminRole(email, companyId) {
   if (!email) {
-    console.error('Uso: node scripts/set-admin.js "email.do.usuario@example.com"');
+    console.error('Uso: node scripts/set-admin.js "email.do.usuario@example.com" "[ID_DA_EMPRESA_OPCIONAL]"');
     return;
   }
 
@@ -31,10 +31,27 @@ async function setAdminRole(email) {
     console.log(`Buscando usuário com o e-mail: ${email}...`);
     const user = await admin.auth().getUserByEmail(email);
 
-    console.log(`Definindo o custom claim { role: 'admin' } para o usuário ${user.uid}...`);
-    await admin.auth().setCustomUserClaims(user.uid, { role: 'admin' });
+    // Pega as claims existentes para não sobrescrever outros dados
+    const existingClaims = (await admin.auth().getUser(user.uid)).customClaims || {};
+
+    const newClaims = {
+      ...existingClaims,
+      role: 'admin',
+    };
+
+    if (companyId) {
+      newClaims.companyId = companyId;
+      console.log(`Definindo as claims { role: 'admin', companyId: '${companyId}' } para o usuário ${user.uid}...`);
+    } else {
+      console.log(`Definindo a claim { role: 'admin' } para o usuário ${user.uid}...`);
+    }
+    
+    await admin.auth().setCustomUserClaims(user.uid, newClaims);
     
     console.log(`\n✅ Sucesso! O usuário "${user.displayName}" (${user.email}) agora é um administrador.`);
+    if (companyId) {
+        console.log(`Ele foi associado à empresa com ID: ${companyId}`);
+    }
     console.log("Lembre-se: o usuário precisa fazer logout e login novamente para que a alteração tenha efeito.");
 
   } catch (error) {
@@ -47,4 +64,5 @@ async function setAdminRole(email) {
 }
 
 const userEmail = process.argv[2];
-setAdminRole(userEmail);
+const companyId = process.argv[3]; // O terceiro argumento é o companyId (opcional)
+setAdminRole(userEmail, companyId);

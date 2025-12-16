@@ -64,8 +64,10 @@ export async function registerCompany(data: unknown) {
     return { success: true, data: { userId, companyId } };
   } catch (error: any) {
     console.error('Erro ao registrar nova empresa:', error);
-    // Em um cenário real, você poderia deletar o usuário ou a empresa se
-    // um dos passos falhar, para evitar dados órfãos.
+    
+    // Em um cenário real, uma transação ou lógica de rollback seria ideal
+    // para deletar o usuário ou a empresa se um dos passos falhar.
+    
     return { success: false, error: error.message || 'Ocorreu um erro desconhecido.' };
   }
 }
