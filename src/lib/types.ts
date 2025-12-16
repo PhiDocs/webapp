@@ -2,7 +2,26 @@ import { z } from 'zod';
 import { DOCUMENT_TYPES, PT_FIT_STATUS, SIGNATURE_TYPES } from './constants';
 import { ptBr } from './data/strings';
 
-const validationMessages = ptBr.validations;
+const validationMessages = {
+    ...ptBr.validations,
+    responsibleName: "Nome do responsável é obrigatório.",
+    responsibleRole: "Função do responsável é obrigatória.",
+    atLeastOneResponsible: "É necessário adicionar pelo menos um responsável.",
+    teamDate: "A data para o membro da equipe é obrigatória.",
+    teamName: "O nome do membro da equipe é obrigatório.",
+    teamRole: "A função do membro da equipe é obrigatória.",
+    companyName: "Nome da empresa é obrigatório.",
+    workName: "Nome da obra é obrigatório.",
+    workAddress: "Endereço da obra é obrigatório.",
+    startDate: "Data de início é obrigatória.",
+    endDate: "Data de término é obrigatória.",
+    workLocation: "Local da obra é obrigatório.",
+    endDateBeforeStartDate: "A data de término não pode ser anterior à data de início.",
+    ptLocation: "Local da atividade é obrigatório para PT.",
+    ptDate: "Data é obrigatória para PT.",
+    ptStartTime: "Hora de início é obrigatória para PT.",
+};
+
 
 const signatureTypeSchema = z.enum([
     SIGNATURE_TYPES.TYPED, 

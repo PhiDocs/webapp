@@ -1,15 +1,15 @@
 'use server';
 
-import { auth, db } from '@/firebase/config';
+import { auth } from '@/firebase/config';
 import {
-  createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
-  updateProfile,
 } from 'firebase/auth';
-import { doc, setDoc, collection, addDoc, updateDoc } from 'firebase/firestore';
-import { loginSchema, signupSchema, type LoginValues, type SignupValues } from '@/lib/types';
+import { doc, updateDoc } from 'firebase/firestore';
+import { loginSchema, type LoginValues } from '@/lib/types';
 import { ptBr } from '@/lib/data/strings';
 import { cookies } from 'next/headers';
+import { db } from '@/firebase/config';
+import { addDoc, collection } from 'firebase/firestore';
 
 // Mapeamento de erros do Firebase para mensagens amigáveis
 const getFirebaseAuthErrorMessage = (errorCode: string): string => {
@@ -46,44 +46,6 @@ const logErrorToFirestore = async (error: any, functionName: string, email?: str
 };
 
 /**
- * Registra um novo usuário com e-mail e senha.
- */
-export async function signUp(
-  values: SignupValues
-): Promise<{ error: string | null; data: { uid: string } | null }> {
-  const validatedFields = signupSchema.safeParse(values);
-  if (!validatedFields.success) {
-    return { error: ptBr.validations.invalidFormData.replace('{{details}}', validatedFields.error.message), data: null };
-  }
-
-  const { email, password, name } = validatedFields.data;
-
-  try {
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    const user = userCredential.user;
-
-    // Atualiza o perfil de autenticação do Firebase com o nome
-    await updateProfile(user, { displayName: name });
-
-    // Salva os dados do usuário no Firestore
-    await setDoc(doc(db, 'users', user.uid), {
-      uid: user.uid,
-      name: name,
-      email: email,
-      role: 'user', 
-      createdAt: new Date().toISOString(),
-    });
-
-    return { error: null, data: { uid: user.uid } };
-  } catch (error: any) {
-    console.error('Firebase SignUp Error:', error);
-    await logErrorToFirestore(error, 'signUp', email);
-    const friendlyMessage = getFirebaseAuthErrorMessage(error.code);
-    return { error: `Falha no cadastro: ${friendlyMessage}`, data: null };
-  }
-}
-
-/**
  * Autentica um usuário com e-mail e senha, atualiza seu último login e cria um cookie de sessão.
  */
 export async function signIn(
@@ -101,10 +63,19 @@ export async function signIn(
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
     
-    const userDocRef = doc(db, 'users', user.uid);
-    await updateDoc(userDocRef, {
-      lastSession: new Date().toISOString(),
-    });
+    // Assegura que o documento do usuário existe antes de tentar atualizá-lo.
+    // Em um fluxo de convite, o documento pode ser criado em um processo separado.
+    // Aqui, apenas atualizamos se ele existir.
+    try {
+        const userDocRef = doc(db, 'users', user.uid);
+        await updateDoc(userDocRef, {
+          lastSession: new Date().toISOString(),
+        });
+    } catch (firestoreError) {
+        // Se o documento não existir, o login não deve falhar.
+        // A lógica de criação do documento pode ser tratada no primeiro acesso no cliente.
+        console.warn(`Could not update lastSession for user ${user.uid}. Document may not exist yet.`);
+    }
 
     // Create session cookie
     const idToken = await user.getIdToken();

@@ -1,14 +1,10 @@
-
 import { NextResponse, type NextRequest } from 'next/server';
 import * as jose from 'jose';
 
-// Este é o seu Project ID do Firebase.
-// É seguro mantê-lo aqui, pois não é uma informação secreta.
 const FIREBASE_PROJECT_ID = 'studio-2124642360-17967';
 const JWKS_URI = `https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com`;
 
-// Rotas que são acessíveis publicamente
-const PUBLIC_ROUTES = ['/login', '/signup'];
+const PUBLIC_ROUTES = ['/login'];
 
 async function verifyIdToken(token: string) {
   if (!FIREBASE_PROJECT_ID) {
@@ -37,7 +33,7 @@ export async function middleware(request: NextRequest) {
   const isPublicRoute = PUBLIC_ROUTES.includes(pathname);
   const session = sessionCookie?.value ? await verifyIdToken(sessionCookie.value) : null;
 
-  // 1. Se o usuário está logado e tenta acessar uma página pública (login/signup),
+  // 1. Se o usuário está logado e tenta acessar uma página pública (login),
   // redirecione-o para a página principal.
   if (session && isPublicRoute) {
     return NextResponse.redirect(new URL('/', request.url));

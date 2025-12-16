@@ -4,7 +4,6 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { loginSchema, type LoginValues } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import {
@@ -67,67 +66,64 @@ export function LoginForm() {
   };
 
   return (
-    <Card className="w-full max-w-sm">
-      <CardHeader>
-        <CardTitle className="text-2xl">{ptBr.auth.loginTitle}</CardTitle>
-        <CardDescription>{ptBr.auth.loginDescription}</CardDescription>
-      </CardHeader>
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)}>
-          <CardContent className="grid gap-4">
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{ptBr.auth.email}</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder={ptBr.auth.emailPlaceholder}
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{ptBr.auth.password}</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="password"
-                      placeholder={ptBr.auth.passwordPlaceholder}
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </CardContent>
-          <CardFooter className="flex-col gap-4">
-            <Button className="w-full" type="submit" disabled={isLoading}>
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  {ptBr.actions.loggingIn}
-                </>
-              ) : (
-                ptBr.actions.login
-              )}
-            </Button>
-             <Button variant="link" asChild className="p-0 font-normal">
-                <Link href="/signup">
-                    {ptBr.actions.goToSignup}
-                </Link>
-             </Button>
-          </CardFooter>
-        </form>
-      </Form>
-    </Card>
+    <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
+      <Card className="w-full max-w-sm">
+        <CardHeader>
+          <CardTitle className="text-2xl">{ptBr.auth.loginTitle}</CardTitle>
+          <CardDescription>{ptBr.auth.loginDescription}</CardDescription>
+        </CardHeader>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)}>
+            <CardContent className="grid gap-4">
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{ptBr.auth.email}</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder={ptBr.auth.emailPlaceholder}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{ptBr.auth.password}</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="password"
+                        placeholder={ptBr.auth.passwordPlaceholder}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </CardContent>
+            <CardFooter className="flex-col gap-4">
+              <Button className="w-full" type="submit" disabled={isLoading}>
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    {ptBr.actions.loggingIn}
+                  </>
+                ) : (
+                  ptBr.actions.login
+                )}
+              </Button>
+            </CardFooter>
+          </form>
+        </Form>
+      </Card>
+    </div>
   );
 }
