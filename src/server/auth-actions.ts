@@ -4,25 +4,57 @@ import { cookies } from 'next/headers';
 import admin from 'firebase-admin';
 import { ErrorLogRepository } from '@/repositories/error-log.repository';
 import { UserRepository } from '@/repositories/user.repository';
+import type { UserRecord } from 'firebase-admin/auth';
 
 /**
- * Cria um cookie de sessão a partir de um ID token do Firebase.
+ * Garante que um documento de usuário exista no Firestore.
+ * Se não existir, cria um a partir dos dados do token de autenticação.
+ */
+async function ensureUserDocument(decodedToken: UserRecord) {
+  const { uid, email, displayName } = decodedToken;
+  const existingUser = await UserRepository.get(uid);
+
+  // Se o usuário já existe, não faz nada.
+  // A atualização de roles existentes pode ser uma funcionalidade futura.
+  if (existingUser) {
+    return;
+  }
+
+  // Se não existe, cria o documento no Firestore.
+  // O custom claim 'role' define o papel inicial.
+  const customClaims = (decodedToken.customClaims || {}) as { role?: 'admin' | 'user', companyId?: string };
+  
+  await UserRepository.create(uid, {
+    uid,
+    name: displayName || email!, // Usa o nome de exibição ou o e-mail como fallback
+    email: email!,
+    role: customClaims.role || 'user', // Padrão para 'user' se não houver claim
+    companyId: customClaims.companyId || '',
+  });
+}
+
+
+/**
+ * Cria um cookie de sessão a partir de um ID token do Firebase
+ * e garante que o usuário correspondente tenha um registro no Firestore.
  * Esta função deve ser chamada APÓS o login bem-sucedido no cliente.
  */
 export async function createSession(idToken: string): Promise<{ error: string | null }> {
   try {
     const adminAuth = admin.auth();
     const decodedToken = await adminAuth.verifyIdToken(idToken);
-    const { uid } = decodedToken;
 
+    // Garante que o documento do usuário existe no Firestore
+    await ensureUserDocument(decodedToken);
+    
     // Atualiza a data do último login no documento do usuário
     try {
-      await UserRepository.update(uid, {
+      await UserRepository.update(decodedToken.uid, {
         lastSession: new Date().toISOString(),
       });
     } catch (firestoreError) {
       // Não bloqueia o login se o documento não for encontrado, apenas avisa.
-      console.warn(`Could not update lastSession for user ${uid}. Document may not exist yet.`);
+      console.warn(`Could not update lastSession for user ${decodedToken.uid}. Document may not exist yet.`);
     }
 
     // Cria o cookie de sessão

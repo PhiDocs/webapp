@@ -5,7 +5,7 @@ type UserData = {
     name: string;
     email: string;
     role: 'admin' | 'user';
-    companyId: string;
+    companyId?: string; // Tornar opcional
 }
 
 const userCollection = admin.firestore().collection('users');
