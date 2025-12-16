@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { signOut } from '@/server/auth-actions';
 import { Button } from '@/components/ui/button';
 import { LogOut, LayoutDashboard, FileText } from 'lucide-react';
@@ -20,7 +19,6 @@ import {
     AvatarFallback,
     AvatarImage,
 } from "@/components/ui/avatar"
-import { Skeleton } from '../ui/skeleton';
 
 function getInitials(name?: string | null): string {
     if (!name) return 'U';
@@ -31,22 +29,17 @@ function getInitials(name?: string | null): string {
     return name.substring(0, 2).toUpperCase();
 }
 
-
 export function UserNav() {
-  const { user, isLoading } = useSession();
+  const { user } = useSession();
 
   const handleSignOut = async () => {
-    await signOut(); // Limpa o cookie do servidor
-    await auth.signOut(); // Limpa a sessão do cliente
-    window.location.href = '/login'; // Força recarregamento para o middleware
+    await signOut();
+    await auth.signOut();
+    window.location.href = '/login';
   };
   
-  if (isLoading) {
-    return <Skeleton className="h-9 w-9 rounded-full" />;
-  }
-
-  // Se, após o carregamento, não houver usuário, não renderizamos nada.
-  // O middleware já irá redirecionar para a página de login.
+  // O SessionProvider agora garante que o user não será nulo nesta área.
+  // Se for nulo, o middleware já redirecionou ou a tela de loading está ativa.
   if (!user) {
     return null;
   }
@@ -57,7 +50,7 @@ export function UserNav() {
             <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                 <Avatar className="h-9 w-9">
                     <AvatarImage src={undefined} alt="Avatar" />
-                    <AvatarFallback>{getInitials(user?.name)}</AvatarFallback>
+                    <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
                 </Avatar>
             </Button>
         </DropdownMenuTrigger>

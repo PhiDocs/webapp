@@ -6,46 +6,43 @@ import { ErrorLogRepository } from '@/repositories/error-log.repository';
 import { UserRepository } from '@/repositories/user.repository';
 import type { DecodedIdToken } from 'firebase-admin/auth';
 
-
 /**
- * Garante que um documento de usuário exista no Firestore.
- * Se não existir, cria um a partir dos dados do token de autenticação.
- * Se existir e a role for diferente, atualiza a role no Firestore.
+ * Garante que um documento de usuário exista no Firestore e esteja sincronizado
+ * com as custom claims do token.
+ * Se não existir, cria um.
+ * Se existir e a role ou companyId for diferente, atualiza.
  */
-async function ensureUserDocument(decodedToken: DecodedIdToken) {
+async function ensureAndSyncUserDocument(decodedToken: DecodedIdToken) {
   const { uid, email, name } = decodedToken;
   const existingUser = await UserRepository.get(uid);
 
-  const customClaims = (decodedToken.customClaims || {}) as { role?: 'admin' | 'user', companyId?: string };
+  const customClaims = (decodedToken || {}) as { role?: 'admin' | 'user', companyId?: string };
   const roleFromClaims = customClaims.role || 'user';
   const companyIdFromClaims = customClaims.companyId;
 
   if (existingUser) {
-    // Se o usuário já existe, verifica se a role ou o companyId no token é diferente da do Firestore
-    const updates: { role?: string, companyId?: string } = {};
-    if (roleFromClaims && roleFromClaims !== existingUser.role) {
+    const updates: { [key: string]: any } = {};
+    if (roleFromClaims !== existingUser.role) {
       updates.role = roleFromClaims;
     }
-    if (companyIdFromClaims && companyIdFromClaims !== existingUser.companyId) {
-      updates.companyId = companyIdFromClaims;
+    if (companyIdFromClaims !== existingUser.companyId) {
+      updates.companyId = companyIdFromClaims || null; // Garante que podemos remover o companyId
     }
 
     if (Object.keys(updates).length > 0) {
       await UserRepository.update(uid, updates);
     }
-    return;
+  } else {
+    // Se o usuário não existe no Firestore, cria o documento
+    await UserRepository.create(uid, {
+      uid,
+      name: name || email!,
+      email: email!,
+      role: roleFromClaims,
+      companyId: companyIdFromClaims,
+    });
   }
-  
-  // Se o usuário não existe no Firestore, cria o documento
-  await UserRepository.create(uid, {
-    uid,
-    name: name || email!,
-    email: email!,
-    role: roleFromClaims,
-    companyId: companyIdFromClaims || undefined, // Garante que não salvamos um companyId vazio
-  });
 }
-
 
 /**
  * Cria um cookie de sessão a partir de um ID token do Firebase
@@ -54,20 +51,13 @@ async function ensureUserDocument(decodedToken: DecodedIdToken) {
 export async function createSession(idToken: string): Promise<{ error: string | null }> {
   try {
     const adminAuth = admin.auth();
-    const decodedToken = await adminAuth.verifyIdToken(idToken, true); // O segundo parâmetro `true` força a verificação de revogação.
+    const decodedToken = await adminAuth.verifyIdToken(idToken, true);
 
-    // Sincroniza o perfil do usuário no Firestore com os dados do token (incluindo custom claims)
-    await ensureUserDocument(decodedToken);
+    await ensureAndSyncUserDocument(decodedToken);
     
-    // Atualiza a data do último login (opcional, mas bom para auditoria)
-    try {
-      await UserRepository.update(decodedToken.uid, {
+    await UserRepository.update(decodedToken.uid, {
         lastSession: new Date().toISOString(),
-      });
-    } catch (firestoreError) {
-      // Não bloqueia o login se esta atualização falhar
-      console.warn(`Could not update lastSession for user ${decodedToken.uid}.`);
-    }
+    });
 
     const expiresIn = 60 * 60 * 24 * 5 * 1000; // 5 dias
     cookies().set('session', idToken, {

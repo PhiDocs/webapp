@@ -6,7 +6,6 @@ import { doc, getDoc } from 'firebase/firestore';
 import { auth, db } from '@/firebase/config';
 import { Loader2 } from 'lucide-react';
 
-// Estendendo o tipo para incluir os dados que virão do Firestore
 export interface UserProfile {
   uid: string;
   name: string;
@@ -31,10 +30,6 @@ export function useSession() {
   return context;
 }
 
-/**
- * Busca o perfil de usuário do Firestore diretamente no cliente.
- * As regras de segurança garantem que um usuário só pode ler seu próprio documento.
- */
 async function getFirestoreUserProfile(uid: string): Promise<Omit<UserProfile, 'uid' | 'email'> | null> {
   try {
     const userDocRef = doc(db, 'users', uid);
@@ -54,7 +49,6 @@ async function getFirestoreUserProfile(uid: string): Promise<Omit<UserProfile, '
   }
 }
 
-
 export function SessionProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
@@ -63,41 +57,50 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
       setIsLoading(true);
-      setFirebaseUser(fbUser);
-      
       if (fbUser) {
-        // Se houver um usuário Firebase, busque o perfil completo do Firestore
+        setFirebaseUser(fbUser);
         const firestoreProfile = await getFirestoreUserProfile(fbUser.uid);
         
         if (firestoreProfile) {
           setUser({
             uid: fbUser.uid,
             email: fbUser.email!,
-            name: firestoreProfile.name,
-            role: firestoreProfile.role,
-            companyId: firestoreProfile.companyId,
+            ...firestoreProfile,
           });
         } else {
-            // Isso pode acontecer se o documento do Firestore ainda não foi criado
-            // ou se houver uma falha de rede. Para evitar um estado inconsistente,
-            // deslogamos o usuário. O middleware o redirecionará para o login.
-            console.warn(`Firestore profile for user ${fbUser.uid} not found. Signing out.`);
-            await auth.signOut(); // Limpa a sessão do cliente
-            setUser(null);
+          console.warn(`Firestore profile for user ${fbUser.uid} not found. This might happen during first login before document creation. If this persists, there is an issue.`);
+          // Tentaremos novamente em um segundo, pode ser um atraso de replicação
+          setTimeout(async () => {
+              const secondAttemptProfile = await getFirestoreUserProfile(fbUser.uid);
+              if(secondAttemptProfile) {
+                 setUser({
+                    uid: fbUser.uid,
+                    email: fbUser.email!,
+                    ...secondAttemptProfile,
+                });
+              } else {
+                 // Se ainda não encontrar, o usuário está em um estado inconsistente.
+                 console.error(`CRITICAL: Firestore profile for user ${fbUser.uid} not found after second attempt. Signing out.`);
+                 await auth.signOut();
+                 setUser(null);
+              }
+              setIsLoading(false);
+          }, 1500);
+          return; // Sai da execução principal para aguardar o timeout
         }
       } else {
-        // Se não houver usuário Firebase, limpa nosso estado de perfil
+        setFirebaseUser(null);
         setUser(null);
       }
-      // Garante que o carregamento só termine após todas as operações
       setIsLoading(false);
     });
 
     return () => unsubscribe();
   }, []);
 
-  // Mostra um loader global apenas na primeira carga
-  if (isLoading && user === null) {
+  // Exibe a tela de carregamento global enquanto isLoading for true.
+  // Isso impede que qualquer parte da área logada seja renderizada sem dados de usuário.
+  if (isLoading) {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-background">
         <Loader2 className="h-10 w-10 animate-spin text-primary" />
