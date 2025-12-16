@@ -3,7 +3,6 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { loginSchema, type LoginValues } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import {
@@ -50,7 +49,6 @@ const getFirebaseAuthErrorMessage = (errorCode: string): string => {
 };
 
 export function LoginForm() {
-  const router = useRouter();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -84,7 +82,8 @@ export function LoginForm() {
         description: ptBr.toasts.success.loginSuccessDescription,
       });
 
-      router.refresh();
+      // 4. Forçar um recarregamento completo para acionar o middleware
+      window.location.href = '/';
 
     } catch (error: any) {
       console.error('Login failed:', error);
