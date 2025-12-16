@@ -1,4 +1,4 @@
-import { adminDb, adminAuth } from '@/firebase/admin-config';
+import { adminDb } from '@/firebase/admin-config';
 
 type UserData = {
     uid: string;

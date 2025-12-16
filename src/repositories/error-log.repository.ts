@@ -1,4 +1,3 @@
-
 import { adminDb } from '@/firebase/admin-config';
 
 export const ErrorLogRepository = {
