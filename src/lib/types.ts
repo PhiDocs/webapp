@@ -164,3 +164,17 @@ export const signupSchema = z.object({
   password: z.string().min(6, validationMessages.passwordMinLength),
 });
 export type SignupValues = z.infer<typeof signupSchema>;
+
+
+// --- Company Schema ---
+export const companyFormSchema = z.object({
+    name: z.string().min(3, "O nome da empresa deve ter pelo menos 3 caracteres."),
+});
+export type CompanyFormValues = z.infer<typeof companyFormSchema>;
+
+export type Company = {
+    id: string;
+    name: string;
+    createdAt: string;
+    ownerUid?: string;
+}

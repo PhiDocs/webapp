@@ -1,8 +1,24 @@
 import admin from '@/firebase/admin-config';
+import type { Company } from '@/lib/types';
 
 const companyCollection = admin.firestore().collection('companies');
 
 export const CompanyRepository = {
+  /**
+   * Busca todas as empresas do Firestore.
+   * @returns Uma lista de empresas.
+   */
+  async getAll(): Promise<Company[]> {
+    const snapshot = await companyCollection.orderBy('createdAt', 'desc').get();
+    if (snapshot.empty) {
+      return [];
+    }
+    return snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+    })) as Company[];
+  },
+
   /**
    * Cria uma nova empresa no Firestore.
    * @param data - Dados da empresa (ex: { name: string }).
@@ -23,5 +39,15 @@ export const CompanyRepository = {
    */
   async update(companyId: string, data: { [key: string]: any }): Promise<void> {
     await companyCollection.doc(companyId).update(data);
+  },
+
+  /**
+   * Deleta uma empresa.
+   * @param companyId - O ID da empresa a ser deletada.
+   */
+  async delete(companyId: string): Promise<void> {
+    // Em uma aplicação real, aqui seria o local para deletar todos os dados
+    // associados (usuários, obras, documentos, etc.) em uma transação.
+    await companyCollection.doc(companyId).delete();
   },
 };
