@@ -5,8 +5,14 @@ const FIREBASE_PROJECT_ID = 'studio-2124642360-17967';
 const JWKS_URI = `https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com`;
 
 const PUBLIC_ROUTES = ['/login'];
+const ADMIN_ROUTES = ['/admin'];
 
-async function verifyIdToken(token: string) {
+interface VerifiedToken extends jose.JWTPayload {
+  role?: string;
+  companyId?: string;
+}
+
+async function verifyIdToken(token: string): Promise<VerifiedToken | null> {
   if (!FIREBASE_PROJECT_ID) {
     console.error('Firebase Project ID is not set.');
     return null;
@@ -19,7 +25,7 @@ async function verifyIdToken(token: string) {
       audience: FIREBASE_PROJECT_ID,
     });
 
-    return payload;
+    return payload as VerifiedToken;
   } catch (error) {
     console.error('Token verification failed:', error);
     return null;
@@ -31,18 +37,21 @@ export async function middleware(request: NextRequest) {
   const sessionCookie = request.cookies.get('session');
   
   const isPublicRoute = PUBLIC_ROUTES.includes(pathname);
+  const isAdminRoute = ADMIN_ROUTES.includes(pathname);
+
   const session = sessionCookie?.value ? await verifyIdToken(sessionCookie.value) : null;
+  const userRole = session?.role;
 
   // 1. Se o usuário está logado e tenta acessar uma página pública (login),
-  // redirecione-o para a página principal.
+  // redirecione-o para a página apropriada com base em seu papel.
   if (session && isPublicRoute) {
-    return NextResponse.redirect(new URL('/', request.url));
+    const url = userRole === 'admin' ? '/admin' : '/';
+    return NextResponse.redirect(new URL(url, request.url));
   }
 
   // 2. Se o usuário não está logado e tenta acessar uma página protegida,
   // redirecione-o para a página de login.
   if (!session && !isPublicRoute) {
-    // Se a verificação do token falhar, removemos o cookie inválido.
     const response = NextResponse.redirect(new URL('/login', request.url));
     if (sessionCookie) {
         response.cookies.delete('session');
@@ -50,8 +59,19 @@ export async function middleware(request: NextRequest) {
     return response;
   }
 
-  // 3. Em todos os outros casos (usuário logado em página protegida, ou
-  // usuário não logado em página pública), permitir o acesso.
+  // 3. Se um usuário que não é admin tenta acessar uma rota de admin,
+  // redirecione-o para a página principal do usuário.
+  if (session && isAdminRoute && userRole !== 'admin') {
+      return NextResponse.redirect(new URL('/', request.url));
+  }
+
+  // 4. Se um usuário admin tenta acessar a página principal de usuário,
+  // redirecione-o para o painel de admin.
+  if (session && pathname === '/' && userRole === 'admin') {
+      return NextResponse.redirect(new URL('/admin', request.url));
+  }
+
+  // 5. Em todos os outros casos (usuário correto na rota correta), permitir o acesso.
   return NextResponse.next();
 }
 

@@ -1,7 +1,10 @@
 'use server';
 
-import { adminAuth, adminDb } from '@/firebase/admin-config';
 import { z } from 'zod';
+import { adminAuth } from '@/firebase/admin-config';
+import { CompanyRepository } from '@/repositories/company.repository';
+import { UserRepository } from '@/repositories/user.repository';
+
 
 const registerCompanySchema = z.object({
   companyName: z.string().min(1, 'O nome da empresa é obrigatório.'),
@@ -27,11 +30,7 @@ export async function registerCompany(data: unknown) {
 
   try {
     // Passo 1: Criar a coleção da empresa primeiro para obter o ID
-    const companyRef = await adminDb.collection('companies').add({
-      name: companyName,
-      createdAt: new Date().toISOString(),
-    });
-    const companyId = companyRef.id;
+    const companyId = await CompanyRepository.create({ name: companyName });
 
     // Passo 2: Criar o usuário no Firebase Authentication
     const userRecord = await adminAuth.createUser({
@@ -49,17 +48,16 @@ export async function registerCompany(data: unknown) {
     });
 
     // Passo 4: Criar o documento do usuário no Firestore, associando à empresa
-    await adminDb.collection('users').doc(userId).set({
+    await UserRepository.create(userId, {
       uid: userId,
       name: adminName,
       email: adminEmail,
       role: 'admin',
       companyId: companyId,
-      createdAt: new Date().toISOString(),
     });
 
     // Passo 5: Atualizar o documento da empresa com o ID do proprietário
-    await companyRef.update({ ownerUid: userId });
+    await CompanyRepository.update(companyId, { ownerUid: userId });
 
 
     return { success: true, data: { userId, companyId } };

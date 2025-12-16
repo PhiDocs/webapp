@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import type { SafetyAnalysisOutput } from '@/ai/flows/generate-safety-analysis';
 import type { ProtectiveEquipmentOutput } from '@/ai/flows/recommend-protective-equipment';
 import type { SafetyFormValues } from '@/lib/types';
@@ -18,10 +17,7 @@ import { ptBr } from '@/lib/data/strings';
 import { DOCUMENT_TYPES, N8N_EVENTS, PT_FIT_STATUS, SIGNATURE_TYPES } from '@/lib/constants';
 import { PrintPreview } from '@/components/print-preview';
 import { generatePdfOnClient } from '@/lib/pdf/generator';
-import { signOut } from '@/server/auth-actions';
-import { useSession } from '@/components/auth/session-provider';
-import { Button } from '@/components/ui/button';
-import { LogOut } from 'lucide-react';
+import { SignOutButton } from '@/components/auth/signout-button';
 
 export default function Home() {
   const [analysis, setAnalysis] = useState<SafetyAnalysisOutput | null>({
@@ -66,9 +62,6 @@ export default function Home() {
   const [isPrinting, setIsPrinting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [mobileView, setMobileView] = useState<'form' | 'preview'>('form');
-
-  const { user } = useSession();
-  const router = useRouter();
 
   const form = useForm<SafetyFormValues>({
     resolver: zodResolver(formSchema),
@@ -205,12 +198,6 @@ export default function Home() {
     setTimeout(() => setIsPrinting(false), 2000);
   };
 
-  const handleSignOut = async () => {
-    await signOut();
-    router.refresh();
-  };
-
-
   return (
     <>
       <div className="min-h-screen bg-background flex flex-col no-print">
@@ -222,14 +209,7 @@ export default function Home() {
           isAprReady={!!(liveFormData.documentType === DOCUMENT_TYPES.APR && analysis)}
           isPtReady={liveFormData.documentType === DOCUMENT_TYPES.PT}
         >
-            <div className='flex items-center gap-2'>
-                <div className='text-right text-sm'>
-                    <p className='font-semibold'>{user?.displayName || user?.email}</p>
-                </div>
-                 <Button variant="outline" size="icon" onClick={handleSignOut}>
-                    <LogOut className="h-4 w-4" />
-                </Button>
-            </div>
+          <SignOutButton />
         </Header>
 
         <main className="flex-grow grid grid-cols-1 xl:grid-cols-2 h-[calc(100vh-65px)]">

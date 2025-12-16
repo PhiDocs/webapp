@@ -8,10 +8,10 @@ import { ptBr } from '@/lib/data/strings';
 import { cn } from '@/lib/utils';
 
 interface HeaderProps {
-  mobileView: 'form' | 'preview';
-  setMobileView: (view: 'form' | 'preview') => void;
-  onGeneratePdf: () => void;
-  isDownloading: boolean;
+  mobileView?: 'form' | 'preview';
+  setMobileView?: (view: 'form' | 'preview') => void;
+  onGeneratePdf?: () => void;
+  isDownloading?: boolean;
   isAprReady: boolean;
   isPtReady: boolean;
   className?: string;
@@ -41,45 +41,49 @@ export function Header({
         </div>
         
         {/* Mobile View Toggles */}
-        <div className="xl:hidden flex items-center gap-1 rounded-md bg-muted p-1">
-            <Button
-              size="sm"
-              variant={mobileView === 'form' ? 'secondary' : 'ghost'}
-              onClick={() => setMobileView('form')}
-              className="flex-1"
-            >
-                <FormInput className="mr-2 h-4 w-4" />
-                {ptBr.header.form}
-            </Button>
-            <Button
-              size="sm"
-              variant={mobileView === 'preview' ? 'secondary' : 'ghost'}
-              onClick={() => setMobileView('preview')}
-              className="flex-1"
-            >
-                <Eye className="mr-2 h-4 w-4" />
-                {ptBr.header.preview}
-            </Button>
-        </div>
+        {mobileView && setMobileView && (
+          <div className="xl:hidden flex items-center gap-1 rounded-md bg-muted p-1">
+              <Button
+                size="sm"
+                variant={mobileView === 'form' ? 'secondary' : 'ghost'}
+                onClick={() => setMobileView('form')}
+                className="flex-1"
+              >
+                  <FormInput className="mr-2 h-4 w-4" />
+                  {ptBr.header.form}
+              </Button>
+              <Button
+                size="sm"
+                variant={mobileView === 'preview' ? 'secondary' : 'ghost'}
+                onClick={() => setMobileView('preview')}
+                className="flex-1"
+              >
+                  <Eye className="mr-2 h-4 w-4" />
+                  {ptBr.header.preview}
+              </Button>
+          </div>
+        )}
 
         <div className="flex items-center gap-4">
-          <Button
-            onClick={onGeneratePdf}
-            disabled={isDownloading || !canDownload}
-            className="hidden xl:inline-flex"
-          >
-            {isDownloading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                {ptBr.actions.generatingPdf}
-              </>
-            ) : (
-              <>
-                <Printer className="mr-2 h-4 w-4" />
-                {ptBr.actions.generatePdf}
-              </>
-            )}
-          </Button>
+          {onGeneratePdf && (
+            <Button
+              onClick={onGeneratePdf}
+              disabled={isDownloading || !canDownload}
+              className="hidden xl:inline-flex"
+            >
+              {isDownloading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  {ptBr.actions.generatingPdf}
+                </>
+              ) : (
+                <>
+                  <Printer className="mr-2 h-4 w-4" />
+                  {ptBr.actions.generatePdf}
+                </>
+              )}
+            </Button>
+          )}
           {children}
         </div>
       </div>

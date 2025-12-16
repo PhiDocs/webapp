@@ -27,6 +27,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { ptBr } from '@/lib/data/strings';
 import { signIn } from '@/server/auth-actions';
+import { Logo } from '../icons/logo';
 
 export function LoginForm() {
   const router = useRouter();
@@ -57,16 +58,18 @@ export function LoginForm() {
         title: ptBr.toasts.success.loginSuccess,
         description: ptBr.toasts.success.loginSuccessDescription,
       });
-      // The middleware will handle the redirect. We just need to refresh the page
-      // for the middleware to re-evaluate and redirect correctly.
       router.refresh(); 
     }
-    // No need to set isLoading to false here for the success case,
-    // as the page will be navigating away.
   };
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
+    <>
+      <div className="absolute top-8 flex items-center gap-3">
+          <Logo className="h-8 w-8 text-primary" />
+          <h1 className="text-xl font-bold text-foreground font-headline">
+              {ptBr.header.title}
+          </h1>
+      </div>
       <Card className="w-full max-w-sm">
         <CardHeader>
           <CardTitle className="text-2xl">{ptBr.auth.loginTitle}</CardTitle>
@@ -124,6 +127,6 @@ export function LoginForm() {
           </form>
         </Form>
       </Card>
-    </div>
+    </>
   );
 }

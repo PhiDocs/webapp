@@ -1,15 +1,12 @@
 'use server';
 
 import { auth } from '@/firebase/config';
-import {
-  signInWithEmailAndPassword,
-} from 'firebase/auth';
-import { doc, updateDoc } from 'firebase/firestore';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 import { loginSchema, type LoginValues } from '@/lib/types';
 import { ptBr } from '@/lib/data/strings';
 import { cookies } from 'next/headers';
-import { db } from '@/firebase/config';
-import { addDoc, collection } from 'firebase/firestore';
+import { ErrorLogRepository } from '@/repositories/error-log.repository';
+import { UserRepository } from '@/repositories/user.repository';
 
 // Mapeamento de erros do Firebase para mensagens amigáveis
 const getFirebaseAuthErrorMessage = (errorCode: string): string => {
@@ -27,22 +24,6 @@ const getFirebaseAuthErrorMessage = (errorCode: string): string => {
     default:
       return ptBr.errors.unexpectedError;
   }
-};
-
-// Função auxiliar para logar erros no Firestore
-const logErrorToFirestore = async (error: any, functionName: string, email?: string) => {
-    try {
-        await addDoc(collection(db, 'errorLogs'), {
-            timestamp: new Date().toISOString(),
-            functionName,
-            userEmail: email || 'N/A',
-            errorCode: error.code || 'UNKNOWN_CODE',
-            errorMessage: error.message || 'No error message available.',
-            stackTrace: error.stack || 'No stack trace available.',
-        });
-    } catch (logError) {
-        console.error('CRITICAL: Failed to log error to Firestore.', logError);
-    }
 };
 
 /**
@@ -63,21 +44,16 @@ export async function signIn(
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
     
-    // Assegura que o documento do usuário existe antes de tentar atualizá-lo.
-    // Em um fluxo de convite, o documento pode ser criado em um processo separado.
-    // Aqui, apenas atualizamos se ele existir.
+    // Atualiza a data do último login no documento do usuário
     try {
-        const userDocRef = doc(db, 'users', user.uid);
-        await updateDoc(userDocRef, {
-          lastSession: new Date().toISOString(),
+        await UserRepository.update(user.uid, {
+            lastSession: new Date().toISOString(),
         });
     } catch (firestoreError) {
-        // Se o documento não existir, o login não deve falhar.
-        // A lógica de criação do documento pode ser tratada no primeiro acesso no cliente.
         console.warn(`Could not update lastSession for user ${user.uid}. Document may not exist yet.`);
     }
 
-    // Create session cookie
+    // Cria o cookie de sessão
     const idToken = await user.getIdToken();
     const expiresIn = 60 * 60 * 24 * 5 * 1000; // 5 days
     
@@ -92,7 +68,7 @@ export async function signIn(
     return { error: null, data: { uid: user.uid } };
   } catch (error: any) {
     console.error('Firebase SignIn Error:', error);
-    await logErrorToFirestore(error, 'signIn', email);
+    await ErrorLogRepository.log(error, 'signIn', email);
     const friendlyMessage = getFirebaseAuthErrorMessage(error.code);
     return { error: `Falha na autenticação: ${friendlyMessage}`, data: null };
   }
@@ -107,7 +83,7 @@ export async function signOut(): Promise<{ error: string | null }> {
         return { error: null };
     } catch (error: any) {
         console.error('Firebase SignOut Error:', error);
-        await logErrorToFirestore(error, 'signOut');
+        await ErrorLogRepository.log(error, 'signOut');
         return { error: 'Falha ao fazer logout.' };
     }
 }
