@@ -1,4 +1,4 @@
-import { adminDb } from '@/firebase/admin-config';
+import admin from '@/firebase/admin-config';
 
 type UserData = {
     uid: string;
@@ -8,7 +8,7 @@ type UserData = {
     companyId: string;
 }
 
-const userCollection = adminDb.collection('users');
+const userCollection = admin.firestore().collection('users');
 
 export const UserRepository = {
     /**

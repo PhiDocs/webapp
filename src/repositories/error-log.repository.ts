@@ -1,4 +1,4 @@
-import { adminDb } from '@/firebase/admin-config';
+import admin from '@/firebase/admin-config';
 
 export const ErrorLogRepository = {
   /**
@@ -9,7 +9,7 @@ export const ErrorLogRepository = {
    */
   async log(error: any, functionName: string, email?: string): Promise<void> {
     try {
-        const logCollection = adminDb.collection('errorLogs');
+        const logCollection = admin.firestore().collection('errorLogs');
         await logCollection.add({
             timestamp: new Date().toISOString(),
             functionName,

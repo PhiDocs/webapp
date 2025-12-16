@@ -1,7 +1,7 @@
 'use server';
 
 import { cookies } from 'next/headers';
-import { adminAuth } from '@/firebase/admin-config';
+import admin from '@/firebase/admin-config';
 import { ErrorLogRepository } from '@/repositories/error-log.repository';
 import { UserRepository } from '@/repositories/user.repository';
 import { ptBr } from '@/lib/data/strings';
@@ -12,6 +12,7 @@ import { ptBr } from '@/lib/data/strings';
  */
 export async function createSession(idToken: string): Promise<{ error: string | null }> {
   try {
+    const adminAuth = admin.auth();
     const decodedToken = await adminAuth.verifyIdToken(idToken);
     const { uid } = decodedToken;
 

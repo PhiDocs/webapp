@@ -1,7 +1,7 @@
 'use server';
 
 import { z } from 'zod';
-import { adminAuth } from '@/firebase/admin-config';
+import admin from '@/firebase/admin-config';
 import { CompanyRepository } from '@/repositories/company.repository';
 import { UserRepository } from '@/repositories/user.repository';
 
@@ -27,6 +27,7 @@ export async function registerCompany(data: unknown) {
   }
 
   const { companyName, adminEmail, adminName, adminPassword } = validation.data;
+  const adminAuth = admin.auth();
 
   try {
     // Passo 1: Criar a coleção da empresa primeiro para obter o ID

@@ -1,6 +1,6 @@
-import { adminDb } from '@/firebase/admin-config';
+import admin from '@/firebase/admin-config';
 
-const companyCollection = adminDb.collection('companies');
+const companyCollection = admin.firestore().collection('companies');
 
 export const CompanyRepository = {
   /**
