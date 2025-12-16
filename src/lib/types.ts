@@ -178,3 +178,19 @@ export type Company = {
     createdAt: string;
     ownerUid?: string;
 }
+
+// --- Work Schema ---
+export const workFormSchema = z.object({
+  name: z.string().min(3, "O nome da obra deve ter pelo menos 3 caracteres."),
+  address: z.string().min(5, "O endereço deve ter pelo menos 5 caracteres."),
+  companyId: z.string().min(1, "É obrigatório associar a obra a uma empresa."),
+});
+export type WorkFormValues = z.infer<typeof workFormSchema>;
+
+export type Work = {
+    id: string;
+    name: string;
+    address: string;
+    companyId: string;
+    createdAt: string;
+}
