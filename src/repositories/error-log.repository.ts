@@ -1,16 +1,17 @@
-import { db } from '@/firebase/config';
-import { addDoc, collection } from 'firebase/firestore';
+
+import { adminDb } from '@/firebase/admin-config';
 
 export const ErrorLogRepository = {
   /**
-   * Salva um log de erro no Firestore.
+   * Salva um log de erro no Firestore usando o Admin SDK.
    * @param error - O objeto de erro.
    * @param functionName - O nome da função onde o erro ocorreu.
    * @param email - O email do usuário, se disponível.
    */
   async log(error: any, functionName: string, email?: string): Promise<void> {
     try {
-        await addDoc(collection(db, 'errorLogs'), {
+        const logCollection = adminDb.collection('errorLogs');
+        await logCollection.add({
             timestamp: new Date().toISOString(),
             functionName,
             userEmail: email || 'N/A',
