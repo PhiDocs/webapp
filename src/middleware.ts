@@ -44,17 +44,7 @@ export async function middleware(request: NextRequest) {
   const userRole = session?.role;
   const userCompanyId = session?.companyId;
 
-  // 1. Se o usuário está logado e tenta acessar uma página pública (login),
-  // redirecione-o para a página apropriada com base em seu papel.
-  if (session && isPublicRoute) {
-    const url = userRole === 'admin' && userCompanyId 
-      ? `${ADMIN_ROUTE_PREFIX}/${userCompanyId}` 
-      : '/';
-    return NextResponse.redirect(new URL(url, request.url));
-  }
-
-  // 2. Se o usuário não está logado e tenta acessar uma página protegida,
-  // redirecione-o para a página de login e limpe qualquer cookie de sessão inválido.
+  // Se não há sessão e a rota não é pública, redireciona para login.
   if (!session && !isPublicRoute) {
     const response = NextResponse.redirect(new URL('/login', request.url));
     if (sessionCookie) {
@@ -63,21 +53,31 @@ export async function middleware(request: NextRequest) {
     return response;
   }
 
-  // 3. Se um usuário que não é admin tenta acessar uma rota de admin da empresa,
-  // redirecione-o para a página principal do usuário.
-  if (session && pathname.startsWith(ADMIN_ROUTE_PREFIX) && userRole !== 'admin') {
-      return NextResponse.redirect(new URL('/', request.url));
-  }
+  // Se há sessão...
+  if (session) {
+    // Se o usuário logado tenta acessar uma rota pública (login), redireciona para a home.
+    if (isPublicRoute) {
+        const url = userRole === 'admin' && userCompanyId 
+            ? `${ADMIN_ROUTE_PREFIX}/${userCompanyId}` 
+            : '/';
+        return NextResponse.redirect(new URL(url, request.url));
+    }
+    
+    // Se um admin acessa a raiz, redireciona para a página da sua empresa.
+    if (userRole === 'admin' && userCompanyId && pathname === '/') {
+        return NextResponse.redirect(new URL(`${ADMIN_ROUTE_PREFIX}/${userCompanyId}`, request.url));
+    }
 
-  // 4. Se um admin tenta acessar uma rota de empresa que não é a sua, negar acesso.
-  if (session && userRole === 'admin' && pathname.startsWith(ADMIN_ROUTE_PREFIX)) {
-    const companyIdFromUrl = pathname.split('/')[2];
-    if (userCompanyId !== companyIdFromUrl) {
-       return NextResponse.redirect(new URL(`/company/${userCompanyId}`, request.url));
+    // Se um admin tenta acessar uma página de empresa que não é a sua, corrige a rota.
+    if (userRole === 'admin' && userCompanyId && pathname.startsWith(ADMIN_ROUTE_PREFIX)) {
+        const companyIdFromUrl = pathname.split('/')[2];
+        if (companyIdFromUrl !== userCompanyId) {
+            return NextResponse.redirect(new URL(`${ADMIN_ROUTE_PREFIX}/${userCompanyId}`, request.url));
+        }
     }
   }
 
-  // Em todos os outros casos, permitir o acesso.
+  // Em todos os outros casos, permite o acesso.
   return NextResponse.next();
 }
 
