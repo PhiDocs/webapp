@@ -26,8 +26,10 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { ptBr } from '@/lib/data/strings';
-import { signIn } from '@/server/auth-actions';
+import { createSession, getFirebaseAuthErrorMessage } from '@/server/auth-actions';
 import { Logo } from '../icons/logo';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { auth } from '@/firebase/config';
 
 export function LoginForm() {
   const router = useRouter();
@@ -44,21 +46,38 @@ export function LoginForm() {
 
   const onSubmit = async (values: LoginValues) => {
     setIsLoading(true);
-    const result = await signIn(values);
+    try {
+      // 1. Fazer login no lado do cliente com o SDK do Firebase
+      const userCredential = await signInWithEmailAndPassword(auth, values.email, values.password);
+      const user = userCredential.user;
 
-    if (result.error) {
-      toast({
-        variant: 'destructive',
-        title: ptBr.toasts.errors.authError,
-        description: result.error,
-      });
-      setIsLoading(false);
-    } else {
+      // 2. Obter o token de ID do usuário
+      const idToken = await user.getIdToken();
+
+      // 3. Enviar o token para a server action para criar o cookie de sessão
+      const result = await createSession(idToken);
+
+      if (result.error) {
+        throw new Error(result.error);
+      }
+
       toast({
         title: ptBr.toasts.success.loginSuccess,
         description: ptBr.toasts.success.loginSuccessDescription,
       });
-      router.refresh(); 
+
+      router.refresh();
+
+    } catch (error: any) {
+      console.error('Login failed:', error);
+      const friendlyMessage = getFirebaseAuthErrorMessage(error.code);
+      toast({
+        variant: 'destructive',
+        title: ptBr.toasts.errors.authError,
+        description: friendlyMessage,
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 

@@ -1,15 +1,13 @@
 'use server';
 
-import { auth } from '@/firebase/config';
-import { signInWithEmailAndPassword } from 'firebase/auth';
-import { loginSchema, type LoginValues } from '@/lib/types';
-import { ptBr } from '@/lib/data/strings';
 import { cookies } from 'next/headers';
+import { adminAuth } from '@/firebase/admin-config';
 import { ErrorLogRepository } from '@/repositories/error-log.repository';
 import { UserRepository } from '@/repositories/user.repository';
+import { ptBr } from '@/lib/data/strings';
 
-// Mapeamento de erros do Firebase para mensagens amigáveis
-const getFirebaseAuthErrorMessage = (errorCode: string): string => {
+// Esta função agora é exportada para ser usada no cliente
+export const getFirebaseAuthErrorMessage = (errorCode: string): string => {
   switch (errorCode) {
     case 'auth/email-already-in-use':
       return 'Este e-mail já está em uso por outra conta.';
@@ -26,37 +24,28 @@ const getFirebaseAuthErrorMessage = (errorCode: string): string => {
   }
 };
 
+
 /**
- * Autentica um usuário com e-mail e senha, atualiza seu último login e cria um cookie de sessão.
+ * Cria um cookie de sessão a partir de um ID token do Firebase.
+ * Esta função deve ser chamada APÓS o login bem-sucedido no cliente.
  */
-export async function signIn(
-  values: LoginValues
-): Promise<{ error: string | null; data: { uid: string } | null }> {
-  const validatedFields = loginSchema.safeParse(values);
-
-  if (!validatedFields.success) {
-    return { error: ptBr.validations.invalidFormData.replace('{{details}}', validatedFields.error.message), data: null };
-  }
-
-  const { email, password } = validatedFields.data;
-
+export async function createSession(idToken: string): Promise<{ error: string | null }> {
   try {
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    const user = userCredential.user;
-    
+    const decodedToken = await adminAuth.verifyIdToken(idToken);
+    const { uid } = decodedToken;
+
     // Atualiza a data do último login no documento do usuário
     try {
-        await UserRepository.update(user.uid, {
-            lastSession: new Date().toISOString(),
-        });
+      await UserRepository.update(uid, {
+        lastSession: new Date().toISOString(),
+      });
     } catch (firestoreError) {
-        console.warn(`Could not update lastSession for user ${user.uid}. Document may not exist yet.`);
+      // Não bloqueia o login se o documento não for encontrado, apenas avisa.
+      console.warn(`Could not update lastSession for user ${uid}. Document may not exist yet.`);
     }
 
     // Cria o cookie de sessão
-    const idToken = await user.getIdToken();
-    const expiresIn = 60 * 60 * 24 * 5 * 1000; // 5 days
-    
+    const expiresIn = 60 * 60 * 24 * 5 * 1000; // 5 dias
     cookies().set('session', idToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
@@ -64,13 +53,12 @@ export async function signIn(
       path: '/',
     });
 
-
-    return { error: null, data: { uid: user.uid } };
+    return { error: null };
   } catch (error: any) {
-    console.error('Firebase SignIn Error:', error);
-    await ErrorLogRepository.log(error, 'signIn', email);
+    console.error('Server-side session creation error:', error);
+    await ErrorLogRepository.log(error, 'createSession');
     const friendlyMessage = getFirebaseAuthErrorMessage(error.code);
-    return { error: `Falha na autenticação: ${friendlyMessage}`, data: null };
+    return { error: `Falha ao criar sessão: ${friendlyMessage}` };
   }
 }
 
@@ -78,12 +66,12 @@ export async function signIn(
  * Desloga o usuário atual e remove o cookie de sessão.
  */
 export async function signOut(): Promise<{ error: string | null }> {
-    try {
-        cookies().delete('session');
-        return { error: null };
-    } catch (error: any) {
-        console.error('Firebase SignOut Error:', error);
-        await ErrorLogRepository.log(error, 'signOut');
-        return { error: 'Falha ao fazer logout.' };
-    }
+  try {
+    cookies().delete('session');
+    return { error: null };
+  } catch (error: any) {
+    console.error('Firebase SignOut Error:', error);
+    await ErrorLogRepository.log(error, 'signOut');
+    return { error: 'Falha ao fazer logout.' };
+  }
 }
