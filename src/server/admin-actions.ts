@@ -1,0 +1,72 @@
+'use server';
+
+import { adminAuth, adminDb } from '@/firebase/admin-config';
+import { z } from 'zod';
+
+const registerCompanySchema = z.object({
+  companyName: z.string().min(1, 'O nome da empresa é obrigatório.'),
+  adminEmail: z.string().email('O e-mail do administrador é inválido.'),
+  adminName: z.string().min(1, 'O nome do administrador é obrigatório.'),
+  adminPassword: z.string().min(6, 'A senha deve ter pelo menos 6 caracteres.'),
+});
+
+/**
+ * Cria uma nova empresa, um usuário administrador para ela com as permissões corretas (custom claims),
+ * e salva os registros correspondentes no Firestore.
+ * 
+ * @param data - Dados da empresa e do administrador.
+ * @returns Um objeto indicando sucesso ou erro.
+ */
+export async function registerCompany(data: unknown) {
+  const validation = registerCompanySchema.safeParse(data);
+  if (!validation.success) {
+    return { success: false, error: validation.error.flatten().fieldErrors };
+  }
+
+  const { companyName, adminEmail, adminName, adminPassword } = validation.data;
+
+  try {
+    // Passo 1: Criar a coleção da empresa primeiro para obter o ID
+    const companyRef = await adminDb.collection('companies').add({
+      name: companyName,
+      createdAt: new Date().toISOString(),
+    });
+    const companyId = companyRef.id;
+
+    // Passo 2: Criar o usuário no Firebase Authentication
+    const userRecord = await adminAuth.createUser({
+      email: adminEmail,
+      emailVerified: true, // Opcional: considerar como verificado
+      password: adminPassword,
+      displayName: adminName,
+    });
+    const userId = userRecord.uid;
+
+    // Passo 3: Definir os Custom Claims para o novo usuário
+    await adminAuth.setCustomUserClaims(userId, { 
+      role: 'admin', 
+      companyId: companyId 
+    });
+
+    // Passo 4: Criar o documento do usuário no Firestore, associando à empresa
+    await adminDb.collection('users').doc(userId).set({
+      uid: userId,
+      name: adminName,
+      email: adminEmail,
+      role: 'admin',
+      companyId: companyId,
+      createdAt: new Date().toISOString(),
+    });
+
+    // Passo 5: Atualizar o documento da empresa com o ID do proprietário
+    await companyRef.update({ ownerUid: userId });
+
+
+    return { success: true, data: { userId, companyId } };
+  } catch (error: any) {
+    console.error('Erro ao registrar nova empresa:', error);
+    // Em um cenário real, você poderia deletar o usuário ou a empresa se
+    // um dos passos falhar, para evitar dados órfãos.
+    return { success: false, error: error.message || 'Ocorreu um erro desconhecido.' };
+  }
+}

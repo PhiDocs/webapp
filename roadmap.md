@@ -51,41 +51,50 @@ A implementação será dividida em fases para garantir um desenvolvimento incre
     - Criar a estrutura de dados inicial em `docs/backend.json` para definir `Usuários`, `Empresas` e `Obras`.
     - Implementar a primeira camada de repositório para acesso aos dados.
 
-2.  **Criar o Sistema de Login/Cadastro:**
-    - Desenvolver as páginas de Login e Cadastro.
-    - Integrar com o Firebase Authentication.
-    - Criar o fluxo para novos usuários se registrarem.
+2.  **Criar o Sistema de Login:**
+    - Manter a página de Login existente.
+    - O cadastro público foi removido.
 
 3.  **Implementar Permissões e Proteção de Rotas:**
     - Criar a lógica para diferenciar usuários `admin` e `user` (usando Custom Claims do Firebase).
-    - Proteger as páginas da aplicação para que apenas usuários logados possam acessá-las.
+    - Proteger as páginas da aplicação para que apenas usuários logados possam acessá-las (Já implementado via Middleware).
     - Proteger áreas específicas para que apenas administradores possam acessá-las.
+
+4. **Novo Fluxo de Acesso: Convite para Administradores**
+    - **Análise Técnica:** Em vez de um cadastro público, o sistema adotará um modelo de convite para os administradores das empresas clientes. Esta é a prática de mercado para sistemas B2B, garantindo controle e segurança. A solução se baseará em **Firebase Custom Claims**.
+    - **Requisitos Técnicos:**
+        - **Criação Manual do Admin:** O "super-admin" do Safety Docs AI criará um novo usuário diretamente no painel do **Firebase Authentication**.
+        - **Atribuição de Papel via Custom Claim:** Após a criação, o super-admin usará o **Firebase Admin SDK** (via um script local ou um Cloud Function) para atribuir um *custom claim* ao novo usuário. Ex: `{ role: 'admin', companyId: 'fk-id-empresa' }`. Este `claim` é um metadado seguro, assinado no token do usuário, e servirá como a fonte da verdade para suas permissões.
+        - **Verificação no Lado do Servidor:** O **Middleware** será atualizado para decodificar o token de sessão, ler os `custom claims` e redirecionar o usuário com base em seu papel (`admin` ou `user`), garantindo que apenas administradores acessem o painel de admin.
+        - **Primeiro Login:** Quando o usuário admin fizer login pela primeira vez, a aplicação verificará se seu documento existe no Firestore. Se não existir, uma `server action` criará o documento, populando seu papel e ID da empresa a partir dos `custom claims` lidos do token.
+    - **Justificativa:** Esta abordagem é segura porque os `custom claims` só podem ser definidos no lado do servidor, impedindo que um usuário mal-intencionado eleve seus próprios privilégios. É também escalável e desacoplado, pois a lógica de permissão fica contida no token do usuário.
 
 ### Fase 2: O Painel do Administrador (Gerenciamento Central)
 
-4.  **Desenvolver o Gerenciamento de Empresas e Funcionários:**
+5.  **Desenvolver o Gerenciamento de Empresas e Funcionários:**
     - Criar a interface do painel do admin.
     - Implementar as funcionalidades de CRUD (Criar, Ler, Atualizar, Deletar) para Empresas e seus respectivos Funcionários.
+    - A criação de funcionários por um admin seguirá um fluxo de convite semelhante ao descrito no passo 4.
 
-5.  **Adicionar o Gerenciamento de Obras:**
+6.  **Adicionar o Gerenciamento de Obras:**
     - Na área do admin, permitir o CRUD de Obras, sempre associando uma obra a uma empresa.
 
-6.  **Implementar a Gestão de Cargos e Terceirizadas:**
+7.  **Implementar a Gestão de Cargos e Terceirizadas:**
     - Criar uma área para o admin pré-cadastrar cargos e nomes de empresas terceirizadas.
     - O objetivo é que esses dados possam ser reutilizados em dropdowns nos formulários, padronizando a entrada de dados.
 
-7.  **Criar Página de Configurações:**
+8.  **Criar Página de Configurações:**
     - Permitir que o admin configure a URL do webhook do n8n diretamente pela interface, salvando-a no banco de dados.
 
 ### Fase 3: Integração e Histórico
 
-8.  **Conectar Formulários ao Banco de Dados:**
+9.  **Conectar Formulários ao Banco de Dados:**
     - Modificar o fluxo de geração de documentos (APR/PT). Ao serem criados, eles serão salvos no Firestore, vinculados a uma Obra e à Empresa do usuário logado.
 
-9.  **Ajustar os Formulários com Dados do Admin:**
+10. **Ajustar os Formulários com Dados do Admin:**
     - Atualizar os formulários para que os campos de "Responsáveis" e "Equipe" possam ser preenchidos selecionando funcionários já cadastrados na obra.
 
 ### Fase 4: Funcionalidades Avançadas
 
-10. **Criar um Dashboard de Métricas:**
+11. **Criar um Dashboard de Métricas:**
     - Desenvolver uma tela no painel do admin para exibir estatísticas de uso, como o número de documentos gerados por obra ou por período, para monitoramento de custos com a IA.
