@@ -1,10 +1,9 @@
 'use server';
 
 import { cookies } from 'next/headers';
-import admin from '@/firebase/admin-config';
+import admin from 'firebase-admin';
 import { ErrorLogRepository } from '@/repositories/error-log.repository';
 import { UserRepository } from '@/repositories/user.repository';
-import { ptBr } from '@/lib/data/strings';
 
 /**
  * Cria um cookie de sessão a partir de um ID token do Firebase.
