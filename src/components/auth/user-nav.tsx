@@ -38,8 +38,7 @@ export function UserNav() {
   const handleSignOut = async () => {
     await signOut(); // Limpa o cookie do servidor
     await auth.signOut(); // Limpa a sessão do cliente
-    router.push('/login'); // Redireciona para o login
-    // window.location.href = '/login'; // Força recarregamento para o middleware
+    window.location.href = '/login'; // Força recarregamento para o middleware
   };
 
   if (!user) {

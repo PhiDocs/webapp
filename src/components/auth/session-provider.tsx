@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
@@ -39,22 +38,27 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
+      setIsLoading(true);
       setFirebaseUser(fbUser);
       
       if (fbUser) {
         // Se houver um usuário Firebase, busque o perfil completo do Firestore
         try {
+          // A server action getUserProfile lê o cookie de sessão do servidor,
+          // então não precisamos passar o fbUser.
           const profileResult = await getUserProfile();
           if (profileResult.success && profileResult.data) {
             setUser(profileResult.data);
           } else {
-            // Se não encontrar o perfil, desloga para evitar estado inconsistente
-            console.error('Failed to fetch user profile, signing out.');
+            // Se não encontrar o perfil, pode ser que a criação da sessão ainda não completou
+            // ou houve um erro. Deslogar evita estado inconsistente.
+            console.error('Failed to fetch user profile, signing out.', profileResult.error);
             await auth.signOut();
             setUser(null);
           }
         } catch (error) {
           console.error('Error fetching user profile:', error);
+          await auth.signOut();
           setUser(null);
         }
       } else {
