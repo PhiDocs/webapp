@@ -8,7 +8,7 @@
         "uid": { "type": "string", "description": "The user's unique ID from Firebase Auth." },
         "name": { "type": "string", "description": "The user's full name." },
         "email": { "type": "string", "format": "email", "description": "The user's email address." },
-        "role": { "type": "string", "enum": ["admin", "user"], "description": "The user's role." },
+        "role": { "type": "string", "enum": ["admin", "user"], "description": "The user's role, as stored in Firestore. The source of truth for authorization is the custom claim." },
         "companyId": { "type": "string", "description": "ID of the company the user belongs to." },
         "createdAt": { "type": "string", "format": "date-time", "description": "Timestamp of creation." }
       },
@@ -65,7 +65,21 @@
     }
   },
   "auth": {
-    "providers": ["email"]
+    "providers": ["email"],
+    "customClaims": {
+        "role": {
+            "description": "Defines the user's role in the system.",
+            "type": "string",
+            "values": {
+                "admin": "Grants access to administrative routes and functionalities.",
+                "user": "Default role for standard users with access to document generation."
+            }
+        },
+        "companyId": {
+            "description": "Associates a user with a specific company.",
+            "type": "string"
+        }
+    }
   },
   "firestore": {
     "/users/{userId}": {

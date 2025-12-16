@@ -15,8 +15,8 @@ Este é um projeto Next.js para gerar documentos de segurança do trabalho, como
 
 O sistema usa **Firebase Custom Claims** para diferenciar os papéis dos usuários. Um *custom claim* é um metadado seguro anexado ao token de um usuário que só pode ser definido pelo servidor.
 
--   **Admin:** Um usuário com o claim `{ role: 'admin' }`. Apenas administradores podem acessar a rota `/admin` para gerenciar empresas.
--   **Usuário:** Um usuário sem o claim de `admin`. Eles são redirecionados para a página principal (`/`) para gerar documentos.
+-   **Admin:** Um usuário com as claims `{ role: 'admin', companyId: '...' }`. Apenas administradores podem acessar a rota `/admin` para gerenciar empresas.
+-   **Usuário:** Um usuário sem a claim de `admin`. Eles são redirecionados para a página principal (`/`) para gerar documentos.
 
 A verificação é feita no `middleware.ts`, que lê os claims do cookie de sessão em cada requisição e aplica os redirecionamentos necessários.
 
