@@ -1,3 +1,5 @@
+'use server';
+
 import * as admin from 'firebase-admin';
 
 // Evita a reinicialização do app em ambientes de desenvolvimento (hot-reloading)
@@ -12,7 +14,12 @@ if (!admin.apps.length) {
       }),
     });
   } catch (error: any) {
-    console.error('Firebase admin initialization error', error.stack);
+    console.error('Firebase admin initialization error', error);
+    // Relança o erro para interromper a execução e deixar claro que a configuração falhou.
+    // Isso é crucial para evitar o erro "default Firebase app does not exist".
+    throw new Error(
+      'Failed to initialize Firebase Admin SDK. Check your environment variables in .env file.'
+    );
   }
 }
 
