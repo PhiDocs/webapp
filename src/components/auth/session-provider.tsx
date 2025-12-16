@@ -20,33 +20,36 @@ export function useSession() {
   return context;
 }
 
-export function SessionProvider({ children }: { children: React.ReactNode }) {
+export function SessionProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true); // Always start loading
 
   useEffect(() => {
+    // onAuthStateChanged returns an unsubscribe function
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       setUser(firebaseUser);
-      setIsLoading(false);
+      setIsLoading(false); // Set loading to false once the check is complete
     });
 
     // Cleanup subscription on unmount
     return () => unsubscribe();
   }, []);
 
-  // The middleware handles all redirects. This component just needs
-  // to prevent rendering children until the user state is confirmed.
+  // While the initial authentication state is being determined,
+  // show a global loading indicator. The middleware is responsible for
+  // ensuring the user shouldn't be on a different page.
   if (isLoading) {
     return (
-        <div className="flex h-screen w-full items-center justify-center bg-background">
-            <Loader2 className="h-10 w-10 animate-spin text-primary" />
-        </div>
+      <div className="flex h-screen w-full items-center justify-center bg-background">
+        <Loader2 className="h-10 w-10 animate-spin text-primary" />
+      </div>
     );
   }
 
-  // Once loading is complete, provide the session context to children.
+  // Once loading is complete, render the children.
+  // The middleware has already handled any necessary redirects.
   return (
-    <SessionContext.Provider value={{ user, isLoading: false }}>
+    <SessionContext.Provider value={{ user, isLoading }}>
       {children}
     </SessionContext.Provider>
   );
