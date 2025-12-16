@@ -54,10 +54,6 @@ export async function createSession(idToken: string): Promise<{ error: string | 
     const decodedToken = await adminAuth.verifyIdToken(idToken, true);
 
     await ensureAndSyncUserDocument(decodedToken);
-    
-    await UserRepository.update(decodedToken.uid, {
-        lastSession: new Date().toISOString(),
-    });
 
     const expiresIn = 60 * 60 * 24 * 5 * 1000; // 5 dias
     cookies().set('session', idToken, {
@@ -82,7 +78,8 @@ export async function signOut(): Promise<{ error: string | null }> {
   try {
     cookies().delete('session');
     return { error: null };
-  } catch (error: any) {
+  } catch (error: any)
+ {
     console.error('Firebase SignOut Error:', error);
     await ErrorLogRepository.log(error, 'signOut');
     return { error: 'Falha ao fazer logout.' };
