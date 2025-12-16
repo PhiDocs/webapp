@@ -14,11 +14,11 @@ if (!admin.apps.length) {
       }),
     });
   } catch (error: any) {
-    console.error('Firebase admin initialization error', error);
+    console.error('Firebase admin initialization error', error.message);
     // Relança o erro para interromper a execução e deixar claro que a configuração falhou.
     // Isso é crucial para evitar o erro "default Firebase app does not exist".
     throw new Error(
-      'Failed to initialize Firebase Admin SDK. Check your environment variables in .env file.'
+      `Failed to initialize Firebase Admin SDK. Check your environment variables in .env file. Original error: ${error.message}`
     );
   }
 }

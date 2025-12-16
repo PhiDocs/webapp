@@ -26,10 +26,28 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { ptBr } from '@/lib/data/strings';
-import { createSession, getFirebaseAuthErrorMessage } from '@/server/auth-actions';
+import { createSession } from '@/server/auth-actions';
 import { Logo } from '../icons/logo';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '@/firebase/config';
+
+// Função movida para cá para não ser exportada de um arquivo 'use server'
+const getFirebaseAuthErrorMessage = (errorCode: string): string => {
+  switch (errorCode) {
+    case 'auth/email-already-in-use':
+      return 'Este e-mail já está em uso por outra conta.';
+    case 'auth/invalid-email':
+      return 'O formato do e-mail é inválido.';
+    case 'auth/weak-password':
+      return 'A senha é muito fraca. Tente uma mais forte.';
+    case 'auth/user-not-found':
+    case 'auth/wrong-password':
+    case 'auth/invalid-credential':
+      return 'Credenciais inválidas. Verifique seu e-mail e senha.';
+    default:
+      return ptBr.errors.unexpectedError;
+  }
+};
 
 export function LoginForm() {
   const router = useRouter();

@@ -6,25 +6,6 @@ import { ErrorLogRepository } from '@/repositories/error-log.repository';
 import { UserRepository } from '@/repositories/user.repository';
 import { ptBr } from '@/lib/data/strings';
 
-// Esta função agora é exportada para ser usada no cliente
-export const getFirebaseAuthErrorMessage = (errorCode: string): string => {
-  switch (errorCode) {
-    case 'auth/email-already-in-use':
-      return 'Este e-mail já está em uso por outra conta.';
-    case 'auth/invalid-email':
-      return 'O formato do e-mail é inválido.';
-    case 'auth/weak-password':
-      return 'A senha é muito fraca. Tente uma mais forte.';
-    case 'auth/user-not-found':
-    case 'auth/wrong-password':
-    case 'auth/invalid-credential':
-      return 'Credenciais inválidas. Verifique seu e-mail e senha.';
-    default:
-      return ptBr.errors.unexpectedError;
-  }
-};
-
-
 /**
  * Cria um cookie de sessão a partir de um ID token do Firebase.
  * Esta função deve ser chamada APÓS o login bem-sucedido no cliente.
@@ -57,8 +38,7 @@ export async function createSession(idToken: string): Promise<{ error: string | 
   } catch (error: any) {
     console.error('Server-side session creation error:', error);
     await ErrorLogRepository.log(error, 'createSession');
-    const friendlyMessage = getFirebaseAuthErrorMessage(error.code);
-    return { error: `Falha ao criar sessão: ${friendlyMessage}` };
+    return { error: `Falha ao criar sessão: ${error.message}` };
   }
 }
 
