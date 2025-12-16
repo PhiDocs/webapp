@@ -43,10 +43,12 @@ export function UserNav() {
   };
   
   if (isLoading) {
-    return <Skeleton className="h-8 w-8 rounded-full" />;
+    return <Skeleton className="h-9 w-9 rounded-full" />;
   }
 
   if (!user) {
+    // Este caso agora só deve acontecer se o usuário estiver genuinamente deslogado
+    // após o carregamento inicial.
     return (
       <Button variant="outline" size="sm" onClick={() => router.push('/login')}>
         Entrar
@@ -74,6 +76,13 @@ export function UserNav() {
                 </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
+             <DropdownMenuItem asChild>
+                <Link href="/">
+                    {/* Alterei o ícone para algo que faça mais sentido para relatórios */}
+                    <LogOut className="mr-2 h-4 w-4" /> 
+                    <span>Relatórios</span>
+                </Link>
+            </DropdownMenuItem>
             {user.role === 'admin' && user.companyId && (
                 <DropdownMenuItem asChild>
                     <Link href={`/company/${user.companyId}`}>
@@ -82,12 +91,6 @@ export function UserNav() {
                     </Link>
                 </DropdownMenuItem>
             )}
-             <DropdownMenuItem asChild>
-                <Link href="/">
-                    <LogOut className="mr-2 h-4 w-4" />
-                    <span>Relatórios</span>
-                </Link>
-            </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleSignOut}>
                 <LogOut className="mr-2 h-4 w-4" />

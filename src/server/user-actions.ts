@@ -6,6 +6,9 @@ import { UserRepository } from '@/repositories/user.repository';
 import type { UserProfile } from '@/components/auth/session-provider';
 
 /**
+ * ESTA FUNÇÃO FOI MANTIDA PARA POSSÍVEIS USOS FUTUROS NO SERVIDOR,
+ * MAS NÃO É MAIS USADA PELO SESSIONPROVIDER NO CLIENTE.
+ * 
  * Busca o perfil completo do usuário logado no Firestore.
  * @returns O perfil do usuário ou um erro.
  */
