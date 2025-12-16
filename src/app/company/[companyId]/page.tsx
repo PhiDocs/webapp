@@ -12,7 +12,7 @@ import type { Company } from "@/lib/types";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function CompanyPage({ params }: { params: { companyId: string } }) {
-    const { user } = useSession();
+    const { user, isLoading: isSessionLoading } = useSession();
     const [company, setCompany] = useState<Company | null>(null);
     const [loading, setLoading] = useState(true);
 
@@ -33,7 +33,7 @@ export default function CompanyPage({ params }: { params: { companyId: string } 
     }, [params.companyId]);
 
     // Validação de permissão
-    if (user && !user.isLoading && (user.role !== 'admin' || user.companyId !== params.companyId)) {
+    if (!isSessionLoading && user && (user.role !== 'admin' || user.companyId !== params.companyId)) {
         return (
             <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
                 <h1 className="text-xl font-bold text-destructive">Acesso Negado</h1>
@@ -41,6 +41,8 @@ export default function CompanyPage({ params }: { params: { companyId: string } 
             </div>
         );
     }
+    
+    const pageIsLoading = isSessionLoading || loading;
 
     return (
         <div className="min-h-screen bg-background flex flex-col">
@@ -50,7 +52,7 @@ export default function CompanyPage({ params }: { params: { companyId: string } 
             <main className="flex-grow container mx-auto p-4 md:p-6">
                 <div className="flex items-center justify-between mb-6">
                     <div>
-                        {loading ? (
+                        {pageIsLoading ? (
                              <>
                                 <Skeleton className="h-9 w-64 mb-3" />
                                 <Skeleton className="h-5 w-80" />

@@ -20,6 +20,7 @@ import {
     AvatarFallback,
     AvatarImage,
 } from "@/components/ui/avatar"
+import { Skeleton } from '../ui/skeleton';
 
 function getInitials(name?: string | null): string {
     if (!name) return 'U';
@@ -33,13 +34,17 @@ function getInitials(name?: string | null): string {
 
 export function UserNav() {
   const router = useRouter();
-  const { user } = useSession();
+  const { user, isLoading } = useSession();
 
   const handleSignOut = async () => {
     await signOut(); // Limpa o cookie do servidor
     await auth.signOut(); // Limpa a sessão do cliente
     window.location.href = '/login'; // Força recarregamento para o middleware
   };
+  
+  if (isLoading) {
+    return <Skeleton className="h-8 w-8 rounded-full" />;
+  }
 
   if (!user) {
     return (
@@ -77,6 +82,12 @@ export function UserNav() {
                     </Link>
                 </DropdownMenuItem>
             )}
+             <DropdownMenuItem asChild>
+                <Link href="/">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Relatórios</span>
+                </Link>
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleSignOut}>
                 <LogOut className="mr-2 h-4 w-4" />
