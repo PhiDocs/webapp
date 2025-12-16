@@ -17,7 +17,7 @@ import { ptBr } from '@/lib/data/strings';
 import { DOCUMENT_TYPES, N8N_EVENTS, PT_FIT_STATUS, SIGNATURE_TYPES } from '@/lib/constants';
 import { PrintPreview } from '@/components/print-preview';
 import { generatePdfOnClient } from '@/lib/pdf/generator';
-import { SignOutButton } from '@/components/auth/signout-button';
+import { UserNav } from '@/components/auth/user-nav';
 
 export default function Home() {
   const [analysis, setAnalysis] = useState<SafetyAnalysisOutput | null>({
@@ -209,7 +209,7 @@ export default function Home() {
           isAprReady={!!(liveFormData.documentType === DOCUMENT_TYPES.APR && analysis)}
           isPtReady={liveFormData.documentType === DOCUMENT_TYPES.PT}
         >
-          <SignOutButton />
+          <UserNav />
         </Header>
 
         <main className="flex-grow grid grid-cols-1 xl:grid-cols-2 h-[calc(100vh-65px)]">

@@ -1,7 +1,7 @@
 'use client';
 
 import { Header } from "@/components/header";
-import { SignOutButton } from "@/components/auth/signout-button";
+import { UserNav } from "@/components/auth/user-nav";
 import { WorksTable } from "@/components/admin/works-table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { HardHat, Users } from "lucide-react";
@@ -33,7 +33,7 @@ export default function CompanyPage({ params }: { params: { companyId: string } 
     }, [params.companyId]);
 
     // Validação de permissão
-    if (!user || user.role !== 'admin' || user.companyId !== params.companyId) {
+    if (user && !user.isLoading && (user.role !== 'admin' || user.companyId !== params.companyId)) {
         return (
             <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
                 <h1 className="text-xl font-bold text-destructive">Acesso Negado</h1>
@@ -45,7 +45,7 @@ export default function CompanyPage({ params }: { params: { companyId: string } 
     return (
         <div className="min-h-screen bg-background flex flex-col">
             <Header isAprReady={false} isPtReady={false}>
-                <SignOutButton />
+                <UserNav />
             </Header>
             <main className="flex-grow container mx-auto p-4 md:p-6">
                 <div className="flex items-center justify-between mb-6">
