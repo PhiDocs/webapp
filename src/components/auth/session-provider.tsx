@@ -56,7 +56,10 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
-      setIsLoading(true);
+      // Inicia o carregamento apenas uma vez no início da verificação.
+      // Não redefina para true em cada mudança de estado.
+      if (isLoading) setIsLoading(true);
+
       if (fbUser) {
         setFirebaseUser(fbUser);
         const firestoreProfile = await getFirestoreUserProfile(fbUser.uid);
@@ -67,9 +70,11 @@ export function SessionProvider({ children }: { children: ReactNode }) {
             email: fbUser.email!,
             ...firestoreProfile,
           });
+          setIsLoading(false);
         } else {
-          console.warn(`Firestore profile for user ${fbUser.uid} not found. This might happen during first login before document creation. If this persists, there is an issue.`);
-          // Tentaremos novamente em um segundo, pode ser um atraso de replicação
+          // Se o perfil não for encontrado, pode ser um atraso na replicação do Firestore.
+          // Tenta novamente após um curto período.
+          console.warn(`Firestore profile for user ${fbUser.uid} not found. Retrying...`);
           setTimeout(async () => {
               const secondAttemptProfile = await getFirestoreUserProfile(fbUser.uid);
               if(secondAttemptProfile) {
@@ -80,26 +85,26 @@ export function SessionProvider({ children }: { children: ReactNode }) {
                 });
               } else {
                  // Se ainda não encontrar, o usuário está em um estado inconsistente.
-                 console.error(`CRITICAL: Firestore profile for user ${fbUser.uid} not found after second attempt. Signing out.`);
-                 await auth.signOut();
+                 // Desloga para evitar ficar preso.
+                 console.error(`CRITICAL: Firestore profile for user ${fbUser.uid} not found after retry. Signing out.`);
+                 await auth.signOut(); // Isso irá disparar o onAuthStateChanged novamente para o estado 'null'
                  setUser(null);
               }
-              setIsLoading(false);
+              setIsLoading(false); // Garante que o loading termine aqui também.
           }, 1500);
-          return; // Sai da execução principal para aguardar o timeout
         }
       } else {
+        // Se não houver usuário no Firebase Auth, limpa tudo e finaliza o carregamento.
         setFirebaseUser(null);
         setUser(null);
+        setIsLoading(false);
       }
-      setIsLoading(false);
     });
 
     return () => unsubscribe();
+    // O array de dependências vazio garante que este useEffect execute apenas uma vez.
   }, []);
 
-  // Exibe a tela de carregamento global enquanto isLoading for true.
-  // Isso impede que qualquer parte da área logada seja renderizada sem dados de usuário.
   if (isLoading) {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-background">
