@@ -4,7 +4,7 @@
 - Sempre que eu trouxer algum erro, peço que você valide o fluxo em questão para evitar termos que iterar vários prompts sobre o mesmo erro. Após alterar, mas antes de responder, verifique se a solução está realmente completa.
 - Não altere arquivos que não estão relacionados ao que está sendo pedido.
 - Mantenha a aplicação no mesmo estado antes, mas com as novas solicitações. Evitar arrumar funcionalidade e quebrar outras duas. Lembre-se sempre do segundo item.
-- Valide o uso das diretivas `user server` e `use client` para cada implementação nova que fizer, isso est
+- Valide o uso das diretivas `user server` e `use client` para cada implementação nova que fizer, isso está causando muitos erros
 
 # Roteiro de Evolução do Projeto - Safety Docs AI
 
