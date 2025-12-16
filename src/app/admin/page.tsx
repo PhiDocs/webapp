@@ -42,6 +42,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 
 export default function AdminPage() {
@@ -77,7 +78,7 @@ export default function AdminPage() {
 
             if (result.success) {
                 toast({ title: `Empresa ${editingCompany ? 'atualizada' : 'criada'} com sucesso!` });
-                fetchCompanies();
+                await fetchCompanies();
                 setIsFormOpen(false);
                 setEditingCompany(null);
             } else {
@@ -91,7 +92,7 @@ export default function AdminPage() {
             const result = await deleteCompany(companyId);
             if (result.success) {
                 toast({ title: "Empresa excluída com sucesso!" });
-                fetchCompanies();
+                await fetchCompanies();
             } else {
                 toast({ variant: 'destructive', title: "Erro ao excluir", description: result.error });
             }
@@ -109,12 +110,12 @@ export default function AdminPage() {
     }
 
     return (
-        <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-            <div className="min-h-screen bg-background flex flex-col">
-                <Header isAprReady={false} isPtReady={false}>
-                    <SignOutButton />
-                </Header>
-                <main className="flex-grow container mx-auto p-4 md:p-6">
+        <div className="min-h-screen bg-background flex flex-col">
+            <Header isAprReady={false} isPtReady={false}>
+                <SignOutButton />
+            </Header>
+            <main className="flex-grow container mx-auto p-4 md:p-6">
+                <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
                     <div className="flex items-center justify-between mb-6">
                         <div>
                             <h1 className="text-3xl font-bold">Painel do Administrador</h1>
@@ -163,27 +164,28 @@ export default function AdminPage() {
                                                 <TableCell className="hidden md:table-cell">{getShortDate(company.createdAt)}</TableCell>
                                                 <TableCell className="hidden lg:table-cell text-muted-foreground">{company.id}</TableCell>
                                                 <TableCell className="text-right">
-                                                     <DropdownMenu>
-                                                        <DropdownMenuTrigger asChild>
-                                                            <Button variant="ghost" className="h-8 w-8 p-0">
-                                                                <span className="sr-only">Abrir menu</span>
-                                                                <MoreHorizontal className="h-4 w-4" />
-                                                            </Button>
-                                                        </DropdownMenuTrigger>
-                                                        <DropdownMenuContent align="end">
-                                                            <DropdownMenuItem onClick={() => openEditDialog(company)}>
-                                                                <Edit className="mr-2 h-4 w-4" />
-                                                                <span>Editar</span>
-                                                            </DropdownMenuItem>
-                                                            <AlertDialogTrigger asChild>
-                                                                <DropdownMenuItem className='text-destructive'>
-                                                                    <Trash2 className="mr-2 h-4 w-4" />
-                                                                    <span>Deletar</span>
-                                                                </DropdownMenuItem>
-                                                            </AlertDialogTrigger>
-                                                        </DropdownMenuContent>
-                                                    </DropdownMenu>
                                                     <AlertDialog>
+                                                        <DropdownMenu>
+                                                            <DropdownMenuTrigger asChild>
+                                                                <Button variant="ghost" className="h-8 w-8 p-0">
+                                                                    <span className="sr-only">Abrir menu</span>
+                                                                    <MoreHorizontal className="h-4 w-4" />
+                                                                </Button>
+                                                            </DropdownMenuTrigger>
+                                                            <DropdownMenuContent align="end">
+                                                                <DropdownMenuItem onClick={() => openEditDialog(company)}>
+                                                                    <Edit className="mr-2 h-4 w-4" />
+                                                                    <span>Editar</span>
+                                                                </DropdownMenuItem>
+                                                                <AlertDialogTrigger asChild>
+                                                                    <DropdownMenuItem className='text-destructive focus:text-destructive focus:bg-destructive/10' onSelect={(e) => e.preventDefault()}>
+                                                                        <Trash2 className="mr-2 h-4 w-4" />
+                                                                        <span>Deletar</span>
+                                                                    </DropdownMenuItem>
+                                                                </AlertDialogTrigger>
+                                                            </DropdownMenuContent>
+                                                        </DropdownMenu>
+
                                                         <AlertDialogContent>
                                                             <AlertDialogHeader>
                                                                 <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
@@ -219,12 +221,8 @@ export default function AdminPage() {
                             isPending={isPending}
                         />
                     </DialogContent>
-                </main>
-            </div>
-        </Dialog>
+                </Dialog>
+            </main>
+        </div>
     );
 }
-
-
-// Adicionando Card components que não estavam sendo importados
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
