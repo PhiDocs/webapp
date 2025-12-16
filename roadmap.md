@@ -98,3 +98,21 @@ A implementação será dividida em fases para garantir um desenvolvimento incre
 
 11. **Criar um Dashboard de Métricas:**
     - Desenvolver uma tela no painel do admin para exibir estatísticas de uso, como o número de documentos gerados por obra ou por período, para monitoramento de custos com a IA.
+
+### Fase 5: Painel do Super Admin (Gerenciamento Global)
+
+12. **Introduzir a Role de `super-admin`:**
+    - Definir uma nova role de usuário (`super-admin`) através de Custom Claims do Firebase. Esta role terá acesso a um painel de controle global, separado do painel de `admin` das empresas.
+    - O primeiro `super-admin` será atribuído manualmente via Firebase Admin SDK.
+
+13. **Desenvolver o Painel de Super Admin:**
+    - Criar uma nova rota protegida (ex: `/super-admin`) acessível apenas para usuários com a role `super-admin`.
+    - Desenvolver a interface para gerenciar todas as empresas cadastradas no sistema (CRUD completo).
+    - Implementar a funcionalidade de criação de novas empresas e seus respectivos administradores diretamente pela interface do painel, substituindo o uso de scripts (`registerCompany`).
+
+14. **Gerenciamento de Usuários Globais:**
+    - Criar uma visão para listar todos os usuários do sistema, com filtros por empresa e por role (`admin`, `user`).
+    - Adicionar funcionalidades para o `super-admin` gerenciar usuários, como desativar contas ou reenviar convites.
+
+15. **Dashboard de Monitoramento do Sistema:**
+    - Desenvolver um dashboard para o `super-admin` com métricas globais, como número total de empresas, usuários, documentos gerados e monitoramento de custos com a API de IA.
