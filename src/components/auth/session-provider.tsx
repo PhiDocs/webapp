@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
@@ -22,22 +23,22 @@ export function useSession() {
 
 export function SessionProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true); // Always start loading
+  const [isLoading, setIsLoading] = useState(true); // Sempre começa carregando
 
   useEffect(() => {
-    // onAuthStateChanged returns an unsubscribe function
+    // onAuthStateChanged retorna uma função para cancelar a inscrição
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       setUser(firebaseUser);
-      setIsLoading(false); // Set loading to false once the check is complete
+      setIsLoading(false); // Define o carregamento como falso assim que a verificação for concluída
     });
 
-    // Cleanup subscription on unmount
+    // Limpa a inscrição no desmontar
     return () => unsubscribe();
   }, []);
 
-  // While the initial authentication state is being determined,
-  // show a global loading indicator. The middleware is responsible for
-  // ensuring the user shouldn't be on a different page.
+  // Enquanto o estado de autenticação inicial está sendo determinado,
+  // exibe um indicador de carregamento global. O middleware é responsável por
+  // garantir que o usuário não deveria estar em uma página diferente.
   if (isLoading) {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-background">
@@ -46,10 +47,10 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     );
   }
 
-  // Once loading is complete, render the children.
-  // The middleware has already handled any necessary redirects.
+  // Quando o carregamento estiver completo, renderiza os filhos.
+  // O middleware já lidou com quaisquer redirecionamentos necessários.
   return (
-    <SessionContext.Provider value={{ user, isLoading }}>
+    <SessionContext.Provider value={{ user, isLoading: false }}>
       {children}
     </SessionContext.Provider>
   );
