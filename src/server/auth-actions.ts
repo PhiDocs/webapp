@@ -16,6 +16,7 @@ async function ensureAndSyncUserDocument(decodedToken: DecodedIdToken) {
   const { uid, email, name } = decodedToken;
   const existingUser = await UserRepository.get(uid);
 
+  // Define um tipo seguro para as claims
   const customClaims = (decodedToken || {}) as { role?: 'admin' | 'user', companyId?: string };
   const roleFromClaims = customClaims.role || 'user';
   const companyIdFromClaims = customClaims.companyId;
@@ -25,15 +26,17 @@ async function ensureAndSyncUserDocument(decodedToken: DecodedIdToken) {
     if (roleFromClaims !== existingUser.role) {
       updates.role = roleFromClaims;
     }
+    // Garante que a comparação funcione mesmo se existingUser.companyId for undefined
     if (companyIdFromClaims !== existingUser.companyId) {
-      updates.companyId = companyIdFromClaims || null; // Garante que podemos remover o companyId
+      // Usa null para remover o campo se ele não existir mais nas claims
+      updates.companyId = companyIdFromClaims || null; 
     }
 
     if (Object.keys(updates).length > 0) {
       await UserRepository.update(uid, updates);
     }
   } else {
-    // Se o usuário não existe no Firestore, cria o documento
+    // Se o usuário não existe no Firestore, cria o documento com todos os dados do token
     await UserRepository.create(uid, {
       uid,
       name: name || email!,
@@ -53,6 +56,8 @@ export async function createSession(idToken: string): Promise<{ error: string | 
     const adminAuth = admin.auth();
     const decodedToken = await adminAuth.verifyIdToken(idToken, true);
 
+    // Garante que o documento do Firestore está sincronizado com os claims do token.
+    // Esta é a etapa crucial que atualiza o Firestore.
     await ensureAndSyncUserDocument(decodedToken);
 
     const expiresIn = 60 * 60 * 24 * 5 * 1000; // 5 dias
