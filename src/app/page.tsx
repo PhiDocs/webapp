@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import type { SafetyAnalysisOutput } from '@/ai/flows/generateSafetyAnalysis';
-import type { ProtectiveEquipmentOutput } from '@/ai/flows/recommendProtectiveEquipment';
+import type { SafetyAnalysisOutput } from '@/ai/flows/generate-safety-analysis';
+import type { ProtectiveEquipmentOutput } from '@/ai/flows/recommend-protective-equipment';
 import type { SafetyFormValues } from '@/lib/types';
 import { getSafetyAnalysis, getProtectiveEquipment } from '@/server/ai-actions';
 import { notifyN8n } from '@/server/n8n-actions';
@@ -215,7 +215,6 @@ export default function Home() {
     <>
       <div className="min-h-screen bg-background flex flex-col no-print">
         <Header
-          className="no-print"
           mobileView={mobileView}
           setMobileView={setMobileView}
           onGeneratePdf={handlePrint}
@@ -226,7 +225,6 @@ export default function Home() {
             <div className='flex items-center gap-2'>
                 <div className='text-right text-sm'>
                     <p className='font-semibold'>{user?.displayName || user?.email}</p>
-                    <p className='text-xs text-muted-foreground'>Usuário</p>
                 </div>
                  <Button variant="outline" size="icon" onClick={handleSignOut}>
                     <LogOut className="h-4 w-4" />
