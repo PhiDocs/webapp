@@ -4,7 +4,6 @@ import { auth, db } from '@/firebase/config';
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
-  signOut as firebaseSignOut,
   updateProfile,
 } from 'firebase/auth';
 import { doc, setDoc, collection, addDoc, updateDoc } from 'firebase/firestore';
@@ -63,8 +62,10 @@ export async function signUp(
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
 
+    // Atualiza o perfil de autenticação do Firebase com o nome
     await updateProfile(user, { displayName: name });
 
+    // Salva os dados do usuário no Firestore
     await setDoc(doc(db, 'users', user.uid), {
       uid: user.uid,
       name: name,

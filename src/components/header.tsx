@@ -62,10 +62,11 @@ export function Header({
             </Button>
         </div>
 
-        <div className="hidden xl:flex items-center gap-4">
+        <div className="flex items-center gap-4">
           <Button
             onClick={onGeneratePdf}
             disabled={isDownloading || !canDownload}
+            className="hidden xl:inline-flex"
           >
             {isDownloading ? (
               <>
