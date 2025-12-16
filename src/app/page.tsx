@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import type { SafetyAnalysisOutput } from '@/ai/flows/generateSafetyAnalysis';
 import type { ProtectiveEquipmentOutput } from '@/ai/flows/recommendProtectiveEquipment';
 import type { SafetyFormValues } from '@/lib/types';
@@ -21,7 +22,6 @@ import { signOut } from '@/server/auth-actions';
 import { useSession } from '@/components/auth/session-provider';
 import { Button } from '@/components/ui/button';
 import { LogOut } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 
 export default function Home() {
   const [analysis, setAnalysis] = useState<SafetyAnalysisOutput | null>({

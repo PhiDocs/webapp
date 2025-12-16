@@ -131,7 +131,6 @@ export async function signIn(
  */
 export async function signOut(): Promise<{ error: string | null }> {
     try {
-        await firebaseSignOut(auth);
         cookies().delete('session');
         return { error: null };
     } catch (error: any) {
