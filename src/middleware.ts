@@ -1,7 +1,10 @@
+'use server';
+
 import { NextResponse, type NextRequest } from 'next/server';
 import * as jose from 'jose';
+import { ErrorLogRepository } from './repositories/error-log.repository';
 
-const FIREBASE_PROJECT_ID = 'studio-2124642360-17967';
+const FIREBASE_PROJECT_ID = process.env.FIREBASE_PROJECT_ID;
 const JWKS_URI = `https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com`;
 
 const PUBLIC_ROUTES = ['/login'];
@@ -14,7 +17,7 @@ interface VerifiedToken extends jose.JWTPayload {
 
 async function verifyIdToken(token: string): Promise<VerifiedToken | null> {
   if (!FIREBASE_PROJECT_ID) {
-    console.error('Firebase Project ID is not set.');
+    console.error('Firebase Project ID is not set in environment variables.');
     return null;
   }
   try {
@@ -27,7 +30,7 @@ async function verifyIdToken(token: string): Promise<VerifiedToken | null> {
 
     return payload as VerifiedToken;
   } catch (error) {
-    console.error('Token verification failed:', error);
+    console.warn('Token verification failed, possibly expired or invalid:', error);
     return null;
   }
 }
@@ -36,8 +39,8 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const sessionCookie = request.cookies.get('session');
   
-  const isPublicRoute = PUBLIC_ROUTES.includes(pathname);
-  const isAdminRoute = ADMIN_ROUTES.includes(pathname);
+  const isPublicRoute = PUBLIC_ROUTES.some(route => pathname.startsWith(route));
+  const isAdminRoute = ADMIN_ROUTES.some(route => pathname.startsWith(route));
 
   const session = sessionCookie?.value ? await verifyIdToken(sessionCookie.value) : null;
   const userRole = session?.role;
@@ -50,7 +53,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // 2. Se o usuário não está logado e tenta acessar uma página protegida,
-  // redirecione-o para a página de login.
+  // redirecione-o para a página de login e limpe qualquer cookie de sessão inválido.
   if (!session && !isPublicRoute) {
     const response = NextResponse.redirect(new URL('/login', request.url));
     if (sessionCookie) {
@@ -65,13 +68,7 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL('/', request.url));
   }
 
-  // 4. Se um usuário admin tenta acessar a página principal de usuário,
-  // redirecione-o para o painel de admin.
-  if (session && pathname === '/' && userRole === 'admin') {
-      return NextResponse.redirect(new URL('/admin', request.url));
-  }
-
-  // 5. Em todos os outros casos (usuário correto na rota correta), permitir o acesso.
+  // 4. Em todos os outros casos (usuário correto na rota correta), permitir o acesso.
   return NextResponse.next();
 }
 
