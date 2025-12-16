@@ -5,6 +5,19 @@ const companyCollection = admin.firestore().collection('companies');
 
 export const CompanyRepository = {
   /**
+   * Busca uma única empresa pelo seu ID.
+   * @param id O ID da empresa.
+   * @returns A empresa ou null se não encontrada.
+   */
+  async getById(id: string): Promise<Company | null> {
+    const doc = await companyCollection.doc(id).get();
+    if (!doc.exists) {
+        return null;
+    }
+    return { id: doc.id, ...doc.data() } as Company;
+  },
+
+  /**
    * Busca todas as empresas do Firestore.
    * @returns Uma lista de empresas.
    */

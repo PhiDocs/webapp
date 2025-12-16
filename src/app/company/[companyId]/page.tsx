@@ -1,0 +1,82 @@
+'use client';
+
+import { Header } from "@/components/header";
+import { SignOutButton } from "@/components/auth/signout-button";
+import { WorksTable } from "@/components/admin/works-table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { HardHat, Users } from "lucide-react";
+import { useSession } from "@/components/auth/session-provider";
+import { useEffect, useState } from "react";
+import { getCompanyById } from "@/server/company-actions";
+import type { Company } from "@/lib/types";
+import { Skeleton } from "@/components/ui/skeleton";
+
+export default function CompanyPage({ params }: { params: { companyId: string } }) {
+    const { user } = useSession();
+    const [company, setCompany] = useState<Company | null>(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        if (params.companyId) {
+            const fetchCompany = async () => {
+                setLoading(true);
+                const result = await getCompanyById(params.companyId);
+                if (result.success && result.data) {
+                    setCompany(result.data);
+                } else {
+                    console.error("Failed to fetch company data:", result.error);
+                }
+                setLoading(false);
+            };
+            fetchCompany();
+        }
+    }, [params.companyId]);
+
+    // Validação de permissão
+    if (!user || user.role !== 'admin' || user.companyId !== params.companyId) {
+        return (
+            <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
+                <h1 className="text-xl font-bold text-destructive">Acesso Negado</h1>
+                <p className="mt-2 text-muted-foreground">Você não tem permissão para ver esta página.</p>
+            </div>
+        );
+    }
+
+    return (
+        <div className="min-h-screen bg-background flex flex-col">
+            <Header isAprReady={false} isPtReady={false}>
+                <SignOutButton />
+            </Header>
+            <main className="flex-grow container mx-auto p-4 md:p-6">
+                <div className="flex items-center justify-between mb-6">
+                    <div>
+                        {loading ? (
+                             <>
+                                <Skeleton className="h-9 w-64 mb-3" />
+                                <Skeleton className="h-5 w-80" />
+                            </>
+                        ) : (
+                            <>
+                                <h1 className="text-3xl font-bold">{company?.name}</h1>
+                                <p className="text-muted-foreground mt-2">Gerencie as obras e funcionários da sua empresa.</p>
+                            </>
+                        )}
+                    </div>
+                </div>
+
+                <Tabs defaultValue="works">
+                    <TabsList className="grid w-full grid-cols-2 md:w-[400px]">
+                        <TabsTrigger value="works"><HardHat className="mr-2 h-4 w-4" />Obras</TabsTrigger>
+                        <TabsTrigger value="employees" disabled><Users className="mr-2 h-4 w-4" />Funcionários</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="works" className="mt-6">
+                        <WorksTable companyId={params.companyId} />
+                    </TabsContent>
+                    <TabsContent value="employees" className="mt-6">
+                        {/* O componente para gerenciar funcionários será adicionado aqui */}
+                    </TabsContent>
+                </Tabs>
+            </main>
+        </div>
+    );
+}

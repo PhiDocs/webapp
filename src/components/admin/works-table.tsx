@@ -33,7 +33,6 @@ import { getWorks, createWork, updateWork, deleteWork } from '@/server/work-acti
 import { WorkForm } from '@/components/admin/work-form';
 import type { Work, WorkFormValues, Company } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
-import { getShortDate } from '@/lib/utils';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -41,12 +40,13 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { getCompanies } from '@/server/company-actions';
 
+interface WorksTableProps {
+    companyId: string;
+}
 
-export function WorksTable() {
+export function WorksTable({ companyId }: WorksTableProps) {
     const [works, setWorks] = useState<Work[]>([]);
-    const [companies, setCompanies] = useState<Company[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isPending, startTransition] = useTransition();
     const [isFormOpen, setIsFormOpen] = useState(false);
@@ -55,35 +55,29 @@ export function WorksTable() {
 
     const fetchData = async () => {
         setIsLoading(true);
-        const [worksResult, companiesResult] = await Promise.all([
-            getWorks(),
-            getCompanies()
-        ]);
+        const worksResult = await getWorks(companyId);
         
         if (worksResult.success && worksResult.data) {
             setWorks(worksResult.data);
         } else {
             toast({ variant: 'destructive', title: "Erro ao buscar obras", description: worksResult.error });
         }
-
-        if (companiesResult.success && companiesResult.data) {
-            setCompanies(companiesResult.data);
-        } else {
-            toast({ variant: 'destructive', title: "Erro ao buscar empresas", description: companiesResult.error });
-        }
         
         setIsLoading(false);
     };
 
     useEffect(() => {
-        fetchData();
-    }, []);
+        if (companyId) {
+            fetchData();
+        }
+    }, [companyId]);
 
-    const handleFormSubmit = (values: WorkFormValues) => {
+    const handleFormSubmit = (values: Omit<WorkFormValues, 'companyId'>) => {
         startTransition(async () => {
+            const fullValues = { ...values, companyId };
             const action = editingWork 
-                ? updateWork(editingWork.id, values) 
-                : createWork(values);
+                ? updateWork(editingWork.id, fullValues) 
+                : createWork(fullValues);
             
             const result = await action;
 
@@ -120,10 +114,6 @@ export function WorksTable() {
         setIsFormOpen(true);
     }
 
-    const getCompanyName = (companyId: string) => {
-        return companies.find(c => c.id === companyId)?.name || 'N/A';
-    }
-
     return (
         <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
             <Card>
@@ -131,27 +121,21 @@ export function WorksTable() {
                     <div className="flex items-start justify-between">
                         <div>
                             <CardTitle>Obras</CardTitle>
-                            <CardDescription>Lista de todas as obras cadastradas.</CardDescription>
+                            <CardDescription>Lista de todas as obras cadastradas para esta empresa.</CardDescription>
                         </div>
                         <DialogTrigger asChild>
-                            <Button onClick={openCreateDialog} disabled={companies.length === 0}>
+                            <Button onClick={openCreateDialog}>
                                 <PlusCircle className="mr-2 h-4 w-4" />
                                 Nova Obra
                             </Button>
                         </DialogTrigger>
                     </div>
-                     {companies.length === 0 && !isLoading && (
-                        <p className="text-sm text-destructive mt-2">
-                           Você precisa cadastrar pelo menos uma empresa antes de poder adicionar uma obra.
-                        </p>
-                    )}
                 </CardHeader>
                 <CardContent>
                     <Table>
                         <TableHeader>
                             <TableRow>
                                 <TableHead>Nome da Obra</TableHead>
-                                <TableHead className="hidden md:table-cell">Empresa</TableHead>
                                 <TableHead className="hidden lg:table-cell">Endereço</TableHead>
                                 <TableHead className="text-right">Ações</TableHead>
                             </TableRow>
@@ -159,13 +143,13 @@ export function WorksTable() {
                         <TableBody>
                             {isLoading ? (
                                 <TableRow>
-                                    <TableCell colSpan={4} className="text-center h-24">
+                                    <TableCell colSpan={3} className="text-center h-24">
                                         <Loader2 className="mx-auto h-6 w-6 animate-spin" />
                                     </TableCell>
                                 </TableRow>
                             ) : works.length === 0 ? (
                                 <TableRow>
-                                    <TableCell colSpan={4} className="text-center h-24 text-muted-foreground">
+                                    <TableCell colSpan={3} className="text-center h-24 text-muted-foreground">
                                         Nenhuma obra encontrada.
                                     </TableCell>
                                 </TableRow>
@@ -173,7 +157,6 @@ export function WorksTable() {
                                 works.map((work) => (
                                     <TableRow key={work.id}>
                                         <TableCell className="font-medium">{work.name}</TableCell>
-                                        <TableCell className="hidden md:table-cell text-muted-foreground">{getCompanyName(work.companyId)}</TableCell>
                                         <TableCell className="hidden lg:table-cell">{work.address}</TableCell>
                                         <TableCell className="text-right">
                                             <AlertDialog>
@@ -231,7 +214,6 @@ export function WorksTable() {
                     onSubmit={handleFormSubmit}
                     defaultValues={editingWork}
                     isPending={isPending}
-                    companies={companies}
                 />
             </DialogContent>
         </Dialog>

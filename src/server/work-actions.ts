@@ -6,11 +6,14 @@ import { workFormSchema } from '@/lib/types';
 import { ErrorLogRepository } from '@/repositories/error-log.repository';
 
 /**
- * Busca todas as obras.
+ * Busca todas as obras de uma empresa.
  */
-export async function getWorks() {
+export async function getWorks(companyId: string) {
+    if (!companyId) {
+        return { success: false, error: 'ID da empresa não fornecido.' };
+    }
     try {
-        const works = await WorkRepository.getAll();
+        const works = await WorkRepository.getAllByCompany(companyId);
         return { success: true, data: works };
     } catch (error: any) {
         await ErrorLogRepository.log(error, 'getWorks');
@@ -31,7 +34,7 @@ export async function createWork(data: unknown) {
 
     try {
         await WorkRepository.create(validation.data);
-        revalidatePath('/admin');
+        revalidatePath(`/company/${validation.data.companyId}`);
         return { success: true };
     } catch (error: any) {
         await ErrorLogRepository.log(error, 'createWork');
@@ -52,7 +55,7 @@ export async function updateWork(id: string, data: unknown) {
 
     try {
         await WorkRepository.update(id, validation.data);
-        revalidatePath('/admin');
+        revalidatePath(`/company/${validation.data.companyId}`);
         return { success: true };
     } catch (error: any) {
         await ErrorLogRepository.log(error, 'updateWork');
@@ -69,8 +72,12 @@ export async function deleteWork(id: string) {
     }
     
     try {
+        // Para revalidar a página correta, precisaríamos do companyId.
+        // Por simplicidade, vamos assumir que a revalidação pode ser mais ampla
+        // ou o cliente pode ser responsável por refazer a busca.
+        // Em um caso real, deleteWork poderia retornar o work deletado para obter o companyId.
         await WorkRepository.delete(id);
-        revalidatePath('/admin');
+        revalidatePath('/company', 'layout'); // Revalida todas as páginas da empresa
         return { success: true };
     } catch (error: any) {
         await ErrorLogRepository.log(error, 'deleteWork');

@@ -5,11 +5,16 @@ const workCollection = admin.firestore().collection('works');
 
 export const WorkRepository = {
   /**
-   * Busca todas as obras do Firestore.
+   * Busca todas as obras de uma empresa específica.
+   * @param companyId O ID da empresa.
    * @returns Uma lista de obras.
    */
-  async getAll(): Promise<Work[]> {
-    const snapshot = await workCollection.orderBy('createdAt', 'desc').get();
+  async getAllByCompany(companyId: string): Promise<Work[]> {
+    const snapshot = await workCollection
+        .where('companyId', '==', companyId)
+        .orderBy('createdAt', 'desc')
+        .get();
+        
     if (snapshot.empty) {
       return [];
     }

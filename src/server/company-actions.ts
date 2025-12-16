@@ -6,6 +6,27 @@ import { CompanyRepository } from '@/repositories/company.repository';
 import { companyFormSchema } from '@/lib/types';
 import { ErrorLogRepository } from '@/repositories/error-log.repository';
 
+
+/**
+ * Busca uma empresa pelo seu ID.
+ */
+export async function getCompanyById(id: string) {
+    if (!id) {
+        return { success: false, error: 'ID da empresa não fornecido.' };
+    }
+    try {
+        const company = await CompanyRepository.getById(id);
+        if (!company) {
+            return { success: false, error: 'Empresa não encontrada.' };
+        }
+        return { success: true, data: company };
+    } catch (error: any) {
+        await ErrorLogRepository.log(error, 'getCompanyById');
+        return { success: false, error: 'Falha ao buscar empresa.' };
+    }
+}
+
+
 /**
  * Busca todas as empresas.
  */

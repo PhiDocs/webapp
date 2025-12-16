@@ -14,24 +14,21 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { DialogFooter } from '@/components/ui/dialog';
 import { Loader2 } from 'lucide-react';
-import type { Work, Company, WorkFormValues } from '@/lib/types';
+import type { Work, WorkFormValues } from '@/lib/types';
 import { workFormSchema } from '@/lib/types';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 
 interface WorkFormProps {
-  onSubmit: (values: WorkFormValues) => void;
+  onSubmit: (values: Omit<WorkFormValues, 'companyId'>) => void;
   defaultValues?: Partial<Work> | null;
   isPending: boolean;
-  companies: Company[];
 }
 
-export function WorkForm({ onSubmit, defaultValues, isPending, companies }: WorkFormProps) {
-  const form = useForm<WorkFormValues>({
-    resolver: zodResolver(workFormSchema),
+export function WorkForm({ onSubmit, defaultValues, isPending }: WorkFormProps) {
+  const form = useForm<Omit<WorkFormValues, 'companyId'>>({
+    resolver: zodResolver(workFormSchema.omit({ companyId: true })),
     defaultValues: {
       name: defaultValues?.name || '',
       address: defaultValues?.address || '',
-      companyId: defaultValues?.companyId || '',
     },
   });
 
@@ -60,30 +57,6 @@ export function WorkForm({ onSubmit, defaultValues, isPending, companies }: Work
               <FormControl>
                 <Input placeholder="Endereço completo da obra" {...field} />
               </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="companyId"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Empresa Responsável</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                    <SelectTrigger>
-                        <SelectValue placeholder="Selecione a empresa" />
-                    </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                    {companies.map((company) => (
-                        <SelectItem key={company.id} value={company.id}>
-                        {company.name}
-                        </SelectItem>
-                    ))}
-                    </SelectContent>
-                </Select>
               <FormMessage />
             </FormItem>
           )}
