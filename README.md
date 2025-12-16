@@ -49,6 +49,13 @@ Se você já tem um usuário criado e deseja torná-lo um administrador de uma e
 
 > **Importante:** Após executar qualquer um desses scripts e alterar os papéis, o usuário precisa **fazer logout e login novamente** para que seu token de sessão seja atualizado com os novos *custom claims*.
 
+## Deploy Automático de Regras e Índices do Firestore
+
+Este projeto está configurado para realizar o deploy das regras de segurança e dos índices do Firestore automaticamente.
+
+-   **Como funciona:** O ambiente de desenvolvimento monitora alterações nos arquivos `firestore.rules` e `firestore.indexes.json`. Qualquer alteração nesses arquivos aciona um processo de deploy em segundo plano.
+-   **O que você precisa fazer:** Apenas edite os arquivos. Você **não precisa** executar nenhum comando manual no Firebase CLI. O deploy pode levar alguns minutos para ser concluído.
+
 ## Variáveis de Ambiente
 
 Preencha o arquivo `.env` na raiz do projeto com as informações da sua conta de serviço do Firebase.
