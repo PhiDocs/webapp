@@ -31,7 +31,7 @@ import {
 import { PlusCircle, Edit, Trash2, Loader2, MoreHorizontal } from 'lucide-react';
 import { getWorks, createWork, updateWork, deleteWork } from '@/server/work-actions';
 import { WorkForm } from '@/components/admin/work-form';
-import type { Work, WorkFormValues, Company } from '@/lib/types';
+import type { Work, WorkFormValues } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import {
     DropdownMenu,
@@ -92,9 +92,9 @@ export function WorksTable({ companyId }: WorksTableProps) {
         });
     };
 
-    const handleDelete = (workId: string) => {
+    const handleDelete = (workId: string, companyId: string) => {
         startTransition(async () => {
-            const result = await deleteWork(workId);
+            const result = await deleteWork(workId, companyId);
             if (result.success) {
                 toast({ title: "Obra excluída com sucesso!" });
                 await fetchData();
@@ -190,7 +190,7 @@ export function WorksTable({ companyId }: WorksTableProps) {
                                                     </AlertDialogHeader>
                                                     <AlertDialogFooter>
                                                         <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                                        <AlertDialogAction onClick={() => handleDelete(work.id)} disabled={isPending} className="bg-destructive hover:bg-destructive/90">
+                                                        <AlertDialogAction onClick={() => handleDelete(work.id, work.companyId)} disabled={isPending} className="bg-destructive hover:bg-destructive/90">
                                                                 {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                                                             Deletar
                                                         </AlertDialogAction>

@@ -73,18 +73,14 @@ export async function updateWork(id: string, data: unknown) {
 /**
  * Deleta uma obra.
  */
-export async function deleteWork(id: string) {
-    if (!id) {
-        return { success: false, error: 'ID da obra não fornecido.' };
+export async function deleteWork(id: string, companyId: string) {
+    if (!id || !companyId) {
+        return { success: false, error: 'ID da obra ou da empresa não fornecido.' };
     }
     
     try {
-        // Para revalidar a página correta, precisaríamos do companyId.
-        // Por simplicidade, vamos assumir que a revalidação pode ser mais ampla
-        // ou o cliente pode ser responsável por refazer a busca.
-        // Em um caso real, deleteWork poderia retornar o work deletado para obter o companyId.
         await WorkRepository.delete(id);
-        revalidatePath('/company', 'layout'); // Revalida todas as páginas da empresa
+        revalidatePath(`/company/${companyId}`);
         return { success: true };
     } catch (error: any) {
         await ErrorLogRepository.log(error, 'deleteWork');
