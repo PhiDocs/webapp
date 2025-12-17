@@ -173,7 +173,7 @@ export function WorksTable({ companyId }: WorksTableProps) {
                                                             <span>Editar</span>
                                                         </DropdownMenuItem>
                                                         <AlertDialogTrigger asChild>
-                                                            <DropdownMenuItem className='text-destructive focus:text-destructive focus:bg-destructive/10' onSelect={(e) => e.preventDefault()}>
+                                                            <DropdownMenuItem className='text-destructive focus:text-destructive focus:bg-destructive/10 cursor-pointer' onSelect={(e) => e.preventDefault()}>
                                                                 <Trash2 className="mr-2 h-4 w-4" />
                                                                 <span>Deletar</span>
                                                             </DropdownMenuItem>
