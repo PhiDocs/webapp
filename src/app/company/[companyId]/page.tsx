@@ -1,26 +1,33 @@
 'use client';
 
+import React, { useEffect, useState } from 'react';
 import { Header } from "@/components/header";
 import { UserNav } from "@/components/auth/user-nav";
 import { WorksTable } from "@/components/admin/works-table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { HardHat, Users } from "lucide-react";
 import { useSession } from "@/components/auth/session-provider";
-import { useEffect, useState } from "react";
 import { getCompanyById } from "@/server/company-actions";
 import type { Company } from "@/lib/types";
 import { Skeleton } from "@/components/ui/skeleton";
 
-export default function CompanyPage({ params }: { params: { companyId: string } }) {
+interface CompanyPageProps {
+    params: Promise<{ companyId: string }>;
+}
+
+export default function CompanyPage({ params }: CompanyPageProps) {
+    const resolvedParams = React.use(params);
+    const companyId = resolvedParams.companyId;
+
     const { user, isLoading: isSessionLoading } = useSession();
     const [company, setCompany] = useState<Company | null>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        if (params.companyId) {
+        if (companyId) {
             const fetchCompany = async () => {
                 setLoading(true);
-                const result = await getCompanyById(params.companyId);
+                const result = await getCompanyById(companyId);
                 if (result.success && result.data) {
                     setCompany(result.data);
                 } else {
@@ -30,10 +37,10 @@ export default function CompanyPage({ params }: { params: { companyId: string } 
             };
             fetchCompany();
         }
-    }, [params.companyId]);
+    }, [companyId]);
 
     // Validação de permissão
-    if (!isSessionLoading && user && (user.role !== 'admin' || user.companyId !== params.companyId)) {
+    if (!isSessionLoading && user && (user.role !== 'admin' || user.companyId !== companyId)) {
         return (
             <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
                 <h1 className="text-xl font-bold text-destructive">Acesso Negado</h1>
@@ -72,7 +79,7 @@ export default function CompanyPage({ params }: { params: { companyId: string } 
                         <TabsTrigger value="employees" disabled><Users className="mr-2 h-4 w-4" />Funcionários</TabsTrigger>
                     </TabsList>
                     <TabsContent value="works" className="mt-6">
-                        <WorksTable companyId={params.companyId} />
+                        <WorksTable companyId={companyId} />
                     </TabsContent>
                     <TabsContent value="employees" className="mt-6">
                         {/* O componente para gerenciar funcionários será adicionado aqui */}
