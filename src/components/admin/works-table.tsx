@@ -83,7 +83,7 @@ export function WorksTable({ companyId }: WorksTableProps) {
 
             if (result.success) {
                 toast({ title: `Obra ${editingWork ? 'atualizada' : 'criada'} com sucesso!` });
-                await fetchData();
+                await fetchData(); // Re-fetch after create/update
                 setIsFormOpen(false);
                 setEditingWork(null);
             } else {
@@ -97,7 +97,8 @@ export function WorksTable({ companyId }: WorksTableProps) {
             const result = await deleteWork(workId, companyId);
             if (result.success) {
                 toast({ title: "Obra excluída com sucesso!" });
-                await fetchData();
+                // Optimistic UI update: remove the work from the local state
+                setWorks(currentWorks => currentWorks.filter(work => work.id !== workId));
             } else {
                 toast({ variant: 'destructive', title: "Erro ao excluir", description: result.error });
             }
@@ -191,7 +192,7 @@ export function WorksTable({ companyId }: WorksTableProps) {
                                                     <AlertDialogFooter>
                                                         <AlertDialogCancel>Cancelar</AlertDialogCancel>
                                                         <AlertDialogAction onClick={() => handleDelete(work.id, work.companyId)} disabled={isPending} className="bg-destructive hover:bg-destructive/90">
-                                                                {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                                                            {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                                                             Deletar
                                                         </AlertDialogAction>
                                                     </AlertDialogFooter>
