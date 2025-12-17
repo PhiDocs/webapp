@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { signOut } from '@/server/auth-actions';
 import { Button } from '@/components/ui/button';
@@ -50,6 +49,10 @@ export function UserNav() {
     }
   };
 
+  const handleReportsClick = () => {
+      router.push('/');
+  };
+
   return (
     <DropdownMenu>
         <DropdownMenuTrigger asChild>
@@ -70,11 +73,9 @@ export function UserNav() {
                 </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-             <DropdownMenuItem asChild>
-                <Link href="/">
-                    <FileText className="mr-2 h-4 w-4" /> 
-                    <span>Relatórios</span>
-                </Link>
+             <DropdownMenuItem onClick={handleReportsClick}>
+                <FileText className="mr-2 h-4 w-4" /> 
+                <span>Relatórios</span>
             </DropdownMenuItem>
             {user.role === 'admin' && user.companyId && (
                 <DropdownMenuItem onClick={handleAdminPanelClick}>
