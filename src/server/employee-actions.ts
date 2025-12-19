@@ -33,13 +33,7 @@ export async function getEmployees(companyId: string) {
         const employees = await EmployeeRepository.getAllByCompany(companyId);
         return { success: true, data: employees };
     } catch (e: unknown) {
-        let error: Error;
-        if (e instanceof Error) {
-            error = e;
-        } else {
-            error = new Error(String(e ?? 'Falha ao buscar funcionários.'));
-        }
-
+        const error = e instanceof Error ? e : new Error(String(e ?? 'Erro desconhecido ao buscar funcionários.'));
         console.error("Error fetching employees: ", error);
         
         const specificError = e as { code?: string };
@@ -49,7 +43,7 @@ export async function getEmployees(companyId: string) {
         }
 
         await ErrorLogRepository.log(error, 'getEmployees');
-        return { success: false, error: 'Falha ao buscar funcionários.' };
+        return { success: false, error: `Falha ao buscar funcionários: ${error.message}` };
     }
 }
 
@@ -74,9 +68,9 @@ export async function createEmployee(data: EmployeeServerValues) {
         revalidatePath(`/company/${validation.data.companyId}`);
         return { success: true };
     } catch (e: unknown) {
-        const error = e instanceof Error ? e : new Error(String(e ?? 'Falha ao criar funcionário.'));
+        const error = e instanceof Error ? e : new Error(String(e ?? 'Erro desconhecido ao criar funcionário.'));
         await ErrorLogRepository.log(error, 'createEmployee', data.email);
-        return { success: false, error: 'Falha ao criar funcionário.' };
+        return { success: false, error: `Falha ao criar funcionário: ${error.message}` };
     }
 }
 
@@ -101,9 +95,9 @@ export async function updateEmployee(id: string, data: EmployeeServerValues) {
         revalidatePath(`/company/${validation.data.companyId}`);
         return { success: true };
     } catch (e: unknown) {
-        const error = e instanceof Error ? e : new Error(String(e ?? 'Falha ao atualizar funcionário.'));
+        const error = e instanceof Error ? e : new Error(String(e ?? 'Erro desconhecido ao atualizar funcionário.'));
         await ErrorLogRepository.log(error, 'updateEmployee', data.email);
-        return { success: false, error: 'Falha ao atualizar funcionário.' };
+        return { success: false, error: `Falha ao atualizar funcionário: ${error.message}` };
     }
 }
 
@@ -120,8 +114,8 @@ export async function deleteEmployee(id: string, companyId: string) {
         revalidatePath(`/company/${companyId}`);
         return { success: true };
     } catch (e: unknown) {
-        const error = e instanceof Error ? e : new Error(String(e ?? 'Falha ao deletar funcionário.'));
+        const error = e instanceof Error ? e : new Error(String(e ?? 'Erro desconhecido ao deletar funcionário.'));
         await ErrorLogRepository.log(error, 'deleteEmployee');
-        return { success: false, error: 'Falha ao deletar funcionário.' };
+        return { success: false, error: `Falha ao deletar funcionário: ${error.message}` };
     }
 }

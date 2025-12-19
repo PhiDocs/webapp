@@ -24,13 +24,7 @@ export async function getJobRoles(companyId: string) {
         const jobRoles = await JobRoleRepository.getAllByCompany(companyId);
         return { success: true, data: jobRoles };
     } catch (e: unknown) {
-        let error: Error;
-        if (e instanceof Error) {
-            error = e;
-        } else {
-            error = new Error(String(e ?? 'Falha ao buscar cargos.'));
-        }
-
+        const error = e instanceof Error ? e : new Error(String(e ?? 'Erro desconhecido ao buscar cargos.'));
         console.error("Error fetching job roles: ", error);
 
         const specificError = e as { code?: string };
@@ -39,7 +33,7 @@ export async function getJobRoles(companyId: string) {
             return { success: false, error: 'Um índice do Firestore é necessário para esta consulta. Verifique os logs do servidor para o link de criação do índice.' };
         }
         await ErrorLogRepository.log(error, 'getJobRoles');
-        return { success: false, error: 'Falha ao buscar cargos.' };
+        return { success: false, error: `Falha ao buscar cargos: ${error.message}` };
     }
 }
 
@@ -62,9 +56,9 @@ export async function createJobRole(data: JobRoleFormValues & { companyId: strin
         revalidatePath(`/company/${companyId}`);
         return { success: true };
     } catch (e: unknown) {
-        const error = e instanceof Error ? e : new Error(String(e ?? 'Falha ao criar cargo.'));
+        const error = e instanceof Error ? e : new Error(String(e ?? 'Erro desconhecido ao criar cargo.'));
         await ErrorLogRepository.log(error, 'createJobRole');
-        return { success: false, error: 'Falha ao criar cargo.' };
+        return { success: false, error: `Falha ao criar cargo: ${error.message}` };
     }
 }
 
@@ -87,9 +81,9 @@ export async function updateJobRole(id: string, data: JobRoleFormValues & { comp
         revalidatePath(`/company/${companyId}`);
         return { success: true };
     } catch (e: unknown) {
-        const error = e instanceof Error ? e : new Error(String(e ?? 'Falha ao atualizar cargo.'));
+        const error = e instanceof Error ? e : new Error(String(e ?? 'Erro desconhecido ao atualizar cargo.'));
         await ErrorLogRepository.log(error, 'updateJobRole');
-        return { success: false, error: 'Falha ao atualizar cargo.' };
+        return { success: false, error: `Falha ao atualizar cargo: ${error.message}` };
     }
 }
 
@@ -106,8 +100,8 @@ export async function deleteJobRole(id: string, companyId: string) {
         revalidatePath(`/company/${companyId}`);
         return { success: true };
     } catch (e: unknown) {
-        const error = e instanceof Error ? e : new Error(String(e ?? 'Falha ao deletar cargo.'));
+        const error = e instanceof Error ? e : new Error(String(e ?? 'Erro desconhecido ao deletar cargo.'));
         await ErrorLogRepository.log(error, 'deleteJobRole');
-        return { success: false, error: 'Falha ao deletar cargo.' };
+        return { success: false, error: `Falha ao deletar cargo: ${error.message}` };
     }
 }

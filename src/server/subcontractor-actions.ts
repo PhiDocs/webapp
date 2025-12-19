@@ -24,13 +24,7 @@ export async function getSubcontractors(companyId: string) {
         const subcontractors = await SubcontractorRepository.getAllByCompany(companyId);
         return { success: true, data: subcontractors };
     } catch (e: unknown) {
-        let error: Error;
-        if (e instanceof Error) {
-            error = e;
-        } else {
-            error = new Error(String(e ?? 'Falha ao buscar empresas terceirizadas.'));
-        }
-
+        const error = e instanceof Error ? e : new Error(String(e ?? 'Erro desconhecido ao buscar empresas terceirizadas.'));
         console.error("Error fetching subcontractors: ", error);
 
         const specificError = e as { code?: string };
@@ -39,7 +33,7 @@ export async function getSubcontractors(companyId: string) {
             return { success: false, error: 'Um índice do Firestore é necessário para esta consulta. Verifique os logs do servidor para o link de criação do índice.' };
         }
         await ErrorLogRepository.log(error, 'getSubcontractors');
-        return { success: false, error: 'Falha ao buscar empresas terceirizadas.' };
+        return { success: false, error: `Falha ao buscar empresas terceirizadas: ${error.message}` };
     }
 }
 
@@ -59,9 +53,9 @@ export async function createSubcontractor(data: SubcontractorFormValues & { comp
         revalidatePath(`/company/${validation.data.companyId}`);
         return { success: true };
     } catch (e: unknown) {
-        const error = e instanceof Error ? e : new Error(String(e ?? 'Falha ao criar subcontratado.'));
+        const error = e instanceof Error ? e : new Error(String(e ?? 'Erro desconhecido ao criar subcontratado.'));
         await ErrorLogRepository.log(error, 'createSubcontractor');
-        return { success: false, error: 'Falha ao criar subcontratado.' };
+        return { success: false, error: `Falha ao criar subcontratado: ${error.message}` };
     }
 }
 
@@ -81,9 +75,9 @@ export async function updateSubcontractor(id: string, data: SubcontractorFormVal
         revalidatePath(`/company/${validation.data.companyId}`);
         return { success: true };
     } catch (e: unknown) {
-        const error = e instanceof Error ? e : new Error(String(e ?? 'Falha ao atualizar subcontratado.'));
+        const error = e instanceof Error ? e : new Error(String(e ?? 'Erro desconhecido ao atualizar subcontratado.'));
         await ErrorLogRepository.log(error, 'updateSubcontractor');
-        return { success: false, error: 'Falha ao atualizar subcontratado.' };
+        return { success: false, error: `Falha ao atualizar subcontratado: ${error.message}` };
     }
 }
 
@@ -100,8 +94,8 @@ export async function deleteSubcontractor(id: string, companyId: string) {
         revalidatePath(`/company/${companyId}`);
         return { success: true };
     } catch (e: unknown) {
-        const error = e instanceof Error ? e : new Error(String(e ?? 'Falha ao deletar subcontratado.'));
+        const error = e instanceof Error ? e : new Error(String(e ?? 'Erro desconhecido ao deletar subcontratado.'));
         await ErrorLogRepository.log(error, 'deleteSubcontractor');
-        return { success: false, error: 'Falha ao deletar subcontratado.' };
+        return { success: false, error: `Falha ao deletar subcontratado: ${error.message}` };
     }
 }
