@@ -56,9 +56,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
-      // Inicia o carregamento apenas uma vez no início da verificação.
-      // Não redefina para true em cada mudança de estado.
-      if (isLoading) setIsLoading(true);
+      setIsLoading(true);
 
       if (fbUser) {
         setFirebaseUser(fbUser);
@@ -70,39 +68,21 @@ export function SessionProvider({ children }: { children: ReactNode }) {
             email: fbUser.email!,
             ...firestoreProfile,
           });
-          setIsLoading(false);
         } else {
-          // Se o perfil não for encontrado, pode ser um atraso na replicação do Firestore.
-          // Tenta novamente após um curto período.
-          console.warn(`Firestore profile for user ${fbUser.uid} not found. Retrying...`);
-          setTimeout(async () => {
-              const secondAttemptProfile = await getFirestoreUserProfile(fbUser.uid);
-              if(secondAttemptProfile) {
-                 setUser({
-                    uid: fbUser.uid,
-                    email: fbUser.email!,
-                    ...secondAttemptProfile,
-                });
-              } else {
-                 // Se ainda não encontrar, o usuário está em um estado inconsistente.
-                 // Desloga para evitar ficar preso.
-                 console.error(`CRITICAL: Firestore profile for user ${fbUser.uid} not found after retry. Signing out.`);
-                 await auth.signOut(); // Isso irá disparar o onAuthStateChanged novamente para o estado 'null'
-                 setUser(null);
-              }
-              setIsLoading(false); // Garante que o loading termine aqui também.
-          }, 1500);
+          // If no profile, it might be a new user whose doc hasn't been created yet.
+          // Middleware will handle redirection if needed. For now, clear the user.
+          console.warn(`Firestore profile for user ${fbUser.uid} not found. Session will be incomplete until doc is created.`);
+          setUser(null);
         }
       } else {
-        // Se não houver usuário no Firebase Auth, limpa tudo e finaliza o carregamento.
+        // No Firebase user, clear everything.
         setFirebaseUser(null);
         setUser(null);
-        setIsLoading(false);
       }
+      setIsLoading(false);
     });
 
     return () => unsubscribe();
-    // O array de dependências vazio garante que este useEffect execute apenas uma vez.
   }, []);
 
   if (isLoading) {

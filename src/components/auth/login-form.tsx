@@ -3,6 +3,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { loginSchema, type LoginValues } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import {
@@ -51,6 +52,7 @@ const getFirebaseAuthErrorMessage = (errorCode: string): string => {
 export function LoginForm() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
   const form = useForm<LoginValues>({
     resolver: zodResolver(loginSchema),
@@ -82,8 +84,10 @@ export function LoginForm() {
         description: ptBr.toasts.success.loginSuccessDescription,
       });
 
-      // 4. Forçar um recarregamento completo para acionar o middleware
-      window.location.href = '/';
+      // 4. Usar o router do Next.js para uma transição suave
+      router.push('/');
+      router.refresh();
+
 
     } catch (error: any) {
       console.error('Login failed:', error);
@@ -93,9 +97,9 @@ export function LoginForm() {
         title: ptBr.toasts.errors.authError,
         description: friendlyMessage,
       });
-    } finally {
       setIsLoading(false);
     }
+    // O setIsLoading(false) é removido daqui para que a tela de login fique bloqueada até o redirecionamento.
   };
 
   return (
