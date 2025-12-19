@@ -38,8 +38,9 @@ export async function getEmployees(companyId: string) {
         
         const specificError = e as { code?: string };
         if (specificError?.code === 'failed-precondition') {
-             await ErrorLogRepository.log(new Error('Firestore index missing for getEmployees. Please create it.'), 'getEmployees-IndexMissing');
-             return { success: false, error: 'Um índice do Firestore é necessário para esta consulta. Verifique os logs do servidor para o link de criação do índice.' };
+             const indexError = new Error('Firestore index missing for getEmployees. Please run "npm run update-firestore".');
+             await ErrorLogRepository.log(indexError, 'getEmployees-IndexMissing');
+             return { success: false, error: 'Um índice do Firestore é necessário. Execute "npm run update-firestore".' };
         }
 
         await ErrorLogRepository.log(error, 'getEmployees');
