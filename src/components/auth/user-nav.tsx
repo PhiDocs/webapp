@@ -36,7 +36,7 @@ export function UserNav() {
   const handleSignOut = async () => {
     await signOut();
     await auth.signOut();
-    window.location.href = '/login';
+    router.push('/login');
   };
   
   if (!user) {
@@ -50,7 +50,7 @@ export function UserNav() {
   };
 
   const handleReportsClick = () => {
-      router.push('/');
+      router.push('/reports');
   };
 
   return (
@@ -73,18 +73,18 @@ export function UserNav() {
                 </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-             <DropdownMenuItem onClick={handleReportsClick}>
+             <DropdownMenuItem onClick={handleReportsClick} className="cursor-pointer">
                 <FileText className="mr-2 h-4 w-4" /> 
                 <span>Relatórios</span>
             </DropdownMenuItem>
             {user.role === 'admin' && user.companyId && (
-                <DropdownMenuItem onClick={handleAdminPanelClick}>
+                <DropdownMenuItem onClick={handleAdminPanelClick} className="cursor-pointer">
                     <LayoutDashboard className="mr-2 h-4 w-4" />
                     <span>Painel do Admin</span>
                 </DropdownMenuItem>
             )}
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={handleSignOut}>
+            <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer">
                 <LogOut className="mr-2 h-4 w-4" />
                 <span>Sair</span>
             </DropdownMenuItem>

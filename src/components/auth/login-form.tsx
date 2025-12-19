@@ -86,7 +86,6 @@ export function LoginForm() {
 
       // 4. Usar o router do Next.js para uma transição suave
       router.push('/');
-      router.refresh();
 
 
     } catch (error: any) {

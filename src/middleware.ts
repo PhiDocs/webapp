@@ -7,7 +7,8 @@ const FIREBASE_PROJECT_ID = process.env.FIREBASE_PROJECT_ID;
 const JWKS_URI = `https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com`;
 
 const PUBLIC_ROUTES = ['/login'];
-const ADMIN_ROUTE_PREFIX = '/company';
+const ADMIN_DASHBOARD_PREFIX = '/company';
+const USER_DASHBOARD = '/reports';
 
 interface VerifiedToken extends jose.JWTPayload {
   role?: string;
@@ -44,7 +45,7 @@ export async function middleware(request: NextRequest) {
   const userRole = session?.role;
   const userCompanyId = session?.companyId;
 
-  // Se não há sessão e a rota não é pública, redireciona para login.
+  // 1. If not authenticated and trying to access a protected route, redirect to login
   if (!session && !isPublicRoute) {
     const response = NextResponse.redirect(new URL('/login', request.url));
     if (sessionCookie) {
@@ -53,31 +54,31 @@ export async function middleware(request: NextRequest) {
     return response;
   }
 
-  // Se há sessão...
+  // 2. If authenticated
   if (session) {
-    // Se o usuário logado tenta acessar uma rota pública (login), redireciona para a home.
+    // 2a. If trying to access a public route (like /login), redirect to the appropriate dashboard
     if (isPublicRoute) {
         const url = userRole === 'admin' && userCompanyId 
-            ? `${ADMIN_ROUTE_PREFIX}/${userCompanyId}` 
-            : '/';
+            ? `${ADMIN_DASHBOARD_PREFIX}/${userCompanyId}` 
+            : USER_DASHBOARD;
         return NextResponse.redirect(new URL(url, request.url));
     }
     
-    // Se um admin acessa a raiz, redireciona para a página da sua empresa.
-    if (userRole === 'admin' && userCompanyId && pathname === '/') {
-        return NextResponse.redirect(new URL(`${ADMIN_ROUTE_PREFIX}/${userCompanyId}`, request.url));
-    }
-
-    // Se um admin tenta acessar uma página de empresa que não é a sua, corrige a rota.
-    if (userRole === 'admin' && userCompanyId && pathname.startsWith(ADMIN_ROUTE_PREFIX)) {
+    // 2b. If an admin tries to access a company page that isn't theirs, correct it
+    if (userRole === 'admin' && userCompanyId && pathname.startsWith(ADMIN_DASHBOARD_PREFIX)) {
         const companyIdFromUrl = pathname.split('/')[2];
         if (companyIdFromUrl !== userCompanyId) {
-            return NextResponse.redirect(new URL(`${ADMIN_ROUTE_PREFIX}/${userCompanyId}`, request.url));
+            return NextResponse.redirect(new URL(`${ADMIN_DASHBOARD_PREFIX}/${userCompanyId}`, request.url));
         }
+    }
+
+    // 2c. If a non-admin tries to access an admin page, redirect them to their dashboard
+    if (userRole !== 'admin' && pathname.startsWith(ADMIN_DASHBOARD_PREFIX)) {
+        return NextResponse.redirect(new URL(USER_DASHBOARD, request.url));
     }
   }
 
-  // Em todos os outros casos, permite o acesso.
+  // 3. Allow access by default
   return NextResponse.next();
 }
 
