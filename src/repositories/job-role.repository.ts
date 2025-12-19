@@ -8,10 +8,11 @@ const getCollection = (companyId: string) =>
 
 export const JobRoleRepository = {
   /**
-   * Busca todos os cargos de uma empresa específica.
+   * Busca todos os cargos ativos de uma empresa específica.
    */
   async getAllByCompany(companyId: string): Promise<JobRole[]> {
     const snapshot = await getCollection(companyId)
+        .where('deletedAt', '==', null)
         .orderBy('createdAt', 'desc')
         .get();
         
@@ -31,6 +32,7 @@ export const JobRoleRepository = {
     const jobRoleRef = await getCollection(data.companyId).add({
       ...data,
       createdAt: new Date().toISOString(),
+      deletedAt: null,
     });
     return jobRoleRef.id;
   },
@@ -46,9 +48,11 @@ export const JobRoleRepository = {
   },
 
   /**
-   * Deleta um cargo.
+   * Deleta (soft delete) um cargo, marcando-o como deletado.
    */
   async delete(jobRoleId: string, companyId: string): Promise<void> {
-    await getCollection(companyId).doc(jobRoleId).delete();
+    await getCollection(companyId).doc(jobRoleId).update({
+        deletedAt: new Date().toISOString()
+    });
   },
 };

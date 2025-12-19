@@ -8,12 +8,13 @@ const getCollection = (companyId: string) =>
 
 export const EmployeeRepository = {
   /**
-   * Busca todos os funcionários de uma empresa específica.
+   * Busca todos os funcionários ativos de uma empresa específica.
    * @param companyId O ID da empresa.
    * @returns Uma lista de funcionários.
    */
   async getAllByCompany(companyId: string): Promise<Employee[]> {
     const snapshot = await getCollection(companyId)
+        .where('deletedAt', '==', null)
         .orderBy('createdAt', 'desc')
         .get();
         
@@ -35,6 +36,7 @@ export const EmployeeRepository = {
     const employeeRef = await getCollection(data.companyId).add({
       ...data,
       createdAt: new Date().toISOString(),
+      deletedAt: null,
     });
     return employeeRef.id;
   },
@@ -52,11 +54,13 @@ export const EmployeeRepository = {
   },
 
   /**
-   * Deleta um funcionário.
+   * Deleta (soft delete) um funcionário, marcando-o como deletado.
    * @param employeeId - O ID do funcionário a ser deletado.
    * @param companyId - O ID da empresa à qual o funcionário pertence.
    */
   async delete(employeeId: string, companyId: string): Promise<void> {
-    await getCollection(companyId).doc(employeeId).delete();
+    await getCollection(companyId).doc(employeeId).update({
+        deletedAt: new Date().toISOString()
+    });
   },
 };

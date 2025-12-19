@@ -216,6 +216,7 @@ export type Work = {
     endDate: string;
     companyId: string;
     createdAt: string;
+    deletedAt?: string | null;
 }
 
 // --- Employee Schema ---
@@ -242,6 +243,7 @@ export type Employee = {
     subcontractorId?: string;
     subcontractorName?: string;
     createdAt: string;
+    deletedAt?: string | null;
 }
 
 // --- JobRole Schema ---
@@ -258,6 +260,7 @@ export type JobRole = {
     responsibilities: string;
     requiredCertificates: string[];
     createdAt: string;
+    deletedAt?: string | null;
 }
 
 // --- Subcontractor Schema ---
@@ -274,4 +277,5 @@ export type Subcontractor = {
     cnpj: string;
     contractNumber?: string;
     createdAt: string;
+    deletedAt?: string | null;
 }

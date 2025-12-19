@@ -8,10 +8,11 @@ const getCollection = (companyId: string) =>
 
 export const SubcontractorRepository = {
   /**
-   * Busca todas as empresas terceirizadas de uma empresa principal.
+   * Busca todas as empresas terceirizadas ativas de uma empresa principal.
    */
   async getAllByCompany(companyId: string): Promise<Subcontractor[]> {
     const snapshot = await getCollection(companyId)
+        .where('deletedAt', '==', null)
         .orderBy('createdAt', 'desc')
         .get();
         
@@ -31,6 +32,7 @@ export const SubcontractorRepository = {
     const subcontractorRef = await getCollection(data.companyId).add({
       ...data,
       createdAt: new Date().toISOString(),
+      deletedAt: null,
     });
     return subcontractorRef.id;
   },
@@ -46,9 +48,11 @@ export const SubcontractorRepository = {
   },
 
   /**
-   * Deleta uma empresa terceirizada.
+   * Deleta (soft delete) uma empresa terceirizada, marcando-a como deletada.
    */
   async delete(subcontractorId: string, companyId: string): Promise<void> {
-    await getCollection(companyId).doc(subcontractorId).delete();
+    await getCollection(companyId).doc(subcontractorId).update({
+        deletedAt: new Date().toISOString()
+    });
   },
 };
