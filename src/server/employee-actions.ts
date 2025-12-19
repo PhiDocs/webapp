@@ -33,11 +33,11 @@ export async function getEmployees(companyId: string) {
         const employees = await EmployeeRepository.getAllByCompany(companyId);
         return { success: true, data: employees };
     } catch (e: unknown) {
-        const error = e instanceof Error ? e : new Error('Falha ao buscar funcionários');
+        const error = e instanceof Error ? e : new Error(String(e) || 'Falha ao buscar funcionários');
         console.error("Error fetching employees: ", error);
 
         const specificError = e as { code?: string };
-        if (specificError.code === 'failed-precondition') {
+        if (specificError?.code === 'failed-precondition') {
              await ErrorLogRepository.log(new Error('Firestore index missing for getEmployees'), 'getEmployees-IndexMissing');
              return { success: false, error: 'Um índice do Firestore é necessário para esta consulta. Verifique os logs do servidor para o link de criação do índice.' };
         }
@@ -67,7 +67,7 @@ export async function createEmployee(data: EmployeeServerValues) {
         revalidatePath(`/company/${validation.data.companyId}`);
         return { success: true };
     } catch (e: unknown) {
-        const error = e instanceof Error ? e : new Error('Falha ao criar funcionário');
+        const error = e instanceof Error ? e : new Error(String(e) || 'Falha ao criar funcionário');
         await ErrorLogRepository.log(error, 'createEmployee', data.email);
         return { success: false, error: 'Falha ao criar funcionário.' };
     }
@@ -94,7 +94,7 @@ export async function updateEmployee(id: string, data: EmployeeServerValues) {
         revalidatePath(`/company/${validation.data.companyId}`);
         return { success: true };
     } catch (e: unknown) {
-        const error = e instanceof Error ? e : new Error('Falha ao atualizar funcionário');
+        const error = e instanceof Error ? e : new Error(String(e) || 'Falha ao atualizar funcionário');
         await ErrorLogRepository.log(error, 'updateEmployee', data.email);
         return { success: false, error: 'Falha ao atualizar funcionário.' };
     }
@@ -113,7 +113,7 @@ export async function deleteEmployee(id: string, companyId: string) {
         revalidatePath(`/company/${companyId}`);
         return { success: true };
     } catch (e: unknown) {
-        const error = e instanceof Error ? e : new Error('Falha ao deletar funcionário');
+        const error = e instanceof Error ? e : new Error(String(e) || 'Falha ao deletar funcionário');
         await ErrorLogRepository.log(error, 'deleteEmployee');
         return { success: false, error: 'Falha ao deletar funcionário.' };
     }
