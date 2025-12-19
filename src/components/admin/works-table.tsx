@@ -28,7 +28,7 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { PlusCircle, Edit, Trash2, Loader2, MoreHorizontal } from 'lucide-react';
+import { PlusCircle, Edit, Trash2, Loader2, MoreHorizontal, Calendar, Home } from 'lucide-react';
 import { getWorks, createWork, updateWork, deleteWork } from '@/server/work-actions';
 import { WorkForm } from '@/components/admin/work-form';
 import type { Work, WorkFormValues } from '@/lib/types';
@@ -40,6 +40,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { getShortDate } from '@/lib/utils';
 
 interface WorksTableProps {
     companyId: string;
@@ -92,12 +93,11 @@ export function WorksTable({ companyId }: WorksTableProps) {
         });
     };
 
-    const handleDelete = (workId: string, companyId: string) => {
+    const handleDelete = (workId: string) => {
         startTransition(async () => {
             const result = await deleteWork(workId, companyId);
             if (result.success) {
                 toast({ title: "Obra excluída com sucesso!" });
-                // Optimistic UI update: remove the work from the local state
                 setWorks(currentWorks => currentWorks.filter(work => work.id !== workId));
             } else {
                 toast({ variant: 'destructive', title: "Erro ao excluir", description: result.error });
@@ -137,28 +137,39 @@ export function WorksTable({ companyId }: WorksTableProps) {
                         <TableHeader>
                             <TableRow>
                                 <TableHead>Nome da Obra</TableHead>
-                                <TableHead className="hidden lg:table-cell">Endereço</TableHead>
+                                <TableHead className="hidden md:table-cell">Endereço</TableHead>
+                                <TableHead className="hidden lg:table-cell">Período</TableHead>
                                 <TableHead className="text-right">Ações</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {isLoading ? (
                                 <TableRow>
-                                    <TableCell colSpan={3} className="text-center h-24">
+                                    <TableCell colSpan={4} className="text-center h-24">
                                         <Loader2 className="mx-auto h-6 w-6 animate-spin" />
                                     </TableCell>
                                 </TableRow>
                             ) : works.length === 0 ? (
                                 <TableRow>
-                                    <TableCell colSpan={3} className="text-center h-24 text-muted-foreground">
+                                    <TableCell colSpan={4} className="text-center h-24 text-muted-foreground">
                                         Nenhuma obra encontrada.
                                     </TableCell>
                                 </TableRow>
                             ) : (
                                 works.map((work) => (
                                     <TableRow key={work.id}>
-                                        <TableCell className="font-medium">{work.name}</TableCell>
-                                        <TableCell className="hidden lg:table-cell">{work.address}</TableCell>
+                                        <TableCell className="font-medium">
+                                            {work.name}
+                                            <div className="text-muted-foreground text-xs lg:hidden mt-1">
+                                                <div className='flex items-center gap-2'>
+                                                    <Calendar size={12}/> {getShortDate(work.startDate)} - {getShortDate(work.endDate)}
+                                                </div>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell className="hidden md:table-cell">{work.address}</TableCell>
+                                        <TableCell className="hidden lg:table-cell">
+                                            {getShortDate(work.startDate)} - {getShortDate(work.endDate)}
+                                        </TableCell>
                                         <TableCell className="text-right">
                                             <AlertDialog>
                                                 <DropdownMenu>
@@ -169,7 +180,7 @@ export function WorksTable({ companyId }: WorksTableProps) {
                                                         </Button>
                                                     </DropdownMenuTrigger>
                                                     <DropdownMenuContent align="end">
-                                                        <DropdownMenuItem onClick={() => openEditDialog(work)}>
+                                                        <DropdownMenuItem onClick={() => openEditDialog(work)} className='cursor-pointer'>
                                                             <Edit className="mr-2 h-4 w-4" />
                                                             <span>Editar</span>
                                                         </DropdownMenuItem>
@@ -191,7 +202,7 @@ export function WorksTable({ companyId }: WorksTableProps) {
                                                     </AlertDialogHeader>
                                                     <AlertDialogFooter>
                                                         <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                                        <AlertDialogAction onClick={() => handleDelete(work.id, work.companyId)} disabled={isPending} className="bg-destructive hover:bg-destructive/90">
+                                                        <AlertDialogAction onClick={() => handleDelete(work.id)} disabled={isPending} className="bg-destructive hover:bg-destructive/90">
                                                             {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                                                             Deletar
                                                         </AlertDialogAction>
@@ -207,7 +218,7 @@ export function WorksTable({ companyId }: WorksTableProps) {
                 </CardContent>
             </Card>
 
-            <DialogContent className="sm:max-w-[425px]">
+            <DialogContent className="sm:max-w-lg">
                 <DialogHeader>
                     <DialogTitle>{editingWork ? 'Editar Obra' : 'Nova Obra'}</DialogTitle>
                 </DialogHeader>

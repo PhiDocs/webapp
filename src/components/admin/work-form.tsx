@@ -29,6 +29,9 @@ export function WorkForm({ onSubmit, defaultValues, isPending }: WorkFormProps) 
     defaultValues: {
       name: defaultValues?.name || '',
       address: defaultValues?.address || '',
+      workLocationDetails: defaultValues?.workLocationDetails || '',
+      startDate: defaultValues?.startDate ? defaultValues.startDate.split('T')[0] : '',
+      endDate: defaultValues?.endDate ? defaultValues.endDate.split('T')[0] : '',
     },
   });
 
@@ -61,6 +64,47 @@ export function WorkForm({ onSubmit, defaultValues, isPending }: WorkFormProps) 
             </FormItem>
           )}
         />
+        <FormField
+          control={form.control}
+          name="workLocationDetails"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Local/Pavimento</FormLabel>
+              <FormControl>
+                <Input placeholder="Ex: Pavimento 3, Bloco B" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+         <div className="grid grid-cols-2 gap-4">
+            <FormField
+                control={form.control}
+                name="startDate"
+                render={({ field }) => (
+                    <FormItem>
+                    <FormLabel>Data de Início</FormLabel>
+                    <FormControl>
+                        <Input type="date" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                    </FormItem>
+                )}
+            />
+            <FormField
+                control={form.control}
+                name="endDate"
+                render={({ field }) => (
+                    <FormItem>
+                    <FormLabel>Data de Término</FormLabel>
+                    <FormControl>
+                        <Input type="date" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                    </FormItem>
+                )}
+            />
+        </div>
         <DialogFooter>
           <Button type="submit" disabled={isPending}>
             {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

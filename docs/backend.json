@@ -31,9 +31,12 @@
       "properties": {
         "name": { "type": "string", "description": "The name of the work/site." },
         "address": { "type": "string", "description": "The address of the work/site." },
-        "companyId": { "type": "string", "description": "The ID of the company this work belongs to." }
+        "companyId": { "type": "string", "description": "The ID of the company this work belongs to." },
+        "startDate": { "type": "string", "format": "date", "description": "The start date of the work." },
+        "endDate": { "type": "string", "format": "date", "description": "The end date of the work." },
+        "workLocationDetails": { "type": "string", "description": "Details about the specific location or floor of the work." }
       },
-      "required": ["name", "companyId"]
+      "required": ["name", "companyId", "startDate", "endDate", "workLocationDetails"]
     },
     "document": {
       "title": "Safety Document",
