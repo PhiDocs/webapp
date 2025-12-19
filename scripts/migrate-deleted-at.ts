@@ -96,6 +96,8 @@ async function main() {
   
   try {
     // Migrate top-level collections
+    await migrateTopLevelCollection('users');
+    await migrateTopLevelCollection('companies');
     await migrateTopLevelCollection('works');
     
     // Migrate subcollections
