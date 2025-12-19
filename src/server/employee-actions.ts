@@ -33,14 +33,21 @@ export async function getEmployees(companyId: string) {
         const employees = await EmployeeRepository.getAllByCompany(companyId);
         return { success: true, data: employees };
     } catch (e: unknown) {
-        const error = e instanceof Error ? e : new Error(String(e ?? 'Falha ao buscar funcionários.'));
-        console.error("Error fetching employees: ", error);
+        let error: Error;
+        if (e instanceof Error) {
+            error = e;
+        } else {
+            error = new Error(String(e ?? 'Falha ao buscar funcionários.'));
+        }
 
+        console.error("Error fetching employees: ", error);
+        
         const specificError = e as { code?: string };
         if (specificError?.code === 'failed-precondition') {
-             await ErrorLogRepository.log(new Error('Firestore index missing for getEmployees'), 'getEmployees-IndexMissing');
+             await ErrorLogRepository.log(new Error('Firestore index missing for getEmployees. Please create it.'), 'getEmployees-IndexMissing');
              return { success: false, error: 'Um índice do Firestore é necessário para esta consulta. Verifique os logs do servidor para o link de criação do índice.' };
         }
+
         await ErrorLogRepository.log(error, 'getEmployees');
         return { success: false, error: 'Falha ao buscar funcionários.' };
     }

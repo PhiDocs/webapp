@@ -24,10 +24,18 @@ export async function getSubcontractors(companyId: string) {
         const subcontractors = await SubcontractorRepository.getAllByCompany(companyId);
         return { success: true, data: subcontractors };
     } catch (e: unknown) {
-        const error = e instanceof Error ? e : new Error(String(e ?? 'Falha ao buscar empresas terceirizadas.'));
+        let error: Error;
+        if (e instanceof Error) {
+            error = e;
+        } else {
+            error = new Error(String(e ?? 'Falha ao buscar empresas terceirizadas.'));
+        }
+
+        console.error("Error fetching subcontractors: ", error);
+
         const specificError = e as { code?: string };
         if (specificError?.code === 'failed-precondition') {
-            await ErrorLogRepository.log(new Error('Firestore index missing for getSubcontractors'), 'getSubcontractors-IndexMissing');
+            await ErrorLogRepository.log(new Error('Firestore index missing for getSubcontractors. Please create it.'), 'getSubcontractors-IndexMissing');
             return { success: false, error: 'Um índice do Firestore é necessário para esta consulta. Verifique os logs do servidor para o link de criação do índice.' };
         }
         await ErrorLogRepository.log(error, 'getSubcontractors');
@@ -36,7 +44,7 @@ export async function getSubcontractors(companyId: string) {
 }
 
 /**
- * Cria uma nova empresa terceirizada.
+ * Cria um novo subcontratado.
  */
 export async function createSubcontractor(data: SubcontractorFormValues & { companyId: string }) {
     const validation = subcontractorServerSchema.safeParse(data);
@@ -51,14 +59,14 @@ export async function createSubcontractor(data: SubcontractorFormValues & { comp
         revalidatePath(`/company/${validation.data.companyId}`);
         return { success: true };
     } catch (e: unknown) {
-        const error = e instanceof Error ? e : new Error(String(e ?? 'Falha ao criar empresa terceirizada.'));
+        const error = e instanceof Error ? e : new Error(String(e ?? 'Falha ao criar subcontratado.'));
         await ErrorLogRepository.log(error, 'createSubcontractor');
-        return { success: false, error: 'Falha ao criar empresa terceirizada.' };
+        return { success: false, error: 'Falha ao criar subcontratado.' };
     }
 }
 
 /**
- * Atualiza uma empresa terceirizada.
+ * Atualiza um subcontratado existente.
  */
 export async function updateSubcontractor(id: string, data: SubcontractorFormValues & { companyId: string }) {
     const validation = subcontractorServerSchema.safeParse(data);
@@ -73,18 +81,18 @@ export async function updateSubcontractor(id: string, data: SubcontractorFormVal
         revalidatePath(`/company/${validation.data.companyId}`);
         return { success: true };
     } catch (e: unknown) {
-        const error = e instanceof Error ? e : new Error(String(e ?? 'Falha ao atualizar empresa terceirizada.'));
+        const error = e instanceof Error ? e : new Error(String(e ?? 'Falha ao atualizar subcontratado.'));
         await ErrorLogRepository.log(error, 'updateSubcontractor');
-        return { success: false, error: 'Falha ao atualizar empresa terceirizada.' };
+        return { success: false, error: 'Falha ao atualizar subcontratado.' };
     }
 }
 
 /**
- * Deleta uma empresa terceirizada.
+ * Deleta um subcontratado.
  */
 export async function deleteSubcontractor(id: string, companyId: string) {
     if (!id || !companyId) {
-        return { success: false, error: 'ID da empresa ou da empresa principal não fornecido.' };
+        return { success: false, error: 'ID do subcontratado ou da empresa não fornecido.' };
     }
     
     try {
@@ -92,8 +100,8 @@ export async function deleteSubcontractor(id: string, companyId: string) {
         revalidatePath(`/company/${companyId}`);
         return { success: true };
     } catch (e: unknown) {
-        const error = e instanceof Error ? e : new Error(String(e ?? 'Falha ao deletar empresa terceirizada.'));
+        const error = e instanceof Error ? e : new Error(String(e ?? 'Falha ao deletar subcontratado.'));
         await ErrorLogRepository.log(error, 'deleteSubcontractor');
-        return { success: false, error: 'Falha ao deletar empresa terceirizada.' };
+        return { success: false, error: 'Falha ao deletar subcontratado.' };
     }
 }

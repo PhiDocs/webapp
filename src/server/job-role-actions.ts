@@ -24,10 +24,18 @@ export async function getJobRoles(companyId: string) {
         const jobRoles = await JobRoleRepository.getAllByCompany(companyId);
         return { success: true, data: jobRoles };
     } catch (e: unknown) {
-        const error = e instanceof Error ? e : new Error(String(e ?? 'Falha ao buscar cargos.'));
+        let error: Error;
+        if (e instanceof Error) {
+            error = e;
+        } else {
+            error = new Error(String(e ?? 'Falha ao buscar cargos.'));
+        }
+
+        console.error("Error fetching job roles: ", error);
+
         const specificError = e as { code?: string };
         if (specificError?.code === 'failed-precondition') {
-            await ErrorLogRepository.log(new Error('Firestore index missing for getJobRoles'), 'getJobRoles-IndexMissing');
+            await ErrorLogRepository.log(new Error('Firestore index missing for getJobRoles. Please create it.'), 'getJobRoles-IndexMissing');
             return { success: false, error: 'Um índice do Firestore é necessário para esta consulta. Verifique os logs do servidor para o link de criação do índice.' };
         }
         await ErrorLogRepository.log(error, 'getJobRoles');

@@ -37,12 +37,18 @@ export async function getWorks(companyId: string) {
         const works = await WorkRepository.getAllByCompany(companyId);
         return { success: true, data: works };
     } catch (e: unknown) {
-        const error = e instanceof Error ? e : new Error(String(e ?? 'Falha ao buscar obras.'));
+        let error: Error;
+        if (e instanceof Error) {
+            error = e;
+        } else {
+            error = new Error(String(e ?? 'Falha ao buscar obras.'));
+        }
+
         console.error("Error fetching works: ", error);
-        
+
         const specificError = e as { code?: string };
         if (specificError?.code === 'failed-precondition') {
-             await ErrorLogRepository.log(new Error('Firestore index missing for getWorks'), 'getWorks-IndexMissing');
+             await ErrorLogRepository.log(new Error('Firestore index missing for getWorks. Please create it.'), 'getWorks-IndexMissing');
              return { success: false, error: 'Um índice do Firestore é necessário para esta consulta. Verifique os logs do servidor para o link de criação do índice.' };
         }
         await ErrorLogRepository.log(error, 'getWorks');
