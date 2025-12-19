@@ -183,7 +183,7 @@ export type Company = {
 
 // --- Work Schema ---
 
-// Schema for the client-side form
+// Schema for the client-side form - NO companyId
 export const workClientFormSchema = z.object({
   name: z.string().min(3, "O nome da obra deve ter pelo menos 3 caracteres."),
   address: z.string().min(5, "O endereço deve ter pelo menos 5 caracteres."),
@@ -200,7 +200,7 @@ export const workClientFormSchema = z.object({
     }
 });
 
-// Schema for the server-side action, including companyId
+// Schema for the server-side action - INCLUDES companyId
 export const workFormSchema = z.object({
   name: z.string().min(3, "O nome da obra deve ter pelo menos 3 caracteres."),
   address: z.string().min(5, "O endereço deve ter pelo menos 5 caracteres."),
