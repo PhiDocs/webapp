@@ -10,29 +10,44 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { DialogFooter } from '@/components/ui/dialog';
 import { Loader2 } from 'lucide-react';
-import type { Employee, EmployeeFormValues } from '@/lib/types';
+import type { Employee, EmployeeFormValues, JobRole, Subcontractor } from '@/lib/types';
 import { employeeFormSchema } from '@/lib/types';
 
 interface EmployeeFormProps {
   onSubmit: (values: EmployeeFormValues) => void;
   defaultValues?: Partial<Employee> | null;
   isPending: boolean;
+  jobRoles: JobRole[];
+  subcontractors: Subcontractor[];
 }
 
-export function EmployeeForm({ onSubmit, defaultValues, isPending }: EmployeeFormProps) {
+export function EmployeeForm({
+  onSubmit,
+  defaultValues,
+  isPending,
+  jobRoles,
+  subcontractors,
+}: EmployeeFormProps) {
   const form = useForm<EmployeeFormValues>({
     resolver: zodResolver(employeeFormSchema),
     defaultValues: {
       firstName: defaultValues?.firstName || '',
       lastName: defaultValues?.lastName || '',
-      role: defaultValues?.role || '',
       email: defaultValues?.email || '',
       cpf: defaultValues?.cpf || '',
-      company: defaultValues?.company || '',
+      roleId: defaultValues?.roleId || '',
+      subcontractorId: defaultValues?.subcontractorId || 'N/A',
     },
   });
 
@@ -80,21 +95,7 @@ export function EmployeeForm({ onSubmit, defaultValues, isPending }: EmployeeFor
             </FormItem>
           )}
         />
-        <div className="grid grid-cols-2 gap-4">
-            <FormField
-            control={form.control}
-            name="role"
-            render={({ field }) => (
-                <FormItem>
-                <FormLabel>Função</FormLabel>
-                <FormControl>
-                    <Input placeholder="Ex: Eletricista" {...field} />
-                </FormControl>
-                <FormMessage />
-                </FormItem>
-            )}
-            />
-            <FormField
+        <FormField
             control={form.control}
             name="cpf"
             render={({ field }) => (
@@ -107,16 +108,51 @@ export function EmployeeForm({ onSubmit, defaultValues, isPending }: EmployeeFor
                 </FormItem>
             )}
             />
-        </div>
+        <FormField
+            control={form.control}
+            name="roleId"
+            render={({ field }) => (
+                <FormItem>
+                    <FormLabel>Função</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                        <SelectTrigger>
+                            <SelectValue placeholder="Selecione um cargo" />
+                        </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                        {jobRoles.map((role) => (
+                            <SelectItem key={role.id} value={role.id}>
+                            {role.name}
+                            </SelectItem>
+                        ))}
+                        </SelectContent>
+                    </Select>
+                    <FormMessage />
+                </FormItem>
+            )}
+        />
          <FormField
           control={form.control}
-          name="company"
+          name="subcontractorId"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Empresa (se terceirizado)</FormLabel>
-              <FormControl>
-                <Input placeholder="Nome da empresa terceirizada" {...field} />
-              </FormControl>
+               <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione uma empresa" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="N/A">Não aplicável</SelectItem>
+                  {subcontractors.map((sub) => (
+                    <SelectItem key={sub.id} value={sub.id}>
+                      {sub.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <FormMessage />
             </FormItem>
           )}

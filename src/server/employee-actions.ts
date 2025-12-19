@@ -4,19 +4,23 @@ import { revalidatePath } from 'next/cache';
 import { EmployeeRepository } from '@/repositories/employee.repository';
 import { ErrorLogRepository } from '@/repositories/error-log.repository';
 import { z } from 'zod';
-import type { EmployeeFormValues } from '@/lib/types';
 import { ptBr } from '@/lib/data/strings';
 
 // Schema para validação do formulário no servidor. Inclui o companyId.
 const employeeServerSchema = z.object({
   firstName: z.string().min(1, ptBr.validations.firstName),
   lastName: z.string().min(1, ptBr.validations.lastName),
-  role: z.string().min(1, ptBr.validations.role),
   email: z.string().email(ptBr.validations.invalidEmail),
   cpf: z.string().min(1, ptBr.validations.cpf),
-  company: z.string().optional(),
+  roleId: z.string().min(1, ptBr.validations.roleId),
+  roleName: z.string(),
+  subcontractorId: z.string().optional(),
+  subcontractorName: z.string().optional(),
   companyId: z.string().min(1, "ID da empresa é obrigatório."),
 });
+
+type EmployeeServerValues = z.infer<typeof employeeServerSchema>;
+
 
 /**
  * Busca todos os funcionários de uma empresa.
@@ -42,7 +46,7 @@ export async function getEmployees(companyId: string) {
 /**
  * Cria um novo funcionário.
  */
-export async function createEmployee(data: EmployeeFormValues & { companyId: string }) {
+export async function createEmployee(data: EmployeeServerValues) {
     const validation = employeeServerSchema.safeParse(data);
     if (!validation.success) {
         const errors = validation.error.flatten().fieldErrors;
@@ -51,7 +55,12 @@ export async function createEmployee(data: EmployeeFormValues & { companyId: str
     }
 
     try {
-        await EmployeeRepository.create(validation.data);
+        const dataToSave = {
+            ...validation.data,
+            subcontractorId: validation.data.subcontractorId === 'N/A' ? null : validation.data.subcontractorId,
+            subcontractorName: validation.data.subcontractorId === 'N/A' ? null : validation.data.subcontractorName,
+        };
+        await EmployeeRepository.create(dataToSave);
         revalidatePath(`/company/${validation.data.companyId}`);
         return { success: true };
     } catch (error: any) {
@@ -63,7 +72,7 @@ export async function createEmployee(data: EmployeeFormValues & { companyId: str
 /**
  * Atualiza um funcionário existente.
  */
-export async function updateEmployee(id: string, data: EmployeeFormValues & { companyId: string }) {
+export async function updateEmployee(id: string, data: EmployeeServerValues) {
     const validation = employeeServerSchema.safeParse(data);
     if (!validation.success) {
         const errors = validation.error.flatten().fieldErrors;
@@ -72,7 +81,12 @@ export async function updateEmployee(id: string, data: EmployeeFormValues & { co
     }
 
     try {
-        await EmployeeRepository.update(id, validation.data);
+        const dataToSave = {
+            ...validation.data,
+            subcontractorId: validation.data.subcontractorId === 'N/A' ? null : validation.data.subcontractorId,
+            subcontractorName: validation.data.subcontractorId === 'N/A' ? null : validation.data.subcontractorName,
+        };
+        await EmployeeRepository.update(id, dataToSave);
         revalidatePath(`/company/${validation.data.companyId}`);
         return { success: true };
     } catch (error: any) {

@@ -1,5 +1,4 @@
 'use client';
-
 import { z } from 'zod';
 import { DOCUMENT_TYPES, PT_FIT_STATUS, SIGNATURE_TYPES } from './constants';
 import { ptBr } from './data/strings';
@@ -26,6 +25,7 @@ const validationMessages = {
     lastName: "Sobrenome é obrigatório.",
     role: "Função é obrigatória.",
     cpf: "CPF é obrigatório.",
+    roleId: "A função é obrigatória.",
 };
 
 
@@ -222,22 +222,25 @@ export type Work = {
 export const employeeFormSchema = z.object({
   firstName: z.string().min(1, validationMessages.firstName),
   lastName: z.string().min(1, validationMessages.lastName),
-  role: z.string().min(1, validationMessages.role),
   email: z.string().email(validationMessages.invalidEmail),
   cpf: z.string().min(1, validationMessages.cpf),
-  company: z.string().optional(),
+  roleId: z.string().min(1, validationMessages.roleId),
+  subcontractorId: z.string().optional(),
 });
 
 export type EmployeeFormValues = z.infer<typeof employeeFormSchema>;
+
 export type Employee = {
     id: string;
     companyId: string;
     firstName: string;
     lastName: string;
-    role: string;
     email: string;
     cpf: string;
-    company?: string;
+    roleId: string;
+    roleName?: string;
+    subcontractorId?: string;
+    subcontractorName?: string;
     createdAt: string;
 }
 

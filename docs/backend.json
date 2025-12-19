@@ -45,14 +45,16 @@
       "properties": {
         "firstName": { "type": "string", "description": "Employee's first name." },
         "lastName": { "type": "string", "description": "Employee's last name." },
-        "role": { "type": "string", "description": "Employee's job title or function." },
-        "company": { "type": "string", "description": "Name of the subcontracting company, if applicable." },
+        "roleId": { "type": "string", "description": "ID of the JobRole document." },
+        "roleName": { "type": "string", "description": "Denormalized name of the job role for quick display." },
+        "subcontractorId": { "type": "string", "description": "ID of the Subcontractor document, if applicable." },
+        "subcontractorName": { "type": "string", "description": "Denormalized name of the subcontractor for quick display." },
         "email": { "type": "string", "format": "email", "description": "Employee's email address." },
         "cpf": { "type": "string", "description": "Employee's CPF (Brazilian individual taxpayer registry)." },
         "companyId": { "type": "string", "description": "The ID of the company this employee belongs to." },
         "createdAt": { "type": "string", "format": "date-time", "description": "Timestamp of creation." }
       },
-      "required": ["firstName", "lastName", "role", "email", "cpf", "companyId", "createdAt"]
+      "required": ["firstName", "lastName", "roleId", "email", "cpf", "companyId", "createdAt"]
     },
     "jobRole": {
       "title": "Job Role",

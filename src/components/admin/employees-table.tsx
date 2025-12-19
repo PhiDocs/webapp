@@ -30,8 +30,10 @@ import {
 } from "@/components/ui/alert-dialog"
 import { PlusCircle, Edit, Trash2, Loader2, MoreHorizontal } from 'lucide-react';
 import { getEmployees, createEmployee, updateEmployee, deleteEmployee } from '@/server/employee-actions';
+import { getJobRoles } from '@/server/job-role-actions';
+import { getSubcontractors } from '@/server/subcontractor-actions';
 import { EmployeeForm } from '@/components/admin/employee-form';
-import type { Employee, EmployeeFormValues } from '@/lib/types';
+import type { Employee, EmployeeFormValues, JobRole, Subcontractor } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import {
     DropdownMenu,
@@ -47,6 +49,8 @@ interface EmployeesTableProps {
 
 export function EmployeesTable({ companyId }: EmployeesTableProps) {
     const [employees, setEmployees] = useState<Employee[]>([]);
+    const [jobRoles, setJobRoles] = useState<JobRole[]>([]);
+    const [subcontractors, setSubcontractors] = useState<Subcontractor[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isPending, startTransition] = useTransition();
     const [isFormOpen, setIsFormOpen] = useState(false);
@@ -55,15 +59,36 @@ export function EmployeesTable({ companyId }: EmployeesTableProps) {
 
     const fetchData = async () => {
         setIsLoading(true);
-        const result = await getEmployees(companyId);
-        
-        if (result.success && result.data) {
-            setEmployees(result.data);
-        } else {
-            toast({ variant: 'destructive', title: "Erro ao buscar funcionários", description: result.error });
+        try {
+            const [employeesResult, jobRolesResult, subcontractorsResult] = await Promise.all([
+                getEmployees(companyId),
+                getJobRoles(companyId),
+                getSubcontractors(companyId)
+            ]);
+
+            if (employeesResult.success && employeesResult.data) {
+                setEmployees(employeesResult.data);
+            } else {
+                toast({ variant: 'destructive', title: "Erro ao buscar funcionários", description: employeesResult.error });
+            }
+
+            if (jobRolesResult.success && jobRolesResult.data) {
+                setJobRoles(jobRolesResult.data);
+            } else {
+                 toast({ variant: 'destructive', title: "Erro ao buscar cargos", description: jobRolesResult.error });
+            }
+
+             if (subcontractorsResult.success && subcontractorsResult.data) {
+                setSubcontractors(subcontractorsResult.data);
+            } else {
+                 toast({ variant: 'destructive', title: "Erro ao buscar terceirizadas", description: subcontractorsResult.error });
+            }
+
+        } catch (error) {
+            toast({ variant: 'destructive', title: "Erro inesperado", description: "Ocorreu um erro ao buscar os dados." });
+        } finally {
+            setIsLoading(false);
         }
-        
-        setIsLoading(false);
     };
 
     useEffect(() => {
@@ -74,9 +99,19 @@ export function EmployeesTable({ companyId }: EmployeesTableProps) {
 
     const handleFormSubmit = (values: EmployeeFormValues) => {
         startTransition(async () => {
+             const role = jobRoles.find(r => r.id === values.roleId);
+             const subcontractor = subcontractors.find(s => s.id === values.subcontractorId);
+
+             const fullData = { 
+                ...values, 
+                companyId,
+                roleName: role?.name || '',
+                subcontractorName: values.subcontractorId === 'N/A' ? 'Não aplicável' : subcontractor?.name || ''
+            };
+
             const action = editingEmployee 
-                ? updateEmployee(editingEmployee.id, { ...values, companyId }) 
-                : createEmployee({ ...values, companyId });
+                ? updateEmployee(editingEmployee.id, fullData) 
+                : createEmployee(fullData);
             
             const result = await action;
 
@@ -158,14 +193,14 @@ export function EmployeesTable({ companyId }: EmployeesTableProps) {
                                     <TableRow key={employee.id}>
                                         <TableCell className="font-medium">
                                             {`${employee.firstName} ${employee.lastName}`}
-                                            {employee.company && (
+                                            {employee.subcontractorName && employee.subcontractorName !== 'Não aplicável' && (
                                                 <div className="text-xs text-muted-foreground mt-1">
-                                                    {employee.company}
+                                                    {employee.subcontractorName}
                                                 </div>
                                             )}
                                         </TableCell>
                                         <TableCell className="hidden md:table-cell">{employee.email}</TableCell>
-                                        <TableCell className="hidden lg:table-cell">{employee.role}</TableCell>
+                                        <TableCell className="hidden lg:table-cell">{employee.roleName}</TableCell>
                                         <TableCell className="text-right">
                                             <AlertDialog>
                                                 <DropdownMenu>
@@ -222,6 +257,8 @@ export function EmployeesTable({ companyId }: EmployeesTableProps) {
                     onSubmit={handleFormSubmit}
                     defaultValues={editingEmployee}
                     isPending={isPending}
+                    jobRoles={jobRoles}
+                    subcontractors={subcontractors}
                 />
             </DialogContent>
         </Dialog>
