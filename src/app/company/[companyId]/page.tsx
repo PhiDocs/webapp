@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import { useParams } from 'next/navigation';
 import { Header } from "@/components/header";
 import { UserNav } from "@/components/auth/user-nav";
 import { WorksTable } from "@/components/admin/works-table";
@@ -14,12 +15,9 @@ import { EmployeesTable } from '@/components/admin/employees-table';
 import { JobRolesTable } from '@/components/admin/job-roles-table';
 import { SubcontractorsTable } from '@/components/admin/subcontractors-table';
 
-interface CompanyPageProps {
-    params: { companyId: string };
-}
-
-export default function CompanyPage({ params }: CompanyPageProps) {
-    const companyId = params.companyId;
+export default function CompanyPage() {
+    const params = useParams();
+    const companyId = params.companyId as string;
 
     const { user, isLoading: isSessionLoading } = useSession();
     const [company, setCompany] = useState<Company | null>(null);
