@@ -14,8 +14,8 @@ const employeeServerSchema = z.object({
   cpf: z.string().min(1, ptBr.validations.cpf),
   roleId: z.string().min(1, ptBr.validations.roleId),
   roleName: z.string(),
-  subcontractorId: z.string().optional(),
-  subcontractorName: z.string().optional(),
+  subcontractorId: z.string().optional().nullable(),
+  subcontractorName: z.string().optional().nullable(),
   companyId: z.string().min(1, "ID da empresa é obrigatório."),
 });
 
@@ -32,10 +32,13 @@ export async function getEmployees(companyId: string) {
     try {
         const employees = await EmployeeRepository.getAllByCompany(companyId);
         return { success: true, data: employees };
-    } catch (error: any) {
+    } catch (e: unknown) {
+        const error = e instanceof Error ? e : new Error('Falha ao buscar funcionários');
         console.error("Error fetching employees: ", error);
-        if (error.code === 'failed-precondition') {
-             await ErrorLogRepository.log(error, 'getEmployees-IndexMissing');
+
+        const specificError = e as { code?: string };
+        if (specificError.code === 'failed-precondition') {
+             await ErrorLogRepository.log(new Error('Firestore index missing for getEmployees'), 'getEmployees-IndexMissing');
              return { success: false, error: 'Um índice do Firestore é necessário para esta consulta. Verifique os logs do servidor para o link de criação do índice.' };
         }
         await ErrorLogRepository.log(error, 'getEmployees');
@@ -63,7 +66,8 @@ export async function createEmployee(data: EmployeeServerValues) {
         await EmployeeRepository.create(dataToSave);
         revalidatePath(`/company/${validation.data.companyId}`);
         return { success: true };
-    } catch (error: any) {
+    } catch (e: unknown) {
+        const error = e instanceof Error ? e : new Error('Falha ao criar funcionário');
         await ErrorLogRepository.log(error, 'createEmployee', data.email);
         return { success: false, error: 'Falha ao criar funcionário.' };
     }
@@ -89,7 +93,8 @@ export async function updateEmployee(id: string, data: EmployeeServerValues) {
         await EmployeeRepository.update(id, dataToSave);
         revalidatePath(`/company/${validation.data.companyId}`);
         return { success: true };
-    } catch (error: any) {
+    } catch (e: unknown) {
+        const error = e instanceof Error ? e : new Error('Falha ao atualizar funcionário');
         await ErrorLogRepository.log(error, 'updateEmployee', data.email);
         return { success: false, error: 'Falha ao atualizar funcionário.' };
     }
@@ -107,7 +112,8 @@ export async function deleteEmployee(id: string, companyId: string) {
         await EmployeeRepository.delete(id, companyId);
         revalidatePath(`/company/${companyId}`);
         return { success: true };
-    } catch (error: any) {
+    } catch (e: unknown) {
+        const error = e instanceof Error ? e : new Error('Falha ao deletar funcionário');
         await ErrorLogRepository.log(error, 'deleteEmployee');
         return { success: false, error: 'Falha ao deletar funcionário.' };
     }

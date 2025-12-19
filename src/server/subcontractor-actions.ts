@@ -23,7 +23,13 @@ export async function getSubcontractors(companyId: string) {
     try {
         const subcontractors = await SubcontractorRepository.getAllByCompany(companyId);
         return { success: true, data: subcontractors };
-    } catch (error: any) {
+    } catch (e: unknown) {
+        const error = e instanceof Error ? e : new Error('Falha ao buscar empresas terceirizadas.');
+        const specificError = e as { code?: string };
+        if (specificError.code === 'failed-precondition') {
+            await ErrorLogRepository.log(new Error('Firestore index missing for getSubcontractors'), 'getSubcontractors-IndexMissing');
+            return { success: false, error: 'Um índice do Firestore é necessário para esta consulta. Verifique os logs do servidor para o link de criação do índice.' };
+        }
         await ErrorLogRepository.log(error, 'getSubcontractors');
         return { success: false, error: 'Falha ao buscar empresas terceirizadas.' };
     }
@@ -44,7 +50,8 @@ export async function createSubcontractor(data: SubcontractorFormValues & { comp
         await SubcontractorRepository.create(validation.data);
         revalidatePath(`/company/${validation.data.companyId}`);
         return { success: true };
-    } catch (error: any) {
+    } catch (e: unknown) {
+        const error = e instanceof Error ? e : new Error('Falha ao criar empresa terceirizada.');
         await ErrorLogRepository.log(error, 'createSubcontractor');
         return { success: false, error: 'Falha ao criar empresa terceirizada.' };
     }
@@ -65,7 +72,8 @@ export async function updateSubcontractor(id: string, data: SubcontractorFormVal
         await SubcontractorRepository.update(id, validation.data);
         revalidatePath(`/company/${validation.data.companyId}`);
         return { success: true };
-    } catch (error: any) {
+    } catch (e: unknown) {
+        const error = e instanceof Error ? e : new Error('Falha ao atualizar empresa terceirizada.');
         await ErrorLogRepository.log(error, 'updateSubcontractor');
         return { success: false, error: 'Falha ao atualizar empresa terceirizada.' };
     }
@@ -83,7 +91,8 @@ export async function deleteSubcontractor(id: string, companyId: string) {
         await SubcontractorRepository.delete(id, companyId);
         revalidatePath(`/company/${companyId}`);
         return { success: true };
-    } catch (error: any) {
+    } catch (e: unknown) {
+        const error = e instanceof Error ? e : new Error('Falha ao deletar empresa terceirizada.');
         await ErrorLogRepository.log(error, 'deleteSubcontractor');
         return { success: false, error: 'Falha ao deletar empresa terceirizada.' };
     }

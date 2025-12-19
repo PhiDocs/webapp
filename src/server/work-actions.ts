@@ -36,10 +36,13 @@ export async function getWorks(companyId: string) {
     try {
         const works = await WorkRepository.getAllByCompany(companyId);
         return { success: true, data: works };
-    } catch (error: any) {
+    } catch (e: unknown) {
+        const error = e instanceof Error ? e : new Error('Falha ao buscar obras');
         console.error("Error fetching works: ", error);
-        if (error.code === 'failed-precondition') {
-             await ErrorLogRepository.log(error, 'getWorks-IndexMissing');
+        
+        const specificError = e as { code?: string };
+        if (specificError.code === 'failed-precondition') {
+             await ErrorLogRepository.log(new Error('Firestore index missing for getWorks'), 'getWorks-IndexMissing');
              return { success: false, error: 'Um índice do Firestore é necessário para esta consulta. Verifique os logs do servidor para o link de criação do índice.' };
         }
         await ErrorLogRepository.log(error, 'getWorks');
@@ -62,7 +65,8 @@ export async function createWork(data: WorkClientFormValues & { companyId: strin
         await WorkRepository.create(validation.data);
         revalidatePath(`/company/${validation.data.companyId}`);
         return { success: true };
-    } catch (error: any) {
+    } catch (e: unknown) {
+        const error = e instanceof Error ? e : new Error('Falha ao criar obra');
         await ErrorLogRepository.log(error, 'createWork');
         return { success: false, error: 'Falha ao criar obra.' };
     }
@@ -83,7 +87,8 @@ export async function updateWork(id: string, data: WorkClientFormValues & { comp
         await WorkRepository.update(id, validation.data);
         revalidatePath(`/company/${validation.data.companyId}`);
         return { success: true };
-    } catch (error: any) {
+    } catch (e: unknown) {
+        const error = e instanceof Error ? e : new Error('Falha ao atualizar obra');
         await ErrorLogRepository.log(error, 'updateWork');
         return { success: false, error: 'Falha ao atualizar obra.' };
     }
@@ -101,7 +106,8 @@ export async function deleteWork(id: string, companyId: string) {
         await WorkRepository.delete(id);
         revalidatePath(`/company/${companyId}`);
         return { success: true };
-    } catch (error: any) {
+    } catch (e: unknown) {
+        const error = e instanceof Error ? e : new Error('Falha ao deletar obra');
         await ErrorLogRepository.log(error, 'deleteWork');
         return { success: false, error: 'Falha ao deletar obra.' };
     }

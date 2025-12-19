@@ -23,7 +23,13 @@ export async function getJobRoles(companyId: string) {
     try {
         const jobRoles = await JobRoleRepository.getAllByCompany(companyId);
         return { success: true, data: jobRoles };
-    } catch (error: any) {
+    } catch (e: unknown) {
+        const error = e instanceof Error ? e : new Error('Falha ao buscar cargos.');
+        const specificError = e as { code?: string };
+        if (specificError.code === 'failed-precondition') {
+            await ErrorLogRepository.log(new Error('Firestore index missing for getJobRoles'), 'getJobRoles-IndexMissing');
+            return { success: false, error: 'Um índice do Firestore é necessário para esta consulta. Verifique os logs do servidor para o link de criação do índice.' };
+        }
         await ErrorLogRepository.log(error, 'getJobRoles');
         return { success: false, error: 'Falha ao buscar cargos.' };
     }
@@ -47,7 +53,8 @@ export async function createJobRole(data: JobRoleFormValues & { companyId: strin
         await JobRoleRepository.create({ companyId, name, responsibilities, requiredCertificates: certificates });
         revalidatePath(`/company/${companyId}`);
         return { success: true };
-    } catch (error: any) {
+    } catch (e: unknown) {
+        const error = e instanceof Error ? e : new Error('Falha ao criar cargo.');
         await ErrorLogRepository.log(error, 'createJobRole');
         return { success: false, error: 'Falha ao criar cargo.' };
     }
@@ -71,7 +78,8 @@ export async function updateJobRole(id: string, data: JobRoleFormValues & { comp
         await JobRoleRepository.update(id, { companyId, name, responsibilities, requiredCertificates: certificates });
         revalidatePath(`/company/${companyId}`);
         return { success: true };
-    } catch (error: any) {
+    } catch (e: unknown) {
+        const error = e instanceof Error ? e : new Error('Falha ao atualizar cargo.');
         await ErrorLogRepository.log(error, 'updateJobRole');
         return { success: false, error: 'Falha ao atualizar cargo.' };
     }
@@ -89,7 +97,8 @@ export async function deleteJobRole(id: string, companyId: string) {
         await JobRoleRepository.delete(id, companyId);
         revalidatePath(`/company/${companyId}`);
         return { success: true };
-    } catch (error: any) {
+    } catch (e: unknown) {
+        const error = e instanceof Error ? e : new Error('Falha ao deletar cargo.');
         await ErrorLogRepository.log(error, 'deleteJobRole');
         return { success: false, error: 'Falha ao deletar cargo.' };
     }
