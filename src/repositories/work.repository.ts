@@ -1,3 +1,4 @@
+'use server';
 
 import admin from '@/firebase/admin-config';
 import type { Work, WorkFormValues } from '@/lib/types';

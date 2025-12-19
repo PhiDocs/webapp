@@ -34,7 +34,7 @@ export async function getSubcontractors(companyId: string) {
             return { success: false, error: 'Um índice do Firestore é necessário. Execute "npm run update-firestore".' };
         }
         await ErrorLogRepository.log(error, 'getSubcontractors');
-        return { success: false, error: `Falha ao buscar empresas terceirizadas: ${error.message}` };
+        return { success: false, error: error.message };
     }
 }
 
@@ -56,7 +56,7 @@ export async function createSubcontractor(data: SubcontractorFormValues & { comp
     } catch (e: unknown) {
         const error = e instanceof Error ? e : new Error(String(e ?? 'Erro desconhecido ao criar subcontratado.'));
         await ErrorLogRepository.log(error, 'createSubcontractor');
-        return { success: false, error: `Falha ao criar subcontratado: ${error.message}` };
+        return { success: false, error: error.message };
     }
 }
 
@@ -78,7 +78,7 @@ export async function updateSubcontractor(id: string, data: SubcontractorFormVal
     } catch (e: unknown) {
         const error = e instanceof Error ? e : new Error(String(e ?? 'Erro desconhecido ao atualizar subcontratado.'));
         await ErrorLogRepository.log(error, 'updateSubcontractor');
-        return { success: false, error: `Falha ao atualizar subcontratado: ${error.message}` };
+        return { success: false, error: error.message };
     }
 }
 
@@ -97,6 +97,6 @@ export async function deleteSubcontractor(id: string, companyId: string) {
     } catch (e: unknown) {
         const error = e instanceof Error ? e : new Error(String(e ?? 'Erro desconhecido ao deletar subcontratado.'));
         await ErrorLogRepository.log(error, 'deleteSubcontractor');
-        return { success: false, error: `Falha ao deletar subcontratado: ${error.message}` };
+        return { success: false, error: error.message };
     }
 }

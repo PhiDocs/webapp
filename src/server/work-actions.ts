@@ -48,7 +48,7 @@ export async function getWorks(companyId: string) {
         }
 
         await ErrorLogRepository.log(error, 'getWorks');
-        return { success: false, error: `Falha ao buscar obras: ${error.message}` };
+        return { success: false, error: error.message };
     }
 }
 
@@ -70,7 +70,7 @@ export async function createWork(data: WorkClientFormValues & { companyId: strin
     } catch (e: unknown) {
         const error = e instanceof Error ? e : new Error(String(e ?? 'Erro desconhecido ao criar obra.'));
         await ErrorLogRepository.log(error, 'createWork');
-        return { success: false, error: `Falha ao criar obra: ${error.message}` };
+        return { success: false, error: error.message };
     }
 }
 
@@ -92,7 +92,7 @@ export async function updateWork(id: string, data: WorkClientFormValues & { comp
     } catch (e: unknown) {
         const error = e instanceof Error ? e : new Error(String(e ?? 'Erro desconhecido ao atualizar obra.'));
         await ErrorLogRepository.log(error, 'updateWork');
-        return { success: false, error: `Falha ao atualizar obra: ${error.message}` };
+        return { success: false, error: error.message };
     }
 }
 
@@ -111,6 +111,6 @@ export async function deleteWork(id: string, companyId: string) {
     } catch (e: unknown) {
         const error = e instanceof Error ? e : new Error(String(e ?? 'Erro desconhecido ao deletar obra.'));
         await ErrorLogRepository.log(error, 'deleteWork');
-        return { success: false, error: `Falha ao deletar obra: ${error.message}` };
+        return { success: false, error: error.message };
     }
 }

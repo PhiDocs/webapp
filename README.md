@@ -49,7 +49,9 @@ Se você já tem um usuário criado e deseja torná-lo um administrador de uma e
 
 > **Importante:** Após executar qualquer um desses scripts e alterar os papéis, o usuário precisa **fazer logout e login novamente** para que seu token de sessão seja atualizado com os novos *custom claims*.
 
-## Deploy de Regras e Índices do Firestore
+## Scripts de Manutenção
+
+### Atualizar Regras e Índices do Firestore
 
 Este projeto está configurado para facilitar o deploy das regras de segurança e dos índices do Firestore.
 
@@ -59,6 +61,19 @@ Este projeto está configurado para facilitar o deploy das regras de segurança 
     npm run update-firestore
     ```
     O comando `update-firestore` (definido no `package.json`) usará o Firebase CLI para aplicar as novas regras e criar os novos índices. O processo de criação de índices pode levar alguns minutos para ser concluído.
+
+### Migrar Dados para Exclusão Lógica (Soft Delete)
+
+Se você precisa garantir que todos os registros antigos sejam compatíveis com o novo sistema de exclusão lógica (campo `deletedAt`), execute o script de migração.
+
+1.  **Pré-requisitos:**
+    -   Certifique-se de que seu arquivo `.env` está preenchido.
+    -   Instale a ferramenta `tsx` globalmente para rodar o script TypeScript: `npm install -g tsx`
+2.  **Uso:**
+    ```bash
+    tsx scripts/migrate-deleted-at.ts
+    ```
+    Este script irá percorrer as coleções `works`, `employees`, `jobRoles` e `subcontractors`, adicionando o campo `deletedAt: null` a todos os documentos que ainda não o possuem.
 
 ## Variáveis de Ambiente
 

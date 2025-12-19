@@ -34,7 +34,7 @@ export async function getJobRoles(companyId: string) {
             return { success: false, error: 'Um índice do Firestore é necessário. Execute "npm run update-firestore".' };
         }
         await ErrorLogRepository.log(error, 'getJobRoles');
-        return { success: false, error: `Falha ao buscar cargos: ${error.message}` };
+        return { success: false, error: error.message };
     }
 }
 
@@ -59,7 +59,7 @@ export async function createJobRole(data: JobRoleFormValues & { companyId: strin
     } catch (e: unknown) {
         const error = e instanceof Error ? e : new Error(String(e ?? 'Erro desconhecido ao criar cargo.'));
         await ErrorLogRepository.log(error, 'createJobRole');
-        return { success: false, error: `Falha ao criar cargo: ${error.message}` };
+        return { success: false, error: error.message };
     }
 }
 
@@ -84,7 +84,7 @@ export async function updateJobRole(id: string, data: JobRoleFormValues & { comp
     } catch (e: unknown) {
         const error = e instanceof Error ? e : new Error(String(e ?? 'Erro desconhecido ao atualizar cargo.'));
         await ErrorLogRepository.log(error, 'updateJobRole');
-        return { success: false, error: `Falha ao atualizar cargo: ${error.message}` };
+        return { success: false, error: error.message };
     }
 }
 
@@ -103,6 +103,6 @@ export async function deleteJobRole(id: string, companyId: string) {
     } catch (e: unknown) {
         const error = e instanceof Error ? e : new Error(String(e ?? 'Erro desconhecido ao deletar cargo.'));
         await ErrorLogRepository.log(error, 'deleteJobRole');
-        return { success: false, error: `Falha ao deletar cargo: ${error.message}` };
+        return { success: false, error: error.message };
     }
 }

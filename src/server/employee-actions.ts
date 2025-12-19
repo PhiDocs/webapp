@@ -44,7 +44,7 @@ export async function getEmployees(companyId: string) {
         }
 
         await ErrorLogRepository.log(error, 'getEmployees');
-        return { success: false, error: `Falha ao buscar funcionários: ${error.message}` };
+        return { success: false, error: error.message };
     }
 }
 
@@ -71,7 +71,7 @@ export async function createEmployee(data: EmployeeServerValues) {
     } catch (e: unknown) {
         const error = e instanceof Error ? e : new Error(String(e ?? 'Erro desconhecido ao criar funcionário.'));
         await ErrorLogRepository.log(error, 'createEmployee', data.email);
-        return { success: false, error: `Falha ao criar funcionário: ${error.message}` };
+        return { success: false, error: error.message };
     }
 }
 
@@ -98,7 +98,7 @@ export async function updateEmployee(id: string, data: EmployeeServerValues) {
     } catch (e: unknown) {
         const error = e instanceof Error ? e : new Error(String(e ?? 'Erro desconhecido ao atualizar funcionário.'));
         await ErrorLogRepository.log(error, 'updateEmployee', data.email);
-        return { success: false, error: `Falha ao atualizar funcionário: ${error.message}` };
+        return { success: false, error: error.message };
     }
 }
 
@@ -117,6 +117,6 @@ export async function deleteEmployee(id: string, companyId: string) {
     } catch (e: unknown) {
         const error = e instanceof Error ? e : new Error(String(e ?? 'Erro desconhecido ao deletar funcionário.'));
         await ErrorLogRepository.log(error, 'deleteEmployee');
-        return { success: false, error: `Falha ao deletar funcionário: ${error.message}` };
+        return { success: false, error: error.message };
     }
 }
