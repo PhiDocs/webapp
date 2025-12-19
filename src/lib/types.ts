@@ -182,13 +182,12 @@ export type Company = {
 }
 
 // --- Work Schema ---
-export const workFormSchema = z.object({
+const workBaseSchema = z.object({
   name: z.string().min(3, "O nome da obra deve ter pelo menos 3 caracteres."),
   address: z.string().min(5, "O endereço deve ter pelo menos 5 caracteres."),
   workLocationDetails: z.string().min(3, "O local da obra deve ter pelo menos 3 caracteres."),
   startDate: z.string().min(1, "A data de início é obrigatória."),
   endDate: z.string().min(1, "A data de término é obrigatória."),
-  companyId: z.string().min(1, "É obrigatório associar a obra a uma empresa."),
 }).superRefine((data, ctx) => {
     if (data.startDate && data.endDate && new Date(data.endDate) < new Date(data.startDate)) {
         ctx.addIssue({
@@ -198,9 +197,14 @@ export const workFormSchema = z.object({
         });
     }
 });
-export type WorkFormValues = z.infer<typeof workFormSchema>;
 
-export const workClientFormSchema = workFormSchema.omit({ companyId: true });
+export const workFormSchema = workBaseSchema.extend({
+  companyId: z.string().min(1, "É obrigatório associar a obra a uma empresa."),
+});
+
+export const workClientFormSchema = workBaseSchema;
+
+export type WorkFormValues = z.infer<typeof workFormSchema>;
 export type WorkClientFormValues = z.infer<typeof workClientFormSchema>;
 
 
