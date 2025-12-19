@@ -201,8 +201,12 @@ export const workClientFormSchema = z.object({
         });
     }
 });
-
 export type WorkClientFormValues = z.infer<typeof workClientFormSchema>;
+
+export type WorkFormValues = WorkClientFormValues & {
+    companyId: string;
+};
+
 export type Work = {
     id: string;
     name: string;
@@ -234,5 +238,37 @@ export type Employee = {
     email: string;
     cpf: string;
     company?: string;
+    createdAt: string;
+}
+
+// --- JobRole Schema ---
+export const jobRoleFormSchema = z.object({
+  name: z.string().min(2, "O nome do cargo é obrigatório."),
+  responsibilities: z.string().min(10, "A descrição das responsabilidades é obrigatória."),
+  requiredCertificates: z.array(z.object({ value: z.string() })).optional(),
+});
+export type JobRoleFormValues = z.infer<typeof jobRoleFormSchema>;
+export type JobRole = {
+    id: string;
+    companyId: string;
+    name: string;
+    responsibilities: string;
+    requiredCertificates: string[];
+    createdAt: string;
+}
+
+// --- Subcontractor Schema ---
+export const subcontractorFormSchema = z.object({
+    name: z.string().min(2, "O nome da empresa é obrigatório."),
+    cnpj: z.string().min(14, "O CNPJ deve ser válido."),
+    contractNumber: z.string().optional(),
+});
+export type SubcontractorFormValues = z.infer<typeof subcontractorFormSchema>;
+export type Subcontractor = {
+    id: string;
+    companyId: string;
+    name: string;
+    cnpj: string;
+    contractNumber?: string;
     createdAt: string;
 }

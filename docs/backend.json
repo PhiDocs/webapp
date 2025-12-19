@@ -54,6 +54,32 @@
       },
       "required": ["firstName", "lastName", "role", "email", "cpf", "companyId", "createdAt"]
     },
+    "jobRole": {
+      "title": "Job Role",
+      "description": "Represents a job role within a company.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "description": "Name of the job role (e.g., Eletricista, Soldador)." },
+        "responsibilities": { "type": "string", "description": "A summary of the role's responsibilities." },
+        "requiredCertificates": { "type": "array", "items": { "type": "string" }, "description": "List of required certificates (e.g., NR-10, NR-35)." },
+        "companyId": { "type": "string", "description": "The ID of the company this role belongs to." },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Timestamp of creation." }
+      },
+      "required": ["name", "responsibilities", "companyId", "createdAt"]
+    },
+    "subcontractor": {
+      "title": "Subcontractor",
+      "description": "Represents a third-party company.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "description": "Name of the subcontracting company." },
+        "cnpj": { "type": "string", "description": "CNPJ of the company." },
+        "contractNumber": { "type": "string", "description": "The contract number with the main company." },
+        "companyId": { "type": "string", "description": "The ID of the main company this subcontractor is associated with." },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Timestamp of creation." }
+      },
+      "required": ["name", "cnpj", "companyId", "createdAt"]
+    },
     "document": {
       "title": "Safety Document",
       "description": "Represents a generated safety document (APR or PT).",
@@ -112,6 +138,14 @@
     "/companies/{companyId}/employees/{employeeId}": {
       "schema": { "$ref": "#/entities/employee" },
       "description": "Stores employees for a specific company."
+    },
+    "/companies/{companyId}/jobRoles/{jobRoleId}": {
+      "schema": { "$ref": "#/entities/jobRole" },
+      "description": "Stores job roles for a specific company."
+    },
+    "/companies/{companyId}/subcontractors/{subcontractorId}": {
+      "schema": { "$ref": "#/entities/subcontractor" },
+      "description": "Stores subcontractors for a specific company."
     },
     "/works/{workId}": {
       "schema": { "$ref": "#/entities/work" },
