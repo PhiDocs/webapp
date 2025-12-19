@@ -25,14 +25,6 @@ export async function getJobRoles(companyId: string) {
         return { success: true, data: jobRoles };
     } catch (e: unknown) {
         const error = e instanceof Error ? e : new Error(String(e ?? 'Erro desconhecido ao buscar cargos.'));
-        console.error("Error fetching job roles: ", error);
-
-        const specificError = e as { code?: string };
-        if (specificError?.code === 'failed-precondition') {
-            const indexError = new Error('Firestore index missing for getJobRoles. Please run "npm run update-firestore".');
-            await ErrorLogRepository.log(indexError, 'getJobRoles-IndexMissing');
-            return { success: false, error: 'Um índice do Firestore é necessário. Execute "npm run update-firestore".' };
-        }
         await ErrorLogRepository.log(error, 'getJobRoles');
         return { success: false, error: error.message };
     }

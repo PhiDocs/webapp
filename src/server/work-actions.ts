@@ -38,15 +38,6 @@ export async function getWorks(companyId: string) {
         return { success: true, data: works };
     } catch (e: unknown) {
         const error = e instanceof Error ? e : new Error(String(e ?? 'Erro desconhecido ao buscar obras.'));
-        console.error("Error fetching works: ", error);
-        
-        const specificError = e as { code?: string };
-        if (specificError?.code === 'failed-precondition') {
-             const indexError = new Error('Firestore index missing for getWorks. Please run "npm run update-firestore" and wait a few minutes.');
-             await ErrorLogRepository.log(indexError, 'getWorks-IndexMissing');
-             return { success: false, error: 'Um índice do Firestore é necessário. Execute "npm run update-firestore" e aguarde alguns minutos.' };
-        }
-
         await ErrorLogRepository.log(error, 'getWorks');
         return { success: false, error: error.message };
     }

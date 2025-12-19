@@ -25,14 +25,6 @@ export async function getSubcontractors(companyId: string) {
         return { success: true, data: subcontractors };
     } catch (e: unknown) {
         const error = e instanceof Error ? e : new Error(String(e ?? 'Erro desconhecido ao buscar empresas terceirizadas.'));
-        console.error("Error fetching subcontractors: ", error);
-
-        const specificError = e as { code?: string };
-        if (specificError?.code === 'failed-precondition') {
-            const indexError = new Error('Firestore index missing for getSubcontractors. Please run "npm run update-firestore".');
-            await ErrorLogRepository.log(indexError, 'getSubcontractors-IndexMissing');
-            return { success: false, error: 'Um índice do Firestore é necessário. Execute "npm run update-firestore".' };
-        }
         await ErrorLogRepository.log(error, 'getSubcontractors');
         return { success: false, error: error.message };
     }

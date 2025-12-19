@@ -34,15 +34,6 @@ export async function getEmployees(companyId: string) {
         return { success: true, data: employees };
     } catch (e: unknown) {
         const error = e instanceof Error ? e : new Error(String(e ?? 'Erro desconhecido ao buscar funcionários.'));
-        console.error("Error fetching employees: ", error);
-        
-        const specificError = e as { code?: string };
-        if (specificError?.code === 'failed-precondition') {
-             const indexError = new Error('Firestore index missing for getEmployees. Please run "npm run update-firestore".');
-             await ErrorLogRepository.log(indexError, 'getEmployees-IndexMissing');
-             return { success: false, error: 'Um índice do Firestore é necessário. Execute "npm run update-firestore".' };
-        }
-
         await ErrorLogRepository.log(error, 'getEmployees');
         return { success: false, error: error.message };
     }
