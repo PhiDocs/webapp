@@ -24,7 +24,7 @@ export async function getJobRoles(companyId: string) {
         const jobRoles = await JobRoleRepository.getAllByCompany(companyId);
         return { success: true, data: jobRoles };
     } catch (e: unknown) {
-        const error = e instanceof Error ? e : new Error(String(e) || 'Falha ao buscar cargos.');
+        const error = e instanceof Error ? e : new Error(String(e ?? 'Falha ao buscar cargos.'));
         const specificError = e as { code?: string };
         if (specificError?.code === 'failed-precondition') {
             await ErrorLogRepository.log(new Error('Firestore index missing for getJobRoles'), 'getJobRoles-IndexMissing');
@@ -54,7 +54,7 @@ export async function createJobRole(data: JobRoleFormValues & { companyId: strin
         revalidatePath(`/company/${companyId}`);
         return { success: true };
     } catch (e: unknown) {
-        const error = e instanceof Error ? e : new Error(String(e) || 'Falha ao criar cargo.');
+        const error = e instanceof Error ? e : new Error(String(e ?? 'Falha ao criar cargo.'));
         await ErrorLogRepository.log(error, 'createJobRole');
         return { success: false, error: 'Falha ao criar cargo.' };
     }
@@ -79,7 +79,7 @@ export async function updateJobRole(id: string, data: JobRoleFormValues & { comp
         revalidatePath(`/company/${companyId}`);
         return { success: true };
     } catch (e: unknown) {
-        const error = e instanceof Error ? e : new Error(String(e) || 'Falha ao atualizar cargo.');
+        const error = e instanceof Error ? e : new Error(String(e ?? 'Falha ao atualizar cargo.'));
         await ErrorLogRepository.log(error, 'updateJobRole');
         return { success: false, error: 'Falha ao atualizar cargo.' };
     }
@@ -98,7 +98,7 @@ export async function deleteJobRole(id: string, companyId: string) {
         revalidatePath(`/company/${companyId}`);
         return { success: true };
     } catch (e: unknown) {
-        const error = e instanceof Error ? e : new Error(String(e) || 'Falha ao deletar cargo.');
+        const error = e instanceof Error ? e : new Error(String(e ?? 'Falha ao deletar cargo.'));
         await ErrorLogRepository.log(error, 'deleteJobRole');
         return { success: false, error: 'Falha ao deletar cargo.' };
     }

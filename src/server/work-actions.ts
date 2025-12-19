@@ -37,7 +37,7 @@ export async function getWorks(companyId: string) {
         const works = await WorkRepository.getAllByCompany(companyId);
         return { success: true, data: works };
     } catch (e: unknown) {
-        const error = e instanceof Error ? e : new Error(String(e) || 'Falha ao buscar obras');
+        const error = e instanceof Error ? e : new Error(String(e ?? 'Falha ao buscar obras'));
         console.error("Error fetching works: ", error);
         
         const specificError = e as { code?: string };
@@ -66,7 +66,7 @@ export async function createWork(data: WorkClientFormValues & { companyId: strin
         revalidatePath(`/company/${validation.data.companyId}`);
         return { success: true };
     } catch (e: unknown) {
-        const error = e instanceof Error ? e : new Error(String(e) || 'Falha ao criar obra');
+        const error = e instanceof Error ? e : new Error(String(e ?? 'Falha ao criar obra'));
         await ErrorLogRepository.log(error, 'createWork');
         return { success: false, error: 'Falha ao criar obra.' };
     }
@@ -88,7 +88,7 @@ export async function updateWork(id: string, data: WorkClientFormValues & { comp
         revalidatePath(`/company/${validation.data.companyId}`);
         return { success: true };
     } catch (e: unknown) {
-        const error = e instanceof Error ? e : new Error(String(e) || 'Falha ao atualizar obra');
+        const error = e instanceof Error ? e : new Error(String(e ?? 'Falha ao atualizar obra'));
         await ErrorLogRepository.log(error, 'updateWork');
         return { success: false, error: 'Falha ao atualizar obra.' };
     }
@@ -107,7 +107,7 @@ export async function deleteWork(id: string, companyId: string) {
         revalidatePath(`/company/${companyId}`);
         return { success: true };
     } catch (e: unknown) {
-        const error = e instanceof Error ? e : new Error(String(e) || 'Falha ao deletar obra');
+        const error = e instanceof Error ? e : new Error(String(e ?? 'Falha ao deletar obra'));
         await ErrorLogRepository.log(error, 'deleteWork');
         return { success: false, error: 'Falha ao deletar obra.' };
     }

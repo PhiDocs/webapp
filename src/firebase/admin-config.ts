@@ -1,22 +1,26 @@
+'use server';
+
 import * as admin from 'firebase-admin';
 
 // Evita a reinicialização do app em ambientes de desenvolvimento (hot-reloading)
 if (!admin.apps.length) {
   try {
+    const privateKey = process.env.FIREBASE_PRIVATE_KEY;
+    if (!privateKey) {
+      throw new Error('A variável de ambiente FIREBASE_PRIVATE_KEY não está definida. Verifique seu arquivo .env.');
+    }
+
     admin.initializeApp({
       credential: admin.credential.cert({
         projectId: process.env.FIREBASE_PROJECT_ID,
         clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-        // O valor de private_key precisa ser parseado corretamente
-        privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+        privateKey: privateKey.replace(/\\n/g, '\n'),
       }),
     });
   } catch (error: any) {
-    console.error('Firebase admin initialization error', error.message);
-    // Relança o erro para interromper a execução e deixar claro que a configuração falhou.
-    // Isso é crucial para evitar o erro "default Firebase app does not exist".
+    console.error('Falha na inicialização do Firebase Admin:', error.message);
     throw new Error(
-      `Failed to initialize Firebase Admin SDK. Check your environment variables in .env file. Original error: ${error.message}`
+      `Falha ao inicializar o Firebase Admin SDK. Verifique suas variáveis de ambiente no arquivo .env. Erro original: ${error.message}`
     );
   }
 }
