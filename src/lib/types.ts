@@ -200,6 +200,10 @@ export const workFormSchema = z.object({
 });
 export type WorkFormValues = z.infer<typeof workFormSchema>;
 
+export const workClientFormSchema = workFormSchema.omit({ companyId: true });
+export type WorkClientFormValues = z.infer<typeof workClientFormSchema>;
+
+
 export type Work = {
     id: string;
     name: string;

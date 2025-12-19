@@ -14,18 +14,18 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { DialogFooter } from '@/components/ui/dialog';
 import { Loader2 } from 'lucide-react';
-import type { Work, WorkFormValues } from '@/lib/types';
-import { workFormSchema } from '@/lib/types';
+import type { Work, WorkClientFormValues } from '@/lib/types';
+import { workClientFormSchema } from '@/lib/types';
 
 interface WorkFormProps {
-  onSubmit: (values: Omit<WorkFormValues, 'companyId'>) => void;
+  onSubmit: (values: WorkClientFormValues) => void;
   defaultValues?: Partial<Work> | null;
   isPending: boolean;
 }
 
 export function WorkForm({ onSubmit, defaultValues, isPending }: WorkFormProps) {
-  const form = useForm<Omit<WorkFormValues, 'companyId'>>({
-    resolver: zodResolver(workFormSchema.omit({ companyId: true })),
+  const form = useForm<WorkClientFormValues>({
+    resolver: zodResolver(workClientFormSchema),
     defaultValues: {
       name: defaultValues?.name || '',
       address: defaultValues?.address || '',
