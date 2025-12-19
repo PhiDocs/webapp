@@ -182,7 +182,9 @@ export type Company = {
 }
 
 // --- Work Schema ---
-const workBaseSchema = z.object({
+
+// Schema for the client-side form
+export const workClientFormSchema = z.object({
   name: z.string().min(3, "O nome da obra deve ter pelo menos 3 caracteres."),
   address: z.string().min(5, "O endereço deve ter pelo menos 5 caracteres."),
   workLocationDetails: z.string().min(3, "O local da obra deve ter pelo menos 3 caracteres."),
@@ -198,11 +200,24 @@ const workBaseSchema = z.object({
     }
 });
 
-export const workFormSchema = workBaseSchema.extend({
+// Schema for the server-side action, including companyId
+export const workFormSchema = z.object({
+  name: z.string().min(3, "O nome da obra deve ter pelo menos 3 caracteres."),
+  address: z.string().min(5, "O endereço deve ter pelo menos 5 caracteres."),
+  workLocationDetails: z.string().min(3, "O local da obra deve ter pelo menos 3 caracteres."),
+  startDate: z.string().min(1, "A data de início é obrigatória."),
+  endDate: z.string().min(1, "A data de término é obrigatória."),
   companyId: z.string().min(1, "É obrigatório associar a obra a uma empresa."),
+}).superRefine((data, ctx) => {
+    if (data.startDate && data.endDate && new Date(data.endDate) < new Date(data.startDate)) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "A data de término não pode ser anterior à data de início.",
+            path: ['endDate'],
+        });
+    }
 });
 
-export const workClientFormSchema = workBaseSchema;
 
 export type WorkFormValues = z.infer<typeof workFormSchema>;
 export type WorkClientFormValues = z.infer<typeof workClientFormSchema>;
