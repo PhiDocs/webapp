@@ -22,6 +22,10 @@ const validationMessages = {
     ptLocation: "Local da atividade é obrigatório para PT.",
     ptDate: "Data é obrigatória para PT.",
     ptStartTime: "Hora de início é obrigatória para PT.",
+    firstName: "Nome é obrigatório.",
+    lastName: "Sobrenome é obrigatório.",
+    role: "Função é obrigatória.",
+    cpf: "CPF é obrigatório.",
 };
 
 
@@ -182,9 +186,6 @@ export type Company = {
 }
 
 // --- Work Schema ---
-
-// Schema for the client-side form.
-// This is now used by the zodResolver in the WorkForm.
 export const workClientFormSchema = z.object({
   name: z.string().min(3, "O nome da obra deve ter pelo menos 3 caracteres."),
   address: z.string().min(5, "O endereço deve ter pelo menos 5 caracteres."),
@@ -201,13 +202,7 @@ export const workClientFormSchema = z.object({
     }
 });
 
-// This type is used by the client-side WorkForm.
 export type WorkClientFormValues = z.infer<typeof workClientFormSchema>;
-
-// This type is used by the server-side actions, which will include the companyId.
-export type WorkFormValues = WorkClientFormValues & { companyId: string };
-
-
 export type Work = {
     id: string;
     name: string;
@@ -216,5 +211,28 @@ export type Work = {
     startDate: string;
     endDate: string;
     companyId: string;
+    createdAt: string;
+}
+
+// --- Employee Schema ---
+export const employeeFormSchema = z.object({
+  firstName: z.string().min(1, validationMessages.firstName),
+  lastName: z.string().min(1, validationMessages.lastName),
+  role: z.string().min(1, validationMessages.role),
+  email: z.string().email(validationMessages.invalidEmail),
+  cpf: z.string().min(1, validationMessages.cpf),
+  company: z.string().optional(),
+});
+
+export type EmployeeFormValues = z.infer<typeof employeeFormSchema>;
+export type Employee = {
+    id: string;
+    companyId: string;
+    firstName: string;
+    lastName: string;
+    role: string;
+    email: string;
+    cpf: string;
+    company?: string;
     createdAt: string;
 }

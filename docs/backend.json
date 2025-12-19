@@ -38,6 +38,22 @@
       },
       "required": ["name", "companyId", "startDate", "endDate", "workLocationDetails"]
     },
+    "employee": {
+      "title": "Employee",
+      "description": "Represents an employee of a company.",
+      "type": "object",
+      "properties": {
+        "firstName": { "type": "string", "description": "Employee's first name." },
+        "lastName": { "type": "string", "description": "Employee's last name." },
+        "role": { "type": "string", "description": "Employee's job title or function." },
+        "company": { "type": "string", "description": "Name of the subcontracting company, if applicable." },
+        "email": { "type": "string", "format": "email", "description": "Employee's email address." },
+        "cpf": { "type": "string", "description": "Employee's CPF (Brazilian individual taxpayer registry)." },
+        "companyId": { "type": "string", "description": "The ID of the company this employee belongs to." },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Timestamp of creation." }
+      },
+      "required": ["firstName", "lastName", "role", "email", "cpf", "companyId", "createdAt"]
+    },
     "document": {
       "title": "Safety Document",
       "description": "Represents a generated safety document (APR or PT).",
@@ -92,6 +108,10 @@
     "/companies/{companyId}": {
       "schema": { "$ref": "#/entities/company" },
       "description": "Stores information about each company."
+    },
+    "/companies/{companyId}/employees/{employeeId}": {
+      "schema": { "$ref": "#/entities/employee" },
+      "description": "Stores employees for a specific company."
     },
     "/works/{workId}": {
       "schema": { "$ref": "#/entities/work" },

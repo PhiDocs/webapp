@@ -10,14 +10,14 @@ import { useSession } from "@/components/auth/session-provider";
 import { getCompanyById } from "@/server/company-actions";
 import type { Company } from "@/lib/types";
 import { Skeleton } from "@/components/ui/skeleton";
+import { EmployeesTable } from '@/components/admin/employees-table';
 
 interface CompanyPageProps {
-    params: Promise<{ companyId: string }>;
+    params: { companyId: string };
 }
 
 export default function CompanyPage({ params }: CompanyPageProps) {
-    const resolvedParams = React.use(params);
-    const companyId = resolvedParams.companyId;
+    const companyId = params.companyId;
 
     const { user, isLoading: isSessionLoading } = useSession();
     const [company, setCompany] = useState<Company | null>(null);
@@ -76,13 +76,13 @@ export default function CompanyPage({ params }: CompanyPageProps) {
                 <Tabs defaultValue="works">
                     <TabsList className="grid w-full grid-cols-2 md:w-[400px]">
                         <TabsTrigger value="works"><HardHat className="mr-2 h-4 w-4" />Obras</TabsTrigger>
-                        <TabsTrigger value="employees" disabled><Users className="mr-2 h-4 w-4" />Funcionários</TabsTrigger>
+                        <TabsTrigger value="employees"><Users className="mr-2 h-4 w-4" />Funcionários</TabsTrigger>
                     </TabsList>
                     <TabsContent value="works" className="mt-6">
                         <WorksTable companyId={companyId} />
                     </TabsContent>
                     <TabsContent value="employees" className="mt-6">
-                        {/* O componente para gerenciar funcionários será adicionado aqui */}
+                        <EmployeesTable companyId={companyId} />
                     </TabsContent>
                 </Tabs>
             </main>

@@ -6,11 +6,25 @@ service cloud.firestore {
     // As regras mais específicas devem vir primeiro.
 
     // Coleção de Usuários (users)
-    // Permite a um usuário criar seu próprio perfil ao se cadastrar.
     // Permite a um usuário ler e atualizar seus próprios dados.
     match /users/{userId} {
       allow read, update, delete: if request.auth != null && request.auth.uid == userId;
       allow create: if request.auth != null;
+    }
+
+    // Regras para subcoleções de Empresa
+    match /companies/{companyId} {
+      // Admins da empresa podem ler a empresa
+      allow read: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.companyId == companyId;
+      
+      // Admins da empresa podem gerenciar obras e funcionários
+      match /works/{workId} {
+        allow read, write, delete: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.companyId == companyId;
+      }
+      
+      match /employees/{employeeId} {
+        allow read, write, delete: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.companyId == companyId;
+      }
     }
 
     // Regra geral para as outras coleções.

@@ -4,16 +4,17 @@ import { revalidatePath } from 'next/cache';
 import { WorkRepository } from '@/repositories/work.repository';
 import { ErrorLogRepository } from '@/repositories/error-log.repository';
 import { z } from 'zod';
+import type { WorkClientFormValues } from '@/lib/types';
 
-// Definição do schema movida para dentro do arquivo de server action
-// para garantir que o objeto Zod completo esteja disponível no lado do servidor.
-const workFormSchema = z.object({
+
+// Schema para validação do formulário no servidor. Inclui o companyId.
+const workServerSchema = z.object({
   name: z.string().min(3, "O nome da obra deve ter pelo menos 3 caracteres."),
   address: z.string().min(5, "O endereço deve ter pelo menos 5 caracteres."),
   workLocationDetails: z.string().min(3, "O local da obra deve ter pelo menos 3 caracteres."),
   startDate: z.string().min(1, "A data de início é obrigatória."),
   endDate: z.string().min(1, "A data de término é obrigatória."),
-  companyId: z.string().min(1, "É obrigatório associar a obra a uma empresa."),
+  companyId: z.string().min(1, "ID da empresa é obrigatório."),
 }).superRefine((data, ctx) => {
     if (data.startDate && data.endDate && new Date(data.endDate) < new Date(data.startDate)) {
         ctx.addIssue({
@@ -37,8 +38,6 @@ export async function getWorks(companyId: string) {
         return { success: true, data: works };
     } catch (error: any) {
         console.error("Error fetching works: ", error);
-        // Firebase geralmente lança um erro com um código específico quando um índice é necessário.
-        // O código de erro para um índice ausente é 'failed-precondition'.
         if (error.code === 'failed-precondition') {
              await ErrorLogRepository.log(error, 'getWorks-IndexMissing');
              return { success: false, error: 'Um índice do Firestore é necessário para esta consulta. Verifique os logs do servidor para o link de criação do índice.' };
@@ -51,8 +50,8 @@ export async function getWorks(companyId: string) {
 /**
  * Cria uma nova obra.
  */
-export async function createWork(data: unknown) {
-    const validation = workFormSchema.safeParse(data);
+export async function createWork(data: WorkClientFormValues & { companyId: string }) {
+    const validation = workServerSchema.safeParse(data);
     if (!validation.success) {
         const errors = validation.error.flatten().fieldErrors;
         const firstError = Object.values(errors)[0]?.[0];
@@ -72,8 +71,8 @@ export async function createWork(data: unknown) {
 /**
  * Atualiza uma obra existente.
  */
-export async function updateWork(id: string, data: unknown) {
-    const validation = workFormSchema.safeParse(data);
+export async function updateWork(id: string, data: WorkClientFormValues & { companyId: string }) {
+    const validation = workServerSchema.safeParse(data);
     if (!validation.success) {
         const errors = validation.error.flatten().fieldErrors;
         const firstError = Object.values(errors)[0]?.[0];
