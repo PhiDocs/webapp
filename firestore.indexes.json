@@ -21,12 +21,8 @@
     },
     {
       "collectionGroup": "employees",
-      "queryScope": "COLLECTION_GROUP",
+      "queryScope": "COLLECTION",
       "fields": [
-        {
-          "fieldPath": "companyId",
-          "order": "ASCENDING"
-        },
         {
           "fieldPath": "deletedAt",
           "order": "ASCENDING"
@@ -39,12 +35,8 @@
     },
     {
       "collectionGroup": "jobRoles",
-      "queryScope": "COLLECTION_GROUP",
+      "queryScope": "COLLECTION",
       "fields": [
-        {
-          "fieldPath": "companyId",
-          "order": "ASCENDING"
-        },
         {
           "fieldPath": "deletedAt",
           "order": "ASCENDING"
@@ -57,12 +49,8 @@
     },
     {
       "collectionGroup": "subcontractors",
-      "queryScope": "COLLECTION_GROUP",
+      "queryScope": "COLLECTION",
       "fields": [
-        {
-          "fieldPath": "companyId",
-          "order": "ASCENDING"
-        },
         {
           "fieldPath": "deletedAt",
           "order": "ASCENDING"
