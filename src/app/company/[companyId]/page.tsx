@@ -15,6 +15,7 @@ import { EmployeesTable } from '@/components/admin/employees-table';
 import { JobRolesTable } from '@/components/admin/job-roles-table';
 import { SubcontractorsTable } from '@/components/admin/subcontractors-table';
 import { CompanySettings } from '@/components/admin/company-settings';
+import { Card, CardContent } from '@/components/ui/card';
 
 export default function CompanyPage() {
     const params = useParams();
@@ -38,7 +39,9 @@ export default function CompanyPage() {
     };
 
     useEffect(() => {
-        fetchData();
+        if (companyId) {
+            fetchCompany();
+        }
     }, [companyId]);
 
     // Validação de permissão
