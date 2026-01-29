@@ -34,9 +34,10 @@
         "companyId": { "type": "string", "description": "The ID of the company this work belongs to." },
         "startDate": { "type": "string", "format": "date", "description": "The start date of the work." },
         "endDate": { "type": "string", "format": "date", "description": "The end date of the work." },
-        "workLocationDetails": { "type": "string", "description": "Details about the specific location or floor of the work." }
+        "workLocationDetails": { "type": "string", "description": "Details about the specific location or floor of the work." },
+        "activityDescription": { "type": "string", "description": "Default description of the activity for this work." }
       },
-      "required": ["name", "companyId", "startDate", "endDate", "workLocationDetails"]
+      "required": ["name", "companyId", "startDate", "endDate", "workLocationDetails", "activityDescription"]
     },
     "employee": {
       "title": "Employee",

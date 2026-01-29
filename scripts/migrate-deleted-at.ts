@@ -6,7 +6,7 @@ const db = admin.firestore();
 
 /**
  * Migrates a top-level collection by adding `deletedAt: null` to documents
- * where the field is missing.
+ * where the field is missing. For 'works', it also adds `activityDescription`.
  * @param collectionName The name of the collection to migrate.
  */
 async function migrateTopLevelCollection(collectionName: string) {
@@ -24,10 +24,20 @@ async function migrateTopLevelCollection(collectionName: string) {
 
   snapshot.docs.forEach(doc => {
     const data = doc.data();
+    const updatePayload: { [key: string]: any } = {};
+
     if (data.deletedAt === undefined) {
-      batch.update(doc.ref, { deletedAt: null });
+      updatePayload.deletedAt = null;
+    }
+
+    if (collectionName === 'works' && data.activityDescription === undefined) {
+      updatePayload.activityDescription = ''; // Add empty string for compatibility
+    }
+
+    if (Object.keys(updatePayload).length > 0) {
+      batch.update(doc.ref, updatePayload);
       updatedCount++;
-      console.log(`  - Scheduling update for ${collectionName}/${doc.id}`);
+      console.log(`  - Scheduling update for ${collectionName}/${doc.id} with fields: ${Object.keys(updatePayload).join(', ')}`);
     }
   });
 
@@ -40,7 +50,7 @@ async function migrateTopLevelCollection(collectionName: string) {
 }
 
 /**
- * Migrates subcollections within all companies.
+ * Migrates subcollections within all companies by adding `deletedAt: null`.
  * @param subcollectionName The name of the subcollection to migrate (e.g., 'employees').
  */
 async function migrateSubcollections(subcollectionName: string) {
@@ -71,7 +81,7 @@ async function migrateSubcollections(subcollectionName: string) {
       if (data.deletedAt === undefined) {
         batch.update(doc.ref, { deletedAt: null });
         subUpdatedCount++;
-        console.log(`  - Scheduling update for companies/${companyDoc.id}/${subcollectionName}/${doc.id}`);
+        console.log(`  - Scheduling update for companies/${companyDoc.id}/${subcollectionName}/${doc.id} with fields: deletedAt`);
       }
     });
 
@@ -92,7 +102,7 @@ async function migrateSubcollections(subcollectionName: string) {
 
 async function main() {
   console.log("--- Starting Firestore Migration Script ---");
-  console.log("This script will add 'deletedAt: null' to documents missing this field.");
+  console.log("This script ensures 'deletedAt' and other required fields exist on documents.");
   
   try {
     // Migrate top-level collections

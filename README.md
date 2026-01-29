@@ -62,9 +62,9 @@ Este projeto está configurado para facilitar o deploy das regras de segurança 
     ```
     O comando `update-firestore` (definido no `package.json`) usará o Firebase CLI para aplicar as novas regras e criar os novos índices. O processo de criação de índices pode levar alguns minutos para ser concluído.
 
-### Migrar Dados para Exclusão Lógica (Soft Delete)
+### Migrar Dados para Compatibilidade (Soft Delete e Campos Adicionais)
 
-Se você precisa garantir que todos os registros antigos sejam compatíveis com o novo sistema de exclusão lógica (campo `deletedAt`), execute o script de migração.
+Se você precisa garantir que todos os registros antigos sejam compatíveis com novas estruturas de dados (como o campo `deletedAt` para exclusão lógica ou novos campos obrigatórios), execute o script de migração.
 
 1.  **Pré-requisitos:**
     -   Certifique-se de que seu arquivo `.env` está preenchido.
@@ -73,7 +73,7 @@ Se você precisa garantir que todos os registros antigos sejam compatíveis com 
     ```bash
     tsx scripts/migrate-deleted-at.ts
     ```
-    Este script irá percorrer as coleções `works`, `employees`, `jobRoles` e `subcontractors`, adicionando o campo `deletedAt: null` a todos os documentos que ainda não o possuem.
+    Este script irá percorrer as coleções (`users`, `companies`, `works`, etc.) e garantir que todos os documentos tenham o campo `deletedAt: null` se ele não existir. Adicionalmente, para a coleção `works`, ele também adicionará o campo `activityDescription: ''` se estiver ausente, para manter a compatibilidade com a estrutura de dados atual.
 
 ## Variáveis de Ambiente
 

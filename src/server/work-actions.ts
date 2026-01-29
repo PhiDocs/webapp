@@ -12,6 +12,7 @@ const workServerSchema = z.object({
   name: z.string().min(3, "O nome da obra deve ter pelo menos 3 caracteres."),
   address: z.string().min(5, "O endereço deve ter pelo menos 5 caracteres."),
   workLocationDetails: z.string().min(3, "O local da obra deve ter pelo menos 3 caracteres."),
+  activityDescription: z.string().min(10, "A descrição da atividade deve ter pelo menos 10 caracteres."),
   startDate: z.string().min(1, "A data de início é obrigatória."),
   endDate: z.string().min(1, "A data de término é obrigatória."),
   companyId: z.string().min(1, "ID da empresa é obrigatório."),

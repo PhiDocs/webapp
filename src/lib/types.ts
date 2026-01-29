@@ -131,7 +131,6 @@ export const formSchema = z.object({
     if (data.documentType === DOCUMENT_TYPES.APR) {
         if (!data.companyName) ctx.addIssue({ code: z.ZodIssueCode.custom, message: validationMessages.companyName, path: ["companyName"] });
         if (!data.workId) ctx.addIssue({ code: z.ZodIssueCode.custom, message: validationMessages.workIdRequired, path: ["workId"] });
-        if (!data.activityDescription || data.activityDescription.length < 10) ctx.addIssue({ code: z.ZodIssueCode.custom, message: validationMessages.activityDescription, path: ["activityDescription"] });
 
         data.responsiblePersons.forEach((person, index) => {
           if(!person.employeeId) {
@@ -197,6 +196,7 @@ export const workClientFormSchema = z.object({
   name: z.string().min(3, "O nome da obra deve ter pelo menos 3 caracteres."),
   address: z.string().min(5, "O endereço deve ter pelo menos 5 caracteres."),
   workLocationDetails: z.string().min(3, "O local da obra deve ter pelo menos 3 caracteres."),
+  activityDescription: z.string().min(10, validationMessages.activityDescription),
   startDate: z.string().min(1, "A data de início é obrigatória."),
   endDate: z.string().min(1, "A data de término é obrigatória."),
 }).superRefine((data, ctx) => {
@@ -219,6 +219,7 @@ export type Work = {
     name: string;
     address: string;
     workLocationDetails: string;
+    activityDescription: string;
     startDate: string;
     endDate: string;
     companyId: string;

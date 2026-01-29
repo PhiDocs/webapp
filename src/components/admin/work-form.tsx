@@ -16,6 +16,7 @@ import { DialogFooter } from '@/components/ui/dialog';
 import { Loader2 } from 'lucide-react';
 import type { Work, WorkClientFormValues } from '@/lib/types';
 import { workClientFormSchema } from '@/lib/types';
+import { Textarea } from '../ui/textarea';
 
 interface WorkFormProps {
   onSubmit: (values: WorkClientFormValues) => void;
@@ -30,6 +31,7 @@ export function WorkForm({ onSubmit, defaultValues, isPending }: WorkFormProps) 
       name: defaultValues?.name || '',
       address: defaultValues?.address || '',
       workLocationDetails: defaultValues?.workLocationDetails || '',
+      activityDescription: defaultValues?.activityDescription || '',
       startDate: defaultValues?.startDate ? defaultValues.startDate.split('T')[0] : '',
       endDate: defaultValues?.endDate ? defaultValues.endDate.split('T')[0] : '',
     },
@@ -76,6 +78,23 @@ export function WorkForm({ onSubmit, defaultValues, isPending }: WorkFormProps) 
               <FormMessage />
             </FormItem>
           )}
+        />
+        <FormField
+            control={form.control}
+            name="activityDescription"
+            render={({ field }) => (
+            <FormItem>
+                <FormLabel>Descrição Padrão da Atividade</FormLabel>
+                <FormControl>
+                <Textarea
+                    placeholder="Descreva a atividade de trabalho padrão para esta obra."
+                    className="resize-y"
+                    {...field}
+                />
+                </FormControl>
+                <FormMessage />
+            </FormItem>
+            )}
         />
          <div className="grid grid-cols-2 gap-4">
             <FormField
