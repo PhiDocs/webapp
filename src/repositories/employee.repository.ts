@@ -1,3 +1,5 @@
+'use server';
+
 import admin from '@/firebase/admin-config';
 import type { Employee } from '@/lib/types';
 

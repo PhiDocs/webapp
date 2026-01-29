@@ -7,8 +7,9 @@
  * - RecommendEPIOutput - The return type for the recommendEPI function.
  */
 
-import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import { defineFlow, generate } from 'genkit';
+import { geminiPro } from '@genkit-ai/googleai';
+import * as z from 'zod';
 
 const RecommendEPIInputSchema = z.object({
   activityDescription: z.string().describe('The description of the work activity to be performed.'),
@@ -24,25 +25,33 @@ export async function recommendEPI(input: RecommendEPIInput): Promise<RecommendE
   return recommendEPIFlow(input);
 }
 
-const prompt = ai.definePrompt({
-  name: 'recommendEPIPrompt',
-  input: {schema: RecommendEPIInputSchema},
-  output: {schema: RecommendEPIOutputSchema},
-  prompt: `Based on the following work activity description, recommend the necessary EPIs (Equipamento de Proteção Individual) according to Brazilian Normas Regulamentadoras (NRs).
-
-Activity Description: {{{activityDescription}}}
-
-Provide a list of EPIs.`,
-});
-
-const recommendEPIFlow = ai.defineFlow(
+const recommendEPIFlow = defineFlow(
   {
     name: 'recommendEPIFlow',
     inputSchema: RecommendEPIInputSchema,
     outputSchema: RecommendEPIOutputSchema,
   },
-  async input => {
-    const {output} = await prompt(input);
-    return output!;
+  async (input) => {
+    const prompt = `Based on the following work activity description, recommend the necessary EPIs (Equipamento de Proteção Individual) according to Brazilian Normas Regulamentadoras (NRs).
+
+    Activity Description: ${input.activityDescription}
+
+    Provide the output as a JSON object with a single key "epiRecommendations" containing a string list of EPIs.
+    Schema: ${JSON.stringify(RecommendEPIOutputSchema.shape)}`;
+    
+    const response = await generate({
+      model: geminiPro,
+      prompt: prompt,
+      output: {
+        format: 'json',
+      },
+    });
+    
+    const output = response.output();
+    if (!output) {
+      throw new Error("AI response is empty or invalid.");
+    }
+    
+    return RecommendEPIOutputSchema.parse(output);
   }
 );

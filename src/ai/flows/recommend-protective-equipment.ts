@@ -8,8 +8,9 @@
  * - ProtectiveEquipmentOutput - The return type for the recommendProtectiveEquipment function.
  */
 
-import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import { defineFlow, generate } from 'genkit';
+import { geminiPro } from '@genkit-ai/googleai';
+import * as z from 'zod';
 
 const ProtectiveEquipmentInputSchema = z.object({
   activityDescription: z.string().describe('The description of the work activity to be performed.'),
@@ -28,30 +29,38 @@ export async function recommendProtectiveEquipment(input: ProtectiveEquipmentInp
   return recommendProtectiveEquipmentFlow(input);
 }
 
-const prompt = ai.definePrompt({
-  name: 'recommendProtectiveEquipmentPrompt',
-  input: {schema: ProtectiveEquipmentInputSchema},
-  output: {schema: ProtectiveEquipmentOutputSchema},
-  prompt: `You are an expert in Brazilian workplace safety regulations (Normas Regulamentadoras - NRs). Based on the following work activity description, provide a list of necessary Individual Protection Equipment (EPI) and Collective Protection Equipment (EPC).
-
-Activity Description: {{{activityDescription}}}
-
-Provide the output as a structured JSON object.
-
-For the EPIs, list the essential equipment. Then, for the 'epiNote', provide a standard observation referencing NR06 and the need for equipment to be certified. For example: "Todos os Equipamentos de Proteção Individual (EPI), devem atender os requisitos da NR06, estar válido e conformidade com os órgãos fiscalizadores para utilização na atividade."
-
-For the EPCs, list the necessary collective equipment. Then, for the 'epcNote', provide a standard observation about verifying the integrity and conformity of the equipment. For example: "Todos os Equipamentos de Proteção Coletiva (EPC), devem ser verificados quanto a integridade e conformidade com o projeto específico antes de iniciar a atividade."
-`,
-});
-
-const recommendProtectiveEquipmentFlow = ai.defineFlow(
+const recommendProtectiveEquipmentFlow = defineFlow(
   {
     name: 'recommendProtectiveEquipmentFlow',
     inputSchema: ProtectiveEquipmentInputSchema,
     outputSchema: ProtectiveEquipmentOutputSchema,
   },
-  async input => {
-    const {output} = await prompt(input);
-    return output!;
+  async (input) => {
+    const prompt = `You are an expert in Brazilian workplace safety regulations (Normas Regulamentadoras - NRs). Based on the following work activity description, provide a list of necessary Individual Protection Equipment (EPI) and Collective Protection Equipment (EPC).
+
+    Activity Description: ${input.activityDescription}
+
+    Provide the output as a structured JSON object that conforms to the following Zod schema. Do not include any text or markdown formatting outside of the JSON object itself.
+    Schema: ${JSON.stringify(ProtectiveEquipmentOutputSchema.shape)}
+
+    For the EPIs, list the essential equipment. Then, for the 'epiNote', provide a standard observation referencing NR06 and the need for equipment to be certified. For example: "Todos os Equipamentos de Proteção Individual (EPI), devem atender os requisitos da NR06, estar válido e conformidade com os órgãos fiscalizadores para utilização na atividade."
+
+    For the EPCs, list the necessary collective equipment. Then, for the 'epcNote', provide a standard observation about verifying the integrity and conformity of the equipment. For example: "Todos os Equipamentos de Proteção Coletiva (EPC), devem ser verificados quanto a integridade e conformidade com o projeto específico antes de iniciar a atividade."
+    `;
+
+    const response = await generate({
+        model: geminiPro,
+        prompt: prompt,
+        output: {
+          format: 'json',
+        },
+    });
+
+    const output = response.output();
+    if (!output) {
+      throw new Error("AI response is empty or invalid.");
+    }
+    
+    return ProtectiveEquipmentOutputSchema.parse(output);
   }
 );

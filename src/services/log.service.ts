@@ -1,3 +1,5 @@
+'use server';
+
 // This is a server-only module
 import fs from 'fs/promises';
 import path from 'path';

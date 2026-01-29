@@ -1,3 +1,5 @@
+'use server';
+
 import * as admin from 'firebase-admin';
 
 // Evita a reinicialização do app em ambientes de desenvolvimento (hot-reloading)
