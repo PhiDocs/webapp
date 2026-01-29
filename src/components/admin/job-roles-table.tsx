@@ -83,9 +83,9 @@ export function JobRolesTable({ companyId }: JobRolesTableProps) {
 
             if (result.success) {
                 toast({ title: `Cargo ${editingJobRole ? 'atualizado' : 'criado'} com sucesso!` });
-                await fetchData();
                 setIsFormOpen(false);
                 setEditingJobRole(null);
+                await fetchData();
             } else {
                 toast({ variant: 'destructive', title: "Erro ao salvar", description: result.error });
             }

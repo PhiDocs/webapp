@@ -82,9 +82,9 @@ export function SubcontractorsTable({ companyId }: SubcontractorsTableProps) {
 
             if (result.success) {
                 toast({ title: `Empresa ${editingSubcontractor ? 'atualizada' : 'criada'} com sucesso!` });
-                await fetchData();
                 setIsFormOpen(false);
                 setEditingSubcontractor(null);
+                await fetchData();
             } else {
                 toast({ variant: 'destructive', title: "Erro ao salvar", description: result.error });
             }

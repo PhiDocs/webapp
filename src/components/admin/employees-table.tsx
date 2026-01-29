@@ -117,9 +117,9 @@ export function EmployeesTable({ companyId }: EmployeesTableProps) {
 
             if (result.success) {
                 toast({ title: `Funcionário ${editingEmployee ? 'atualizado' : 'criado'} com sucesso!` });
-                await fetchData();
                 setIsFormOpen(false);
                 setEditingEmployee(null);
+                await fetchData();
             } else {
                 toast({ variant: 'destructive', title: "Erro ao salvar", description: result.error });
             }

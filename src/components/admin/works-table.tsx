@@ -31,7 +31,7 @@ import {
 import { PlusCircle, Edit, Trash2, Loader2, MoreHorizontal, Calendar, Home } from 'lucide-react';
 import { getWorks, createWork, updateWork, deleteWork } from '@/server/work-actions';
 import { WorkForm } from '@/components/admin/work-form';
-import type { Work, WorkFormValues } from '@/lib/types';
+import type { Work, WorkClientFormValues } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import {
     DropdownMenu,
@@ -73,7 +73,7 @@ export function WorksTable({ companyId }: WorksTableProps) {
         }
     }, [companyId]);
 
-    const handleFormSubmit = (values: Omit<WorkFormValues, 'companyId'>) => {
+    const handleFormSubmit = (values: WorkClientFormValues) => {
         startTransition(async () => {
             const fullValues = { ...values, companyId };
             const action = editingWork 
@@ -84,9 +84,9 @@ export function WorksTable({ companyId }: WorksTableProps) {
 
             if (result.success) {
                 toast({ title: `Obra ${editingWork ? 'atualizada' : 'criada'} com sucesso!` });
-                await fetchData(); // Re-fetch after create/update
                 setIsFormOpen(false);
                 setEditingWork(null);
+                await fetchData();
             } else {
                 toast({ variant: 'destructive', title: "Erro ao salvar", description: result.error });
             }
