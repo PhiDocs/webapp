@@ -16,7 +16,6 @@ import { PreviewPanel } from '@/components/preview-panel';
 import { ptBr } from '@/lib/data/strings';
 import { DOCUMENT_TYPES, N8N_EVENTS, PT_FIT_STATUS, SIGNATURE_TYPES } from '@/lib/constants';
 import { PrintPreview } from '@/components/print-preview';
-import { generatePdfOnClient } from '@/lib/pdf/generator';
 import { UserNav } from '@/components/auth/user-nav';
 import { useSession } from '@/components/auth/session-provider';
 import { getWorks } from '@/server/work-actions';
@@ -28,7 +27,7 @@ export default function ReportsPage() {
   const [analysis, setAnalysis] = useState<SafetyAnalysisOutput | null>(null);
   const [equipment, setEquipment] = useState<ProtectiveEquipmentOutput | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [isPrinting, setIsPrinting] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [mobileView, setMobileView] = useState<'form' | 'preview'>('form');
 
@@ -188,28 +187,60 @@ export default function ReportsPage() {
     form.reset();
   };
 
-  const handlePrint = () => {
-    setIsPrinting(true);
+  const handleDownloadPdf = async () => {
+    setIsDownloading(true);
+    toast({ title: ptBr.actions.generatingPdf });
+
     try {
         const formData = form.getValues();
         const payload = {
             event: N8N_EVENTS.PDF_GENERATED,
             documentType: formData.documentType,
             companyData: company,
-            formData: formData,
+            formData,
             analysisData: analysis,
             equipmentData: equipment,
         };
-        // Notifica o n8n usando a URL de produção da empresa
+
+        // Notify n8n in parallel
         if (company?.n8nProductionUrl) {
-            notifyN8n(payload, company.n8nProductionUrl);
+            notifyN8n(payload, company.n8nProductionUrl).catch(err => console.error("N8N notification failed:", err));
         }
-        generatePdfOnClient();
-    } catch (error) {
-        console.error("Failed to notify n8n:", error);
+
+        const response = await fetch('/api/generate-pdf', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({ error: 'Falha ao decodificar a resposta de erro do servidor.' }));
+            throw new Error(errorData.error || 'Falha ao gerar o PDF no servidor.');
+        }
+
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        const filename = `documento_seguranca_${new Date().toISOString().split('T')[0]}.pdf`;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        a.remove();
+        toast({ title: ptBr.toasts.success.pdfDownloaded });
+
+    } catch (error: any) {
+        console.error("Failed to generate or download PDF:", error);
+        toast({
+            variant: 'destructive',
+            title: ptBr.toasts.errors.pdfError,
+            description: error.message,
+        });
+    } finally {
+        setIsDownloading(false);
     }
-    setTimeout(() => setIsPrinting(false), 2000);
-  };
+};
 
   return (
     <>
@@ -217,8 +248,8 @@ export default function ReportsPage() {
         <Header
           mobileView={mobileView}
           setMobileView={setMobileView}
-          onGeneratePdf={handlePrint}
-          isDownloading={isPrinting}
+          onGeneratePdf={handleDownloadPdf}
+          isDownloading={isDownloading}
           isAprReady={!!(liveFormData.documentType === DOCUMENT_TYPES.APR && analysis)}
           isPtReady={liveFormData.documentType === DOCUMENT_TYPES.PT}
         >
@@ -247,8 +278,8 @@ export default function ReportsPage() {
                   equipmentData={equipment}
                   company={company}
                   mobileView={mobileView}
-                  isDownloading={isPrinting}
-                  onGeneratePdf={handlePrint}
+                  isDownloading={isDownloading}
+                  onGeneratePdf={handleDownloadPdf}
                   isAprReady={!!(liveFormData.documentType === DOCUMENT_TYPES.APR && analysis)}
                   isPtReady={liveFormData.documentType === DOCUMENT_TYPES.PT}
               />

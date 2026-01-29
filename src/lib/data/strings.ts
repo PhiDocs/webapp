@@ -5,8 +5,8 @@ export const ptBr = {
     pt: 'PT',
   },
   actions: {
-    generatePdf: 'Imprimir / Salvar PDF',
-    generatingPdf: 'Preparando Impressão...',
+    generatePdf: 'Gerar e Baixar PDF',
+    generatingPdf: 'Gerando PDF...',
     generateAnalysis: 'Gerar Análise de Segurança',
     generatingAnalysis: 'Gerando Análise...',
     startNewReport: 'Começar Novo Relatório',
@@ -48,7 +48,7 @@ export const ptBr = {
       description: 'Aguarde enquanto nossa IA prepara seu relatório.',
     },
     error: {
-      title: 'Erro na Pré-visualização',
+      title: 'Erro na Análise de Risco',
     },
   },
   auth: {
@@ -301,7 +301,7 @@ export const ptBr = {
       fetchEpiDescription: 'Não foi possível gerar as recomendações de equipamento.',
       noAnalysis: 'Análise de Risco não gerada',
       noAnalysisDescription: 'Por favor, gere a análise da atividade antes de imprimir.',
-      pdfError: 'Erro ao Preparar para Impressão',
+      pdfError: 'Erro ao Gerar PDF',
       pdfErrorDescription: 'Não foi possível preparar o documento. Por favor, tente novamente.',
       n8nTestUrlMissing: 'URL de Teste Faltando',
       n8nTestUrlMissingDescription: 'Por favor, cole a URL de teste do n8n no campo apropriado.',
@@ -313,8 +313,8 @@ export const ptBr = {
       authError: 'Erro de Autenticação',
     },
     success: {
-      pdfDownloaded: 'Sucesso!',
-      pdfDownloadedDescription: 'Documento pronto para impressão e dados enviados para o n8n.',
+      pdfDownloaded: 'Download do PDF iniciado!',
+      pdfDownloadedDescription: 'Seu documento foi gerado com sucesso.',
       n8nConnection: 'Sucesso!',
       n8nConnectionDescription: 'Requisição enviada para a URL de {{target}}.',
       n8nProduction: 'produção',

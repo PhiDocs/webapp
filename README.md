@@ -53,9 +53,23 @@ Se você já tem um usuário criado e deseja torná-lo um administrador de uma e
 
 Para rodar o projeto completo na sua máquina local, você precisa configurar a autenticação para o **Firebase Admin** (usado para gerenciar usuários e dados) e para a **IA do Google** (Genkit/Gemini).
 
-### 1. Autenticação para Firebase Admin (Firestore, Auth)
+### 1. Obtendo as Credenciais do Firebase Admin
 
-Siga os passos na seção **"Variáveis de Ambiente"** abaixo para preencher seu arquivo `.env` com a chave de serviço do Firebase.
+Para que as `server actions` e scripts do back-end possam gerenciar usuários e dados, eles precisam se autenticar com permissões de administrador. Isso é feito através de uma "conta de serviço" do Firebase.
+
+Siga os passos abaixo para gerar o arquivo de credenciais necessário para preencher o seu `.env`:
+
+1.  **Acesse o Firebase Console:** Vá para [https://console.firebase.google.com/](https://console.firebase.google.com/) e selecione o seu projeto.
+2.  **Configurações do Projeto:** No canto superior esquerdo, clique no ícone de engrenagem ao lado de "Visão geral do projeto" e selecione **"Configurações do projeto"**.
+3.  **Contas de Serviço:** Na página de configurações, clique na aba **"Contas de serviço"**.
+4.  **Gere a Chave Privada:** Clique no botão **"Gerar nova chave privada"**. Uma janela de confirmação aparecerá.
+5.  **Confirme e Baixe:** Clique em **"Gerar chave"**. Um arquivo JSON será baixado para o seu computador. Este arquivo contém suas credenciais de administrador; trate-o com segurança e não o compartilhe publicamente.
+6.  **Preencha o `.env`:** Abra o arquivo JSON que você baixou. Você encontrará os seguintes campos:
+    *   `project_id`: Copie este valor para a variável `FIREBASE_PROJECT_ID` no seu arquivo `.env`.
+    *   `client_email`: Copie este valor para a variável `FIREBASE_CLIENT_EMAIL`.
+    *   `private_key`: Copie todo o conteúdo, incluindo `-----BEGIN PRIVATE KEY-----` e `-----END PRIVATE KEY-----`, para a variável `FIREBASE_PRIVATE_KEY`.
+
+> **Importante:** A `private_key` no arquivo JSON contém quebras de linha (`\n`). Ao copiá-la para o `.env`, você deve garantir que elas sejam preservadas como o texto literal `\n`. O valor final no `.env` deve ser uma única linha longa entre aspas. Veja o exemplo na seção "Variáveis de Ambiente".
 
 ### 2. Autenticação para a IA (Genkit/Gemini)
 

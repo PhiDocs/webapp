@@ -68,10 +68,7 @@ function APRHeader({ data, company }: { data: SafetyFormValues; company: Company
 }
 
 function PrintFooter() {
-    const [date, setDate] = React.useState('');
-    React.useEffect(() => {
-        setDate(new Date().toLocaleDateString('pt-BR'));
-    }, []);
+    const date = new Date().toLocaleDateString('pt-BR');
 
     return (
         <footer className="print-footer avoid-break mt-4 text-xs text-gray-500 border-t pt-2">
