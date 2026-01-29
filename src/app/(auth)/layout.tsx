@@ -5,9 +5,7 @@ export default function AuthLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
-        {children}
-    </div>
-  );
+  // This layout is effectively disabled to prevent routing conflicts.
+  // The styling has been moved directly into the page components that need it.
+  return <>{children}</>;
 }
