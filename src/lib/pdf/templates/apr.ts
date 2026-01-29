@@ -1,8 +1,32 @@
-import type { Content, TableCell } from 'pdfmake/interfaces';
 import type { SafetyFormValues } from '@/lib/types';
-import type { SafetyAnalysisOutput } from '@/ai/flows/generate-safety-analysis';
-import type { ProtectiveEquipmentOutput } from '@/ai/flows/recommend-protective-equipment';
-import { getShortDate, getSignatureContent, isValidBase64 } from '@/lib/pdf/pdf-utils';
+import type { SafetyAnalysisOutput, ProtectiveEquipmentOutput } from '@/server/ai-actions';
+
+// Type definitions for pdfmake (inline to avoid dependency issues)
+type Content = any;
+type TableCell = any;
+
+// Helper functions
+function getShortDate(dateString: string): string {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  return date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+}
+
+function isValidBase64(str: string | undefined): boolean {
+  if (!str) return false;
+  try {
+    return str.startsWith('data:image');
+  } catch {
+    return false;
+  }
+}
+
+function getSignatureContent(signatureData: string | undefined, name: string): Content {
+  if (isValidBase64(signatureData)) {
+    return { image: signatureData, width: 100, height: 40, alignment: 'center' };
+  }
+  return { text: name, style: 'signature', alignment: 'center' };
+}
 
 // --- APR Document Generation ---
 export function generateAPRPages(formData: SafetyFormValues, analysisData: SafetyAnalysisOutput | null, equipmentData: ProtectiveEquipmentOutput | null): Content[] {

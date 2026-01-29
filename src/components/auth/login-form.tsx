@@ -84,8 +84,8 @@ export function LoginForm() {
         description: ptBr.toasts.success.loginSuccessDescription,
       });
 
-      // 4. Usar o router do Next.js para uma transição suave
-      router.push('/');
+      // 4. Hard redirect to ensure the new session cookie is picked up by the proxy
+      window.location.href = '/';
 
 
     } catch (error: any) {

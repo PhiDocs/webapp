@@ -1,31 +1,48 @@
-'use server';
-
 import { NextResponse, type NextRequest } from 'next/server';
-import admin from '@/firebase/admin-config';
-import type { DecodedIdToken } from 'firebase-admin/auth';
+import { jwtVerify, createRemoteJWKSet } from 'jose';
 
 const PUBLIC_ROUTES = ['/login'];
 const ADMIN_DASHBOARD_PREFIX = '/company';
 const USER_DASHBOARD = '/reports';
 
-interface VerifiedToken extends DecodedIdToken {
+// Firebase/Google's public JWKS endpoint for verifying ID tokens
+const JWKS = createRemoteJWKSet(
+  new URL('https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com')
+);
+
+interface VerifiedToken {
+  uid: string;
+  email?: string;
   role?: string;
   companyId?: string;
 }
 
 async function verifyIdToken(token: string): Promise<VerifiedToken | null> {
   try {
-    // A implementação foi alterada para usar o Firebase Admin SDK, que é mais robusto
-    // e consistente com o resto da aplicação (ex: auth-actions.ts).
-    const decodedToken = await admin.auth().verifyIdToken(token, true);
-    return decodedToken as VerifiedToken;
+    const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
+    if (!projectId) {
+      console.error('NEXT_PUBLIC_FIREBASE_PROJECT_ID is not defined');
+      return null;
+    }
+
+    const { payload } = await jwtVerify(token, JWKS, {
+      issuer: `https://securetoken.google.com/${projectId}`,
+      audience: projectId,
+    });
+
+    return {
+      uid: payload.sub as string,
+      email: payload.email as string | undefined,
+      role: payload.role as string | undefined,
+      companyId: payload.companyId as string | undefined,
+    };
   } catch (error) {
-    console.warn('Token verification failed in middleware, possibly expired or invalid:', error);
+    console.warn('Token verification failed in proxy:', error);
     return null;
   }
 }
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const sessionCookie = request.cookies.get('session');
   

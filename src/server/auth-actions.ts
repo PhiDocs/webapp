@@ -61,7 +61,8 @@ export async function createSession(idToken: string): Promise<{ error: string | 
     await ensureAndSyncUserDocument(decodedToken);
 
     const expiresIn = 60 * 60 * 24 * 5 * 1000; // 5 dias
-    cookies().set('session', idToken, {
+    const cookieStore = await cookies();
+    cookieStore.set('session', idToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       maxAge: expiresIn,
@@ -81,7 +82,8 @@ export async function createSession(idToken: string): Promise<{ error: string | 
  */
 export async function signOut(): Promise<{ error: string | null }> {
   try {
-    cookies().delete('session');
+    const cookieStore = await cookies();
+    cookieStore.delete('session');
     return { error: null };
   } catch (error: any)
  {

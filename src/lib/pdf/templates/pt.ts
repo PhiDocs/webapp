@@ -1,9 +1,38 @@
-import type { Content, TableCell } from 'pdfmake/interfaces';
 import type { SafetyFormValues, PtTeamMember } from '@/lib/types';
 import { ptChecklistItems } from '@/lib/data/pt-checklist';
 import { ptBr } from '@/lib/data/strings';
 import { PT_FIT_STATUS } from '@/lib/constants';
-import { getShortDate, getSignatureContent, isValidBase64, Checkbox } from '@/lib/pdf/pdf-utils';
+
+// Type definitions for pdfmake (inline to avoid dependency issues)
+type Content = any;
+type TableCell = any;
+
+// Helper functions
+function getShortDate(dateString: string): string {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  return date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+}
+
+function isValidBase64(str: string | undefined): boolean {
+  if (!str) return false;
+  try {
+    return str.startsWith('data:image');
+  } catch {
+    return false;
+  }
+}
+
+function getSignatureContent(signatureData: string | undefined, name: string): Content {
+  if (isValidBase64(signatureData)) {
+    return { image: signatureData, width: 100, height: 40, alignment: 'center' };
+  }
+  return { text: name, style: 'signature', alignment: 'center' };
+}
+
+function Checkbox(checked: boolean): Content {
+  return { text: checked ? '☑' : '☐', fontSize: 12 };
+}
 
 
 // --- PT Document Generation ---

@@ -14,7 +14,8 @@ import type { UserProfile } from '@/components/auth/session-provider';
  */
 export async function getUserProfile(): Promise<{ success: boolean; data?: UserProfile, error?: string }> {
   try {
-    const sessionCookie = cookies().get('session')?.value;
+    const cookieStore = await cookies();
+    const sessionCookie = cookieStore.get('session')?.value;
     if (!sessionCookie) {
       return { success: false, error: 'Usuário não autenticado.' };
     }

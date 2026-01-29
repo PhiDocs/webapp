@@ -1,8 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import type { SafetyAnalysisOutput } from '@/ai/flows/generate-safety-analysis';
-import type { ProtectiveEquipmentOutput } from '@/ai/flows/recommend-protective-equipment';
+import type { SafetyAnalysisOutput, ProtectiveEquipmentOutput } from '@/server/ai-actions';
 import type { SafetyFormValues, Work, Employee, Company } from '@/lib/types';
 import { getSafetyAnalysis, getProtectiveEquipment } from '@/server/ai-actions';
 import { notifyN8n } from '@/server/n8n-actions';

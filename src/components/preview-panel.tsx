@@ -1,7 +1,6 @@
 'use client';
 
-import type { SafetyAnalysisOutput } from '@/ai/flows/generate-safety-analysis';
-import type { ProtectiveEquipmentOutput } from '@/ai/flows/recommend-protective-equipment';
+import type { SafetyAnalysisOutput, ProtectiveEquipmentOutput } from '@/server/ai-actions';
 import type { SafetyFormValues, Company } from '@/lib/types';
 import { PrintPreview } from '@/components/print-preview';
 import { ScrollArea } from '@/components/ui/scroll-area';

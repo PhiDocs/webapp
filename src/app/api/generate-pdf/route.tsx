@@ -5,7 +5,8 @@ import fs from 'fs/promises';
 import path from 'path';
 import { PrintPreview } from '@/components/print-preview';
 import { ErrorLogRepository } from '@/repositories/error-log.repository';
-import type { SafetyFormValues, SafetyAnalysisOutput, ProtectiveEquipmentOutput, Company } from '@/lib/types';
+import type { SafetyFormValues, Company } from '@/lib/types';
+import type { SafetyAnalysisOutput, ProtectiveEquipmentOutput } from '@/server/ai-actions';
 
 // Puppeteer launch options
 const puppeteerOptions = process.env.NODE_ENV === 'production'

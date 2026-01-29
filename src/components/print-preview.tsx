@@ -2,8 +2,7 @@
 
 import React from 'react';
 import type { SafetyFormValues, Company } from '@/lib/types';
-import type { SafetyAnalysisOutput } from '@/ai/flows/generate-safety-analysis';
-import type { ProtectiveEquipmentOutput } from '@/ai/flows/recommend-protective-equipment';
+import type { SafetyAnalysisOutput, ProtectiveEquipmentOutput } from '@/server/ai-actions';
 import { Logo } from '@/components/icons/logo';
 import { PTPreview } from './pt-preview';
 import { ClipboardList, UserCheck, ShieldCheck, HardHat, Construction, Users, AlertTriangle } from 'lucide-react';
