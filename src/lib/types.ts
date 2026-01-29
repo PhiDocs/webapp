@@ -38,17 +38,26 @@ const signatureTypeSchema = z.enum([
 
 export const responsiblePersonSchema = z.object({
   employeeId: z.string().optional(),
-  name: z.string().min(1, validationMessages.responsibleName),
-  role: z.string().min(1, validationMessages.responsibleRole),
+  name: z.string(),
+  role: z.string(),
   signatureType: signatureTypeSchema.default(SIGNATURE_TYPES.TYPED),
   signatureData: z.string().optional(),
 }).superRefine((data, ctx) => {
-  if (data.signatureType && !data.signatureData) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: "A assinatura é obrigatória para o método selecionado.",
-      path: ['signatureData'],
-    });
+  // Só validar se um funcionário foi selecionado
+  if (data.employeeId) {
+    if (!data.name) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: validationMessages.responsibleName, path: ['name'] });
+    }
+    if (!data.role) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: validationMessages.responsibleRole, path: ['role'] });
+    }
+    if (data.signatureType && !data.signatureData) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "A assinatura é obrigatória para o método selecionado.",
+        path: ['signatureData'],
+      });
+    }
   }
 });
 
@@ -74,7 +83,8 @@ const ptSignerSchema = z.object({
     signatureType: signatureTypeSchema.default(SIGNATURE_TYPES.TYPED),
     signatureData: z.string().optional(),
 }).superRefine((data, ctx) => {
-  if (data.signatureType && !data.signatureData) {
+  // Só exigir assinatura se o nome estiver preenchido
+  if (data.name && data.signatureType && !data.signatureData) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
       message: "A assinatura é obrigatória para o método selecionado.",

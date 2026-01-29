@@ -1,5 +1,3 @@
-'use client';
-
 import React from 'react';
 import type { SafetyFormValues, PtTeamMember, PtSigner, Company } from '@/lib/types';
 import { ptChecklistItems } from '@/lib/data/pt-checklist';

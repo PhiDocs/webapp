@@ -1,5 +1,3 @@
-'use client';
-
 import React from 'react';
 import type { SafetyFormValues, Company } from '@/lib/types';
 import type { SafetyAnalysisOutput, ProtectiveEquipmentOutput } from '@/server/ai-actions';
