@@ -49,31 +49,32 @@ Se você já tem um usuário criado e deseja torná-lo um administrador de uma e
 
 > **Importante:** Após executar qualquer um desses scripts e alterar os papéis, o usuário precisa **fazer logout e login novamente** para que seu token de sessão seja atualizado com os novos *custom claims*.
 
-## Scripts de Manutenção
+## Rodando Localmente: Configurando a Autenticação
 
-### Atualizar Regras e Índices do Firestore
+Para rodar o projeto completo na sua máquina local, você precisa configurar dois tipos de autenticação: uma para o **Firebase Admin** (usado para gerenciar usuários e dados) e outra para a **IA do Google** (Genkit/Gemini).
 
-Este projeto está configurado para facilitar o deploy das regras de segurança e dos índices do Firestore.
+### 1. Autenticação para Firebase Admin (Firestore, Auth)
 
--   **Como funciona:** Você edita os arquivos `firestore.rules` e `firestore.indexes.json` na raiz do projeto. Para que as alterações tenham efeito no seu projeto Firebase, você precisa executar um comando.
--   **O que você precisa fazer:** Após editar os arquivos, execute o seguinte comando no seu terminal:
-    ```bash
-    npm run update-firestore
-    ```
-    O comando `update-firestore` (definido no `package.json`) usará o Firebase CLI para aplicar as novas regras e criar os novos índices. O processo de criação de índices pode levar alguns minutos para ser concluído.
+-   **O que é:** Permite que seu backend (Server Actions, scripts) acesse o Firestore e o Firebase Auth com privilégios de administrador.
+-   **Como configurar:** Siga os passos na seção **"Variáveis de Ambiente"** abaixo para preencher seu arquivo `.env` com a chave de serviço do Firebase.
 
-### Migrar Dados para Compatibilidade (Soft Delete e Campos Adicionais)
+### 2. Autenticação para a IA (Genkit/Gemini)
 
-Se você precisa garantir que todos os registros antigos sejam compatíveis com novas estruturas de dados (como o campo `deletedAt` para exclusão lógica ou novos campos obrigatórios), execute o script de migração.
+-   **O que é:** Permite que sua máquina local faça chamadas para a API do Gemini.
+-   **Como configurar:** Usaremos as "Credenciais Padrão da Aplicação" (Application Default Credentials).
 
-1.  **Pré-requisitos:**
-    -   Certifique-se de que seu arquivo `.env` está preenchido.
-    -   Instale a ferramenta `tsx` globalmente para rodar o script TypeScript: `npm install -g tsx`
-2.  **Uso:**
-    ```bash
-    tsx scripts/migrate-deleted-at.ts
-    ```
-    Este script irá percorrer as coleções (`users`, `companies`, `works`, etc.) e garantir que todos os documentos tenham o campo `deletedAt: null` se ele não existir. Adicionalmente, para a coleção `works`, ele também adicionará o campo `activityDescription: ''` se estiver ausente, para manter a compatibilidade com a estrutura de dados atual.
+    1.  **Instale o Google Cloud CLI:** Se você ainda não tem, [instale a ferramenta de linha de comando do Google Cloud](https://cloud.google.com/sdk/docs/install).
+
+    2.  **Faça o Login:** Execute o seguinte comando no seu terminal:
+        ```bash
+        gcloud auth application-default login
+        ```
+
+    3.  **Siga as Instruções:** Seu navegador será aberto para que você faça login com sua conta do Google. Após a autorização, um arquivo de credenciais será criado na sua máquina.
+
+    4.  **Pronto!** O Genkit encontrará e usará essas credenciais automaticamente. Você **não** precisa adicionar uma `GEMINI_API_KEY` ao seu arquivo `.env`.
+
+> **Resumo:** Para rodar localmente, preencha o `.env` para o Firebase Admin e execute `gcloud auth application-default login` para a IA.
 
 ## Variáveis de Ambiente
 
@@ -109,4 +110,31 @@ src/
 ├── ai/            # Fluxos e prompts de IA (Back-end/Genkit)
 └── repositories/  # Camada de acesso a dados (Firestore)
 └── services/      # Camada de comunicação com APIs externas
+```
+
+## Scripts de Manutenção
+
+### Atualizar Regras e Índices do Firestore
+
+Este projeto está configurado para facilitar o deploy das regras de segurança e dos índices do Firestore.
+
+-   **Como funciona:** Você edita os arquivos `firestore.rules` e `firestore.indexes.json` na raiz do projeto. Para que as alterações tenham efeito no seu projeto Firebase, você precisa executar um comando.
+-   **O que você precisa fazer:** Após editar os arquivos, execute o seguinte comando no seu terminal:
+    ```bash
+    npm run update-firestore
+    ```
+    O comando `update-firestore` (definido no `package.json`) usará o Firebase CLI para aplicar as novas regras e criar os novos índices. O processo de criação de índices pode levar alguns minutos para ser concluído.
+
+### Migrar Dados para Compatibilidade (Soft Delete e Campos Adicionais)
+
+Se você precisa garantir que todos os registros antigos sejam compatíveis com novas estruturas de dados (como o campo `deletedAt` para exclusão lógica ou novos campos obrigatórios), execute o script de migração.
+
+1.  **Pré-requisitos:**
+    -   Certifique-se de que seu arquivo `.env` está preenchido.
+    -   Instale a ferramenta `tsx` globalmente para rodar o script TypeScript: `npm install -g tsx`
+2.  **Uso:**
+    ```bash
+    tsx scripts/migrate-deleted-at.ts
+    ```
+    Este script irá percorrer as coleções (`users`, `companies`, `works`, etc.) e garantir que todos os documentos tenham o campo `deletedAt: null` se ele não existir. Adicionalmente, para a coleção `works`, ele também adicionará o campo `activityDescription: ''` se estiver ausente, para manter a compatibilidade com a estrutura de dados atual.
 ```
