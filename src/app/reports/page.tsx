@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import type { SafetyAnalysisOutput } from '@/ai/flows/generate-safety-analysis';
 import type { ProtectiveEquipmentOutput } from '@/ai/flows/recommend-protective-equipment';
-import type { SafetyFormValues, Work, Employee } from '@/lib/types';
+import type { SafetyFormValues, Work, Employee, Company } from '@/lib/types';
 import { getSafetyAnalysis, getProtectiveEquipment } from '@/server/ai-actions';
 import { notifyN8n } from '@/server/n8n-actions';
 import { useForm } from 'react-hook-form';
@@ -21,6 +21,7 @@ import { UserNav } from '@/components/auth/user-nav';
 import { useSession } from '@/components/auth/session-provider';
 import { getWorks } from '@/server/work-actions';
 import { getEmployees } from '@/server/employee-actions';
+import { getCompanyById } from '@/server/company-actions';
 
 export default function ReportsPage() {
   const { user } = useSession();
@@ -31,6 +32,7 @@ export default function ReportsPage() {
   const [error, setError] = useState<string | null>(null);
   const [mobileView, setMobileView] = useState<'form' | 'preview'>('form');
 
+  const [company, setCompany] = useState<Company | null>(null);
   const [works, setWorks] = useState<Work[]>([]);
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [isDataLoading, setIsDataLoading] = useState(true);
@@ -40,7 +42,6 @@ export default function ReportsPage() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       documentType: DOCUMENT_TYPES.APR,
-      companyName: ptBr.defaultValues.companyName,
       workId: '',
       workName: '',
       workAddress: '',
@@ -95,10 +96,16 @@ export default function ReportsPage() {
       const fetchData = async () => {
         setIsDataLoading(true);
         try {
-          const [worksResult, employeesResult] = await Promise.all([
+          const [companyResult, worksResult, employeesResult] = await Promise.all([
+            getCompanyById(user.companyId!),
             getWorks(user.companyId!),
             getEmployees(user.companyId!)
           ]);
+          if (companyResult.success && companyResult.data) {
+            setCompany(companyResult.data);
+          } else {
+            toast({ variant: 'destructive', title: "Erro ao buscar dados da empresa", description: companyResult.error });
+          }
           if (worksResult.success && worksResult.data) {
             setWorks(worksResult.data);
           } else {
@@ -188,6 +195,7 @@ export default function ReportsPage() {
         const payload = {
             event: N8N_EVENTS.PDF_GENERATED,
             documentType: formData.documentType,
+            companyData: company,
             formData: formData,
             analysisData: analysis,
             equipmentData: equipment,
@@ -234,6 +242,7 @@ export default function ReportsPage() {
                   liveFormData={liveFormData}
                   analysisData={analysis}
                   equipmentData={equipment}
+                  company={company}
                   mobileView={mobileView}
                   isDownloading={isPrinting}
                   onGeneratePdf={handlePrint}
@@ -248,6 +257,7 @@ export default function ReportsPage() {
           formData={liveFormData}
           analysisData={analysis}
           equipmentData={equipment}
+          company={company}
         />
       </div>
     </>

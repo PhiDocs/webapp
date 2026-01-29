@@ -2,7 +2,7 @@
 
 import type { SafetyAnalysisOutput } from '@/ai/flows/generate-safety-analysis';
 import type { ProtectiveEquipmentOutput } from '@/ai/flows/recommend-protective-equipment';
-import type { SafetyFormValues } from '@/lib/types';
+import type { SafetyFormValues, Company } from '@/lib/types';
 import { PrintPreview } from '@/components/print-preview';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
@@ -17,6 +17,7 @@ interface PreviewPanelProps {
   liveFormData: SafetyFormValues;
   analysisData: SafetyAnalysisOutput | null;
   equipmentData: ProtectiveEquipmentOutput | null;
+  company: Company | null;
   mobileView: 'form' | 'preview';
   isDownloading: boolean;
   onGeneratePdf: () => void;
@@ -30,6 +31,7 @@ export function PreviewPanel({
   liveFormData,
   analysisData,
   equipmentData,
+  company,
   mobileView,
   isDownloading,
   onGeneratePdf,
@@ -75,6 +77,7 @@ export function PreviewPanel({
               formData={liveFormData}
               analysisData={analysisData}
               equipmentData={equipmentData}
+              company={company}
           />
 
         </div>

@@ -20,6 +20,7 @@
       "type": "object",
       "properties": {
         "name": { "type": "string", "description": "The name of the company." },
+        "logo": { "type": "string", "format": "uri", "description": "Base64 encoded data URI of the company logo." },
         "ownerUid": { "type": "string", "description": "The UID of the admin user who owns the company." }
       },
       "required": ["name", "ownerUid"]

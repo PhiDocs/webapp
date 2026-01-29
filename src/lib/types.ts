@@ -106,10 +106,7 @@ export const ptFormSchema = z.object({
 export const formSchema = z.object({
   documentType: z.enum([DOCUMENT_TYPES.APR, DOCUMENT_TYPES.PT]),
   
-  companyName: z.string(),
-  companyLogo: z.string().optional(),
-  
-  // Work Data (APR)
+  // Work Data (APR) - Populated by selecting a work
   workId: z.string().optional(),
   workName: z.string().optional(),
   workAddress: z.string().optional(),
@@ -129,7 +126,6 @@ export const formSchema = z.object({
   pt: ptFormSchema,
 }).superRefine((data, ctx) => {
     if (data.documentType === DOCUMENT_TYPES.APR) {
-        if (!data.companyName) ctx.addIssue({ code: z.ZodIssueCode.custom, message: validationMessages.companyName, path: ["companyName"] });
         if (!data.workId) ctx.addIssue({ code: z.ZodIssueCode.custom, message: validationMessages.workIdRequired, path: ["workId"] });
 
         data.responsiblePersons.forEach((person, index) => {
@@ -147,7 +143,6 @@ export const formSchema = z.object({
         }
 
     } else if (data.documentType === DOCUMENT_TYPES.PT) {
-        if (!data.companyName) ctx.addIssue({ code: z.ZodIssueCode.custom, message: validationMessages.companyName, path: ["companyName"] });
         if (!data.pt.ptLocalAtividade) ctx.addIssue({ code: z.ZodIssueCode.custom, message: validationMessages.ptLocation, path: ["pt", "ptLocalAtividade"] });
         if (!data.pt.ptData) ctx.addIssue({ code: z.ZodIssueCode.custom, message: validationMessages.ptDate, path: ["pt", "ptData"] });
         if (!data.pt.ptHoraInicio) ctx.addIssue({ code: z.ZodIssueCode.custom, message: validationMessages.ptStartTime, path: ["pt", "ptHoraInicio"] });
@@ -179,14 +174,16 @@ export type SignupValues = z.infer<typeof signupSchema>;
 
 
 // --- Company Schema ---
-export const companyFormSchema = z.object({
+export const companySettingsFormSchema = z.object({
     name: z.string().min(3, "O nome da empresa deve ter pelo menos 3 caracteres."),
+    logo: z.string().optional(),
 });
-export type CompanyFormValues = z.infer<typeof companyFormSchema>;
+export type CompanySettingsFormValues = z.infer<typeof companySettingsFormSchema>;
 
 export type Company = {
     id: string;
     name: string;
+    logo?: string;
     createdAt: string;
     ownerUid?: string;
 }

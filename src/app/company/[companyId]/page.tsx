@@ -6,7 +6,7 @@ import { Header } from "@/components/header";
 import { UserNav } from "@/components/auth/user-nav";
 import { WorksTable } from "@/components/admin/works-table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { HardHat, Users, Briefcase, Building } from "lucide-react";
+import { HardHat, Users, Briefcase, Building, Settings } from "lucide-react";
 import { useSession } from "@/components/auth/session-provider";
 import { getCompanyById } from "@/server/company-actions";
 import type { Company } from "@/lib/types";
@@ -14,6 +14,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { EmployeesTable } from '@/components/admin/employees-table';
 import { JobRolesTable } from '@/components/admin/job-roles-table';
 import { SubcontractorsTable } from '@/components/admin/subcontractors-table';
+import { CompanySettings } from '@/components/admin/company-settings';
 
 export default function CompanyPage() {
     const params = useParams();
@@ -23,20 +24,21 @@ export default function CompanyPage() {
     const [company, setCompany] = useState<Company | null>(null);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
+    const fetchCompany = async () => {
         if (companyId) {
-            const fetchCompany = async () => {
-                setLoading(true);
-                const result = await getCompanyById(companyId);
-                if (result.success && result.data) {
-                    setCompany(result.data);
-                } else {
-                    console.error("Failed to fetch company data:", result.error);
-                }
-                setLoading(false);
-            };
-            fetchCompany();
+            setLoading(true);
+            const result = await getCompanyById(companyId);
+            if (result.success && result.data) {
+                setCompany(result.data);
+            } else {
+                console.error("Failed to fetch company data:", result.error);
+            }
+            setLoading(false);
         }
+    };
+
+    useEffect(() => {
+        fetchData();
     }, [companyId]);
 
     // Validação de permissão
@@ -74,11 +76,12 @@ export default function CompanyPage() {
                 </div>
 
                 <Tabs defaultValue="works">
-                    <TabsList className="grid w-full grid-cols-2 md:w-auto md:grid-cols-4">
+                    <TabsList className="grid w-full grid-cols-2 md:grid-cols-5">
                         <TabsTrigger value="works"><HardHat className="mr-2 h-4 w-4" />Obras</TabsTrigger>
                         <TabsTrigger value="employees"><Users className="mr-2 h-4 w-4" />Funcionários</TabsTrigger>
                         <TabsTrigger value="jobRoles"><Briefcase className="mr-2 h-4 w-4" />Cargos</TabsTrigger>
                         <TabsTrigger value="subcontractors"><Building className="mr-2 h-4 w-4" />Terceirizadas</TabsTrigger>
+                        <TabsTrigger value="settings"><Settings className="mr-2 h-4 w-4" />Configurações</TabsTrigger>
                     </TabsList>
                     <TabsContent value="works" className="mt-6">
                         <WorksTable companyId={companyId} />
@@ -91,6 +94,13 @@ export default function CompanyPage() {
                     </TabsContent>
                     <TabsContent value="subcontractors" className="mt-6">
                         <SubcontractorsTable companyId={companyId} />
+                    </TabsContent>
+                    <TabsContent value="settings" className="mt-6">
+                        {company ? (
+                            <CompanySettings company={company} onCompanyUpdate={fetchCompany} />
+                        ) : (
+                           <Card><CardContent className='pt-6'><Skeleton className="h-40 w-full" /></CardContent></Card>
+                        )}
                     </TabsContent>
                 </Tabs>
             </main>

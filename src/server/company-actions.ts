@@ -3,7 +3,7 @@
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import { CompanyRepository } from '@/repositories/company.repository';
-import { companyFormSchema } from '@/lib/types';
+import { companySettingsFormSchema } from '@/lib/types';
 import { ErrorLogRepository } from '@/repositories/error-log.repository';
 
 
@@ -44,9 +44,10 @@ export async function getCompanies() {
  * Cria uma nova empresa.
  */
 export async function createCompany(data: unknown) {
-    const validation = companyFormSchema.safeParse(data);
+    const validation = companySettingsFormSchema.safeParse(data);
     if (!validation.success) {
-        return { success: false, error: validation.error.flatten().fieldErrors.name?.[0] };
+        const errors = validation.error.flatten().fieldErrors;
+        return { success: false, error: Object.values(errors).flat().join(', ') };
     }
 
     try {
@@ -63,14 +64,16 @@ export async function createCompany(data: unknown) {
  * Atualiza uma empresa existente.
  */
 export async function updateCompany(id: string, data: unknown) {
-    const validation = companyFormSchema.safeParse(data);
+    const validation = companySettingsFormSchema.safeParse(data);
     if (!validation.success) {
-        return { success: false, error: validation.error.flatten().fieldErrors.name?.[0] };
+        const errors = validation.error.flatten().fieldErrors;
+        return { success: false, error: Object.values(errors).flat().join(', ') };
     }
 
     try {
         await CompanyRepository.update(id, validation.data);
-        revalidatePath('/admin');
+        revalidatePath(`/company/${id}`);
+        revalidatePath('/reports');
         return { success: true };
     } catch (error: any) {
         await ErrorLogRepository.log(error, 'updateCompany');

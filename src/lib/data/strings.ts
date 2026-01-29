@@ -31,7 +31,7 @@ export const ptBr = {
   },
   formPanel: {
     title: 'Gere seu Documento de Segurança',
-    description: 'Preencha o formulário e veja a pré-visualização ao lado. Nossa IA irá analisar a atividade com base nas NRs brasileiras.',
+    description: 'Selecione o tipo de documento e preencha o formulário.',
     newReportConfirmation: {
       title: 'Você tem certeza?',
       description: 'Esta ação não pode ser desfeita. Isso limpará todos os dados do formulário e a análise de IA gerada.',

@@ -1,13 +1,14 @@
 'use client';
 
 import React from 'react';
-import type { SafetyFormValues, PtTeamMember, PtSigner } from '@/lib/types';
+import type { SafetyFormValues, PtTeamMember, PtSigner, Company } from '@/lib/types';
 import { ptChecklistItems } from '@/lib/data/pt-checklist';
 import { ptBr } from '@/lib/data/strings';
 import { PT_FIT_STATUS, SIGNATURE_TYPES } from '@/lib/constants';
 
 interface PTPreviewProps {
   formData: SafetyFormValues;
+  company: Company | null;
 }
 
 const SignaturePreview = ({ signer, label }: { signer?: PtSigner, label: string }) => {
@@ -92,12 +93,12 @@ const TeamTable = ({ title, members, showEmpresa = false }: { title: string, mem
 };
 
 
-export function PTPreview({ formData }: PTPreviewProps) {
+export function PTPreview({ formData, company }: PTPreviewProps) {
   if (!formData?.pt) {
     return null; // or a placeholder component
   }
 
-  const { pt: ptData, companyLogo, companyName } = formData;
+  const { pt: ptData } = formData;
   const checklist = ptData.ptChecklist || {};
 
   const getCheckedItems = (sectionId: string) => {
@@ -111,8 +112,8 @@ export function PTPreview({ formData }: PTPreviewProps) {
             <tbody>
                 <tr>
                     <td rowSpan={2} className="w-1/4 align-middle text-center">
-                         {companyLogo ? (
-                           <img src={companyLogo} alt={ptBr.other.companyLogoAlt} className="h-16 w-auto max-w-[120px] object-contain mx-auto" />
+                         {company?.logo ? (
+                           <img src={company.logo} alt={ptBr.other.companyLogoAlt} className="h-16 w-auto max-w-[120px] object-contain mx-auto" />
                          ) : <div className="h-16 w-auto"></div>}
                     </td>
                     <td rowSpan={2} className="w-1/2 text-center">
@@ -120,7 +121,7 @@ export function PTPreview({ formData }: PTPreviewProps) {
                         <p className="text-xs font-bold text-red-600">{ptBr.printPreview.pt.subtitle}</p>
                     </td>
                     <td className="w-1/4 !p-1 text-center">
-                        <span className='font-bold'>{companyName || ptBr.printPreview.pt.companyName}</span>
+                        <span className='font-bold'>{company?.name || ptBr.printPreview.pt.companyName}</span>
                     </td>
                 </tr>
                  <tr>

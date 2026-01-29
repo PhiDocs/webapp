@@ -26,7 +26,6 @@ import {
 } from '@/components/ui/select';
 import {
   BookOpen,
-  Building2,
   FileText,
   UserCheck,
   PlusCircle,
@@ -34,7 +33,6 @@ import {
   Briefcase,
   Users,
 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
 import { Separator } from '@/components/ui/separator';
 import { PTForm } from './pt-form';
 import { SignaturePad } from './signature-pad';
@@ -143,7 +141,6 @@ export function SafetyForm({
   employees,
   isDataLoading,
 }: SafetyFormProps) {
-  const { toast } = useToast();
 
   const {
     fields: responsibleFields,
@@ -162,28 +159,6 @@ export function SafetyForm({
     control: form.control,
     name: 'teamMembers',
   });
-
-  const handleLogoChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      if (file.size > 2 * 1024 * 1024) {
-        // 2MB limit
-        toast({
-          variant: 'destructive',
-          title: ptBr.toasts.errors.fileTooLarge,
-          description: ptBr.toasts.errors.fileTooLargeDescription,
-        });
-        return;
-      }
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        form.setValue('companyLogo', reader.result as string, {
-          shouldValidate: true,
-        });
-      };
-      reader.readAsDataURL(file);
-    }
-  };
 
   const documentType = useWatch({ control: form.control, name: 'documentType' });
 
@@ -233,45 +208,6 @@ export function SafetyForm({
                   </FormItem>
                 )}
               />
-
-              <Separator />
-              <h3 className="text-lg font-semibold flex items-center">
-                <Building2 className="mr-2" /> {ptBr.safetyForm.companyData}
-              </h3>
-
-              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                <FormField
-                  control={form.control}
-                  name="companyName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{ptBr.safetyForm.companyName}</FormLabel>
-                      <FormControl>
-                        <Input placeholder={ptBr.safetyForm.companyNamePlaceholder} {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="companyLogo"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{ptBr.safetyForm.companyLogo}</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="file"
-                          accept="image/png, image/jpeg"
-                          onChange={handleLogoChange}
-                        />
-                      </FormControl>
-                      <FormDescription>{ptBr.safetyForm.companyLogoDescription}</FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
 
               {documentType === DOCUMENT_TYPES.PT ? (
                 <PTForm form={form} />

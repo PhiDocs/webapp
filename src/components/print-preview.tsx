@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import type { SafetyFormValues } from '@/lib/types';
+import type { SafetyFormValues, Company } from '@/lib/types';
 import type { SafetyAnalysisOutput } from '@/ai/flows/generate-safety-analysis';
 import type { ProtectiveEquipmentOutput } from '@/ai/flows/recommend-protective-equipment';
 import { Logo } from '@/components/icons/logo';
@@ -15,6 +15,7 @@ interface PrintPreviewProps {
   formData: SafetyFormValues;
   analysisData: SafetyAnalysisOutput | null;
   equipmentData: ProtectiveEquipmentOutput | null;
+  company: Company | null;
 }
 
 const SignaturePreview = ({ signatureData, signatureType }: { signatureData?: string, signatureType?: string }) => {
@@ -33,18 +34,18 @@ const SignaturePreview = ({ signatureData, signatureType }: { signatureData?: st
     return <div className="h-12 w-full border-b border-dashed"></div>;
 };
 
-function APRHeader({ data }: { data: SafetyFormValues }) {
+function APRHeader({ data, company }: { data: SafetyFormValues; company: Company | null }) {
   return (
     <header className="print-header avoid-break">
       <div className="flex items-start justify-between gap-4 border-b pb-2">
         <div className="flex items-start gap-4 flex-1 min-w-0">
-          {data.companyLogo ? (
-            <img src={data.companyLogo} alt={ptBr.other.companyLogoAlt} className="h-16 w-auto max-w-[120px] object-contain" />
+          {company?.logo ? (
+            <img src={company.logo} alt={ptBr.other.companyLogoAlt} className="h-16 w-auto max-w-[120px] object-contain" />
           ) : (
              <Logo className="h-12 w-12 text-gray-700" />
           )}
           <div className='flex-1 min-w-0'>
-            <h1 className="text-xl font-bold text-gray-800 break-words">{data.companyName || '...'}</h1>
+            <h1 className="text-xl font-bold text-gray-800 break-words">{company?.name || '...'}</h1>
             <p className='text-sm mt-2 font-bold'>
               {ptBr.printPreview.apr.title}
             </p>
@@ -215,14 +216,14 @@ function getShortDate(dateString: string | undefined) {
   }
 }
 
-export function APRPreviewContent({ formData, analysisData, equipmentData }: { formData: SafetyFormValues, analysisData: SafetyAnalysisOutput | null, equipmentData: ProtectiveEquipmentOutput | null }) {
+export function APRPreviewContent({ formData, analysisData, equipmentData, company }: { formData: SafetyFormValues, analysisData: SafetyAnalysisOutput | null, equipmentData: ProtectiveEquipmentOutput | null, company: Company | null }) {
     if (!formData) return null;
 
     const showAnalysis = analysisData && analysisData.proceduralSteps && analysisData.proceduralSteps.length > 0;
 
     return (
         <div className="page-content-wrapper">
-            <APRHeader data={formData} />
+            <APRHeader data={formData} company={company} />
              <main className='print-main flex flex-col gap-4'>
                 <Section title={ptBr.printPreview.apr.workData} icon={ClipboardList}>
                      <table className="w-full border-collapse info-grid">
@@ -265,16 +266,16 @@ export function APRPreviewContent({ formData, analysisData, equipmentData }: { f
     );
 }
 
-export function PrintPreview({ formData, analysisData, equipmentData }: PrintPreviewProps) {
+export function PrintPreview({ formData, analysisData, equipmentData, company }: PrintPreviewProps) {
   const documentType = formData?.documentType;
 
   return (
     <div className="print-preview-wrapper">
       <div id="print-content-root" className="print-document-container w-[210mm] min-h-[297mm] bg-white shadow-lg rounded-lg text-gray-800 font-sans p-[15mm]">
           {documentType === DOCUMENT_TYPES.APR ? (
-              <APRPreviewContent formData={formData} analysisData={analysisData} equipmentData={equipmentData} />
+              <APRPreviewContent formData={formData} analysisData={analysisData} equipmentData={equipmentData} company={company} />
           ) : (
-              <PTPreview formData={formData} />
+              <PTPreview formData={formData} company={company} />
           )}
       </div>
     </div>
