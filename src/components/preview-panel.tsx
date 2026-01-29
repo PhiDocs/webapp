@@ -62,10 +62,10 @@ export function PreviewPanel({
             <div className="w-[210mm] min-h-[297mm] mx-auto bg-white shadow-lg flex items-center justify-center">
               <Card className="flex h-full min-h-[400px] w-full flex-col items-center justify-center bg-destructive/10 border-destructive">
                 <CardContent className="flex flex-col items-center justify-center gap-4 text-center p-6">
-                  <h3 className="text-xl font-semibold text-destructive-foreground">
+                  <h3 className="text-xl font-semibold text-destructive">
                     {ptBr.previewPanel.error.title}
                   </h3>
-                  <p className="text-destructive-foreground/80">
+                  <p className="text-destructive/80">
                     {error}
                   </p>
                 </CardContent>
