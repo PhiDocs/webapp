@@ -1,36 +1,26 @@
 'use server';
 
 import { NextResponse, type NextRequest } from 'next/server';
-import * as jose from 'jose';
-
-const FIREBASE_PROJECT_ID = process.env.FIREBASE_PROJECT_ID;
-const JWKS_URI = `https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com`;
+import admin from '@/firebase/admin-config';
+import type { DecodedIdToken } from 'firebase-admin/auth';
 
 const PUBLIC_ROUTES = ['/login'];
 const ADMIN_DASHBOARD_PREFIX = '/company';
 const USER_DASHBOARD = '/reports';
 
-interface VerifiedToken extends jose.JWTPayload {
+interface VerifiedToken extends DecodedIdToken {
   role?: string;
   companyId?: string;
 }
 
 async function verifyIdToken(token: string): Promise<VerifiedToken | null> {
-  if (!FIREBASE_PROJECT_ID) {
-    console.error('Firebase Project ID is not set in environment variables.');
-    return null;
-  }
   try {
-    const JWKS = jose.createRemoteJWKSet(new URL(JWKS_URI));
-    
-    const { payload } = await jose.jwtVerify(token, JWKS, {
-      issuer: `https://securetoken.google.com/${FIREBASE_PROJECT_ID}`,
-      audience: FIREBASE_PROJECT_ID,
-    });
-
-    return payload as VerifiedToken;
+    // A implementação foi alterada para usar o Firebase Admin SDK, que é mais robusto
+    // e consistente com o resto da aplicação (ex: auth-actions.ts).
+    const decodedToken = await admin.auth().verifyIdToken(token, true);
+    return decodedToken as VerifiedToken;
   } catch (error) {
-    console.warn('Token verification failed, possibly expired or invalid:', error);
+    console.warn('Token verification failed in middleware, possibly expired or invalid:', error);
     return null;
   }
 }
