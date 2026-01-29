@@ -6,3 +6,4 @@ Sempre que solicitado uma nova feature, você deve:
 - Quando trabalhando com UI, valide que os dialogs foram abertos e fechados corretamente
 - Quando trabalhando com dados, valide que as models correspondem ao que é solicitado e atualiza arquivos de migração de se necessário
 - Se algo estiver ambíguo, pergunte antes de assumir qualquer coisa
+- Use linguagem simples e direta, sem enrolação ou pedidos de desculpas

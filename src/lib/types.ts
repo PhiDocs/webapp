@@ -1,4 +1,3 @@
-'use client';
 import { z } from 'zod';
 import { DOCUMENT_TYPES, PT_FIT_STATUS, SIGNATURE_TYPES } from './constants';
 import { ptBr } from './data/strings';
