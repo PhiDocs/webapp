@@ -42,6 +42,14 @@ export const responsiblePersonSchema = z.object({
   role: z.string().min(1, validationMessages.responsibleRole),
   signatureType: signatureTypeSchema.default(SIGNATURE_TYPES.TYPED),
   signatureData: z.string().optional(),
+}).superRefine((data, ctx) => {
+  if (data.signatureType && !data.signatureData) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "A assinatura é obrigatória para o método selecionado.",
+      path: ['signatureData'],
+    });
+  }
 });
 
 export const teamMemberSchema = z.object({
@@ -65,6 +73,14 @@ const ptSignerSchema = z.object({
     name: z.string().optional(),
     signatureType: signatureTypeSchema.default(SIGNATURE_TYPES.TYPED),
     signatureData: z.string().optional(),
+}).superRefine((data, ctx) => {
+  if (data.signatureType && !data.signatureData) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "A assinatura é obrigatória para o método selecionado.",
+      path: ['signatureData'],
+    });
+  }
 });
 
 export const ptFormSchema = z.object({

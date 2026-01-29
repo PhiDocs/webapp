@@ -5,6 +5,7 @@ import { generateSafetyAnalysis, type SafetyAnalysisOutput } from '@/ai/flows/ge
 import { recommendProtectiveEquipment, type ProtectiveEquipmentOutput } from '@/ai/flows/recommend-protective-equipment';
 import { z } from 'zod';
 import { ptBr } from '@/lib/data/strings';
+import { ErrorLogRepository } from '@/repositories/error-log.repository';
 
 // Define a schema specifically for the input of these functions
 const activitySchema = z.object({
@@ -22,9 +23,16 @@ export async function getSafetyAnalysis(data: { activityDescription: string }): 
   try {
     const analysis = await generateSafetyAnalysis(parsed.data);
     return { data: analysis, error: null };
-  } catch (e) {
-    console.error(e);
-    return { data: null, error: ptBr.validations.safetyAnalysisFailed };
+  } catch (e: any) {
+    console.error("Error in getSafetyAnalysis:", e);
+    await ErrorLogRepository.log(e, 'getSafetyAnalysis');
+
+    let errorMessage = ptBr.validations.safetyAnalysisFailed;
+    if (e.message?.toLowerCase().includes('api key')) {
+        errorMessage = 'A chave de API do Gemini não foi configurada corretamente no servidor. Verifique as variáveis de ambiente.';
+    }
+
+    return { data: null, error: errorMessage };
   }
 }
 
@@ -39,8 +47,15 @@ export async function getProtectiveEquipment(data: { activityDescription: string
   try {
     const equipment = await recommendProtectiveEquipment(parsed.data);
     return { data: equipment, error: null };
-  } catch (e) {
-    console.error(e);
-    return { data: null, error: ptBr.validations.equipmentRecommendationFailed };
+  } catch (e: any) {
+    console.error("Error in getProtectiveEquipment:", e);
+    await ErrorLogRepository.log(e, 'getProtectiveEquipment');
+    
+    let errorMessage = ptBr.validations.equipmentRecommendationFailed;
+    if (e.message?.toLowerCase().includes('api key')) {
+        errorMessage = 'A chave de API do Gemini não foi configurada corretamente no servidor. Verifique as variáveis de ambiente.';
+    }
+    
+    return { data: null, error: errorMessage };
   }
 }
