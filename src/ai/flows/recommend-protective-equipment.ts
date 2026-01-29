@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview Recommends necessary EPIs (Equipamento de Proteção Individual) 
@@ -8,16 +9,8 @@
  * - ProtectiveEquipmentOutput - The return type for the recommendProtectiveEquipment function.
  */
 
-import { configureGenkit, defineFlow, generate } from 'genkit';
-import { googleAI } from '@genkit-ai/googleai';
+import { defineFlow, generate } from 'genkit';
 import * as z from 'zod';
-
-configureGenkit({
-    plugins: [googleAI()],
-    logLevel: 'silent',
-    enableTracingAndMetrics: false,
-});
-
 
 const ProtectiveEquipmentInputSchema = z.object({
   activityDescription: z.string().describe('The description of the work activity to be performed.'),

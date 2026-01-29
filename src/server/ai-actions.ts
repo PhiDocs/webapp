@@ -1,6 +1,16 @@
 
 'use server';
 
+import { configureGenkit } from 'genkit';
+import { googleAI } from '@genkit-ai/googleai';
+
+// Configure Genkit once, right here in a server-only context.
+configureGenkit({
+    plugins: [googleAI()],
+    logLevel: 'silent',
+    enableTracingAndMetrics: false,
+});
+
 import { generateSafetyAnalysis, type SafetyAnalysisOutput } from '@/ai/flows/generate-safety-analysis';
 import { recommendProtectiveEquipment, type ProtectiveEquipmentOutput } from '@/ai/flows/recommend-protective-equipment';
 import { z } from 'zod';

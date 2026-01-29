@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -8,16 +9,8 @@
  * - SafetyAnalysisOutput - The return type for the generateSafetyAnalysis function.
  */
 
-import { configureGenkit, defineFlow, generate } from 'genkit';
-import { googleAI } from '@genkit-ai/googleai';
+import { defineFlow, generate } from 'genkit';
 import * as z from 'zod';
-
-configureGenkit({
-    plugins: [googleAI()],
-    logLevel: 'silent',
-    enableTracingAndMetrics: false,
-});
-
 
 const SafetyAnalysisInputSchema = z.object({
   activityDescription: z
