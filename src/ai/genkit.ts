@@ -1,10 +1,10 @@
-import { configureGenkit } from 'genkit';
+'use server';
+
+import { genkit } from 'genkit';
 import { googleAI } from '@genkit-ai/googleai';
 
-configureGenkit({
-  plugins: [
-    googleAI(),
-  ],
-  logLevel: 'debug',
-  enableTracingAndMetrics: true,
+export const ai = genkit({
+  plugins: [googleAI()],
 });
+
+export const geminiPro = process.env.GENAI_MODEL || 'googleai/gemini-pro';

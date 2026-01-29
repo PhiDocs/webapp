@@ -8,8 +8,7 @@
  * - ProtectiveEquipmentOutput - The return type for the recommendProtectiveEquipment function.
  */
 
-import { defineFlow, generate } from 'genkit';
-import { geminiPro } from '@genkit-ai/googleai';
+import { ai, geminiPro } from '@/ai/genkit';
 import * as z from 'zod';
 
 const ProtectiveEquipmentInputSchema = z.object({
@@ -29,7 +28,7 @@ export async function recommendProtectiveEquipment(input: ProtectiveEquipmentInp
   return recommendProtectiveEquipmentFlow(input);
 }
 
-const recommendProtectiveEquipmentFlow = defineFlow(
+const recommendProtectiveEquipmentFlow = ai.defineFlow(
   {
     name: 'recommendProtectiveEquipmentFlow',
     inputSchema: ProtectiveEquipmentInputSchema,
@@ -48,11 +47,12 @@ const recommendProtectiveEquipmentFlow = defineFlow(
     For the EPCs, list the necessary collective equipment. Then, for the 'epcNote', provide a standard observation about verifying the integrity and conformity of the equipment. For example: "Todos os Equipamentos de Proteção Coletiva (EPC), devem ser verificados quanto a integridade e conformidade com o projeto específico antes de iniciar a atividade."
     `;
 
-    const response = await generate({
+    const response = await ai.generate({
         model: geminiPro,
         prompt: prompt,
         output: {
           format: 'json',
+          schema: ProtectiveEquipmentOutputSchema,
         },
     });
 
@@ -61,6 +61,6 @@ const recommendProtectiveEquipmentFlow = defineFlow(
       throw new Error("AI response is empty or invalid.");
     }
     
-    return ProtectiveEquipmentOutputSchema.parse(output);
+    return output;
   }
 );

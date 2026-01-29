@@ -7,8 +7,7 @@
  * - RecommendEPIOutput - The return type for the recommendEPI function.
  */
 
-import { defineFlow, generate } from 'genkit';
-import { geminiPro } from '@genkit-ai/googleai';
+import { ai, geminiPro } from '@/ai/genkit';
 import * as z from 'zod';
 
 const RecommendEPIInputSchema = z.object({
@@ -25,7 +24,7 @@ export async function recommendEPI(input: RecommendEPIInput): Promise<RecommendE
   return recommendEPIFlow(input);
 }
 
-const recommendEPIFlow = defineFlow(
+const recommendEPIFlow = ai.defineFlow(
   {
     name: 'recommendEPIFlow',
     inputSchema: RecommendEPIInputSchema,
@@ -39,11 +38,12 @@ const recommendEPIFlow = defineFlow(
     Provide the output as a JSON object with a single key "epiRecommendations" containing a string list of EPIs.
     Schema: ${JSON.stringify(RecommendEPIOutputSchema.shape)}`;
     
-    const response = await generate({
+    const response = await ai.generate({
       model: geminiPro,
       prompt: prompt,
       output: {
         format: 'json',
+        schema: RecommendEPIOutputSchema,
       },
     });
     
@@ -52,6 +52,6 @@ const recommendEPIFlow = defineFlow(
       throw new Error("AI response is empty or invalid.");
     }
     
-    return RecommendEPIOutputSchema.parse(output);
+    return output;
   }
 );

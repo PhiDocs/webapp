@@ -8,8 +8,7 @@
  * - SafetyAnalysisOutput - The return type for the generateSafetyAnalysis function.
  */
 
-import { defineFlow, generate } from 'genkit';
-import { geminiPro } from '@genkit-ai/googleai';
+import { ai, geminiPro } from '@/ai/genkit';
 import * as z from 'zod';
 
 const SafetyAnalysisInputSchema = z.object({
@@ -37,7 +36,7 @@ export async function generateSafetyAnalysis(
   return generateSafetyAnalysisFlow(input);
 }
 
-const generateSafetyAnalysisFlow = defineFlow(
+const generateSafetyAnalysisFlow = ai.defineFlow(
   {
     name: 'generateSafetyAnalysisFlow',
     inputSchema: SafetyAnalysisInputSchema,
@@ -62,11 +61,12 @@ const generateSafetyAnalysisFlow = defineFlow(
     Generate a comprehensive list of procedural steps based on the user's activity description.
     `;
 
-    const response = await generate({
+    const response = await ai.generate({
       model: geminiPro,
       prompt: prompt,
       output: {
         format: 'json',
+        schema: SafetyAnalysisOutputSchema,
       },
     });
 
@@ -75,7 +75,6 @@ const generateSafetyAnalysisFlow = defineFlow(
       throw new Error("AI response is empty or invalid.");
     }
 
-    // Validate the output against the schema before returning
-    return SafetyAnalysisOutputSchema.parse(output);
+    return output;
   }
 );
