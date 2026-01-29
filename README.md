@@ -51,52 +51,64 @@ Se você já tem um usuário criado e deseja torná-lo um administrador de uma e
 
 ## Rodando Localmente: Configurando a Autenticação
 
-Para rodar o projeto completo na sua máquina local, você precisa configurar dois tipos de autenticação: uma para o **Firebase Admin** (usado para gerenciar usuários e dados) e outra para a **IA do Google** (Genkit/Gemini).
+Para rodar o projeto completo na sua máquina local, você precisa configurar a autenticação para o **Firebase Admin** (usado para gerenciar usuários e dados) e para a **IA do Google** (Genkit/Gemini).
 
 ### 1. Autenticação para Firebase Admin (Firestore, Auth)
 
--   **O que é:** Permite que seu backend (Server Actions, scripts) acesse o Firestore e o Firebase Auth com privilégios de administrador.
--   **Como configurar:** Siga os passos na seção **"Variáveis de Ambiente"** abaixo para preencher seu arquivo `.env` com a chave de serviço do Firebase.
+Siga os passos na seção **"Variáveis de Ambiente"** abaixo para preencher seu arquivo `.env` com a chave de serviço do Firebase.
 
 ### 2. Autenticação para a IA (Genkit/Gemini)
 
--   **O que é:** Permite que sua máquina local faça chamadas para a API do Gemini.
--   **Como configurar:** Usaremos as "Credenciais Padrão da Aplicação" (Application Default Credentials).
+Você tem duas opções para autenticar as chamadas de IA na sua máquina local.
 
-    1.  **Instale o Google Cloud CLI:** Se você ainda não tem, [instale a ferramenta de linha de comando do Google Cloud](https://cloud.google.com/sdk/docs/install).
+#### Método 1: Login com `gcloud` (Recomendado)
 
-    2.  **Faça o Login:** Execute o seguinte comando no seu terminal:
-        ```bash
-        gcloud auth application-default login
-        ```
+Este método usa as "Credenciais Padrão da Aplicação" (ADC), que é a forma mais segura e recomendada pelo Google.
 
-    3.  **Siga as Instruções:** Seu navegador será aberto para que você faça login com sua conta do Google. Após a autorização, um arquivo de credenciais será criado na sua máquina.
+1.  **Instale o Google Cloud CLI:** Se você ainda não tem, [instale a ferramenta de linha de comando do Google Cloud](https://cloud.google.com/sdk/docs/install).
 
-    4.  **Pronto!** O Genkit encontrará e usará essas credenciais automaticamente. Você **não** precisa adicionar uma `GEMINI_API_KEY` ao seu arquivo `.env`.
+2.  **Faça o Login:** Execute o seguinte comando no seu terminal:
+    ```bash
+    gcloud auth application-default login
+    ```
 
-> **Resumo:** Para rodar localmente, preencha o `.env` para o Firebase Admin e execute `gcloud auth application-default login` para a IA.
+3.  **Siga as Instruções:** Seu navegador será aberto para que você faça login com sua conta do Google. Após a autorização, um arquivo de credenciais será criado na sua máquina.
+
+4.  **Pronto!** O Genkit encontrará e usará essas credenciais automaticamente. Você **não** precisa de uma `GEMINI_API_KEY` no seu `.env` ao usar este método.
+
+#### Método 2: Usar uma Chave de API
+
+Este método é mais simples, mas um pouco menos seguro, pois a chave fica no seu arquivo `.env`.
+
+1.  **Acesse o Google AI Studio:** Vá para [https://aistudio.google.com/](https://aistudio.google.com/).
+2.  **Obtenha a Chave:** No menu à esquerda, clique em **"Get API key"** e siga as instruções para criar e copiar sua chave.
+3.  **Configure o `.env`:** Abra seu arquivo `.env` e cole a chave que você copiou:
+    ```env
+    GEMINI_API_KEY="SUA_CHAVE_COPIADA_AQUI"
+    ```
+4.  **Pronto!** O Genkit detectará e usará essa chave automaticamente.
 
 ## Variáveis de Ambiente
 
-Preencha o arquivo `.env` na raiz do projeto com as informações da sua conta de serviço do Firebase.
+Preencha o arquivo `.env` na raiz do projeto.
 
-1.  **Conta de Serviço do Firebase:**
-    -   No [Console do Firebase](https://console.firebase.google.com/), vá para "Configurações do Projeto" > "Contas de serviço".
-    -   Gere uma nova chave privada e baixe o arquivo JSON.
-2.  **Arquivo `.env`:**
-    ```env
-    # Credenciais do Firebase Admin SDK (do arquivo JSON)
-    FIREBASE_PROJECT_ID="seu-project-id"
-    FIREBASE_CLIENT_EMAIL="firebase-adminsdk-xxxxx@seu-project-id.iam.gserviceaccount.com"
-    FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...sua chave privada aqui...\n-----END PRIVATE KEY-----\n"
+```env
+# Credenciais do Firebase Admin SDK (do arquivo JSON da conta de serviço)
+FIREBASE_PROJECT_ID="seu-project-id"
+FIREBASE_CLIENT_EMAIL="firebase-adminsdk-xxxxx@seu-project-id.iam.gserviceaccount.com"
+FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...sua chave privada aqui...\n-----END PRIVATE KEY-----\n"
 
-    # URL do Webhook de Produção do n8n (opcional)
-    N8N_PRODUCTION_URL="https://seu.n8n.url/webhook/production"
+# Chave da API do Gemini (OPCIONAL, use se não for autenticar via gcloud)
+# Obtenha em https://aistudio.google.com/
+GEMINI_API_KEY=""
 
-    # Modelo de IA do Gemini (opcional, usa o padrão se não for definido)
-    GENAI_MODEL="googleai/gemini-2.5-flash"
-    ```
-    -   **Importante:** A `private_key` no arquivo JSON contém quebras de linha (`\n`). Ao copiá-la para o `.env`, você deve substituí-las literalmente pelo texto `\n`.
+# URL do Webhook de Produção do n8n (opcional)
+N8N_PRODUCTION_URL="https://seu.n8n.url/webhook/production"
+
+# Modelo de IA do Gemini (opcional, usa o padrão se não for definido)
+GENAI_MODEL="googleai/gemini-2.5-flash"
+```
+-   **Importante:** A `private_key` no arquivo JSON do Firebase contém quebras de linha (`\n`). Ao copiá-la para o `.env`, você deve substituí-las literalmente pelo texto `\n`.
 
 ## Estrutura de Pastas
 
@@ -137,4 +149,3 @@ Se você precisa garantir que todos os registros antigos sejam compatíveis com 
     tsx scripts/migrate-deleted-at.ts
     ```
     Este script irá percorrer as coleções (`users`, `companies`, `works`, etc.) e garantir que todos os documentos tenham o campo `deletedAt: null` se ele não existir. Adicionalmente, para a coleção `works`, ele também adicionará o campo `activityDescription: ''` se estiver ausente, para manter a compatibilidade com a estrutura de dados atual.
-```
