@@ -8,8 +8,16 @@
  * - SafetyAnalysisOutput - The return type for the generateSafetyAnalysis function.
  */
 
-import { ai, geminiPro } from '@/ai/genkit';
+import { configureGenkit, defineFlow, generate } from 'genkit';
+import { googleAI } from '@genkit-ai/googleai';
 import * as z from 'zod';
+
+configureGenkit({
+    plugins: [googleAI()],
+    logLevel: 'silent',
+    enableTracingAndMetrics: false,
+});
+
 
 const SafetyAnalysisInputSchema = z.object({
   activityDescription: z
@@ -36,13 +44,15 @@ export async function generateSafetyAnalysis(
   return generateSafetyAnalysisFlow(input);
 }
 
-const generateSafetyAnalysisFlow = ai.defineFlow(
+const generateSafetyAnalysisFlow = defineFlow(
   {
     name: 'generateSafetyAnalysisFlow',
     inputSchema: SafetyAnalysisInputSchema,
     outputSchema: SafetyAnalysisOutputSchema,
   },
   async (input) => {
+    const geminiPro = process.env.GENAI_MODEL || 'googleai/gemini-pro';
+
     const prompt = `You are an AI assistant specialized in workplace safety, with expertise in Brazilian Normas Regulamentadoras (NRs).
 
     Based on the following work activity description, generate a detailed operational procedure. For each step of the procedure, identify the activity, its potential risks, and the corresponding preventive measures and safety recommendations.
@@ -61,7 +71,7 @@ const generateSafetyAnalysisFlow = ai.defineFlow(
     Generate a comprehensive list of procedural steps based on the user's activity description.
     `;
 
-    const response = await ai.generate({
+    const llmResponse = await generate({
       model: geminiPro,
       prompt: prompt,
       output: {
@@ -70,7 +80,7 @@ const generateSafetyAnalysisFlow = ai.defineFlow(
       },
     });
 
-    const output = response.output();
+    const output = llmResponse.output();
     if (!output) {
       throw new Error("AI response is empty or invalid.");
     }

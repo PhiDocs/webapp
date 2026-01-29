@@ -8,8 +8,16 @@
  * - ProtectiveEquipmentOutput - The return type for the recommendProtectiveEquipment function.
  */
 
-import { ai, geminiPro } from '@/ai/genkit';
+import { configureGenkit, defineFlow, generate } from 'genkit';
+import { googleAI } from '@genkit-ai/googleai';
 import * as z from 'zod';
+
+configureGenkit({
+    plugins: [googleAI()],
+    logLevel: 'silent',
+    enableTracingAndMetrics: false,
+});
+
 
 const ProtectiveEquipmentInputSchema = z.object({
   activityDescription: z.string().describe('The description of the work activity to be performed.'),
@@ -28,13 +36,15 @@ export async function recommendProtectiveEquipment(input: ProtectiveEquipmentInp
   return recommendProtectiveEquipmentFlow(input);
 }
 
-const recommendProtectiveEquipmentFlow = ai.defineFlow(
+const recommendProtectiveEquipmentFlow = defineFlow(
   {
     name: 'recommendProtectiveEquipmentFlow',
     inputSchema: ProtectiveEquipmentInputSchema,
     outputSchema: ProtectiveEquipmentOutputSchema,
   },
   async (input) => {
+    const geminiPro = process.env.GENAI_MODEL || 'googleai/gemini-pro';
+
     const prompt = `You are an expert in Brazilian workplace safety regulations (Normas Regulamentadoras - NRs). Based on the following work activity description, provide a list of necessary Individual Protection Equipment (EPI) and Collective Protection Equipment (EPC).
 
     Activity Description: ${input.activityDescription}
@@ -47,7 +57,7 @@ const recommendProtectiveEquipmentFlow = ai.defineFlow(
     For the EPCs, list the necessary collective equipment. Then, for the 'epcNote', provide a standard observation about verifying the integrity and conformity of the equipment. For example: "Todos os Equipamentos de Proteção Coletiva (EPC), devem ser verificados quanto a integridade e conformidade com o projeto específico antes de iniciar a atividade."
     `;
 
-    const response = await ai.generate({
+    const llmResponse = await generate({
         model: geminiPro,
         prompt: prompt,
         output: {
@@ -56,7 +66,7 @@ const recommendProtectiveEquipmentFlow = ai.defineFlow(
         },
     });
 
-    const output = response.output();
+    const output = llmResponse.output();
     if (!output) {
       throw new Error("AI response is empty or invalid.");
     }
