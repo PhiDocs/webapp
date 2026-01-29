@@ -6,7 +6,7 @@ import type { SafetyAnalysisOutput } from '@/ai/flows/generate-safety-analysis';
 import type { ProtectiveEquipmentOutput } from '@/ai/flows/recommend-protective-equipment';
 import { Logo } from '@/components/icons/logo';
 import { PTPreview } from './pt-preview';
-import { ClipboardList, UserCheck, ShieldCheck, HardHat, Construction, Users } from 'lucide-react';
+import { ClipboardList, UserCheck, ShieldCheck, HardHat, Construction, Users, AlertTriangle } from 'lucide-react';
 import { ptBr } from '@/lib/data/strings';
 import { DOCUMENT_TYPES, SIGNATURE_TYPES } from '@/lib/constants';
 
@@ -16,6 +16,7 @@ interface PrintPreviewProps {
   analysisData: SafetyAnalysisOutput | null;
   equipmentData: ProtectiveEquipmentOutput | null;
   company: Company | null;
+  error?: string | null;
 }
 
 const SignaturePreview = ({ signatureData, signatureType }: { signatureData?: string, signatureType?: string }) => {
@@ -216,10 +217,10 @@ function getShortDate(dateString: string | undefined) {
   }
 }
 
-export function APRPreviewContent({ formData, analysisData, equipmentData, company }: { formData: SafetyFormValues, analysisData: SafetyAnalysisOutput | null, equipmentData: ProtectiveEquipmentOutput | null, company: Company | null }) {
+function APRPreviewContent({ formData, analysisData, equipmentData, company, error }: { formData: SafetyFormValues, analysisData: SafetyAnalysisOutput | null, equipmentData: ProtectiveEquipmentOutput | null, company: Company | null, error?: string | null }) {
     if (!formData) return null;
 
-    const showAnalysis = analysisData && analysisData.proceduralSteps && analysisData.proceduralSteps.length > 0;
+    const showAnalysis = !error && analysisData && analysisData.proceduralSteps && analysisData.proceduralSteps.length > 0;
 
     return (
         <div className="page-content-wrapper">
@@ -248,7 +249,14 @@ export function APRPreviewContent({ formData, analysisData, equipmentData, compa
                
                 <ResponsiblesSection data={formData} />
 
-                {showAnalysis ? (
+                {error ? (
+                     <Section title={ptBr.printPreview.apr.operationalProcedure} icon={AlertTriangle}>
+                        <div className="text-center text-destructive bg-destructive/10 border-2 border-dashed border-destructive/30 rounded-lg p-4">
+                            <h3 className="text-base font-semibold">{ptBr.previewPanel.error.title}</h3>
+                            <p className='mt-2 text-sm'>{error}</p>
+                        </div>
+                    </Section>
+                ) : showAnalysis ? (
                    <AnalysisTable steps={analysisData.proceduralSteps} />
                 ) : (
                     <Section title={ptBr.printPreview.apr.operationalProcedure} icon={ShieldCheck}>
@@ -258,7 +266,8 @@ export function APRPreviewContent({ formData, analysisData, equipmentData, compa
                     </Section>
                 )}
 
-                <EquipmentSection data={equipmentData} />
+                {!error && <EquipmentSection data={equipmentData} />}
+                
                 <TeamSection data={formData} />
             </main>
             <PrintFooter />
@@ -266,14 +275,15 @@ export function APRPreviewContent({ formData, analysisData, equipmentData, compa
     );
 }
 
-export function PrintPreview({ formData, analysisData, equipmentData, company }: PrintPreviewProps) {
+
+export function PrintPreview({ formData, analysisData, equipmentData, company, error }: PrintPreviewProps) {
   const documentType = formData?.documentType;
 
   return (
     <div className="print-preview-wrapper">
       <div id="print-content-root" className="print-document-container w-[210mm] min-h-[297mm] bg-white shadow-lg rounded-lg text-gray-800 font-sans p-[15mm]">
           {documentType === DOCUMENT_TYPES.APR ? (
-              <APRPreviewContent formData={formData} analysisData={analysisData} equipmentData={equipmentData} company={company} />
+              <APRPreviewContent formData={formData} analysisData={analysisData} equipmentData={equipmentData} company={company} error={error}/>
           ) : (
               <PTPreview formData={formData} company={company} />
           )}
