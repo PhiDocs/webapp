@@ -2,7 +2,7 @@
 
 import { useForm, useFieldArray, useWatch } from 'react-hook-form';
 import React, { type ChangeEvent } from 'react';
-import type { SafetyFormValues } from '@/lib/types';
+import type { SafetyFormValues, Work, Employee } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import {
   Form,
@@ -18,15 +18,21 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
+import {
   BookOpen,
   Building2,
   FileText,
-  MapPin,
-  Users,
-  Briefcase,
   UserCheck,
   PlusCircle,
   Trash2,
+  Briefcase,
+  Users,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Separator } from '@/components/ui/separator';
@@ -35,11 +41,15 @@ import { SignaturePad } from './signature-pad';
 import { RadioGroup, RadioGroupItem } from './ui/radio-group';
 import { ptBr } from '@/lib/data/strings';
 import { DOCUMENT_TYPES, SIGNATURE_TYPES } from '@/lib/constants';
+import { Skeleton } from './ui/skeleton';
 
 interface SafetyFormProps {
   form: ReturnType<typeof useForm<SafetyFormValues>>;
   onSubmit: (data: SafetyFormValues) => void;
   isLoading: boolean;
+  works: Work[];
+  employees: Employee[];
+  isDataLoading: boolean;
 }
 
 const SignatureField = ({ form, fieldPrefix }: { form: ReturnType<typeof useForm<SafetyFormValues>>, fieldPrefix: string }) => {
@@ -129,6 +139,9 @@ export function SafetyForm({
   form,
   onSubmit,
   isLoading,
+  works,
+  employees,
+  isDataLoading,
 }: SafetyFormProps) {
   const { toast } = useToast();
 
@@ -173,6 +186,20 @@ export function SafetyForm({
   };
 
   const documentType = useWatch({ control: form.control, name: 'documentType' });
+
+  const FormSkeleton = () => (
+    <div className="space-y-6">
+        <Skeleton className="h-10 w-1/3" />
+        <div className="space-y-4">
+            <Skeleton className="h-8 w-1/4" />
+            <Skeleton className="h-10 w-full" />
+        </div>
+         <div className="space-y-4">
+            <Skeleton className="h-8 w-1/4" />
+            <Skeleton className="h-10 w-full" />
+        </div>
+    </div>
+  );
 
 
   return (
@@ -249,89 +276,49 @@ export function SafetyForm({
               {documentType === DOCUMENT_TYPES.PT ? (
                 <PTForm form={form} />
               ) : (
+                isDataLoading ? <FormSkeleton /> :
                 <div className="space-y-8">
                   <Separator />
                   <h3 className="text-lg font-semibold flex items-center">
                     <Briefcase className="mr-2" /> {ptBr.safetyForm.workData}
                   </h3>
 
-                  <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                    <FormField
-                      control={form.control}
-                      name="workName"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>{ptBr.safetyForm.workName}</FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder={ptBr.safetyForm.workNamePlaceholder}
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="workAddress"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>{ptBr.safetyForm.workAddress}</FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder={ptBr.safetyForm.workAddressPlaceholder}
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                  <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                    <FormField
-                      control={form.control}
-                      name="startDate"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>{ptBr.safetyForm.startDate}</FormLabel>
-                          <FormControl>
-                            <Input type="date" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="endDate"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>{ptBr.safetyForm.endDate}</FormLabel>
-                          <FormControl>
-                            <Input type="date" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
                   <FormField
                     control={form.control}
-                    name="workLocationDetails"
+                    name="workId"
                     render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>
-                          <MapPin className="inline-block mr-2" /> {ptBr.safetyForm.workLocation}
-                        </FormLabel>
-                        <FormControl>
-                          <Input placeholder={ptBr.safetyForm.workLocationPlaceholder} {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
+                        <FormItem>
+                            <FormLabel>{ptBr.safetyForm.selectWork}</FormLabel>
+                            <Select onValueChange={(workId) => {
+                                field.onChange(workId);
+                                const work = works.find(w => w.id === workId);
+                                if (work) {
+                                    form.setValue('workName', work.name);
+                                    form.setValue('workAddress', work.address);
+                                    form.setValue('startDate', work.startDate.split('T')[0]);
+                                    form.setValue('endDate', work.endDate.split('T')[0]);
+                                    form.setValue('workLocationDetails', work.workLocationDetails);
+                                }
+                            }} defaultValue={field.value}>
+                                <FormControl>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder={ptBr.safetyForm.selectWorkPlaceholder} />
+                                    </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                    {works.map((work) => (
+                                        <SelectItem key={work.id} value={work.id}>
+                                            {work.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <FormDescription>{ptBr.safetyForm.workDetailsAutoFilled}</FormDescription>
+                            <FormMessage />
+                        </FormItem>
                     )}
                   />
+                  
                   <Separator />
                   <div className="flex items-center justify-between">
                     <h3 className="text-lg font-semibold flex items-center">
@@ -342,7 +329,7 @@ export function SafetyForm({
                       variant="outline"
                       size="sm"
                       onClick={() =>
-                        appendResponsible({ name: '', role: '', signatureType: SIGNATURE_TYPES.TYPED, signatureData: '' })
+                        appendResponsible({ employeeId: '', name: '', role: '', signatureType: SIGNATURE_TYPES.TYPED, signatureData: '' })
                       }
                     >
                       <PlusCircle className="mr-2 h-4 w-4" /> {ptBr.actions.addResponsible}
@@ -352,40 +339,37 @@ export function SafetyForm({
                     {responsibleFields.map((item, index) => (
                       <div key={item.id} className="flex flex-col gap-2 rounded-lg border p-4">
                         <div className="flex items-start gap-2">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-grow">
                             <FormField
                                 control={form.control}
-                                name={`responsiblePersons.${index}.name`}
+                                name={`responsiblePersons.${index}.employeeId`}
                                 render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>{ptBr.safetyForm.responsibleName}</FormLabel>
-                                    <FormControl>
-                                    <Input
-                                        placeholder={ptBr.safetyForm.responsibleNamePlaceholder}
-                                        {...field}
-                                    />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
+                                    <FormItem className='flex-grow'>
+                                        <FormLabel>{ptBr.safetyForm.responsibleName}</FormLabel>
+                                        <Select onValueChange={(employeeId) => {
+                                            field.onChange(employeeId);
+                                            const employee = employees.find(e => e.id === employeeId);
+                                            if (employee) {
+                                                form.setValue(`responsiblePersons.${index}.name`, `${employee.firstName} ${employee.lastName}`);
+                                                form.setValue(`responsiblePersons.${index}.role`, employee.roleName || '');
+                                            }
+                                        }} defaultValue={field.value}>
+                                            <FormControl>
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder={ptBr.safetyForm.selectEmployeePlaceholder} />
+                                                </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent>
+                                                {employees.map((emp) => (
+                                                    <SelectItem key={emp.id} value={emp.id}>
+                                                        {emp.firstName} {emp.lastName} ({emp.roleName})
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                        <FormMessage />
+                                    </FormItem>
                                 )}
                             />
-                            <FormField
-                                control={form.control}
-                                name={`responsiblePersons.${index}.role`}
-                                render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>{ptBr.safetyForm.responsibleRole}</FormLabel>
-                                    <FormControl>
-                                    <Input
-                                        placeholder={ptBr.safetyForm.responsibleRolePlaceholder}
-                                        {...field}
-                                    />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                                )}
-                            />
-                            </div>
                             <Button
                             type="button"
                             variant="ghost"
@@ -440,7 +424,7 @@ export function SafetyForm({
                       variant="outline"
                       size="sm"
                       onClick={() =>
-                        appendTeamMember({ date: '', name: '', role: '' })
+                        appendTeamMember({ employeeId: '', date: '', name: '', role: '' })
                       }
                     >
                       <PlusCircle className="mr-2 h-4 w-4" /> {ptBr.actions.addMember}
@@ -450,53 +434,47 @@ export function SafetyForm({
                   <div className="space-y-4">
                     {teamMemberFields.map((item, index) => (
                       <div key={item.id} className="flex items-start gap-2">
-                        <div className="grid grid-cols-1 gap-x-2 gap-y-2 sm:grid-cols-3 flex-grow">
+                        <div className="grid grid-cols-1 gap-x-4 gap-y-2 sm:grid-cols-2 flex-grow">
                           <FormField
                             control={form.control}
                             name={`teamMembers.${index}.date`}
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel className={index !== 0 ? 'sr-only' : ''}>
-                                  {ptBr.safetyForm.teamDate}
-                                </FormLabel>
-                                <FormControl>
-                                  <Input type="date" {...field} />
-                                </FormControl>
+                                <FormLabel>{ptBr.safetyForm.teamDate}</FormLabel>
+                                <FormControl><Input type="date" {...field} /></FormControl>
                                 <FormMessage />
                               </FormItem>
                             )}
                           />
                           <FormField
                             control={form.control}
-                            name={`teamMembers.${index}.name`}
+                            name={`teamMembers.${index}.employeeId`}
                             render={({ field }) => (
-                              <FormItem>
-                                <FormLabel className={index !== 0 ? 'sr-only' : ''}>
-                                  {ptBr.safetyForm.teamName}
-                                </FormLabel>
-                                <FormControl>
-                                  <Input placeholder={ptBr.safetyForm.teamNamePlaceholder} {...field} />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={form.control}
-                            name={`teamMembers.${index}.role`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel className={index !== 0 ? 'sr-only' : ''}>
-                                  {ptBr.safetyForm.teamRole}
-                                </FormLabel>
-                                <FormControl>
-                                  <Input
-                                    placeholder={ptBr.safetyForm.teamRolePlaceholder}
-                                    {...field}
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
+                                <FormItem>
+                                    <FormLabel>{ptBr.safetyForm.teamName}</FormLabel>
+                                    <Select onValueChange={(employeeId) => {
+                                        field.onChange(employeeId);
+                                        const employee = employees.find(e => e.id === employeeId);
+                                        if (employee) {
+                                            form.setValue(`teamMembers.${index}.name`, `${employee.firstName} ${employee.lastName}`);
+                                            form.setValue(`teamMembers.${index}.role`, employee.roleName || '');
+                                        }
+                                    }} defaultValue={field.value}>
+                                        <FormControl>
+                                            <SelectTrigger>
+                                                <SelectValue placeholder={ptBr.safetyForm.selectEmployeePlaceholder} />
+                                            </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                            {employees.map((emp) => (
+                                                <SelectItem key={emp.id} value={emp.id}>
+                                                    {emp.firstName} {emp.lastName} ({emp.roleName})
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    <FormMessage />
+                                </FormItem>
                             )}
                           />
                         </div>

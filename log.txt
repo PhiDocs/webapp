@@ -1,5 +1,5 @@
-[2026-01-16T17:09:18.894Z] ERROR in getSubcontractors: 9 FAILED_PRECONDITION: The query requires an index. You can create it here: https://console.firebase.google.com/v1/r/project/studio-2124642360-17967/firestore/indexes?create_composite=Cl5wcm9qZWN0cy9zdHVkaW8tMjEyNDY0MjM2MC0xNzk2Ny9kYXRhYmFzZXMvKGRlZmF1bHQpL2NvbGxlY3Rpb25Hcm91cHMvc3ViY29udHJhY3RvcnMvaW5kZXhlcy9fEAEaDQoJZGVsZXRlZEF0EAEaDQoJY3JlYXRlZEF0EAIaDAoIX19uYW1lX18QAg
-STACK: Error: 9 FAILED_PRECONDITION: The query requires an index. You can create it here: https://console.firebase.google.com/v1/r/project/studio-2124642360-17967/firestore/indexes?create_composite=Cl5wcm9qZWN0cy9zdHVkaW8tMjEyNDY0MjM2MC0xNzk2Ny9kYXRhYmFzZXMvKGRlZmF1bHQpL2NvbGxlY3Rpb25Hcm91cHMvc3ViY29udHJhY3RvcnMvaW5kZXhlcy9fEAEaDQoJZGVsZXRlZEF0EAEaDQoJY3JlYXRlZEF0EAIaDAoIX19uYW1lX18QAg
+[2026-01-29T02:05:25.976Z] ERROR in getSubcontractors: 9 FAILED_PRECONDITION: The query requires an index. That index is currently building and cannot be used yet. See its status here: https://console.firebase.google.com/v1/r/project/studio-2124642360-17967/firestore/indexes?create_composite=Cmlwcm9qZWN0cy9zdHVkaW8tMjEyNDY0MjM2MC0xNzk2Ny9kYXRhYmFzZXMvKGRlZmF1bHQpL2NvbGxlY3Rpb25Hcm91cHMvc3ViY29udHJhY3RvcnMvaW5kZXhlcy9DSUNBZ0pqbWlKRUsQARoNCglkZWxldGVkQXQQARoNCgljcmVhdGVkQXQQAhoMCghfX25hbWVfXxAC
+STACK: Error: 9 FAILED_PRECONDITION: The query requires an index. That index is currently building and cannot be used yet. See its status here: https://console.firebase.google.com/v1/r/project/studio-2124642360-17967/firestore/indexes?create_composite=Cmlwcm9qZWN0cy9zdHVkaW8tMjEyNDY0MjM2MC0xNzk2Ny9kYXRhYmFzZXMvKGRlZmF1bHQpL2NvbGxlY3Rpb25Hcm91cHMvc3ViY29udHJhY3RvcnMvaW5kZXhlcy9DSUNBZ0pqbWlKRUsQARoNCglkZWxldGVkQXQQARoNCgljcmVhdGVkQXQQAhoMCghfX25hbWVfXxAC
     at callErrorFromStatus (/home/user/studio/node_modules/@grpc/grpc-js/build/src/call.js:32:19)
     at Object.onReceiveStatus (/home/user/studio/node_modules/@grpc/grpc-js/build/src/client.js:359:73)
     at Object.onReceiveStatus (/home/user/studio/node_modules/@grpc/grpc-js/build/src/client-interceptors.js:327:181)
@@ -51,8 +51,8 @@ Caused by: Error:
     at async requestHandlerImpl (/home/user/studio/node_modules/next/dist/server/lib/router-server.js:384:13)
     at async Server.requestListener (/home/user/studio/node_modules/next/dist/server/lib/start-server.js:142:13)
 ---
-[2026-01-16T17:09:19.586Z] ERROR in getSubcontractors: 9 FAILED_PRECONDITION: The query requires an index. You can create it here: https://console.firebase.google.com/v1/r/project/studio-2124642360-17967/firestore/indexes?create_composite=Cl5wcm9qZWN0cy9zdHVkaW8tMjEyNDY0MjM2MC0xNzk2Ny9kYXRhYmFzZXMvKGRlZmF1bHQpL2NvbGxlY3Rpb25Hcm91cHMvc3ViY29udHJhY3RvcnMvaW5kZXhlcy9fEAEaDQoJZGVsZXRlZEF0EAEaDQoJY3JlYXRlZEF0EAIaDAoIX19uYW1lX18QAg
-STACK: Error: 9 FAILED_PRECONDITION: The query requires an index. You can create it here: https://console.firebase.google.com/v1/r/project/studio-2124642360-17967/firestore/indexes?create_composite=Cl5wcm9qZWN0cy9zdHVkaW8tMjEyNDY0MjM2MC0xNzk2Ny9kYXRhYmFzZXMvKGRlZmF1bHQpL2NvbGxlY3Rpb25Hcm91cHMvc3ViY29udHJhY3RvcnMvaW5kZXhlcy9fEAEaDQoJZGVsZXRlZEF0EAEaDQoJY3JlYXRlZEF0EAIaDAoIX19uYW1lX18QAg
+[2026-01-29T02:05:26.398Z] ERROR in getSubcontractors: 9 FAILED_PRECONDITION: The query requires an index. That index is currently building and cannot be used yet. See its status here: https://console.firebase.google.com/v1/r/project/studio-2124642360-17967/firestore/indexes?create_composite=Cmlwcm9qZWN0cy9zdHVkaW8tMjEyNDY0MjM2MC0xNzk2Ny9kYXRhYmFzZXMvKGRlZmF1bHQpL2NvbGxlY3Rpb25Hcm91cHMvc3ViY29udHJhY3RvcnMvaW5kZXhlcy9DSUNBZ0pqbWlKRUsQARoNCglkZWxldGVkQXQQARoNCgljcmVhdGVkQXQQAhoMCghfX25hbWVfXxAC
+STACK: Error: 9 FAILED_PRECONDITION: The query requires an index. That index is currently building and cannot be used yet. See its status here: https://console.firebase.google.com/v1/r/project/studio-2124642360-17967/firestore/indexes?create_composite=Cmlwcm9qZWN0cy9zdHVkaW8tMjEyNDY0MjM2MC0xNzk2Ny9kYXRhYmFzZXMvKGRlZmF1bHQpL2NvbGxlY3Rpb25Hcm91cHMvc3ViY29udHJhY3RvcnMvaW5kZXhlcy9DSUNBZ0pqbWlKRUsQARoNCglkZWxldGVkQXQQARoNCgljcmVhdGVkQXQQAhoMCghfX25hbWVfXxAC
     at callErrorFromStatus (/home/user/studio/node_modules/@grpc/grpc-js/build/src/call.js:32:19)
     at Object.onReceiveStatus (/home/user/studio/node_modules/@grpc/grpc-js/build/src/client.js:359:73)
     at Object.onReceiveStatus (/home/user/studio/node_modules/@grpc/grpc-js/build/src/client-interceptors.js:327:181)
@@ -104,7 +104,7 @@ Caused by: Error:
     at async requestHandlerImpl (/home/user/studio/node_modules/next/dist/server/lib/router-server.js:384:13)
     at async Server.requestListener (/home/user/studio/node_modules/next/dist/server/lib/start-server.js:142:13)
 ---
-[2026-01-16T17:09:24.503Z] ERROR in getEmployees: 9 FAILED_PRECONDITION: The query requires an index. You can create it here: https://console.firebase.google.com/v1/r/project/studio-2124642360-17967/firestore/indexes?create_composite=Cllwcm9qZWN0cy9zdHVkaW8tMjEyNDY0MjM2MC0xNzk2Ny9kYXRhYmFzZXMvKGRlZmF1bHQpL2NvbGxlY3Rpb25Hcm91cHMvZW1wbG95ZWVzL2luZGV4ZXMvXxABGg0KCWRlbGV0ZWRBdBABGg0KCWNyZWF0ZWRBdBACGgwKCF9fbmFtZV9fEAI
+[2026-01-29T02:06:54.905Z] ERROR in getEmployees: 9 FAILED_PRECONDITION: The query requires an index. You can create it here: https://console.firebase.google.com/v1/r/project/studio-2124642360-17967/firestore/indexes?create_composite=Cllwcm9qZWN0cy9zdHVkaW8tMjEyNDY0MjM2MC0xNzk2Ny9kYXRhYmFzZXMvKGRlZmF1bHQpL2NvbGxlY3Rpb25Hcm91cHMvZW1wbG95ZWVzL2luZGV4ZXMvXxABGg0KCWRlbGV0ZWRBdBABGg0KCWNyZWF0ZWRBdBACGgwKCF9fbmFtZV9fEAI
 STACK: Error: 9 FAILED_PRECONDITION: The query requires an index. You can create it here: https://console.firebase.google.com/v1/r/project/studio-2124642360-17967/firestore/indexes?create_composite=Cllwcm9qZWN0cy9zdHVkaW8tMjEyNDY0MjM2MC0xNzk2Ny9kYXRhYmFzZXMvKGRlZmF1bHQpL2NvbGxlY3Rpb25Hcm91cHMvZW1wbG95ZWVzL2luZGV4ZXMvXxABGg0KCWRlbGV0ZWRBdBABGg0KCWNyZWF0ZWRBdBACGgwKCF9fbmFtZV9fEAI
     at callErrorFromStatus (/home/user/studio/node_modules/@grpc/grpc-js/build/src/call.js:32:19)
     at Object.onReceiveStatus (/home/user/studio/node_modules/@grpc/grpc-js/build/src/client.js:359:73)
@@ -157,60 +157,7 @@ Caused by: Error:
     at async requestHandlerImpl (/home/user/studio/node_modules/next/dist/server/lib/router-server.js:384:13)
     at async Server.requestListener (/home/user/studio/node_modules/next/dist/server/lib/start-server.js:142:13)
 ---
-[2026-01-16T17:09:25.463Z] ERROR in getSubcontractors: 9 FAILED_PRECONDITION: The query requires an index. You can create it here: https://console.firebase.google.com/v1/r/project/studio-2124642360-17967/firestore/indexes?create_composite=Cl5wcm9qZWN0cy9zdHVkaW8tMjEyNDY0MjM2MC0xNzk2Ny9kYXRhYmFzZXMvKGRlZmF1bHQpL2NvbGxlY3Rpb25Hcm91cHMvc3ViY29udHJhY3RvcnMvaW5kZXhlcy9fEAEaDQoJZGVsZXRlZEF0EAEaDQoJY3JlYXRlZEF0EAIaDAoIX19uYW1lX18QAg
-STACK: Error: 9 FAILED_PRECONDITION: The query requires an index. You can create it here: https://console.firebase.google.com/v1/r/project/studio-2124642360-17967/firestore/indexes?create_composite=Cl5wcm9qZWN0cy9zdHVkaW8tMjEyNDY0MjM2MC0xNzk2Ny9kYXRhYmFzZXMvKGRlZmF1bHQpL2NvbGxlY3Rpb25Hcm91cHMvc3ViY29udHJhY3RvcnMvaW5kZXhlcy9fEAEaDQoJZGVsZXRlZEF0EAEaDQoJY3JlYXRlZEF0EAIaDAoIX19uYW1lX18QAg
-    at callErrorFromStatus (/home/user/studio/node_modules/@grpc/grpc-js/build/src/call.js:32:19)
-    at Object.onReceiveStatus (/home/user/studio/node_modules/@grpc/grpc-js/build/src/client.js:359:73)
-    at Object.onReceiveStatus (/home/user/studio/node_modules/@grpc/grpc-js/build/src/client-interceptors.js:327:181)
-    at /home/user/studio/node_modules/@grpc/grpc-js/build/src/resolving-call.js:135:78
-    at process.processTicksAndRejections (node:internal/process/task_queues:77:11)
-for call at
-    at ServiceClientImpl.makeServerStreamRequest (/home/user/studio/node_modules/@grpc/grpc-js/build/src/client.js:342:32)
-    at ServiceClientImpl.<anonymous> (/home/user/studio/node_modules/@grpc/grpc-js/build/src/make-client.js:105:19)
-    at /home/user/studio/node_modules/@google-cloud/firestore/build/src/v1/firestore_client.js:242:33
-    at /home/user/studio/node_modules/google-gax/build/src/streamingCalls/streamingApiCaller.js:38:28
-    at /home/user/studio/node_modules/google-gax/build/src/normalCalls/timeout.js:44:16
-    at Object.request (/home/user/studio/node_modules/google-gax/build/src/streamingCalls/streaming.js:234:40)
-    at makeRequest (/home/user/studio/node_modules/retry-request/index.js:159:28)
-    at retryRequest (/home/user/studio/node_modules/retry-request/index.js:119:5)
-    at StreamProxy.setStream (/home/user/studio/node_modules/google-gax/build/src/streamingCalls/streaming.js:225:37)
-    at StreamingApiCaller.call (/home/user/studio/node_modules/google-gax/build/src/streamingCalls/streamingApiCaller.js:54:16)
-    at /home/user/studio/node_modules/google-gax/build/src/createApiCall.js:112:30
-Caused by: Error: 
-    at QueryUtil._getResponse (/home/user/studio/node_modules/@google-cloud/firestore/build/src/reference/query-util.js:44:23)
-    at Query._getResponse (/home/user/studio/node_modules/@google-cloud/firestore/build/src/reference/query.js:784:32)
-    at Query._get (/home/user/studio/node_modules/@google-cloud/firestore/build/src/reference/query.js:777:35)
-    at /home/user/studio/node_modules/@google-cloud/firestore/build/src/reference/query.js:745:43
-    at /home/user/studio/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:110:30
-    at NoopContextManager.with (/home/user/studio/node_modules/@opentelemetry/api/build/src/context/NoopContextManager.js:25:19)
-    at ContextAPI.with (/home/user/studio/node_modules/@opentelemetry/api/build/src/api/context.js:60:46)
-    at NoopTracer.startActiveSpan (/home/user/studio/node_modules/@opentelemetry/api/build/src/trace/NoopTracer.js:65:31)
-    at ProxyTracer.startActiveSpan (/home/user/studio/node_modules/@opentelemetry/api/build/src/trace/ProxyTracer.js:36:24)
-    at EnabledTraceUtil.startActiveSpan (/home/user/studio/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:102:28)
-    at Query.get (/home/user/studio/node_modules/@google-cloud/firestore/build/src/reference/query.js:744:43)
-    at Object.getAllByCompany (webpack-internal:///(action-browser)/./src/repositories/subcontractor.repository.ts:12:117)
-    at getSubcontractors (webpack-internal:///(action-browser)/./src/server/subcontractor-actions.ts:39:130)
-    at /home/user/studio/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:158:991
-    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
-    at async handleAction (/home/user/studio/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:156:20704)
-    at async renderToHTMLOrFlightImpl (/home/user/studio/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:162:19013)
-    at async doRender (/home/user/studio/node_modules/next/dist/server/base-server.js:1568:34)
-    at async responseGenerator (/home/user/studio/node_modules/next/dist/server/base-server.js:1814:28)
-    at async DevServer.renderToResponseWithComponentsImpl (/home/user/studio/node_modules/next/dist/server/base-server.js:1824:28)
-    at async DevServer.renderPageComponent (/home/user/studio/node_modules/next/dist/server/base-server.js:2240:24)
-    at async DevServer.renderToResponseImpl (/home/user/studio/node_modules/next/dist/server/base-server.js:2278:32)
-    at async DevServer.pipeImpl (/home/user/studio/node_modules/next/dist/server/base-server.js:960:25)
-    at async NextNodeServer.handleCatchallRenderRequest (/home/user/studio/node_modules/next/dist/server/next-server.js:281:17)
-    at async DevServer.handleRequestImpl (/home/user/studio/node_modules/next/dist/server/base-server.js:853:17)
-    at async /home/user/studio/node_modules/next/dist/server/dev/next-dev-server.js:373:20
-    at async Span.traceAsyncFn (/home/user/studio/node_modules/next/dist/trace/trace.js:153:20)
-    at async DevServer.handleRequest (/home/user/studio/node_modules/next/dist/server/dev/next-dev-server.js:370:24)
-    at async invokeRender (/home/user/studio/node_modules/next/dist/server/lib/router-server.js:183:21)
-    at async handleRequest (/home/user/studio/node_modules/next/dist/server/lib/router-server.js:360:24)
-    at async requestHandlerImpl (/home/user/studio/node_modules/next/dist/server/lib/router-server.js:384:13)
-    at async Server.requestListener (/home/user/studio/node_modules/next/dist/server/lib/start-server.js:142:13)
----
-[2026-01-16T17:09:25.935Z] ERROR in getEmployees: 9 FAILED_PRECONDITION: The query requires an index. You can create it here: https://console.firebase.google.com/v1/r/project/studio-2124642360-17967/firestore/indexes?create_composite=Cllwcm9qZWN0cy9zdHVkaW8tMjEyNDY0MjM2MC0xNzk2Ny9kYXRhYmFzZXMvKGRlZmF1bHQpL2NvbGxlY3Rpb25Hcm91cHMvZW1wbG95ZWVzL2luZGV4ZXMvXxABGg0KCWRlbGV0ZWRBdBABGg0KCWNyZWF0ZWRBdBACGgwKCF9fbmFtZV9fEAI
+[2026-01-29T02:06:55.970Z] ERROR in getEmployees: 9 FAILED_PRECONDITION: The query requires an index. You can create it here: https://console.firebase.google.com/v1/r/project/studio-2124642360-17967/firestore/indexes?create_composite=Cllwcm9qZWN0cy9zdHVkaW8tMjEyNDY0MjM2MC0xNzk2Ny9kYXRhYmFzZXMvKGRlZmF1bHQpL2NvbGxlY3Rpb25Hcm91cHMvZW1wbG95ZWVzL2luZGV4ZXMvXxABGg0KCWRlbGV0ZWRBdBABGg0KCWNyZWF0ZWRBdBACGgwKCF9fbmFtZV9fEAI
 STACK: Error: 9 FAILED_PRECONDITION: The query requires an index. You can create it here: https://console.firebase.google.com/v1/r/project/studio-2124642360-17967/firestore/indexes?create_composite=Cllwcm9qZWN0cy9zdHVkaW8tMjEyNDY0MjM2MC0xNzk2Ny9kYXRhYmFzZXMvKGRlZmF1bHQpL2NvbGxlY3Rpb25Hcm91cHMvZW1wbG95ZWVzL2luZGV4ZXMvXxABGg0KCWRlbGV0ZWRBdBABGg0KCWNyZWF0ZWRBdBACGgwKCF9fbmFtZV9fEAI
     at callErrorFromStatus (/home/user/studio/node_modules/@grpc/grpc-js/build/src/call.js:32:19)
     at Object.onReceiveStatus (/home/user/studio/node_modules/@grpc/grpc-js/build/src/client.js:359:73)
@@ -263,8 +210,8 @@ Caused by: Error:
     at async requestHandlerImpl (/home/user/studio/node_modules/next/dist/server/lib/router-server.js:384:13)
     at async Server.requestListener (/home/user/studio/node_modules/next/dist/server/lib/start-server.js:142:13)
 ---
-[2026-01-16T17:09:27.005Z] ERROR in getSubcontractors: 9 FAILED_PRECONDITION: The query requires an index. You can create it here: https://console.firebase.google.com/v1/r/project/studio-2124642360-17967/firestore/indexes?create_composite=Cl5wcm9qZWN0cy9zdHVkaW8tMjEyNDY0MjM2MC0xNzk2Ny9kYXRhYmFzZXMvKGRlZmF1bHQpL2NvbGxlY3Rpb25Hcm91cHMvc3ViY29udHJhY3RvcnMvaW5kZXhlcy9fEAEaDQoJZGVsZXRlZEF0EAEaDQoJY3JlYXRlZEF0EAIaDAoIX19uYW1lX18QAg
-STACK: Error: 9 FAILED_PRECONDITION: The query requires an index. You can create it here: https://console.firebase.google.com/v1/r/project/studio-2124642360-17967/firestore/indexes?create_composite=Cl5wcm9qZWN0cy9zdHVkaW8tMjEyNDY0MjM2MC0xNzk2Ny9kYXRhYmFzZXMvKGRlZmF1bHQpL2NvbGxlY3Rpb25Hcm91cHMvc3ViY29udHJhY3RvcnMvaW5kZXhlcy9fEAEaDQoJZGVsZXRlZEF0EAEaDQoJY3JlYXRlZEF0EAIaDAoIX19uYW1lX18QAg
+[2026-01-29T02:09:41.209Z] ERROR in getEmployees: 9 FAILED_PRECONDITION: The query requires an index. That index is currently building and cannot be used yet. See its status here: https://console.firebase.google.com/v1/r/project/studio-2124642360-17967/firestore/indexes?create_composite=CmRwcm9qZWN0cy9zdHVkaW8tMjEyNDY0MjM2MC0xNzk2Ny9kYXRhYmFzZXMvKGRlZmF1bHQpL2NvbGxlY3Rpb25Hcm91cHMvZW1wbG95ZWVzL2luZGV4ZXMvQ0lDQWdPaTNrSkFLEAEaDQoJZGVsZXRlZEF0EAEaDQoJY3JlYXRlZEF0EAIaDAoIX19uYW1lX18QAg
+STACK: Error: 9 FAILED_PRECONDITION: The query requires an index. That index is currently building and cannot be used yet. See its status here: https://console.firebase.google.com/v1/r/project/studio-2124642360-17967/firestore/indexes?create_composite=CmRwcm9qZWN0cy9zdHVkaW8tMjEyNDY0MjM2MC0xNzk2Ny9kYXRhYmFzZXMvKGRlZmF1bHQpL2NvbGxlY3Rpb25Hcm91cHMvZW1wbG95ZWVzL2luZGV4ZXMvQ0lDQWdPaTNrSkFLEAEaDQoJZGVsZXRlZEF0EAEaDQoJY3JlYXRlZEF0EAIaDAoIX19uYW1lX18QAg
     at callErrorFromStatus (/home/user/studio/node_modules/@grpc/grpc-js/build/src/call.js:32:19)
     at Object.onReceiveStatus (/home/user/studio/node_modules/@grpc/grpc-js/build/src/client.js:359:73)
     at Object.onReceiveStatus (/home/user/studio/node_modules/@grpc/grpc-js/build/src/client-interceptors.js:327:181)
@@ -294,8 +241,8 @@ Caused by: Error:
     at ProxyTracer.startActiveSpan (/home/user/studio/node_modules/@opentelemetry/api/build/src/trace/ProxyTracer.js:36:24)
     at EnabledTraceUtil.startActiveSpan (/home/user/studio/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:102:28)
     at Query.get (/home/user/studio/node_modules/@google-cloud/firestore/build/src/reference/query.js:744:43)
-    at Object.getAllByCompany (webpack-internal:///(action-browser)/./src/repositories/subcontractor.repository.ts:12:117)
-    at getSubcontractors (webpack-internal:///(action-browser)/./src/server/subcontractor-actions.ts:39:130)
+    at Object.getAllByCompany (webpack-internal:///(action-browser)/./src/repositories/employee.repository.ts:14:117)
+    at getEmployees (webpack-internal:///(action-browser)/./src/server/employee-actions.ts:47:115)
     at /home/user/studio/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:158:991
     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
     at async handleAction (/home/user/studio/node_modules/next/dist/compiled/next-server/app-page.runtime.dev.js:156:20704)

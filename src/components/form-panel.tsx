@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import type { UseFormReturn } from 'react-hook-form';
-import type { SafetyFormValues } from '@/lib/types';
+import type { SafetyFormValues, Work, Employee } from '@/lib/types';
 import { SafetyForm } from '@/components/safety-form';
 import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -150,9 +150,12 @@ interface FormPanelProps {
   onSubmit: (data: SafetyFormValues) => void;
   isLoading: boolean;
   mobileView: 'form' | 'preview';
+  works: Work[];
+  employees: Employee[];
+  isDataLoading: boolean;
 }
 
-export function FormPanel({ form, onNewReport, onSubmit, isLoading, mobileView }: FormPanelProps) {
+export function FormPanel({ form, onNewReport, onSubmit, isLoading, mobileView, works, employees, isDataLoading }: FormPanelProps) {
   return (
     <div className={cn("h-full xl:border-r", mobileView !== 'form' && "hidden xl:block")}>
       <ScrollArea className="h-full">
@@ -193,6 +196,9 @@ export function FormPanel({ form, onNewReport, onSubmit, isLoading, mobileView }
               form={form}
               onSubmit={onSubmit}
               isLoading={isLoading}
+              works={works}
+              employees={employees}
+              isDataLoading={isDataLoading}
           />
           <N8nIntegrationCard />
           </div>

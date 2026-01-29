@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { SafetyAnalysisOutput } from '@/ai/flows/generate-safety-analysis';
 import type { ProtectiveEquipmentOutput } from '@/ai/flows/recommend-protective-equipment';
-import type { SafetyFormValues } from '@/lib/types';
+import type { SafetyFormValues, Work, Employee } from '@/lib/types';
 import { getSafetyAnalysis, getProtectiveEquipment } from '@/server/ai-actions';
 import { notifyN8n } from '@/server/n8n-actions';
 import { useForm } from 'react-hook-form';
@@ -18,70 +18,40 @@ import { DOCUMENT_TYPES, N8N_EVENTS, PT_FIT_STATUS, SIGNATURE_TYPES } from '@/li
 import { PrintPreview } from '@/components/print-preview';
 import { generatePdfOnClient } from '@/lib/pdf/generator';
 import { UserNav } from '@/components/auth/user-nav';
+import { useSession } from '@/components/auth/session-provider';
+import { getWorks } from '@/server/work-actions';
+import { getEmployees } from '@/server/employee-actions';
 
 export default function ReportsPage() {
-  const [analysis, setAnalysis] = useState<SafetyAnalysisOutput | null>({
-    proceduralSteps: [
-        {
-            "item": 1,
-            "activity": "Verificação e Isolamento da Área",
-            "potentialRisks": "Acesso de pessoas não autorizadas, queda de materiais.",
-            "preventiveMeasures": "Isolar a área com fita zebrada e cones. Instalar telas de proteção na fachada. Todos os trabalhadores devem usar capacete com jugular."
-        },
-        {
-            "item": 2,
-            "activity": "Montagem da Base do Andaime",
-            "potentialRisks": "Instabilidade do equipamento, tombamento.",
-            "preventiveMeasures": "Verificar nivelamento do solo. Utilizar sapatas de apoio adequadas. Inspecionar todos os componentes antes da montagem."
-        },
-        {
-            "item": 3,
-            "activity": "Içamento de Peças e Plataformas",
-            "potentialRisks": "Queda de peças, esforço excessivo.",
-            "preventiveMeasures": "Utilizar sistema de roldanas ou guincho para içar materiais. Amarrar todas as ferramentas. Proibido arremessar peças."
-        }
-    ]
-  });
-  const [equipment, setEquipment] = useState<ProtectiveEquipmentOutput | null>({
-    "epiItems": [
-        "Capacete de segurança com jugular",
-        "Botas de segurança com biqueira de aço",
-        "Luvas de raspa",
-        "Cinto de segurança tipo paraquedista com duplo talabarte"
-    ],
-    "epiNote": "Todos os Equipamentos de Proteção Individual (EPI), devem atender os requisitos da NR06, estar válidos e em conformidade com os órgãos fiscalizadores para utilização na atividade.",
-    "epcItems": [
-        "Guarda-corpo e rodapé no andaime",
-        "Telas de proteção (fachadeiro)",
-        "Sinalização de segurança (cones, fitas)",
-        "Linha de vida"
-    ],
-    "epcNote": "Todos os Equipamentos de Proteção Coletiva (EPC), devem ser verificados quanto a integridade e conformidade com o projeto específico antes de iniciar a atividade."
-  });
+  const { user } = useSession();
+  const [analysis, setAnalysis] = useState<SafetyAnalysisOutput | null>(null);
+  const [equipment, setEquipment] = useState<ProtectiveEquipmentOutput | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isPrinting, setIsPrinting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [mobileView, setMobileView] = useState<'form' | 'preview'>('form');
+
+  const [works, setWorks] = useState<Work[]>([]);
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [isDataLoading, setIsDataLoading] = useState(true);
+  const { toast } = useToast();
 
   const form = useForm<SafetyFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       documentType: DOCUMENT_TYPES.APR,
       companyName: ptBr.defaultValues.companyName,
-      workName: ptBr.defaultValues.workName,
-      workAddress: ptBr.defaultValues.workAddress,
-      startDate: '2024-08-01',
-      endDate: '2024-12-31',
-      workLocationDetails: ptBr.defaultValues.workLocationDetails,
+      workId: '',
+      workName: '',
+      workAddress: '',
+      startDate: '',
+      endDate: '',
+      workLocationDetails: '',
       activityDescription: ptBr.defaultValues.activityDescription,
       responsiblePersons: [
-        { name: ptBr.defaultValues.responsible1Name, role: ptBr.defaultValues.responsible1Role, signatureType: SIGNATURE_TYPES.TYPED, signatureData: ptBr.defaultValues.responsible1Name },
-        { name: ptBr.defaultValues.responsible2Name, role: ptBr.defaultValues.responsible2Role, signatureType: SIGNATURE_TYPES.TYPED, signatureData: ptBr.defaultValues.responsible2Name }
+        { employeeId: '', name: '', role: '', signatureType: SIGNATURE_TYPES.TYPED, signatureData: '' }
       ],
-      teamMembers: [
-        { date: '2024-08-01', name: ptBr.defaultValues.teamMember1Name, role: ptBr.defaultValues.teamMember1Role },
-        { date: '2024-08-01', name: ptBr.defaultValues.teamMember2Name, role: ptBr.defaultValues.teamMember2Role },
-      ],
+      teamMembers: [],
       pt: {
         ptLocalAtividade: ptBr.defaultValues.ptLocation,
         ptEquipamentoLinha: ptBr.defaultValues.ptEquipment,
@@ -119,7 +89,39 @@ export default function ReportsPage() {
   });
 
   const liveFormData = form.watch();
-  const { toast } = useToast();
+  
+  useEffect(() => {
+    if (user?.companyId) {
+      const fetchData = async () => {
+        setIsDataLoading(true);
+        try {
+          const [worksResult, employeesResult] = await Promise.all([
+            getWorks(user.companyId!),
+            getEmployees(user.companyId!)
+          ]);
+          if (worksResult.success && worksResult.data) {
+            setWorks(worksResult.data);
+          } else {
+            toast({ variant: 'destructive', title: "Erro ao buscar obras", description: worksResult.error });
+          }
+          if (employeesResult.success && employeesResult.data) {
+            setEmployees(employeesResult.data);
+          } else {
+            toast({ variant: 'destructive', title: "Erro ao buscar funcionários", description: employeesResult.error });
+          }
+        } catch (error: any) {
+          toast({ variant: 'destructive', title: "Erro ao carregar dados da empresa", description: error.message });
+        } finally {
+          setIsDataLoading(false);
+        }
+      };
+      fetchData();
+    } else if (user && !user.companyId) {
+      toast({ variant: 'destructive', title: "Usuário sem empresa", description: "Sua conta não está associada a uma empresa." });
+      setIsDataLoading(false);
+    }
+  }, [user, toast]);
+
 
   const handleFormSubmit = async (data: SafetyFormValues) => {
     if (data.documentType !== DOCUMENT_TYPES.APR) return;
@@ -220,6 +222,9 @@ export default function ReportsPage() {
                   onSubmit={handleFormSubmit}
                   isLoading={isLoading}
                   mobileView={mobileView}
+                  works={works}
+                  employees={employees}
+                  isDataLoading={isDataLoading}
               />
           </div>
           <div className="h-full no-print bg-muted">
