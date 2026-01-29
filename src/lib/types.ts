@@ -192,6 +192,8 @@ export type SignupValues = z.infer<typeof signupSchema>;
 export const companySettingsFormSchema = z.object({
     name: z.string().min(3, "O nome da empresa deve ter pelo menos 3 caracteres."),
     logo: z.string().optional(),
+    n8nProductionUrl: z.string().url({ message: "Por favor, insira uma URL de produção válida." }).optional().or(z.literal('')),
+    n8nTestUrl: z.string().url({ message: "Por favor, insira uma URL de teste válida." }).optional().or(z.literal('')),
 });
 export type CompanySettingsFormValues = z.infer<typeof companySettingsFormSchema>;
 
@@ -199,6 +201,8 @@ export type Company = {
     id: string;
     name: string;
     logo?: string;
+    n8nProductionUrl?: string;
+    n8nTestUrl?: string;
     createdAt: string;
     ownerUid?: string;
 }

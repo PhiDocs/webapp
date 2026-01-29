@@ -16,6 +16,7 @@ import { JobRolesTable } from '@/components/admin/job-roles-table';
 import { SubcontractorsTable } from '@/components/admin/subcontractors-table';
 import { CompanySettings } from '@/components/admin/company-settings';
 import { Card, CardContent } from '@/components/ui/card';
+import { N8nSettings } from '@/components/admin/n8n-settings';
 
 export default function CompanyPage() {
     const params = useParams();
@@ -100,7 +101,10 @@ export default function CompanyPage() {
                     </TabsContent>
                     <TabsContent value="settings" className="mt-6">
                         {company ? (
-                            <CompanySettings company={company} onCompanyUpdate={fetchCompany} />
+                            <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
+                                <CompanySettings company={company} onCompanyUpdate={fetchCompany} />
+                                <N8nSettings company={company} />
+                            </div>
                         ) : (
                            <Card><CardContent className='pt-6'><Skeleton className="h-40 w-full" /></CardContent></Card>
                         )}

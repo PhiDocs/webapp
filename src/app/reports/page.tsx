@@ -158,7 +158,7 @@ export default function ReportsPage() {
       
       if (equipmentResult.error || !equipmentResult.data) {
           const errorMsg = equipmentResult.error || ptBr.validations.equipmentRecommendationFailed;
-          console.error(errorMsg);
+          setError(errorMsg);
           toast({
               variant: 'destructive',
               title: ptBr.toasts.errors.fetchEpi,
@@ -200,7 +200,10 @@ export default function ReportsPage() {
             analysisData: analysis,
             equipmentData: equipment,
         };
-        notifyN8n(payload);
+        // Notifica o n8n usando a URL de produção da empresa
+        if (company?.n8nProductionUrl) {
+            notifyN8n(payload, company.n8nProductionUrl);
+        }
         generatePdfOnClient();
     } catch (error) {
         console.error("Failed to notify n8n:", error);

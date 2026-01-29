@@ -36,6 +36,8 @@ export function CompanySettings({ company, onCompanyUpdate }: CompanySettingsPro
     defaultValues: {
       name: company.name || '',
       logo: company.logo || '',
+      n8nProductionUrl: company.n8nProductionUrl || '',
+      n8nTestUrl: company.n8nTestUrl || '',
     },
   });
 
@@ -76,7 +78,7 @@ export function CompanySettings({ company, onCompanyUpdate }: CompanySettingsPro
     <Card>
       <CardHeader>
         <CardTitle>Configurações da Empresa</CardTitle>
-        <CardDescription>Atualize o nome e o logo da sua empresa. Estas informações aparecerão em todos os documentos gerados.</CardDescription>
+        <CardDescription>Atualize os dados e integrações da sua empresa.</CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -109,6 +111,36 @@ export function CompanySettings({ company, onCompanyUpdate }: CompanySettingsPro
                 <FormDescription>{ptBr.safetyForm.companyLogoDescription}</FormDescription>
                 <FormMessage />
             </FormItem>
+
+            <FormField
+              control={form.control}
+              name="n8nProductionUrl"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>URL de Produção do n8n</FormLabel>
+                  <FormControl>
+                    <Input placeholder="https://seu.n8n.cloud/webhook/production..." {...field} />
+                  </FormControl>
+                  <FormDescription>Esta URL será usada para enviar dados dos relatórios gerados.</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+             <FormField
+              control={form.control}
+              name="n8nTestUrl"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>URL de Teste do n8n</FormLabel>
+                  <FormControl>
+                    <Input placeholder="https://seu.n8n.cloud/webhook-test/..." {...field} />
+                  </FormControl>
+                   <FormDescription>Esta URL pode ser usada para testar a integração com o n8n.</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             
             <div className="flex justify-end">
               <Button type="submit" disabled={isPending || !form.formState.isDirty}>

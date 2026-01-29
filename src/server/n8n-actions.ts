@@ -13,14 +13,12 @@ const N8N_ERROR_MESSAGES = {
 
 /**
  * Envia um payload para um webhook do n8n.
- * Usa a URL de produção por padrão, mas pode receber uma URL de teste.
+ * @param payload - Os dados a serem enviados.
+ * @param webhookUrl - A URL do webhook para a qual enviar os dados.
  */
 export async function notifyN8n(payload: any, webhookUrl?: string) {
-  const n8nProductionUrl = process.env.N8N_PRODUCTION_URL;
-  const targetUrl = webhookUrl || n8nProductionUrl;
-
-  if (!targetUrl) {
-    const errorMsg = N8N_ERROR_MESSAGES.WEBHOOK_NOT_CONFIGURED;
+  if (!webhookUrl) {
+    const errorMsg = "URL do Webhook não fornecida para a notificação.";
     console.error(errorMsg);
     return {
       success: false,
@@ -32,7 +30,7 @@ export async function notifyN8n(payload: any, webhookUrl?: string) {
   }
 
   try {
-    const result = await N8nService.send(targetUrl, payload);
+    const result = await N8nService.send(webhookUrl, payload);
     return { success: true, data: result };
   } catch (error: any) {
     console.error(N8N_ERROR_MESSAGES.CONNECTION_ERROR, error.message);

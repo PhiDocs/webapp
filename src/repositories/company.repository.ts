@@ -40,6 +40,8 @@ export const CompanyRepository = {
   async create(data: { name: string }): Promise<string> {
     const companyRef = await companyCollection.add({
       ...data,
+      n8nProductionUrl: '',
+      n8nTestUrl: '',
       createdAt: new Date().toISOString(),
     });
     return companyRef.id;
