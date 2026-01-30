@@ -18,7 +18,7 @@ O sistema usa **Firebase Custom Claims** para diferenciar os papéis dos usuári
 -   **Admin:** Um usuário com as claims `{ role: 'admin', companyId: '...' }`. Apenas administradores podem acessar a rota `/company/[companyId]` para gerenciar sua empresa.
 -   **Usuário:** Um usuário sem a claim de `admin`. Eles são redirecionados para a página principal (`/`) para gerar documentos.
 
-A verificação é feita no `middleware.ts`, que lê os claims do cookie de sessão em cada requisição e aplica os redirecionamentos necessários.
+A verificação é feita no `src/server/proxy.ts`, que lê os claims do cookie de sessão em cada requisição e aplica os redirecionamentos necessários.
 
 ## Como se Tornar um Admin
 
@@ -157,9 +157,9 @@ Se você precisa garantir que todos os registros antigos sejam compatíveis com 
 
 1.  **Pré-requisitos:**
     -   Certifique-se de que seu arquivo `.env` está preenchido.
-    -   Instale a ferramenta `tsx` globalmente para rodar o script TypeScript: `npm install -g tsx`
+    -   Instale as dependências do projeto (`npm install`), o `tsx` já está configurado em `devDependencies`.
 2.  **Uso:**
     ```bash
-    tsx scripts/migrate-deleted-at.ts
+    npm run migrate-deleted-at
     ```
     Este script irá percorrer as coleções (`users`, `companies`, `works`, etc.) e garantir que todos os documentos tenham o campo `deletedAt: null` se ele não existir. Adicionalmente, para a coleção `works`, ele também adicionará o campo `activityDescription: ''` se estiver ausente, para manter a compatibilidade com a estrutura de dados atual.

@@ -8,7 +8,7 @@ type Content = any;
 type TableCell = any;
 
 // Helper functions
-function getShortDate(dateString: string): string {
+function getShortDate(dateString?: string): string {
   if (!dateString) return '';
   const date = new Date(dateString);
   return date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
@@ -36,7 +36,12 @@ function Checkbox(checked: boolean): Content {
 
 
 // --- PT Document Generation ---
-export function generatePTPages(formData: SafetyFormValues): Content[] {
+type PdfFormData = SafetyFormValues & {
+    companyName?: string;
+    companyLogo?: string;
+};
+
+export function generatePTPages(formData: PdfFormData): Content[] {
     const { pt: ptData, companyLogo, companyName } = formData;
     const content: Content[] = [];
 
@@ -244,9 +249,9 @@ export function generatePTPages(formData: SafetyFormValues): Content[] {
                         widths: ['*', '*', '*'],
                         body: [
                             [
-                                {stack: [getSignatureContent(ptData.ptGestorArea), {text: ptData.ptGestorArea?.name || 'Gestor da Área', style: 'td', alignment: 'center', margin:[0,2,0,0] }], border: [false, false, false, false], margin: [5, 5]},
-                                {stack: [getSignatureContent(ptData.ptResponsavelAtividade), {text: ptData.ptResponsavelAtividade?.name || 'Responsável Atividade', style: 'td', alignment: 'center', margin:[0,2,0,0] }], border: [false, false, false, false], margin: [5, 5]},
-                                {stack: [getSignatureContent(ptData.ptSesmt), {text: ptData.ptSesmt?.name || 'SESMT', style: 'td', alignment: 'center', margin:[0,2,0,0] }], border: [false, false, false, false], margin: [5, 5]},
+                                {stack: [getSignatureContent(ptData.ptGestorArea?.signatureData, ptData.ptGestorArea?.name || ''), {text: ptData.ptGestorArea?.name || 'Gestor da Área', style: 'td', alignment: 'center', margin:[0,2,0,0] }], border: [false, false, false, false], margin: [5, 5]},
+                                {stack: [getSignatureContent(ptData.ptResponsavelAtividade?.signatureData, ptData.ptResponsavelAtividade?.name || ''), {text: ptData.ptResponsavelAtividade?.name || 'Responsável Atividade', style: 'td', alignment: 'center', margin:[0,2,0,0] }], border: [false, false, false, false], margin: [5, 5]},
+                                {stack: [getSignatureContent(ptData.ptSesmt?.signatureData, ptData.ptSesmt?.name || ''), {text: ptData.ptSesmt?.name || 'SESMT', style: 'td', alignment: 'center', margin:[0,2,0,0] }], border: [false, false, false, false], margin: [5, 5]},
                             ]
                         ]
                     },

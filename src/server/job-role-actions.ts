@@ -14,7 +14,7 @@ const jobRoleServerSchema = z.object({
 });
 
 /**
- * Busca todos os cargos de uma empresa.
+ * Fetch all job roles for a company.
  */
 export async function getJobRoles(companyId: string) {
     if (!companyId) {
@@ -31,7 +31,7 @@ export async function getJobRoles(companyId: string) {
 }
 
 /**
- * Cria um novo cargo.
+ * Create a new job role.
  */
 export async function createJobRole(data: JobRoleFormValues & { companyId: string }) {
     const validation = jobRoleServerSchema.safeParse(data);
@@ -56,7 +56,7 @@ export async function createJobRole(data: JobRoleFormValues & { companyId: strin
 }
 
 /**
- * Atualiza um cargo existente.
+ * Update an existing job role.
  */
 export async function updateJobRole(id: string, data: JobRoleFormValues & { companyId: string }) {
     const validation = jobRoleServerSchema.safeParse(data);
@@ -81,7 +81,7 @@ export async function updateJobRole(id: string, data: JobRoleFormValues & { comp
 }
 
 /**
- * Deleta um cargo.
+ * Delete a job role.
  */
 export async function deleteJobRole(id: string, companyId: string) {
     if (!id || !companyId) {

@@ -5,9 +5,9 @@ const workCollection = admin.firestore().collection('works');
 
 export const WorkRepository = {
   /**
-   * Busca todas as obras ativas de uma empresa específica.
-   * @param companyId O ID da empresa.
-   * @returns Uma lista de obras.
+   * Fetch all active works for a specific company.
+   * @param companyId The company ID.
+   * @returns A list of works.
    */
   async getAllByCompany(companyId: string): Promise<Work[]> {
     const snapshot = await workCollection
@@ -26,9 +26,9 @@ export const WorkRepository = {
   },
 
   /**
-   * Cria uma nova obra no Firestore.
-   * @param data - Dados da obra (ex: { name: string, address: string, companyId: string }).
-   * @returns O ID da obra criada.
+   * Create a new work in Firestore.
+   * @param data - Work data (e.g. { name: string, address: string, companyId: string }).
+   * @returns The created work ID.
    */
   async create(data: WorkFormValues): Promise<string> {
     const workRef = await workCollection.add({
@@ -40,17 +40,17 @@ export const WorkRepository = {
   },
 
   /**
-   * Atualiza os dados de uma obra existente.
-   * @param workId - O ID da obra a ser atualizada.
-   * @param data - Os campos a serem atualizados.
+   * Update an existing work.
+   * @param workId - The work ID to update.
+   * @param data - Fields to update.
    */
   async update(workId: string, data: Partial<WorkFormValues>): Promise<void> {
     await workCollection.doc(workId).update(data);
   },
 
   /**
-   * Deleta (soft delete) uma obra, marcando-a como deletada.
-   * @param workId - O ID da obra a ser deletada.
+   * Soft delete a work by marking it as deleted.
+   * @param workId - The work ID to delete.
    */
   async delete(workId: string): Promise<void> {
     await workCollection.doc(workId).update({

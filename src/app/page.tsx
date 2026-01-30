@@ -10,7 +10,7 @@ import { Loader2 } from 'lucide-react';
  * It redirects users to their appropriate dashboard based on their role.
  * - Admins are sent to their company page.
  * - Regular users are sent to the reports page.
- * - Logged-out users are handled by middleware.
+ * - Logged-out users are handled by the proxy.
  */
 export default function RootPage() {
     const { user, isLoading } = useSession();
@@ -28,7 +28,7 @@ export default function RootPage() {
                 router.replace('/reports');
             }
         } else {
-            // If there's no user and loading is finished, middleware should have already redirected.
+            // If there's no user and loading is finished, the proxy should have already redirected.
             // But as a fallback, we can redirect to login.
             router.replace('/login');
         }

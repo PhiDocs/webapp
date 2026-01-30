@@ -5,9 +5,9 @@ const companyCollection = admin.firestore().collection('companies');
 
 export const CompanyRepository = {
   /**
-   * Busca uma única empresa pelo seu ID.
-   * @param id O ID da empresa.
-   * @returns A empresa ou null se não encontrada.
+   * Fetch a single company by ID.
+   * @param id The company ID.
+   * @returns The company or null if not found.
    */
   async getById(id: string): Promise<Company | null> {
     const doc = await companyCollection.doc(id).get();
@@ -18,8 +18,8 @@ export const CompanyRepository = {
   },
 
   /**
-   * Busca todas as empresas do Firestore.
-   * @returns Uma lista de empresas.
+   * Fetch all companies from Firestore.
+   * @returns A list of companies.
    */
   async getAll(): Promise<Company[]> {
     const snapshot = await companyCollection.orderBy('createdAt', 'desc').get();
@@ -33,9 +33,9 @@ export const CompanyRepository = {
   },
 
   /**
-   * Cria uma nova empresa no Firestore.
-   * @param data - Dados da empresa (ex: { name: string }).
-   * @returns O ID da empresa criada.
+   * Create a new company in Firestore.
+   * @param data - Company data (e.g. { name: string }).
+   * @returns The created company ID.
    */
   async create(data: { name: string }): Promise<string> {
     const companyRef = await companyCollection.add({
@@ -48,21 +48,21 @@ export const CompanyRepository = {
   },
 
   /**
-   * Atualiza os dados de uma empresa existente.
-   * @param companyId - O ID da empresa a ser atualizada.
-   * @param data - Os campos a serem atualizados (ex: { ownerUid: string }).
+   * Update an existing company.
+   * @param companyId - The company ID to update.
+   * @param data - Fields to update (e.g. { ownerUid: string }).
    */
   async update(companyId: string, data: { [key: string]: any }): Promise<void> {
     await companyCollection.doc(companyId).update(data);
   },
 
   /**
-   * Deleta uma empresa.
-   * @param companyId - O ID da empresa a ser deletada.
+   * Delete a company.
+   * @param companyId - The company ID to delete.
    */
   async delete(companyId: string): Promise<void> {
-    // Em uma aplicação real, aqui seria o local para deletar todos os dados
-    // associados (usuários, obras, documentos, etc.) em uma transação.
+    // In a real app, this is where you'd delete all associated data
+    // (users, works, documents, etc.) in a transaction.
     await companyCollection.doc(companyId).delete();
   },
 };

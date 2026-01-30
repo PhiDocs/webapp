@@ -326,6 +326,10 @@ export const ptBr = {
     },
   },
   validations: {
+    firstName: 'Nome é obrigatório.',
+    lastName: 'Sobrenome é obrigatório.',
+    cpf: 'CPF é obrigatório.',
+    roleId: 'A função é obrigatória.',
     activityDescription: 'A descrição da atividade deve ter pelo menos 10 caracteres.',
     invalidInput: 'Entrada inválida: {{details}}',
     safetyAnalysisFailed: 'Falha ao gerar a análise de segurança. A IA pode estar sobrecarregada. Por favor, tente novamente mais tarde.',

@@ -8,7 +8,7 @@ const getCollection = (companyId: string) =>
 
 export const JobRoleRepository = {
   /**
-   * Busca todos os cargos ativos de uma empresa específica.
+   * Fetch all active job roles for a specific company.
    */
   async getAllByCompany(companyId: string): Promise<JobRole[]> {
     const snapshot = await getCollection(companyId)
@@ -26,7 +26,7 @@ export const JobRoleRepository = {
   },
 
   /**
-   * Cria um novo cargo em uma subcoleção da empresa.
+   * Create a new job role in a company subcollection.
    */
   async create(data: JobRoleData): Promise<string> {
     const jobRoleRef = await getCollection(data.companyId).add({
@@ -38,7 +38,7 @@ export const JobRoleRepository = {
   },
 
   /**
-   * Atualiza os dados de um cargo existente.
+   * Update an existing job role.
    */
   async update(jobRoleId: string, data: Partial<JobRoleData>): Promise<void> {
     if (!data.companyId) {
@@ -48,7 +48,7 @@ export const JobRoleRepository = {
   },
 
   /**
-   * Deleta (soft delete) um cargo, marcando-o como deletado.
+   * Soft delete a job role by marking it as deleted.
    */
   async delete(jobRoleId: string, companyId: string): Promise<void> {
     await getCollection(companyId).doc(jobRoleId).update({

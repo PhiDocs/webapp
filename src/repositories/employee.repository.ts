@@ -8,9 +8,9 @@ const getCollection = (companyId: string) =>
 
 export const EmployeeRepository = {
   /**
-   * Busca todos os funcionários ativos de uma empresa específica.
-   * @param companyId O ID da empresa.
-   * @returns Uma lista de funcionários.
+   * Fetch all active employees for a specific company.
+   * @param companyId The company ID.
+   * @returns A list of employees.
    */
   async getAllByCompany(companyId: string): Promise<Employee[]> {
     const snapshot = await getCollection(companyId)
@@ -28,9 +28,9 @@ export const EmployeeRepository = {
   },
 
   /**
-   * Cria um novo funcionário em uma subcoleção da empresa.
-   * @param data - Dados do funcionário, incluindo o companyId.
-   * @returns O ID do funcionário criado.
+   * Create a new employee in a company subcollection.
+   * @param data - Employee data, including companyId.
+   * @returns The created employee ID.
    */
   async create(data: EmployeeData): Promise<string> {
     const employeeRef = await getCollection(data.companyId).add({
@@ -42,9 +42,9 @@ export const EmployeeRepository = {
   },
 
   /**
-   * Atualiza os dados de um funcionário existente.
-   * @param employeeId - O ID do funcionário a ser atualizado.
-   * @param data - Os campos a serem atualizados, incluindo o companyId.
+   * Update an existing employee.
+   * @param employeeId - The employee ID to update.
+   * @param data - Fields to update, including companyId.
    */
   async update(employeeId: string, data: Partial<EmployeeData>): Promise<void> {
     if (!data.companyId) {
@@ -54,9 +54,9 @@ export const EmployeeRepository = {
   },
 
   /**
-   * Deleta (soft delete) um funcionário, marcando-o como deletado.
-   * @param employeeId - O ID do funcionário a ser deletado.
-   * @param companyId - O ID da empresa à qual o funcionário pertence.
+   * Soft delete an employee by marking it as deleted.
+   * @param employeeId - The employee ID to delete.
+   * @param companyId - The company ID the employee belongs to.
    */
   async delete(employeeId: string, companyId: string): Promise<void> {
     await getCollection(companyId).doc(employeeId).update({

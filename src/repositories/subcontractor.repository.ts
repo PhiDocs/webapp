@@ -8,7 +8,7 @@ const getCollection = (companyId: string) =>
 
 export const SubcontractorRepository = {
   /**
-   * Busca todas as empresas terceirizadas ativas de uma empresa principal.
+   * Fetch all active subcontractors for a company.
    */
   async getAllByCompany(companyId: string): Promise<Subcontractor[]> {
     const snapshot = await getCollection(companyId)
@@ -26,7 +26,7 @@ export const SubcontractorRepository = {
   },
 
   /**
-   * Cria uma nova empresa terceirizada.
+   * Create a new subcontractor.
    */
   async create(data: SubcontractorData): Promise<string> {
     const subcontractorRef = await getCollection(data.companyId).add({
@@ -38,7 +38,7 @@ export const SubcontractorRepository = {
   },
 
   /**
-   * Atualiza os dados de uma empresa terceirizada.
+   * Update an existing subcontractor.
    */
   async update(subcontractorId: string, data: Partial<SubcontractorData>): Promise<void> {
     if (!data.companyId) {
@@ -48,7 +48,7 @@ export const SubcontractorRepository = {
   },
 
   /**
-   * Deleta (soft delete) uma empresa terceirizada, marcando-a como deletada.
+   * Soft delete a subcontractor by marking it as deleted.
    */
   async delete(subcontractorId: string, companyId: string): Promise<void> {
     await getCollection(companyId).doc(subcontractorId).update({

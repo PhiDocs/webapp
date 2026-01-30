@@ -7,7 +7,7 @@ import { z } from 'zod';
 import type { WorkClientFormValues } from '@/lib/types';
 
 
-// Schema para validação do formulário no servidor. Inclui o companyId.
+// Server-side schema validation. Includes companyId.
 const workServerSchema = z.object({
   name: z.string().min(3, "O nome da obra deve ter pelo menos 3 caracteres."),
   address: z.string().min(5, "O endereço deve ter pelo menos 5 caracteres."),
@@ -28,7 +28,7 @@ const workServerSchema = z.object({
 
 
 /**
- * Busca todas as obras de uma empresa.
+ * Fetch all works for a company.
  */
 export async function getWorks(companyId: string) {
     if (!companyId) {
@@ -45,7 +45,7 @@ export async function getWorks(companyId: string) {
 }
 
 /**
- * Cria uma nova obra.
+ * Create a new work.
  */
 export async function createWork(data: WorkClientFormValues & { companyId: string }) {
     const validation = workServerSchema.safeParse(data);
@@ -67,7 +67,7 @@ export async function createWork(data: WorkClientFormValues & { companyId: strin
 }
 
 /**
- * Atualiza uma obra existente.
+ * Update an existing work.
  */
 export async function updateWork(id: string, data: WorkClientFormValues & { companyId: string }) {
     const validation = workServerSchema.safeParse(data);
@@ -89,7 +89,7 @@ export async function updateWork(id: string, data: WorkClientFormValues & { comp
 }
 
 /**
- * Deleta uma obra.
+ * Delete a work.
  */
 export async function deleteWork(id: string, companyId: string) {
     if (!id || !companyId) {

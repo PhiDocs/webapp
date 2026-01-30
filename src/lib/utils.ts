@@ -9,7 +9,7 @@ export function getShortDate(dateString: string | undefined | null) {
   if (!dateString) return '...';
   try {
     const date = new Date(dateString);
-    // Adiciona o offset do fuso horário para evitar problemas de um dia a menos
+    // Add timezone offset to avoid a one-day shift
     const zonedDate = new Date(date.valueOf() + date.getTimezoneOffset() * 60 * 1000);
     return zonedDate.toLocaleDateString('pt-BR');
   } catch (e) {

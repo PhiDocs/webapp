@@ -1,5 +1,5 @@
 import React from 'react';
-import type { SafetyFormValues, PtTeamMember, PtSigner, Company } from '@/lib/types';
+import type { SafetyFormValues, PtTeamMember, PtSignerInput, Company } from '@/lib/types';
 import { ptChecklistItems } from '@/lib/data/pt-checklist';
 import { ptBr } from '@/lib/data/strings';
 import { PT_FIT_STATUS, SIGNATURE_TYPES } from '@/lib/constants';
@@ -9,7 +9,7 @@ interface PTPreviewProps {
   company: Company | null;
 }
 
-const SignaturePreview = ({ signer, label }: { signer?: PtSigner, label: string }) => {
+const SignaturePreview = ({ signer, label }: { signer?: PtSignerInput, label: string }) => {
     if (!signer) return null;
     const { signatureData, signatureType, name } = signer;
 

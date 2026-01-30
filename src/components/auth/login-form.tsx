@@ -31,7 +31,7 @@ import { Logo } from '../icons/logo';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '@/firebase/config';
 
-// Função movida para cá para não ser exportada de um arquivo 'use server'
+// Moved here to avoid exporting from a 'use server' file
 const getFirebaseAuthErrorMessage = (errorCode: string): string => {
   switch (errorCode) {
     case 'auth/email-already-in-use':
@@ -65,14 +65,14 @@ export function LoginForm() {
   const onSubmit = async (values: LoginValues) => {
     setIsLoading(true);
     try {
-      // 1. Fazer login no lado do cliente com o SDK do Firebase
+      // 1. Sign in on the client using the Firebase SDK
       const userCredential = await signInWithEmailAndPassword(auth, values.email, values.password);
       const user = userCredential.user;
 
-      // 2. Obter o token de ID do usuário
+      // 2. Get the user's ID token
       const idToken = await user.getIdToken();
 
-      // 3. Enviar o token para a server action para criar o cookie de sessão
+      // 3. Send the token to the server action to create the session cookie
       const result = await createSession(idToken);
 
       if (result.error) {
@@ -98,7 +98,7 @@ export function LoginForm() {
       });
       setIsLoading(false);
     }
-    // O setIsLoading(false) é removido daqui para que a tela de login fique bloqueada até o redirecionamento.
+    // setIsLoading(false) is removed here to keep the login screen blocked until redirect.
   };
 
   return (

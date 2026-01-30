@@ -89,7 +89,7 @@ export async function proxy(request: NextRequest) {
   return NextResponse.next();
 }
 
-// Configuração para definir quais rotas o middleware deve observar.
+// Configuration to define which routes the proxy should observe.
 export const config = {
   matcher: [
     /*

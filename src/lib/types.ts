@@ -43,7 +43,7 @@ export const responsiblePersonSchema = z.object({
   signatureType: signatureTypeSchema.default(SIGNATURE_TYPES.TYPED),
   signatureData: z.string().optional(),
 }).superRefine((data, ctx) => {
-  // Só validar se um funcionário foi selecionado
+  // Only validate if an employee was selected
   if (data.employeeId) {
     if (!data.name) {
       ctx.addIssue({ code: z.ZodIssueCode.custom, message: validationMessages.responsibleName, path: ['name'] });
@@ -83,7 +83,7 @@ const ptSignerSchema = z.object({
     signatureType: signatureTypeSchema.default(SIGNATURE_TYPES.TYPED),
     signatureData: z.string().optional(),
 }).superRefine((data, ctx) => {
-  // Só exigir assinatura se o nome estiver preenchido
+  // Only require a signature if the name is filled
   if (data.name && data.signatureType && !data.signatureData) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
@@ -174,12 +174,13 @@ export const formSchema = z.object({
     }
 });
 
-export type SafetyFormValues = z.infer<typeof formSchema>;
+export type SafetyFormValues = z.input<typeof formSchema>;
 export type ResponsiblePerson = z.infer<typeof responsiblePersonSchema>;
 export type TeamMember = z.infer<typeof teamMemberSchema>;
 export type PtFormValues = z.infer<typeof ptFormSchema>;
 export type PtTeamMember = z.infer<typeof ptTeamMemberSchema>;
 export type PtSigner = z.infer<typeof ptSignerSchema>;
+export type PtSignerInput = z.input<typeof ptSignerSchema>;
 
 
 // --- Auth Schemas ---
@@ -274,8 +275,8 @@ export type Employee = {
     cpf: string;
     roleId: string;
     roleName?: string;
-    subcontractorId?: string;
-    subcontractorName?: string;
+    subcontractorId?: string | null;
+    subcontractorName?: string | null;
     createdAt: string;
     deletedAt?: string | null;
 }

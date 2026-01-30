@@ -20,7 +20,7 @@ export function N8nSettings({ company }: N8nSettingsProps) {
 
     const handleTestN8n = async (isTest: boolean) => {
         const url = isTest ? company.n8nTestUrl : company.n8nProductionUrl;
-        const targetName = isTest ? ptBr.n8n.testUrl : ptBr.n8n.productionUrl;
+        const targetName = isTest ? ptBr.toasts.success.n8nTest : ptBr.toasts.success.n8nProduction;
 
         if (!url) {
             toast({
@@ -49,10 +49,12 @@ export function N8nSettings({ company }: N8nSettingsProps) {
                 description: `Requisição enviada com sucesso para a ${targetName}.`,
             });
         } else {
+            const errorStatus = 'status' in result.data ? result.data.status : undefined;
+            const errorDetails = 'details' in result.data ? result.data.details : undefined;
             toast({
                 variant: 'destructive',
-                title: `${ptBr.toasts.errors.n8nConnectionFailed} (${result.data.status || ptBr.toasts.errors.n8nConnectionFailedNetwork})`,
-                description: ptBr.toasts.errors.n8nConnectionFailedDescription.replace('{{details}}', result.data.details || ptBr.errors.n8nCheckUrl),
+                title: `${ptBr.toasts.errors.n8nConnectionFailed} (${errorStatus || ptBr.toasts.errors.n8nConnectionFailedNetwork})`,
+                description: ptBr.toasts.errors.n8nConnectionFailedDescription.replace('{{details}}', errorDetails || ptBr.errors.n8nCheckUrl),
             });
         }
 

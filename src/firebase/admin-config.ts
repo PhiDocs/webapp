@@ -1,6 +1,6 @@
 import * as admin from 'firebase-admin';
 
-// Evita a reinicialização do app em ambientes de desenvolvimento (hot-reloading)
+// Avoid re-initializing the app in development (hot reloading)
 if (!admin.apps.length) {
   try {
     const privateKey = process.env.FIREBASE_PRIVATE_KEY;
@@ -18,7 +18,7 @@ if (!admin.apps.length) {
   } catch (e: unknown) {
     const error = e instanceof Error ? e : new Error('Falha desconhecida ao inicializar o Firebase Admin SDK.');
     console.error('Falha na inicialização do Firebase Admin:', error.message);
-    // Lança um erro que pode ser pego por outras partes da aplicação se necessário.
+    // Throw an error that can be caught elsewhere in the app if needed.
     throw new Error(
       `Falha ao inicializar o Firebase Admin SDK. Verifique suas variáveis de ambiente no arquivo .env. Erro original: ${error.message}`
     );

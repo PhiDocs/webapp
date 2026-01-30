@@ -77,7 +77,7 @@ const addToRemoveQueue = (toastId: string) => {
 export const reducer = (state: State, action: Action): State => {
   switch (action.type) {
     case "ADD_TOAST":
-      // Adiciona o novo toast e também já agenda sua remoção automática
+      // Add the new toast and schedule its auto-removal
       addToRemoveQueue(action.toast.id);
       return {
         ...state,

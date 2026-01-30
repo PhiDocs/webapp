@@ -8,7 +8,7 @@ import { ErrorLogRepository } from '@/repositories/error-log.repository';
 
 
 /**
- * Busca uma empresa pelo seu ID.
+ * Fetch a company by ID.
  */
 export async function getCompanyById(id: string) {
     if (!id) {
@@ -28,7 +28,7 @@ export async function getCompanyById(id: string) {
 
 
 /**
- * Busca todas as empresas.
+ * Fetch all companies.
  */
 export async function getCompanies() {
     try {
@@ -41,7 +41,7 @@ export async function getCompanies() {
 }
 
 /**
- * Cria uma nova empresa.
+ * Create a new company.
  */
 export async function createCompany(data: unknown) {
     const validation = companySettingsFormSchema.safeParse(data);
@@ -61,7 +61,7 @@ export async function createCompany(data: unknown) {
 }
 
 /**
- * Atualiza uma empresa existente.
+ * Update an existing company.
  */
 export async function updateCompany(id: string, data: unknown) {
     const validation = companySettingsFormSchema.safeParse(data);
@@ -82,7 +82,7 @@ export async function updateCompany(id: string, data: unknown) {
 }
 
 /**
- * Deleta uma empresa.
+ * Delete a company.
  */
 export async function deleteCompany(id: string) {
     if (!id) {

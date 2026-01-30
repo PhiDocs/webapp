@@ -14,11 +14,11 @@ const registerCompanySchema = z.object({
 });
 
 /**
- * Cria uma nova empresa, um usuário administrador para ela com as permissões corretas (custom claims),
- * e salva os registros correspondentes no Firestore.
+ * Create a new company, an admin user with the correct permissions (custom claims),
+ * and save the related records in Firestore.
  * 
- * @param data - Dados da empresa e do administrador.
- * @returns Um objeto indicando sucesso ou erro.
+ * @param data - Company and admin data.
+ * @returns An object indicating success or error.
  */
 export async function registerCompany(data: unknown) {
   const validation = registerCompanySchema.safeParse(data);
@@ -30,10 +30,10 @@ export async function registerCompany(data: unknown) {
   const adminAuth = admin.auth();
 
   try {
-    // Passo 1: Criar a coleção da empresa primeiro para obter o ID
+    // Step 1: Create the company document first to get the ID
     const companyId = await CompanyRepository.create({ name: companyName });
 
-    // Passo 2: Criar o usuário no Firebase Authentication
+    // Step 2: Create the user in Firebase Authentication
     const userRecord = await adminAuth.createUser({
       email: adminEmail,
       emailVerified: true, // Opcional: considerar como verificado
@@ -42,13 +42,13 @@ export async function registerCompany(data: unknown) {
     });
     const userId = userRecord.uid;
 
-    // Passo 3: Definir os Custom Claims para o novo usuário
+    // Step 3: Set custom claims for the new user
     await adminAuth.setCustomUserClaims(userId, { 
       role: 'admin', 
       companyId: companyId 
     });
 
-    // Passo 4: Criar o documento do usuário no Firestore, associando à empresa
+    // Step 4: Create the Firestore user document, linked to the company
     await UserRepository.create(userId, {
       uid: userId,
       name: adminName,
@@ -57,7 +57,7 @@ export async function registerCompany(data: unknown) {
       companyId: companyId,
     });
 
-    // Passo 5: Atualizar o documento da empresa com o ID do proprietário
+    // Step 5: Update the company document with the owner ID
     await CompanyRepository.update(companyId, { ownerUid: userId });
 
 
@@ -65,8 +65,8 @@ export async function registerCompany(data: unknown) {
   } catch (error: any) {
     console.error('Erro ao registrar nova empresa:', error);
     
-    // Em um cenário real, uma transação ou lógica de rollback seria ideal
-    // para deletar o usuário ou a empresa se um dos passos falhar.
+    // In a real scenario, a transaction or rollback logic would be ideal
+    // to delete the user or company if any step fails.
     
     return { success: false, error: error.message || 'Ocorreu um erro desconhecido.' };
   }

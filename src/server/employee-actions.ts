@@ -6,7 +6,7 @@ import { ErrorLogRepository } from '@/repositories/error-log.repository';
 import { z } from 'zod';
 import { ptBr } from '@/lib/data/strings';
 
-// Schema para validação do formulário no servidor. Inclui o companyId.
+// Server-side schema validation. Includes companyId.
 const employeeServerSchema = z.object({
   firstName: z.string().min(1, ptBr.validations.firstName),
   lastName: z.string().min(1, ptBr.validations.lastName),
@@ -23,7 +23,7 @@ type EmployeeServerValues = z.infer<typeof employeeServerSchema>;
 
 
 /**
- * Busca todos os funcionários de uma empresa.
+ * Fetch all employees for a company.
  */
 export async function getEmployees(companyId: string) {
     if (!companyId) {
@@ -40,7 +40,7 @@ export async function getEmployees(companyId: string) {
 }
 
 /**
- * Cria um novo funcionário.
+ * Create a new employee.
  */
 export async function createEmployee(data: EmployeeServerValues) {
     const validation = employeeServerSchema.safeParse(data);
@@ -67,7 +67,7 @@ export async function createEmployee(data: EmployeeServerValues) {
 }
 
 /**
- * Atualiza um funcionário existente.
+ * Update an existing employee.
  */
 export async function updateEmployee(id: string, data: EmployeeServerValues) {
     const validation = employeeServerSchema.safeParse(data);
@@ -94,7 +94,7 @@ export async function updateEmployee(id: string, data: EmployeeServerValues) {
 }
 
 /**
- * Deleta um funcionário.
+ * Delete an employee.
  */
 export async function deleteEmployee(id: string, companyId: string) {
     if (!id || !companyId) {

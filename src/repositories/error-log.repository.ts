@@ -3,10 +3,10 @@ import { LogService } from '@/services/log.service';
 
 export const ErrorLogRepository = {
   /**
-   * Salva um log de erro no Firestore e também em um arquivo de log local.
-   * @param error - O objeto de erro.
-   * @param functionName - O nome da função onde o erro ocorreu.
-   * @param email - O email do usuário, se disponível.
+   * Save an error log to Firestore and to a local log file.
+   * @param error - The error object.
+   * @param functionName - The function name where the error occurred.
+   * @param email - The user email, if available.
    */
   async log(error: Error, functionName: string, email?: string): Promise<void> {
     const logData = {
@@ -18,14 +18,14 @@ export const ErrorLogRepository = {
         stackTrace: error.stack || 'No stack trace available.',
     };
 
-    // Sempre logar no arquivo de texto como fallback confiável
+    // Always log to the text file as a reliable fallback
     await LogService.writeToFile(`[${logData.timestamp}] ERROR in ${functionName}: ${logData.errorMessage}\nSTACK: ${logData.stackTrace}\n---`);
 
     try {
         const logCollection = admin.firestore().collection('errorLogs');
         await logCollection.add(logData);
     } catch (logError: any) {
-        // Se a própria escrita do log no Firestore falhar, loga no console e no arquivo de texto.
+        // If logging to Firestore fails, log to console and the text file.
         const criticalErrorMessage = `CRITICAL: Failed to log error to Firestore. Firestore Error: ${logError.message}`;
         console.error(criticalErrorMessage);
         console.error('Original Error:', error.message);

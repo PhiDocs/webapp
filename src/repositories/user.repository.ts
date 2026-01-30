@@ -12,9 +12,9 @@ const userCollection = admin.firestore().collection('users');
 
 export const UserRepository = {
     /**
-     * Cria um novo documento de usuário no Firestore.
-     * @param userId - O UID do usuário do Firebase Auth.
-     * @param data - Os dados do usuário.
+     * Create a new user document in Firestore.
+     * @param userId - The Firebase Auth user UID.
+     * @param data - The user data.
      */
     async create(userId: string, data: UserData): Promise<void> {
         await userCollection.doc(userId).set({
@@ -24,18 +24,18 @@ export const UserRepository = {
     },
 
     /**
-     * Atualiza dados de um documento de usuário no Firestore.
-     * @param userId - O UID do usuário.
-     * @param data - Os campos a serem atualizados.
+     * Update a user document in Firestore.
+     * @param userId - The user UID.
+     * @param data - Fields to update.
      */
     async update(userId: string, data: { [key: string]: any }): Promise<void> {
         await userCollection.doc(userId).update(data);
     },
 
     /**
-     * Busca um usuário pelo UID.
-     * @param userId - O UID do usuário.
-     * @returns Os dados do usuário ou null se não for encontrado.
+     * Fetch a user by UID.
+     * @param userId - The user UID.
+     * @returns The user data or null if not found.
      */
     async get(userId: string): Promise<UserData | null> {
         const doc = await userCollection.doc(userId).get();

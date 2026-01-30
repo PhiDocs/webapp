@@ -6,11 +6,11 @@ import { UserRepository } from '@/repositories/user.repository';
 import type { UserProfile } from '@/components/auth/session-provider';
 
 /**
- * ESTA FUNÇÃO FOI MANTIDA PARA POSSÍVEIS USOS FUTUROS NO SERVIDOR,
- * MAS NÃO É MAIS USADA PELO SESSIONPROVIDER NO CLIENTE.
+ * THIS FUNCTION IS KEPT FOR POSSIBLE FUTURE SERVER USE,
+ * BUT IT IS NO LONGER USED BY THE CLIENT SESSION PROVIDER.
  * 
- * Busca o perfil completo do usuário logado no Firestore.
- * @returns O perfil do usuário ou um erro.
+ * Fetch the full profile of the logged-in user from Firestore.
+ * @returns The user profile or an error.
  */
 export async function getUserProfile(): Promise<{ success: boolean; data?: UserProfile, error?: string }> {
   try {
@@ -27,7 +27,7 @@ export async function getUserProfile(): Promise<{ success: boolean; data?: UserP
       return { success: false, error: 'Perfil do usuário não encontrado no Firestore.' };
     }
     
-    // Assegura que o retorno corresponde à interface UserProfile
+    // Ensure the return matches the UserProfile interface
     const userProfile: UserProfile = {
         uid: user.uid,
         name: user.name,

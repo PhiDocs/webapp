@@ -14,7 +14,7 @@ const subcontractorServerSchema = z.object({
 });
 
 /**
- * Busca todas as empresas terceirizadas.
+ * Fetch all subcontractors.
  */
 export async function getSubcontractors(companyId: string) {
     if (!companyId) {
@@ -31,7 +31,7 @@ export async function getSubcontractors(companyId: string) {
 }
 
 /**
- * Cria um novo subcontratado.
+ * Create a new subcontractor.
  */
 export async function createSubcontractor(data: SubcontractorFormValues & { companyId: string }) {
     const validation = subcontractorServerSchema.safeParse(data);
@@ -53,7 +53,7 @@ export async function createSubcontractor(data: SubcontractorFormValues & { comp
 }
 
 /**
- * Atualiza um subcontratado existente.
+ * Update an existing subcontractor.
  */
 export async function updateSubcontractor(id: string, data: SubcontractorFormValues & { companyId: string }) {
     const validation = subcontractorServerSchema.safeParse(data);
@@ -75,7 +75,7 @@ export async function updateSubcontractor(id: string, data: SubcontractorFormVal
 }
 
 /**
- * Deleta um subcontratado.
+ * Delete a subcontractor.
  */
 export async function deleteSubcontractor(id: string, companyId: string) {
     if (!id || !companyId) {

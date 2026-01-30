@@ -6,7 +6,7 @@ type Content = any;
 type TableCell = any;
 
 // Helper functions
-function getShortDate(dateString: string): string {
+function getShortDate(dateString?: string): string {
   if (!dateString) return '';
   const date = new Date(dateString);
   return date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
@@ -29,7 +29,12 @@ function getSignatureContent(signatureData: string | undefined, name: string): C
 }
 
 // --- APR Document Generation ---
-export function generateAPRPages(formData: SafetyFormValues, analysisData: SafetyAnalysisOutput | null, equipmentData: ProtectiveEquipmentOutput | null): Content[] {
+type PdfFormData = SafetyFormValues & {
+    companyName?: string;
+    companyLogo?: string;
+};
+
+export function generateAPRPages(formData: PdfFormData, analysisData: SafetyAnalysisOutput | null, equipmentData: ProtectiveEquipmentOutput | null): Content[] {
     const content: Content[] = [];
 
     // --- Header ---
@@ -139,7 +144,7 @@ export function generateAPRPages(formData: SafetyFormValues, analysisData: Safet
         responsibleBody.push([
             { text: p.name || '...', style: 'td', alignment: 'left', margin: [5, 15] },
             { text: p.role || '...', style: 'td', alignment: 'left', margin: [5, 15] },
-             {stack: [getSignatureContent(p)], border: [true, false, false, false], borderColor: ['#ccc', '#ccc', '#ccc', '#ccc'], margin: [5, 5]},
+             {stack: [getSignatureContent(p.signatureData, p.name)], border: [true, false, false, false], borderColor: ['#ccc', '#ccc', '#ccc', '#ccc'], margin: [5, 5]},
         ]);
     });
 
@@ -251,8 +256,8 @@ export function generateAPRPages(formData: SafetyFormValues, analysisData: Safet
             layout: {
                 hLineWidth: () => 0,
                 vLineWidth: () => 0,
-                paddingLeft: (i) => (i === 0 ? 0 : 4),
-                paddingRight: (i, node) => (i === (node.table.widths?.length || 0) - 1 ? 0 : 4),
+                paddingLeft: (i: number) => (i === 0 ? 0 : 4),
+                paddingRight: (i: number, node: any) => (i === (node.table.widths?.length || 0) - 1 ? 0 : 4),
             },
             marginBottom: 10,
         });

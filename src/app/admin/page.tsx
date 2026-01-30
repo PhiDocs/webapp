@@ -1,8 +1,8 @@
 'use client';
 
-// Esta página agora serve como um placeholder ou pode ser usada
-// futuramente para um painel de super-admin. O middleware redireciona
-// os admins de empresa para a página da sua companhia.
+// This page now serves as a placeholder and can be used
+// later for a super-admin panel. The proxy redirects
+// company admins to their company page.
 export default function AdminPage() {
     return (
         <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">

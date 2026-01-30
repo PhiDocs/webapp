@@ -45,7 +45,7 @@ export default function CompanyPage() {
         }
     }, [companyId]);
 
-    // Validação de permissão
+    // Permission validation
     if (!isSessionLoading && user && (user.role !== 'admin' || user.companyId !== companyId)) {
         return (
             <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">

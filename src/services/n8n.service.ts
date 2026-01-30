@@ -36,12 +36,12 @@ class N8nApiService {
             };
 
         } catch (error: any) {
-            // Se o erro já foi tratado e formatado, apenas o relance
+            // If the error was already handled and formatted, just rethrow
             if (error.status) {
                 throw error;
             }
             
-            // Caso contrário, é um erro de conexão/fetch
+            // Otherwise, it's a connection/fetch error
             const connectionError: any = new Error(N8N_ERROR_MESSAGES.CONNECTION_ERROR);
             connectionError.details = error.message;
             throw connectionError;

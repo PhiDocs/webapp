@@ -1,14 +1,14 @@
-// Este script precisa ser executado em um ambiente que entenda `require` e ES Modules (import).
-// A forma mais simples é garantir que o projeto foi compilado (`npm run build`) e
-// que o Node.js consegue resolver os módulos corretamente.
+// This script must run in an environment that supports `require` and ES Modules (import).
+// The simplest way is to ensure the project is built (`npm run build`) and
+// that Node.js can resolve the modules correctly.
 
 const path = require('path');
-// Carrega as variáveis de ambiente do arquivo .env
+// Load environment variables from the .env file
 require('dotenv').config({ path: path.resolve(process.cwd(), '.env') });
 
-// Importa a função da server action.
-// NOTA: O caminho depende da estrutura do output da compilação do Next.js.
-// Este caminho é um palpite e pode precisar de ajuste.
+// Import the server action function.
+// NOTE: The path depends on the Next.js build output structure.
+// This path is a guess and may need adjustments.
 const { registerCompany } = require('../src/server/admin-actions.ts');
 
 async function main() {
@@ -40,13 +40,11 @@ async function main() {
   }
 }
 
-// Devido à forma como o Next.js lida com as server actions, executar este script
-// diretamente pode ser complexo. A maneira mais robusta de usar `registerCompany`
-// seria através de uma interface de "super-admin" dentro da própria aplicação.
+// Due to how Next.js handles server actions, running this script directly can be tricky.
+// The most robust way to use `registerCompany` is via a "super-admin" interface in the app.
 //
-// Para rodar este script, você pode precisar de uma ferramenta como `tsx` para
-// transpilar o TypeScript em tempo de execução:
+// To run this script, you may need a tool like `tsx` to transpile TypeScript at runtime:
 // npm install -g tsx
-// tsx scripts/create-company.js "Minha Empresa" "admin@minhaempresa.com" "Admin" "senhaSegura123"
+// tsx scripts/create-company.js "My Company" "admin@mycompany.com" "Admin" "securePassword123"
 
 main();
