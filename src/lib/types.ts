@@ -68,6 +68,13 @@ export const teamMemberSchema = z.object({
   role: z.string().min(1, validationMessages.teamRole),
 });
 
+export const analysisStepSchema = z.object({
+  item: z.number().optional(),
+  activity: z.string().optional(),
+  potentialRisks: z.string().optional(),
+  preventiveMeasures: z.string().optional(),
+});
+
 export const ptChecklistSchema = z.record(z.boolean());
 
 export const ptTeamMemberSchema = z.object({
@@ -147,6 +154,9 @@ export const formSchema = z.object({
   // Team (APR)
   teamMembers: z.array(teamMemberSchema).optional(),
 
+  // Manual Analysis Steps (APR)
+  analysisSteps: z.array(analysisStepSchema).optional(),
+
   // PT Form Data
   pt: ptFormSchema,
 }).superRefine((data, ctx) => {
@@ -177,6 +187,7 @@ export const formSchema = z.object({
 export type SafetyFormValues = z.input<typeof formSchema>;
 export type ResponsiblePerson = z.infer<typeof responsiblePersonSchema>;
 export type TeamMember = z.infer<typeof teamMemberSchema>;
+export type AnalysisStep = z.infer<typeof analysisStepSchema>;
 export type PtFormValues = z.infer<typeof ptFormSchema>;
 export type PtTeamMember = z.infer<typeof ptTeamMemberSchema>;
 export type PtSigner = z.infer<typeof ptSignerSchema>;

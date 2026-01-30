@@ -95,12 +95,28 @@ A implementação será dividida em fases para garantir um desenvolvimento incre
 10. **Ajustar os Formulários com Dados do Admin:**
     - Atualizar os formulários para que os campos de "Responsáveis" e "Equipe" possam ser preenchidos selecionando funcionários já cadastrados na obra.
 
-### Fase 4: Alterações
 
-Ao gerar a Análise de Segurança, não podemos editar esse campo, apenas visualizar, então se houver algum erro não conseguimos atualizar o arquivo.
 
-O arquivo `documento-seguranca.pdf` tem o resultado final do relatório.
+### Fase 4: Funcionalidades Avançadas
 
-Após a seção de `Descrição da atividade` vamos adicionar a opção de adicionar a análise de segurança manualmente e, quando clicar em gerar análise de segurança com IA, os dados serão adicionados ao final dos dados manuais
+11. **Criar um Dashboard de Métricas:**
+    - Desenvolver uma tela no painel do admin para exibir estatísticas de uso, como o número de documentos gerados por obra ou por período, para monitoramento de custos com a IA.
 
-A pré-visualização e resultado final permanecem inalterados, mas agora podemos trabalhar com os dados sem IA e, ao gerar a análise com IA, podemos alterar se necessário.
+### Fase 5: Painel do Super Admin (Gerenciamento Global)
+
+12. **Introduzir a Role de `super-admin`:**
+    - Definir uma nova role de usuário (`super-admin`) através de Custom Claims do Firebase. Esta role terá acesso a um painel de controle global, separado do painel de `admin` das empresas.
+    - O primeiro `super-admin` será atribuído manualmente via Firebase Admin SDK.
+
+13. **Desenvolver o Painel de Super Admin:**
+    - Criar uma nova rota protegida (ex: `/super-admin`) acessível apenas para usuários com a role `super-admin`.
+    - Desenvolver a interface para gerenciar todas as empresas cadastradas no sistema (CRUD completo).
+    - Implementar a funcionalidade de criação de novas empresas e seus respectivos administradores diretamente pela interface do painel, substituindo o uso de scripts (`registerCompany`).
+
+14. **Gerenciamento de Usuários Globais:**
+    - Criar uma visão para listar todos os usuários do sistema, com filtros por empresa e por role (`admin`, `user`).
+    - Adicionar funcionalidades para o `super-admin` gerenciar usuários, como desativar contas ou reenviar convites.
+
+15. **Dashboard de Monitoramento do Sistema:**
+    - Desenvolver um dashboard para o `super-admin` com métricas globais, como número total de empresas, usuários, documentos gerados e monitoramento de custos com a API de IA.
+ -->

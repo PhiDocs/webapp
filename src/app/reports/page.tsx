@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import type { SafetyAnalysisOutput, ProtectiveEquipmentOutput } from '@/server/ai-actions';
 import type { SafetyFormValues, Work, Employee, Company } from '@/lib/types';
 import { getSafetyAnalysis, getProtectiveEquipment } from '@/server/ai-actions';
 import { notifyN8n } from '@/server/n8n-actions';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { formSchema } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
@@ -21,9 +21,30 @@ import { getWorks } from '@/server/work-actions';
 import { getEmployees } from '@/server/employee-actions';
 import { getCompanyById } from '@/server/company-actions';
 
+function normalizeAnalysisSteps(steps: any[] | undefined): SafetyAnalysisOutput | null {
+  if (!steps || steps.length === 0) return null;
+
+  const normalized = steps
+    .map((step) => ({
+      activity: (step?.activity || '').trim(),
+      potentialRisks: (step?.potentialRisks || '').trim(),
+      preventiveMeasures: (step?.preventiveMeasures || '').trim(),
+    }))
+    .filter((step) => step.activity || step.potentialRisks || step.preventiveMeasures)
+    .map((step, index) => ({
+      item: index + 1,
+      activity: step.activity,
+      potentialRisks: step.potentialRisks,
+      preventiveMeasures: step.preventiveMeasures,
+    }));
+
+  if (normalized.length === 0) return null;
+
+  return { proceduralSteps: normalized };
+}
+
 export default function ReportsPage() {
   const { user } = useSession();
-  const [analysis, setAnalysis] = useState<SafetyAnalysisOutput | null>(null);
   const [equipment, setEquipment] = useState<ProtectiveEquipmentOutput | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
@@ -47,6 +68,7 @@ export default function ReportsPage() {
       endDate: '',
       workLocationDetails: '',
       activityDescription: '',
+      analysisSteps: [],
       responsiblePersons: [
         { employeeId: '', name: '', role: '', signatureType: SIGNATURE_TYPES.TYPED, signatureData: '' }
       ],
@@ -86,6 +108,12 @@ export default function ReportsPage() {
   });
 
   const liveFormData = form.watch();
+  const watchedAnalysisSteps = useWatch({ control: form.control, name: 'analysisSteps' });
+  const analysis = useMemo(
+    () => normalizeAnalysisSteps(watchedAnalysisSteps),
+    [watchedAnalysisSteps]
+  );
+
   
   useEffect(() => {
     if (user?.companyId) {
@@ -131,10 +159,10 @@ export default function ReportsPage() {
 
     setIsLoading(true);
     setError(null);
-    setAnalysis(null);
     setEquipment(null);
 
     try {
+      const manualNormalized = normalizeAnalysisSteps(form.getValues('analysisSteps'));
       const [analysisResult, equipmentResult] = await Promise.all([
           getSafetyAnalysis({ activityDescription: data.activityDescription! }),
           getProtectiveEquipment({ activityDescription: data.activityDescription! })
@@ -142,14 +170,25 @@ export default function ReportsPage() {
 
       if (analysisResult.error || !analysisResult.data) {
         const errorMsg = analysisResult.error || ptBr.validations.safetyAnalysisFailed;
-        setError(errorMsg);
+        if (!manualNormalized) {
+          setError(errorMsg);
+        }
         toast({
             variant: 'destructive',
             title: ptBr.toasts.errors.fetchAnalysis,
             description: errorMsg,
         });
       } else {
-        setAnalysis(analysisResult.data);
+        const manualSteps = manualNormalized?.proceduralSteps ?? [];
+        const merged = [...manualSteps, ...analysisResult.data.proceduralSteps]
+          .map((step, index) => ({
+            item: index + 1,
+            activity: step.activity,
+            potentialRisks: step.potentialRisks,
+            preventiveMeasures: step.preventiveMeasures,
+          }));
+
+        form.setValue('analysisSteps', merged, { shouldDirty: true, shouldValidate: true });
       }
       
       if (equipmentResult.error || !equipmentResult.data) {
@@ -178,7 +217,6 @@ export default function ReportsPage() {
   };
 
   const handleNewReport = () => {
-    setAnalysis(null);
     setEquipment(null);
     setError(null);
     form.reset();
@@ -247,7 +285,7 @@ export default function ReportsPage() {
           setMobileView={setMobileView}
           onGeneratePdf={handleDownloadPdf}
           isDownloading={isDownloading}
-          isAprReady={!!(liveFormData.documentType === DOCUMENT_TYPES.APR && analysis)}
+          isAprReady={!!(liveFormData.documentType === DOCUMENT_TYPES.APR && analysis?.proceduralSteps?.length)}
           isPtReady={liveFormData.documentType === DOCUMENT_TYPES.PT}
         >
           <UserNav />
@@ -269,7 +307,7 @@ export default function ReportsPage() {
           <div className="h-full no-print bg-muted">
               <PreviewPanel
                   isLoading={isLoading}
-                  error={error}
+                  error={analysis?.proceduralSteps?.length ? null : error}
                   liveFormData={liveFormData}
                   analysisData={analysis}
                   equipmentData={equipment}
@@ -277,7 +315,7 @@ export default function ReportsPage() {
                   mobileView={mobileView}
                   isDownloading={isDownloading}
                   onGeneratePdf={handleDownloadPdf}
-                  isAprReady={!!(liveFormData.documentType === DOCUMENT_TYPES.APR && analysis)}
+                  isAprReady={!!(liveFormData.documentType === DOCUMENT_TYPES.APR && analysis?.proceduralSteps?.length)}
                   isPtReady={liveFormData.documentType === DOCUMENT_TYPES.PT}
               />
           </div>
@@ -289,6 +327,7 @@ export default function ReportsPage() {
           analysisData={analysis}
           equipmentData={equipment}
           company={company}
+          error={analysis?.proceduralSteps?.length ? null : error}
         />
       </div>
     </>

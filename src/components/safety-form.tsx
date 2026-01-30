@@ -32,6 +32,7 @@ import {
   Trash2,
   Briefcase,
   Users,
+  ShieldCheck,
 } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { PTForm } from './pt-form';
@@ -158,6 +159,15 @@ export function SafetyForm({
   } = useFieldArray({
     control: form.control,
     name: 'teamMembers',
+  });
+
+  const {
+    fields: analysisStepFields,
+    append: appendAnalysisStep,
+    remove: removeAnalysisStep,
+  } = useFieldArray({
+    control: form.control,
+    name: 'analysisSteps',
   });
 
   const documentType = useWatch({ control: form.control, name: 'documentType' });
@@ -345,6 +355,100 @@ export function SafetyForm({
                       </FormItem>
                     )}
                   />
+
+                  <Separator />
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-semibold flex items-center">
+                      <ShieldCheck className="mr-2" /> {ptBr.safetyForm.manualAnalysisTitle}
+                    </h3>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() =>
+                        appendAnalysisStep({ activity: '', potentialRisks: '', preventiveMeasures: '' })
+                      }
+                    >
+                      <PlusCircle className="mr-2 h-4 w-4" /> {ptBr.safetyForm.addAnalysisStep}
+                    </Button>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    {ptBr.safetyForm.manualAnalysisDescription}
+                  </p>
+
+                  <div className="space-y-4">
+                    {analysisStepFields.length === 0 && (
+                      <div className="text-sm text-muted-foreground italic">
+                        {ptBr.safetyForm.manualAnalysisEmpty}
+                      </div>
+                    )}
+                    {analysisStepFields.map((item, index) => (
+                      <div key={item.id} className="rounded-lg border p-4 space-y-4">
+                        <div className="flex items-center justify-between">
+                          <div className="text-sm font-semibold">
+                            {ptBr.safetyForm.analysisStepLabel} {index + 1}
+                          </div>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => removeAnalysisStep(index)}
+                          >
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </div>
+                        <FormField
+                          control={form.control}
+                          name={`analysisSteps.${index}.activity`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>{ptBr.safetyForm.analysisStepActivity}</FormLabel>
+                              <FormControl>
+                                <Textarea
+                                  placeholder={ptBr.safetyForm.analysisStepActivityPlaceholder}
+                                  className="resize-y min-h-[80px]"
+                                  {...field}
+                                />
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name={`analysisSteps.${index}.potentialRisks`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>{ptBr.safetyForm.analysisStepRisks}</FormLabel>
+                              <FormControl>
+                                <Textarea
+                                  placeholder={ptBr.safetyForm.analysisStepRisksPlaceholder}
+                                  className="resize-y min-h-[80px]"
+                                  {...field}
+                                />
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name={`analysisSteps.${index}.preventiveMeasures`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>{ptBr.safetyForm.analysisStepMeasures}</FormLabel>
+                              <FormControl>
+                                <Textarea
+                                  placeholder={ptBr.safetyForm.analysisStepMeasuresPlaceholder}
+                                  className="resize-y min-h-[80px]"
+                                  {...field}
+                                />
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    ))}
+                  </div>
+
                   <Button type="submit" disabled={isLoading} className="w-full">
                     {isLoading
                       ? ptBr.actions.generatingAnalysis
