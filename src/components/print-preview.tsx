@@ -17,19 +17,19 @@ interface PrintPreviewProps {
 }
 
 const SignaturePreview = ({ signatureData, signatureType }: { signatureData?: string, signatureType?: string }) => {
-    if (!signatureData) {
-        return <div className="h-12 w-full border-b border-dashed"></div>;
-    }
-
-    if (signatureType === SIGNATURE_TYPES.TYPED) {
-        return <p className="font-serif italic text-lg text-center h-12 flex items-center justify-center">{signatureData}</p>;
-    }
-
-    if (signatureType === SIGNATURE_TYPES.DRAW || signatureType === SIGNATURE_TYPES.UPLOAD) {
-        return <img src={signatureData} alt={ptBr.other.signatureAlt} className="h-12 object-contain mx-auto" />;
-    }
-
+  if (!signatureData) {
     return <div className="h-12 w-full border-b border-dashed"></div>;
+  }
+
+  if (signatureType === SIGNATURE_TYPES.TYPED) {
+    return <p className="font-serif italic text-lg text-center h-12 flex items-center justify-center">{signatureData}</p>;
+  }
+
+  if (signatureType === SIGNATURE_TYPES.DRAW || signatureType === SIGNATURE_TYPES.UPLOAD) {
+    return <img src={signatureData} alt={ptBr.other.signatureAlt} className="h-12 object-contain mx-auto" />;
+  }
+
+  return <div className="h-12 w-full border-b border-dashed"></div>;
 };
 
 function APRHeader({ data, company }: { data: SafetyFormValues; company: Company | null }) {
@@ -40,7 +40,7 @@ function APRHeader({ data, company }: { data: SafetyFormValues; company: Company
           {company?.logo ? (
             <img src={company.logo} alt={ptBr.other.companyLogoAlt} className="h-16 w-auto max-w-[120px] object-contain" />
           ) : (
-             <Logo className="h-12 w-12 text-gray-700" />
+            <Logo className="h-12 w-12 text-gray-700" />
           )}
           <div className='flex-1 min-w-0'>
             <h1 className="text-xl font-bold text-gray-800 break-words">{company?.name || '...'}</h1>
@@ -65,31 +65,31 @@ function APRHeader({ data, company }: { data: SafetyFormValues; company: Company
 }
 
 function PrintFooter() {
-    const date = new Date().toLocaleDateString('pt-BR');
+  const date = new Date().toLocaleDateString('pt-BR');
 
-    return (
-        <footer className="print-footer avoid-break mt-4 text-xs text-gray-500 border-t pt-2">
-            <div className="flex justify-between items-center w-full">
-                <p>{ptBr.printPreview.footer.mte}</p>
-                <p>{ptBr.printPreview.footer.date} {date}</p>
-            </div>
-        </footer>
-    );
+  return (
+    <footer className="print-footer avoid-break mt-4 text-xs text-gray-500 border-t pt-2">
+      <div className="flex justify-between items-center w-full">
+        <p>{ptBr.printPreview.footer.mte}</p>
+        <p>{ptBr.printPreview.footer.date} {date}</p>
+      </div>
+    </footer>
+  );
 }
 
 const Section = ({ title, icon, children }: { title: string, icon: React.ElementType, children: React.ReactNode }) => {
-    const Icon = icon;
-    return (
-        <section className="avoid-break mt-2">
-            <h3 className="section-title flex items-center justify-center">
-                <Icon className="inline-block mr-2 h-4 w-4" />
-                {title}
-            </h3>
-            <div className="section-content">
-                {children}
-            </div>
-        </section>
-    );
+  const Icon = icon;
+  return (
+    <section className="avoid-break mt-2">
+      <h3 className="section-title flex items-center justify-center">
+        <Icon className="inline-block mr-2 h-4 w-4" />
+        {title}
+      </h3>
+      <div className="section-content">
+        {children}
+      </div>
+    </section>
+  );
 }
 
 
@@ -109,7 +109,7 @@ function ResponsiblesSection({ data }: { data: SafetyFormValues }) {
             <tr key={`resp-${index}`} className="avoid-break">
               <td className="h-16">{person.name || '...'}</td>
               <td>{person.role || '...'}</td>
-               <td>
+              <td>
                 <SignaturePreview signatureData={person.signatureData} signatureType={person.signatureType} />
               </td>
             </tr>
@@ -150,28 +150,28 @@ function TeamSection({ data }: { data: SafetyFormValues }) {
 
 function AnalysisTable({ steps }: { steps: any[] }) {
   return (
-     <Section title={ptBr.printPreview.apr.operationalProcedure} icon={ShieldCheck}>
-        <table className="w-full border-collapse text-xs analysis-table">
-            <thead>
-                <tr>
-                    <th className="p-1 text-left w-[5%]">{ptBr.printPreview.apr.item}</th>
-                    <th className="p-1 text-left w-[25%]">{ptBr.printPreview.apr.activities}</th>
-                    <th className="p-1 text-left w-[25%]">{ptBr.printPreview.apr.potentialRisks}</th>
-                    <th className="p-1 text-left w-[45%]">{ptBr.printPreview.apr.preventiveMeasures}</th>
-                </tr>
-            </thead>
-            <tbody>
-              {steps.map((step: any, index: number) => (
-                <tr key={`proc-step-${step.item || index}`}>
-                  <td className="p-2 align-top text-center">{step.item}</td>
-                  <td className="p-2 align-top">{step.activity}</td>
-                  <td className="p-2 align-top">{step.potentialRisks}</td>
-                  <td className="p-2 align-top whitespace-pre-wrap">{step.preventiveMeasures}</td>
-                </tr>
-              ))}
-            </tbody>
-        </table>
-      </Section>
+    <Section title={ptBr.printPreview.apr.operationalProcedure} icon={ShieldCheck}>
+      <table className="w-full border-collapse text-xs analysis-table">
+        <thead>
+          <tr>
+            <th className="p-1 text-left w-[5%]">{ptBr.printPreview.apr.item}</th>
+            <th className="p-1 text-left w-[25%]">{ptBr.printPreview.apr.activities}</th>
+            <th className="p-1 text-left w-[25%]">{ptBr.printPreview.apr.potentialRisks}</th>
+            <th className="p-1 text-left w-[45%]">{ptBr.printPreview.apr.preventiveMeasures}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {steps.map((step: any, index: number) => (
+            <tr key={`proc-step-${step.item || index}`}>
+              <td className="p-2 align-top text-center">{step.item}</td>
+              <td className="p-2 align-top">{step.activity}</td>
+              <td className="p-2 align-top">{step.potentialRisks}</td>
+              <td className="p-2 align-top whitespace-pre-wrap">{step.preventiveMeasures}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </Section>
   );
 }
 
@@ -180,22 +180,22 @@ function EquipmentSection({ data }: { data: ProtectiveEquipmentOutput | null }) 
 
   return (
     <div className='grid grid-cols-2 gap-4 avoid-break'>
-        <Section title={ptBr.printPreview.apr.requiredEpi} icon={HardHat}>
-            <div className='p-2'>
-                <ul className="list-disc pl-4 space-y-1 text-sm">
-                    {data.epiItems.map((item, index) => <li key={`epi-${index}`}>{item}</li>)}
-                </ul>
-                <p className="text-xs italic mt-2"><strong>{ptBr.printPreview.apr.obs}</strong> {data.epiNote}</p>
-            </div>
-        </Section>
-        <Section title={ptBr.printPreview.apr.requiredEpc} icon={Construction}>
-            <div className='p-2'>
-                <ul className="list-disc pl-4 space-y-1 text-sm">
-                    {data.epcItems.map((item, index) => <li key={`epc-${index}`}>{item}</li>)}
-                </ul>
-                 <p className="text-xs italic mt-2"><strong>{ptBr.printPreview.apr.obs}</strong> {data.epcNote}</p>
-            </div>
-        </Section>
+      <Section title={ptBr.printPreview.apr.requiredEpi} icon={HardHat}>
+        <div className='p-2'>
+          <ul className="list-disc pl-4 space-y-1 text-sm">
+            {data.epiItems.map((item, index) => <li key={`epi-${index}`}>{item}</li>)}
+          </ul>
+          <p className="text-xs italic mt-2"><strong>{ptBr.printPreview.apr.obs}</strong> {data.epiNote}</p>
+        </div>
+      </Section>
+      <Section title={ptBr.printPreview.apr.requiredEpc} icon={Construction}>
+        <div className='p-2'>
+          <ul className="list-disc pl-4 space-y-1 text-sm">
+            {data.epcItems.map((item, index) => <li key={`epc-${index}`}>{item}</li>)}
+          </ul>
+          <p className="text-xs italic mt-2"><strong>{ptBr.printPreview.apr.obs}</strong> {data.epcNote}</p>
+        </div>
+      </Section>
     </div>
   )
 }
@@ -212,61 +212,62 @@ function getShortDate(dateString: string | undefined) {
 }
 
 function APRPreviewContent({ formData, analysisData, equipmentData, company, error }: { formData: SafetyFormValues, analysisData: SafetyAnalysisOutput | null, equipmentData: ProtectiveEquipmentOutput | null, company: Company | null, error?: string | null }) {
-    if (!formData) return null;
+  if (!formData) return null;
 
-    const showAnalysis = !error && analysisData && analysisData.proceduralSteps && analysisData.proceduralSteps.length > 0;
+  const showAnalysis = !error && analysisData && analysisData.proceduralSteps && analysisData.proceduralSteps.length > 0;
 
-    return (
-        <div className="page-content-wrapper">
-            <APRHeader data={formData} company={company} />
-             <main className='print-main flex flex-col gap-4'>
-                <Section title={ptBr.printPreview.apr.workData} icon={ClipboardList}>
-                     <table className="w-full border-collapse info-grid">
-                        <tbody>
-                            <tr>
-                                <td className="w-1/2"><strong>{ptBr.printPreview.apr.workName}</strong>{formData.workName || '...'}</td>
-                                <td className="w-1/2"><strong>{ptBr.printPreview.apr.workAddress}</strong>{formData.workAddress || '...'}</td>
-                            </tr>
-                            <tr>
-                                <td><strong>{ptBr.printPreview.apr.startDate}</strong>{getShortDate(formData.startDate)}</td>
-                                <td><strong>{ptBr.printPreview.apr.endDate}</strong>{getShortDate(formData.endDate)}</td>
-                            </tr>
-                            <tr>
-                                <td colSpan={2}><strong>{ptBr.printPreview.apr.workLocation}</strong>{formData.workLocationDetails || '...'}</td>
-                            </tr>
-                            <tr>
-                                <td colSpan={2}><strong>{ptBr.printPreview.apr.activityDescription}</strong>{formData.activityDescription || '...'}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </Section>
-               
-                <ResponsiblesSection data={formData} />
+  return (
+    <div className="page-content-wrapper">
+      <APRHeader data={formData} company={company} />
+      <main className='print-main flex flex-col gap-4'>
+        <Section title={ptBr.printPreview.apr.workData} icon={ClipboardList}>
+          <table className="w-full border-collapse info-grid">
+            <tbody>
+              <tr>
+                <td className="w-1/2"><strong>{ptBr.printPreview.apr.workName}</strong>{formData.workName || '...'}</td>
+                <td className="w-1/2"><strong>{ptBr.printPreview.apr.workAddress}</strong>{formData.workAddress || '...'}</td>
+              </tr>
+              <tr>
+                <td><strong>{ptBr.printPreview.apr.startDate}</strong>{getShortDate(formData.startDate)}</td>
+                <td><strong>{ptBr.printPreview.apr.endDate}</strong>{getShortDate(formData.endDate)}</td>
+              </tr>
+              <tr>
+                <td colSpan={2}><strong>{ptBr.printPreview.apr.workLocation}</strong>{formData.workLocationDetails || '...'}</td>
+              </tr>
+              <tr>
+                <td colSpan={2}><strong>{ptBr.printPreview.apr.activityDescription}</strong>{formData.activityDescription || '...'}</td>
+              </tr>
+            </tbody>
+          </table>
+        </Section>
 
-                {error ? (
-                     <Section title={ptBr.printPreview.apr.operationalProcedure} icon={AlertTriangle}>
-                        <div className="text-center text-destructive bg-destructive/10 border-2 border-dashed border-destructive/30 rounded-lg p-4">
-                            <h3 className="text-base font-semibold">{ptBr.previewPanel.error.title}</h3>
-                            <p className='mt-2 text-sm'>{error}</p>
-                        </div>
-                    </Section>
-                ) : showAnalysis ? (
-                   <AnalysisTable steps={analysisData.proceduralSteps} />
-                ) : (
-                    <Section title={ptBr.printPreview.apr.operationalProcedure} icon={ShieldCheck}>
-                        <div className="text-center text-gray-500 italic py-8 border-2 border-dashed rounded-lg">
-                            {ptBr.printPreview.apr.analysisPlaceholder}
-                        </div>
-                    </Section>
-                )}
 
-                {!error && <EquipmentSection data={equipmentData} />}
-                
-                <TeamSection data={formData} />
-            </main>
-            <PrintFooter />
-        </div>
-    );
+
+        {error ? (
+          <Section title={ptBr.printPreview.apr.operationalProcedure} icon={AlertTriangle}>
+            <div className="text-center text-destructive bg-destructive/10 border-2 border-dashed border-destructive/30 rounded-lg p-4">
+              <h3 className="text-base font-semibold">{ptBr.previewPanel.error.title}</h3>
+              <p className='mt-2 text-sm'>{error}</p>
+            </div>
+          </Section>
+        ) : showAnalysis ? (
+          <AnalysisTable steps={analysisData.proceduralSteps} />
+        ) : (
+          <Section title={ptBr.printPreview.apr.operationalProcedure} icon={ShieldCheck}>
+            <div className="text-center text-gray-500 italic py-8 border-2 border-dashed rounded-lg">
+              {ptBr.printPreview.apr.analysisPlaceholder}
+            </div>
+          </Section>
+        )}
+
+        {!error && <EquipmentSection data={equipmentData} />}
+
+        <TeamSection data={formData} />
+        <ResponsiblesSection data={formData} />
+      </main>
+      <PrintFooter />
+    </div>
+  );
 }
 
 
@@ -276,11 +277,11 @@ export function PrintPreview({ formData, analysisData, equipmentData, company, e
   return (
     <div className="print-preview-wrapper">
       <div id="print-content-root" className="print-document-container w-[210mm] min-h-[297mm] bg-white shadow-lg rounded-lg text-gray-800 font-sans p-[15mm]">
-          {documentType === DOCUMENT_TYPES.APR ? (
-              <APRPreviewContent formData={formData} analysisData={analysisData} equipmentData={equipmentData} company={company} error={error}/>
-          ) : (
-              <PTPreview formData={formData} company={company} />
-          )}
+        {documentType === DOCUMENT_TYPES.APR ? (
+          <APRPreviewContent formData={formData} analysisData={analysisData} equipmentData={equipmentData} company={company} error={error} />
+        ) : (
+          <PTPreview formData={formData} company={company} />
+        )}
       </div>
     </div>
   );

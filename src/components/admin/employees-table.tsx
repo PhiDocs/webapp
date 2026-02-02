@@ -3,19 +3,19 @@
 import React, { useState, useEffect, useTransition } from 'react';
 import { Button } from '@/components/ui/button';
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
 } from '@/components/ui/table';
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
 } from '@/components/ui/dialog';
 import {
     AlertDialog,
@@ -75,13 +75,13 @@ export function EmployeesTable({ companyId }: EmployeesTableProps) {
             if (jobRolesResult.success && jobRolesResult.data) {
                 setJobRoles(jobRolesResult.data);
             } else {
-                 toast({ variant: 'destructive', title: "Erro ao buscar cargos", description: jobRolesResult.error });
+                toast({ variant: 'destructive', title: "Erro ao buscar cargos", description: jobRolesResult.error });
             }
 
-             if (subcontractorsResult.success && subcontractorsResult.data) {
+            if (subcontractorsResult.success && subcontractorsResult.data) {
                 setSubcontractors(subcontractorsResult.data);
             } else {
-                 toast({ variant: 'destructive', title: "Erro ao buscar terceirizadas", description: subcontractorsResult.error });
+                toast({ variant: 'destructive', title: "Erro ao buscar terceirizadas", description: subcontractorsResult.error });
             }
 
         } catch (error) {
@@ -99,20 +99,20 @@ export function EmployeesTable({ companyId }: EmployeesTableProps) {
 
     const handleFormSubmit = (values: EmployeeFormValues) => {
         startTransition(async () => {
-             const role = jobRoles.find(r => r.id === values.roleId);
-             const subcontractor = subcontractors.find(s => s.id === values.subcontractorId);
+            const role = jobRoles.find(r => r.id === values.roleId);
+            const subcontractor = subcontractors.find(s => s.id === values.subcontractorId);
 
-             const fullData = { 
-                ...values, 
+            const fullData = {
+                ...values,
                 companyId,
                 roleName: role?.name || '',
                 subcontractorName: values.subcontractorId === 'N/A' ? 'Não aplicável' : subcontractor?.name || ''
             };
 
-            const action = editingEmployee 
-                ? updateEmployee(editingEmployee.id, fullData) 
+            const action = editingEmployee
+                ? updateEmployee(editingEmployee.id, fullData)
                 : createEmployee(fullData);
-            
+
             const result = await action;
 
             if (result.success) {
@@ -142,7 +142,7 @@ export function EmployeesTable({ companyId }: EmployeesTableProps) {
         setEditingEmployee(null);
         setIsFormOpen(true);
     }
-    
+
     const openEditDialog = (employee: Employee) => {
         setEditingEmployee(employee);
         setIsFormOpen(true);
@@ -171,6 +171,7 @@ export function EmployeesTable({ companyId }: EmployeesTableProps) {
                             <TableRow>
                                 <TableHead>Nome</TableHead>
                                 <TableHead className="hidden md:table-cell">Email</TableHead>
+                                <TableHead className="hidden md:table-cell">Telefone</TableHead>
                                 <TableHead className="hidden lg:table-cell">Função</TableHead>
                                 <TableHead className="text-right">Ações</TableHead>
                             </TableRow>
@@ -200,6 +201,7 @@ export function EmployeesTable({ companyId }: EmployeesTableProps) {
                                             )}
                                         </TableCell>
                                         <TableCell className="hidden md:table-cell">{employee.email}</TableCell>
+                                        <TableCell className="hidden md:table-cell">{employee.phone || '-'}</TableCell>
                                         <TableCell className="hidden lg:table-cell">{employee.roleName}</TableCell>
                                         <TableCell className="text-right">
                                             <AlertDialog>
@@ -253,7 +255,7 @@ export function EmployeesTable({ companyId }: EmployeesTableProps) {
                 <DialogHeader>
                     <DialogTitle>{editingEmployee ? 'Editar Funcionário' : 'Novo Funcionário'}</DialogTitle>
                 </DialogHeader>
-                <EmployeeForm 
+                <EmployeeForm
                     onSubmit={handleFormSubmit}
                     defaultValues={editingEmployee}
                     isPending={isPending}

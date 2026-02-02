@@ -8,15 +8,16 @@ import { ptBr } from '@/lib/data/strings';
 
 // Server-side schema validation. Includes companyId.
 const employeeServerSchema = z.object({
-  firstName: z.string().min(1, ptBr.validations.firstName),
-  lastName: z.string().min(1, ptBr.validations.lastName),
-  email: z.string().email(ptBr.validations.invalidEmail),
-  cpf: z.string().min(1, ptBr.validations.cpf),
-  roleId: z.string().min(1, ptBr.validations.roleId),
-  roleName: z.string(),
-  subcontractorId: z.string().optional().nullable(),
-  subcontractorName: z.string().optional().nullable(),
-  companyId: z.string().min(1, "ID da empresa é obrigatório."),
+    firstName: z.string().min(1, ptBr.validations.firstName),
+    lastName: z.string().min(1, ptBr.validations.lastName),
+    email: z.string().email(ptBr.validations.invalidEmail),
+    cpf: z.string().min(1, ptBr.validations.cpf),
+    phone: z.string().optional(),
+    roleId: z.string().min(1, ptBr.validations.roleId),
+    roleName: z.string(),
+    subcontractorId: z.string().optional().nullable(),
+    subcontractorName: z.string().optional().nullable(),
+    companyId: z.string().min(1, "ID da empresa é obrigatório."),
 });
 
 type EmployeeServerValues = z.infer<typeof employeeServerSchema>;
@@ -100,7 +101,7 @@ export async function deleteEmployee(id: string, companyId: string) {
     if (!id || !companyId) {
         return { success: false, error: 'ID do funcionário ou da empresa não fornecido.' };
     }
-    
+
     try {
         await EmployeeRepository.delete(id, companyId);
         revalidatePath(`/company/${companyId}`);
