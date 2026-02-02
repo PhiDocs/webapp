@@ -453,7 +453,7 @@ export function SafetyForm({
                       variant="outline"
                       size="sm"
                       onClick={() =>
-                        appendTeamMember({ employeeId: '', date: '', name: '', role: '' })
+                        appendTeamMember({ employeeId: '', date: '', name: '', role: '', signatureType: SIGNATURE_TYPES.TYPED, signatureData: '' })
                       }
                     >
                       <PlusCircle className="mr-2 h-4 w-4" /> {ptBr.actions.addMember}
@@ -462,60 +462,63 @@ export function SafetyForm({
 
                   <div className="space-y-4">
                     {teamMemberFields.map((item, index) => (
-                      <div key={item.id} className="flex items-start gap-2">
-                        <div className="grid grid-cols-1 gap-x-4 gap-y-2 sm:grid-cols-2 flex-grow">
-                          <FormField
-                            control={form.control}
-                            name={`teamMembers.${index}.date`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>{ptBr.safetyForm.teamDate}</FormLabel>
-                                <FormControl><Input type="date" {...field} /></FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={form.control}
-                            name={`teamMembers.${index}.employeeId`}
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>{ptBr.safetyForm.teamName}</FormLabel>
-                                <Select onValueChange={(employeeId) => {
-                                  field.onChange(employeeId);
-                                  const employee = employees.find(e => e.id === employeeId);
-                                  if (employee) {
-                                    form.setValue(`teamMembers.${index}.name`, `${employee.firstName} ${employee.lastName}`);
-                                    form.setValue(`teamMembers.${index}.role`, employee.roleName || '');
-                                  }
-                                }} defaultValue={field.value}>
-                                  <FormControl>
-                                    <SelectTrigger>
-                                      <SelectValue placeholder={ptBr.safetyForm.selectEmployeePlaceholder} />
-                                    </SelectTrigger>
-                                  </FormControl>
-                                  <SelectContent>
-                                    {employees.map((emp) => (
-                                      <SelectItem key={emp.id} value={emp.id}>
-                                        {emp.firstName} {emp.lastName} ({emp.roleName})
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
+                      <div key={item.id} className="flex flex-col gap-2 rounded-lg border p-4">
+                        <div className="flex items-start gap-2">
+                          <div className="grid grid-cols-1 gap-x-4 gap-y-2 sm:grid-cols-2 flex-grow">
+                            <FormField
+                              control={form.control}
+                              name={`teamMembers.${index}.date`}
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>{ptBr.safetyForm.teamDate}</FormLabel>
+                                  <FormControl><Input type="date" {...field} /></FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={form.control}
+                              name={`teamMembers.${index}.employeeId`}
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>{ptBr.safetyForm.teamName}</FormLabel>
+                                  <Select onValueChange={(employeeId) => {
+                                    field.onChange(employeeId);
+                                    const employee = employees.find(e => e.id === employeeId);
+                                    if (employee) {
+                                      form.setValue(`teamMembers.${index}.name`, `${employee.firstName} ${employee.lastName}`);
+                                      form.setValue(`teamMembers.${index}.role`, employee.roleName || '');
+                                    }
+                                  }} defaultValue={field.value}>
+                                    <FormControl>
+                                      <SelectTrigger>
+                                        <SelectValue placeholder={ptBr.safetyForm.selectEmployeePlaceholder} />
+                                      </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                      {employees.map((emp) => (
+                                        <SelectItem key={emp.id} value={emp.id}>
+                                          {emp.firstName} {emp.lastName} ({emp.roleName})
+                                        </SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="mt-8"
+                            onClick={() => removeTeamMember(index)}
+                          >
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
                         </div>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="mt-8"
-                          onClick={() => removeTeamMember(index)}
-                        >
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
+                        <SignatureField form={form} fieldPrefix={`teamMembers.${index}`} />
                       </div>
                     ))}
                     <FormMessage>

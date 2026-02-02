@@ -66,6 +66,8 @@ export const teamMemberSchema = z.object({
   date: z.string().min(1, validationMessages.teamDate),
   name: z.string().min(1, validationMessages.teamName),
   role: z.string().min(1, validationMessages.teamRole),
+  signatureType: signatureTypeSchema.default(SIGNATURE_TYPES.TYPED),
+  signatureData: z.string().optional(),
 });
 
 export const analysisStepSchema = z.object({

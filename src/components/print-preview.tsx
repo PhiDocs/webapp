@@ -129,9 +129,10 @@ function TeamSection({ data }: { data: SafetyFormValues }) {
       <table className="w-full border-collapse border mt-0 analysis-table">
         <thead>
           <tr>
-            <th className="text-left w-1/3">{ptBr.printPreview.apr.date}</th>
-            <th className="text-left w-1/3">{ptBr.printPreview.apr.name}</th>
-            <th className="text-left w-1/3">{ptBr.printPreview.apr.role}</th>
+            <th className="text-left w-[25%]">{ptBr.printPreview.apr.date}</th>
+            <th className="text-left w-[35%]">{ptBr.printPreview.apr.name}</th>
+            <th className="text-left w-[20%]">{ptBr.printPreview.apr.role}</th>
+            <th className="text-left w-[20%]">{ptBr.printPreview.apr.signature}</th>
           </tr>
         </thead>
         <tbody>
@@ -140,6 +141,9 @@ function TeamSection({ data }: { data: SafetyFormValues }) {
               <td className="h-10">{getShortDate(member.date)}</td>
               <td>{member.name}</td>
               <td>{member.role}</td>
+              <td>
+                <SignaturePreview signatureData={member.signatureData} signatureType={member.signatureType} />
+              </td>
             </tr>
           ))}
         </tbody>
