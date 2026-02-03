@@ -40,7 +40,7 @@ export function PreviewPanel({
   const canDownload = isPtReady || isAprReady;
 
   return (
-    <div className={cn("relative flex-col bg-muted h-full", mobileView === 'preview' ? 'flex' : 'hidden xl:flex')}>
+    <div className={cn("relative flex-col bg-muted h-full", mobileView === 'preview' ? 'flex' : 'hidden')}>
       <ScrollArea className="h-full">
         <div className="flex flex-col items-center w-full p-4 sm:p-8">
           {isLoading && (
@@ -67,7 +67,7 @@ export function PreviewPanel({
 
         </div>
       </ScrollArea>
-      <div className="xl:hidden sticky bottom-0 left-0 right-0 w-full bg-background/80 backdrop-blur-sm p-4 border-t">
+      <div className="sticky bottom-0 left-0 right-0 w-full bg-background/80 backdrop-blur-sm p-4 border-t">
            <Button
               onClick={onGeneratePdf}
               disabled={isDownloading || !canDownload}

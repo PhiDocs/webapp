@@ -34,7 +34,7 @@ interface FormPanelProps {
 
 export function FormPanel({ form, onNewReport, onSubmit, isLoading, mobileView, works, employees, isDataLoading }: FormPanelProps) {
   return (
-    <div className={cn("h-full xl:border-r", mobileView !== 'form' && "hidden xl:block")}>
+    <div className={cn("h-full", mobileView !== 'form' && "hidden")}>
       <ScrollArea className="h-full">
         <div className="p-4 md:p-6 space-y-6">
           <div className="flex justify-between items-start">

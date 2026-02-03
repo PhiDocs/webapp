@@ -3,17 +3,13 @@
 import React from 'react';
 import { Logo } from '@/components/icons/logo';
 import { Button } from '@/components/ui/button';
-import { Printer, Loader2, FormInput, Eye } from 'lucide-react';
+import { FormInput, Eye } from 'lucide-react';
 import { ptBr } from '@/lib/data/strings';
 import { cn } from '@/lib/utils';
 
 interface HeaderProps {
   mobileView?: 'form' | 'preview';
   setMobileView?: (view: 'form' | 'preview') => void;
-  onGeneratePdf?: () => void;
-  isDownloading?: boolean;
-  isAprReady: boolean;
-  isPtReady: boolean;
   className?: string;
   children?: React.ReactNode;
 }
@@ -21,14 +17,9 @@ interface HeaderProps {
 export function Header({
   mobileView,
   setMobileView,
-  onGeneratePdf,
-  isDownloading,
-  isAprReady,
-  isPtReady,
   className,
   children
 }: HeaderProps) {
-  const canDownload = isPtReady || isAprReady;
 
   return (
     <header className={cn("sticky top-0 z-20 w-full border-b bg-background/80 backdrop-blur-sm", className)}>
@@ -40,9 +31,9 @@ export function Header({
           </h1>
         </div>
         
-        {/* Mobile View Toggles */}
+        {/* View Toggles */}
         {mobileView && setMobileView && (
-          <div className="xl:hidden flex items-center gap-1 rounded-md bg-muted p-1">
+          <div className="flex items-center gap-1 rounded-md bg-muted p-1">
               <Button
                 size="sm"
                 variant={mobileView === 'form' ? 'secondary' : 'ghost'}
@@ -65,25 +56,6 @@ export function Header({
         )}
 
         <div className="flex items-center gap-4">
-          {onGeneratePdf && (
-            <Button
-              onClick={onGeneratePdf}
-              disabled={isDownloading || !canDownload}
-              className="hidden xl:inline-flex"
-            >
-              {isDownloading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  {ptBr.actions.generatingPdf}
-                </>
-              ) : (
-                <>
-                  <Printer className="mr-2 h-4 w-4" />
-                  {ptBr.actions.generatePdf}
-                </>
-              )}
-            </Button>
-          )}
           {children}
         </div>
       </div>

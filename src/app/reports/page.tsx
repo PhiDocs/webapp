@@ -285,42 +285,34 @@ export default function ReportsPage() {
         <Header
           mobileView={mobileView}
           setMobileView={setMobileView}
-          onGeneratePdf={handleDownloadPdf}
-          isDownloading={isDownloading}
-          isAprReady={!!(liveFormData.documentType === DOCUMENT_TYPES.APR && analysis?.proceduralSteps?.length)}
-          isPtReady={liveFormData.documentType === DOCUMENT_TYPES.PT}
         >
           <UserNav />
         </Header>
 
-        <main className="flex-grow grid grid-cols-1 xl:grid-cols-2 h-[calc(100vh-65px)]">
-          <div className="h-full no-print">
-            <FormPanel
-              form={form}
-              onNewReport={handleNewReport}
-              onSubmit={handleFormSubmit}
-              isLoading={isLoading}
-              mobileView={mobileView}
-              works={works}
-              employees={employees}
-              isDataLoading={isDataLoading}
-            />
-          </div>
-          <div className="h-full no-print bg-muted">
-            <PreviewPanel
-              isLoading={isLoading}
-              error={analysis?.proceduralSteps?.length ? null : error}
-              liveFormData={liveFormData}
-              analysisData={analysis}
-              equipmentData={equipment}
-              company={company}
-              mobileView={mobileView}
-              isDownloading={isDownloading}
-              onGeneratePdf={handleDownloadPdf}
-              isAprReady={!!(liveFormData.documentType === DOCUMENT_TYPES.APR && analysis?.proceduralSteps?.length)}
-              isPtReady={liveFormData.documentType === DOCUMENT_TYPES.PT}
-            />
-          </div>
+        <main className="flex-grow h-[calc(100vh-65px)]">
+          <FormPanel
+            form={form}
+            onNewReport={handleNewReport}
+            onSubmit={handleFormSubmit}
+            isLoading={isLoading}
+            mobileView={mobileView}
+            works={works}
+            employees={employees}
+            isDataLoading={isDataLoading}
+          />
+          <PreviewPanel
+            isLoading={isLoading}
+            error={analysis?.proceduralSteps?.length ? null : error}
+            liveFormData={liveFormData}
+            analysisData={analysis}
+            equipmentData={equipment}
+            company={company}
+            mobileView={mobileView}
+            isDownloading={isDownloading}
+            onGeneratePdf={handleDownloadPdf}
+            isAprReady={!!(liveFormData.documentType === DOCUMENT_TYPES.APR && analysis?.proceduralSteps?.length)}
+            isPtReady={liveFormData.documentType === DOCUMENT_TYPES.PT}
+          />
         </main>
       </div>
       <div className="print-only">
