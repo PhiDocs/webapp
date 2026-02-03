@@ -105,13 +105,18 @@ const pdfStyles = `
 
   /* Print specific styles */
   .print-preview-wrapper { width: 100%; }
-  .print-document-container {
-    width: 210mm;
-    min-height: 297mm;
+  .print-document-container,
+  #print-content-root,
+  div[id="print-content-root"] {
+    width: 100% !important;
+    min-height: auto !important;
     background: white;
     color: #1a1a1a;
     font-size: 9pt;
-    padding: 15mm;
+    padding: 0 !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
   }
   .print-only { display: block !important; }
   .page-content-wrapper { padding: 0; }
@@ -218,10 +223,10 @@ export async function POST(request: NextRequest) {
       format: 'A4',
       printBackground: true,
       margin: {
-        top: '15mm',
-        right: '15mm',
-        bottom: '15mm',
-        left: '15mm',
+        top: '10mm',
+        right: '10mm',
+        bottom: '10mm',
+        left: '10mm',
       },
     });
 

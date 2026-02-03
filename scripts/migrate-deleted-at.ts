@@ -6,7 +6,7 @@ const db = admin.firestore();
 
 /**
  * Migrates a top-level collection by adding `deletedAt: null` to documents
- * where the field is missing. For 'works', it also adds `activityDescription`.
+ * where the field is missing.
  * @param collectionName The name of the collection to migrate.
  */
 async function migrateTopLevelCollection(collectionName: string) {
@@ -28,10 +28,6 @@ async function migrateTopLevelCollection(collectionName: string) {
 
     if (data.deletedAt === undefined) {
       updatePayload.deletedAt = null;
-    }
-
-    if (collectionName === 'works' && data.activityDescription === undefined) {
-      updatePayload.activityDescription = ''; // Add empty string for compatibility
     }
 
     if (Object.keys(updatePayload).length > 0) {

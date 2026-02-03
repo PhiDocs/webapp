@@ -258,7 +258,6 @@ export function SafetyForm({
                             form.setValue('startDate', work.startDate.split('T')[0]);
                             form.setValue('endDate', work.endDate.split('T')[0]);
                             form.setValue('workLocationDetails', work.workLocationDetails);
-                            form.setValue('activityDescription', work.activityDescription || '');
                           }
                         }} defaultValue={field.value}>
                           <FormControl>

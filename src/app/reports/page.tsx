@@ -233,7 +233,7 @@ export default function ReportsPage() {
       const payload = {
         event: N8N_EVENTS.PDF_GENERATED,
         documentType: formData.documentType,
-        companyData: company,
+        company,
         formData,
         analysisData: analysis,
         equipmentData: equipment,
