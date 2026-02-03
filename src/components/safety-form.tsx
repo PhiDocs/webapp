@@ -13,6 +13,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
+import { cn } from "@/lib/utils";
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
@@ -173,6 +174,7 @@ export function SafetyForm({
 
   const documentType = useWatch({ control: form.control, name: 'documentType' });
   const [isEditingWorkData, setIsEditingWorkData] = useState(false);
+  const [activeAnalysisStep, setActiveAnalysisStep] = useState(0);
 
   const FormSkeleton = () => (
     <div className="space-y-6">
@@ -349,45 +351,71 @@ export function SafetyForm({
                     <h3 className="text-lg font-semibold flex items-center">
                       <ShieldCheck className="mr-2" /> {ptBr.safetyForm.manualAnalysisTitle}
                     </h3>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() =>
-                        appendAnalysisStep({ activity: '', potentialRisks: '', preventiveMeasures: '' })
-                      }
-                    >
-                      <PlusCircle className="mr-2 h-4 w-4" /> {ptBr.safetyForm.addAnalysisStep}
-                    </Button>
                   </div>
                   <p className="text-sm text-muted-foreground">
                     {ptBr.safetyForm.manualAnalysisDescription}
                   </p>
 
                   <div className="space-y-4">
+                    {/* Tab Navigation */}
+                    <div className="flex flex-wrap items-center gap-2">
+                      {analysisStepFields.map((_, index) => (
+                        <Button
+                          key={index}
+                          type="button"
+                          variant={activeAnalysisStep === index ? "secondary" : "outline"}
+                          size="sm"
+                          onClick={() => setActiveAnalysisStep(index)}
+                          className={cn(
+                            activeAnalysisStep === index && "bg-secondary border-primary/20",
+                            "min-w-[3rem]"
+                          )}
+                        >
+                          {index + 1}
+                        </Button>
+                      ))}
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          appendAnalysisStep({ activity: '', potentialRisks: '', preventiveMeasures: '' });
+                          setActiveAnalysisStep(analysisStepFields.length);
+                        }}
+                      >
+                        <PlusCircle className="mr-2 h-4 w-4" /> {ptBr.safetyForm.addAnalysisStep}
+                      </Button>
+                    </div>
+
                     {analysisStepFields.length === 0 && (
-                      <div className="text-sm text-muted-foreground italic">
+                      <div className="text-sm text-muted-foreground italic border border-dashed rounded-lg p-8 text-center">
                         {ptBr.safetyForm.manualAnalysisEmpty}
                       </div>
                     )}
-                    {analysisStepFields.map((item, index) => (
-                      <div key={item.id} className="rounded-lg border p-4 space-y-4">
+
+                    {analysisStepFields.length > 0 && analysisStepFields[activeAnalysisStep] && (
+                      <div key={analysisStepFields[activeAnalysisStep].id} className="rounded-lg border p-4 space-y-4 animate-in fade-in slide-in-from-left-4 duration-300">
                         <div className="flex items-center justify-between">
                           <div className="text-sm font-semibold">
-                            {ptBr.safetyForm.analysisStepLabel} {index + 1}
+                            {ptBr.safetyForm.analysisStepLabel} {activeAnalysisStep + 1}
                           </div>
                           <Button
                             type="button"
                             variant="ghost"
                             size="icon"
-                            onClick={() => removeAnalysisStep(index)}
+                            onClick={() => {
+                              removeAnalysisStep(activeAnalysisStep);
+                              if (activeAnalysisStep > 0) {
+                                setActiveAnalysisStep(activeAnalysisStep - 1);
+                              }
+                            }}
                           >
                             <Trash2 className="h-4 w-4 text-destructive" />
                           </Button>
                         </div>
                         <FormField
                           control={form.control}
-                          name={`analysisSteps.${index}.activity`}
+                          name={`analysisSteps.${activeAnalysisStep}.activity`}
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>{ptBr.safetyForm.analysisStepActivity}</FormLabel>
@@ -403,7 +431,7 @@ export function SafetyForm({
                         />
                         <FormField
                           control={form.control}
-                          name={`analysisSteps.${index}.potentialRisks`}
+                          name={`analysisSteps.${activeAnalysisStep}.potentialRisks`}
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>{ptBr.safetyForm.analysisStepRisks}</FormLabel>
@@ -419,7 +447,7 @@ export function SafetyForm({
                         />
                         <FormField
                           control={form.control}
-                          name={`analysisSteps.${index}.preventiveMeasures`}
+                          name={`analysisSteps.${activeAnalysisStep}.preventiveMeasures`}
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>{ptBr.safetyForm.analysisStepMeasures}</FormLabel>
@@ -434,10 +462,20 @@ export function SafetyForm({
                           )}
                         />
                       </div>
-                    ))}
+                    )}
                   </div>
 
-                  <Button type="submit" disabled={isLoading} className="w-full">
+                  <Button
+                    type="button"
+                    disabled={isLoading}
+                    className="w-full"
+                    onClick={async () => {
+                      const isValid = await form.trigger('activityDescription');
+                      if (isValid) {
+                        onSubmit(form.getValues());
+                      }
+                    }}
+                  >
                     {isLoading
                       ? ptBr.actions.generatingAnalysis
                       : ptBr.actions.generateAnalysis}

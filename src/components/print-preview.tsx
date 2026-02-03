@@ -14,6 +14,7 @@ interface PrintPreviewProps {
   equipmentData: ProtectiveEquipmentOutput | null;
   company: Company | null;
   error?: string | null;
+  themeColor?: string | null;
 }
 
 const SignaturePreview = ({ signatureData, signatureType }: { signatureData?: string, signatureType?: string }) => {
@@ -77,11 +78,14 @@ function PrintFooter() {
   );
 }
 
-const Section = ({ title, icon, children }: { title: string, icon: React.ElementType, children: React.ReactNode }) => {
+const Section = ({ title, icon, children, allowBreak = false, themeColor }: { title: string, icon: React.ElementType, children: React.ReactNode, allowBreak?: boolean, themeColor?: string | null }) => {
   const Icon = icon;
   return (
-    <section className="avoid-break mt-2">
-      <h3 className="section-title flex items-center justify-center">
+    <section className={`${allowBreak ? '' : 'avoid-break'} mt-2`}>
+      <h3
+        className="section-title flex items-center justify-center"
+        style={themeColor ? { backgroundColor: themeColor, color: '#ffffff' } : {}}
+      >
         <Icon className="inline-block mr-2 h-4 w-4" />
         {title}
       </h3>
@@ -93,15 +97,15 @@ const Section = ({ title, icon, children }: { title: string, icon: React.Element
 }
 
 
-function ResponsiblesSection({ data }: { data: SafetyFormValues }) {
+function ResponsiblesSection({ data, themeColor }: { data: SafetyFormValues, themeColor?: string | null }) {
   return (
-    <Section title={ptBr.printPreview.apr.responsibles} icon={UserCheck}>
+    <Section title={ptBr.printPreview.apr.responsibles} icon={UserCheck} allowBreak={true} themeColor={themeColor}>
       <table className="w-full border-collapse border mt-0 analysis-table">
         <thead>
           <tr>
-            <th className="text-left w-[40%]">{ptBr.printPreview.apr.name}</th>
-            <th className="text-left w-[30%]">{ptBr.printPreview.apr.role}</th>
-            <th className="text-left w-[30%]">{ptBr.printPreview.apr.signature}</th>
+            <th className="text-left w-[40%]" style={themeColor ? { backgroundColor: `${themeColor}20` } : {}}>{ptBr.printPreview.apr.name}</th>
+            <th className="text-left w-[30%]" style={themeColor ? { backgroundColor: `${themeColor}20` } : {}}>{ptBr.printPreview.apr.role}</th>
+            <th className="text-left w-[30%]" style={themeColor ? { backgroundColor: `${themeColor}20` } : {}}>{ptBr.printPreview.apr.signature}</th>
           </tr>
         </thead>
         <tbody>
@@ -120,19 +124,19 @@ function ResponsiblesSection({ data }: { data: SafetyFormValues }) {
   );
 }
 
-function TeamSection({ data }: { data: SafetyFormValues }) {
+function TeamSection({ data, themeColor }: { data: SafetyFormValues, themeColor?: string | null }) {
   const teamMembers = data.teamMembers || [];
   if (teamMembers.length === 0) return null;
 
   return (
-    <Section title={ptBr.printPreview.apr.team} icon={Users}>
+    <Section title={ptBr.printPreview.apr.team} icon={Users} allowBreak={true} themeColor={themeColor}>
       <table className="w-full border-collapse border mt-0 analysis-table">
         <thead>
           <tr>
-            <th className="text-left w-[25%]">{ptBr.printPreview.apr.date}</th>
-            <th className="text-left w-[35%]">{ptBr.printPreview.apr.name}</th>
-            <th className="text-left w-[20%]">{ptBr.printPreview.apr.role}</th>
-            <th className="text-left w-[20%]">{ptBr.printPreview.apr.signature}</th>
+            <th className="text-left w-[25%]" style={themeColor ? { backgroundColor: `${themeColor}20` } : {}}>{ptBr.printPreview.apr.date}</th>
+            <th className="text-left w-[35%]" style={themeColor ? { backgroundColor: `${themeColor}20` } : {}}>{ptBr.printPreview.apr.name}</th>
+            <th className="text-left w-[20%]" style={themeColor ? { backgroundColor: `${themeColor}20` } : {}}>{ptBr.printPreview.apr.role}</th>
+            <th className="text-left w-[20%]" style={themeColor ? { backgroundColor: `${themeColor}20` } : {}}>{ptBr.printPreview.apr.signature}</th>
           </tr>
         </thead>
         <tbody>
@@ -152,16 +156,16 @@ function TeamSection({ data }: { data: SafetyFormValues }) {
   );
 }
 
-function AnalysisTable({ steps }: { steps: any[] }) {
+function AnalysisTable({ steps, themeColor }: { steps: any[], themeColor?: string | null }) {
   return (
-    <Section title={ptBr.printPreview.apr.operationalProcedure} icon={ShieldCheck}>
+    <Section title={ptBr.printPreview.apr.operationalProcedure} icon={ShieldCheck} allowBreak={true} themeColor={themeColor}>
       <table className="w-full border-collapse text-xs analysis-table">
         <thead>
           <tr>
-            <th className="p-1 text-left w-[5%]">{ptBr.printPreview.apr.item}</th>
-            <th className="p-1 text-left w-[25%]">{ptBr.printPreview.apr.activities}</th>
-            <th className="p-1 text-left w-[25%]">{ptBr.printPreview.apr.potentialRisks}</th>
-            <th className="p-1 text-left w-[45%]">{ptBr.printPreview.apr.preventiveMeasures}</th>
+            <th className="p-1 text-left w-[5%]" style={themeColor ? { backgroundColor: `${themeColor}20` } : {}}>{ptBr.printPreview.apr.item}</th>
+            <th className="p-1 text-left w-[25%]" style={themeColor ? { backgroundColor: `${themeColor}20` } : {}}>{ptBr.printPreview.apr.activities}</th>
+            <th className="p-1 text-left w-[25%]" style={themeColor ? { backgroundColor: `${themeColor}20` } : {}}>{ptBr.printPreview.apr.potentialRisks}</th>
+            <th className="p-1 text-left w-[45%]" style={themeColor ? { backgroundColor: `${themeColor}20` } : {}}>{ptBr.printPreview.apr.preventiveMeasures}</th>
           </tr>
         </thead>
         <tbody>
@@ -179,12 +183,12 @@ function AnalysisTable({ steps }: { steps: any[] }) {
   );
 }
 
-function EquipmentSection({ data }: { data: ProtectiveEquipmentOutput | null }) {
+function EquipmentSection({ data, themeColor }: { data: ProtectiveEquipmentOutput | null, themeColor?: string | null }) {
   if (!data) return null;
 
   return (
     <div className='grid grid-cols-2 gap-4 avoid-break'>
-      <Section title={ptBr.printPreview.apr.requiredEpi} icon={HardHat}>
+      <Section title={ptBr.printPreview.apr.requiredEpi} icon={HardHat} themeColor={themeColor}>
         <div className='p-2'>
           <ul className="list-disc pl-4 space-y-1 text-sm">
             {data.epiItems.map((item, index) => <li key={`epi-${index}`}>{item}</li>)}
@@ -192,7 +196,7 @@ function EquipmentSection({ data }: { data: ProtectiveEquipmentOutput | null }) 
           <p className="text-xs italic mt-2"><strong>{ptBr.printPreview.apr.obs}</strong> {data.epiNote}</p>
         </div>
       </Section>
-      <Section title={ptBr.printPreview.apr.requiredEpc} icon={Construction}>
+      <Section title={ptBr.printPreview.apr.requiredEpc} icon={Construction} themeColor={themeColor}>
         <div className='p-2'>
           <ul className="list-disc pl-4 space-y-1 text-sm">
             {data.epcItems.map((item, index) => <li key={`epc-${index}`}>{item}</li>)}
@@ -215,7 +219,7 @@ function getShortDate(dateString: string | undefined) {
   }
 }
 
-function APRPreviewContent({ formData, analysisData, equipmentData, company, error }: { formData: SafetyFormValues, analysisData: SafetyAnalysisOutput | null, equipmentData: ProtectiveEquipmentOutput | null, company: Company | null, error?: string | null }) {
+function APRPreviewContent({ formData, analysisData, equipmentData, company, error, themeColor }: { formData: SafetyFormValues, analysisData: SafetyAnalysisOutput | null, equipmentData: ProtectiveEquipmentOutput | null, company: Company | null, error?: string | null, themeColor?: string | null }) {
   if (!formData) return null;
 
   const showAnalysis = !error && analysisData && analysisData.proceduralSteps && analysisData.proceduralSteps.length > 0;
@@ -224,7 +228,7 @@ function APRPreviewContent({ formData, analysisData, equipmentData, company, err
     <div className="page-content-wrapper">
       <APRHeader data={formData} company={company} />
       <main className='print-main flex flex-col gap-4'>
-        <Section title={ptBr.printPreview.apr.workData} icon={ClipboardList}>
+        <Section title={ptBr.printPreview.apr.workData} icon={ClipboardList} themeColor={themeColor}>
           <table className="w-full border-collapse info-grid">
             <tbody>
               <tr>
@@ -248,26 +252,26 @@ function APRPreviewContent({ formData, analysisData, equipmentData, company, err
 
 
         {error ? (
-          <Section title={ptBr.printPreview.apr.operationalProcedure} icon={AlertTriangle}>
+          <Section title={ptBr.printPreview.apr.operationalProcedure} icon={AlertTriangle} themeColor={themeColor}>
             <div className="text-center text-destructive bg-destructive/10 border-2 border-dashed border-destructive/30 rounded-lg p-4">
               <h3 className="text-base font-semibold">{ptBr.previewPanel.error.title}</h3>
               <p className='mt-2 text-sm'>{error}</p>
             </div>
           </Section>
         ) : showAnalysis ? (
-          <AnalysisTable steps={analysisData.proceduralSteps} />
+          <AnalysisTable steps={analysisData.proceduralSteps} themeColor={themeColor} />
         ) : (
-          <Section title={ptBr.printPreview.apr.operationalProcedure} icon={ShieldCheck}>
+          <Section title={ptBr.printPreview.apr.operationalProcedure} icon={ShieldCheck} themeColor={themeColor}>
             <div className="text-center text-gray-500 italic py-8 border-2 border-dashed rounded-lg">
               {ptBr.printPreview.apr.analysisPlaceholder}
             </div>
           </Section>
         )}
 
-        {!error && <EquipmentSection data={equipmentData} />}
+        {!error && <EquipmentSection data={equipmentData} themeColor={themeColor} />}
 
-        <TeamSection data={formData} />
-        <ResponsiblesSection data={formData} />
+        <TeamSection data={formData} themeColor={themeColor} />
+        <ResponsiblesSection data={formData} themeColor={themeColor} />
       </main>
       <PrintFooter />
     </div>
@@ -275,14 +279,14 @@ function APRPreviewContent({ formData, analysisData, equipmentData, company, err
 }
 
 
-export function PrintPreview({ formData, analysisData, equipmentData, company, error }: PrintPreviewProps) {
+export function PrintPreview({ formData, analysisData, equipmentData, company, error, themeColor }: PrintPreviewProps) {
   const documentType = formData?.documentType;
 
   return (
     <div className="print-preview-wrapper">
       <div id="print-content-root" className="print-document-container w-[210mm] min-h-[297mm] bg-white shadow-lg rounded-lg text-gray-800 font-sans p-[15mm]">
         {documentType === DOCUMENT_TYPES.APR ? (
-          <APRPreviewContent formData={formData} analysisData={analysisData} equipmentData={equipmentData} company={company} error={error} />
+          <APRPreviewContent formData={formData} analysisData={analysisData} equipmentData={equipmentData} company={company} error={error} themeColor={themeColor} />
         ) : (
           <PTPreview formData={formData} company={company} />
         )}

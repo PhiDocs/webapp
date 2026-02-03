@@ -20,6 +20,7 @@ import { useSession } from '@/components/auth/session-provider';
 import { getWorks } from '@/server/work-actions';
 import { getEmployees } from '@/server/employee-actions';
 import { getCompanyById } from '@/server/company-actions';
+import { useDominantColor } from '@/hooks/use-dominant-color';
 
 function normalizeAnalysisSteps(steps: any[] | undefined): SafetyAnalysisOutput | null {
   if (!steps || steps.length === 0) return null;
@@ -56,6 +57,7 @@ export default function ReportsPage() {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [isDataLoading, setIsDataLoading] = useState(true);
   const { toast } = useToast();
+  const themeColor = useDominantColor(company?.logo);
 
   const form = useForm<SafetyFormValues>({
     resolver: zodResolver(formSchema),
@@ -99,9 +101,9 @@ export default function ReportsPage() {
         ptColaboradores: [],
         ptVigias: [],
         ptResgatistas: [],
-        ptGestorArea: {name: '', signatureType: SIGNATURE_TYPES.TYPED, signatureData: ''},
-        ptResponsavelAtividade: {name: '', signatureType: SIGNATURE_TYPES.TYPED, signatureData: ''},
-        ptSesmt: {name: '', signatureType: SIGNATURE_TYPES.TYPED, signatureData: ''},
+        ptGestorArea: { name: '', signatureType: SIGNATURE_TYPES.TYPED, signatureData: '' },
+        ptResponsavelAtividade: { name: '', signatureType: SIGNATURE_TYPES.TYPED, signatureData: '' },
+        ptSesmt: { name: '', signatureType: SIGNATURE_TYPES.TYPED, signatureData: '' },
       },
     },
     mode: 'onChange',
@@ -114,7 +116,7 @@ export default function ReportsPage() {
     [watchedAnalysisSteps]
   );
 
-  
+
   useEffect(() => {
     if (user?.companyId) {
       const fetchData = async () => {
@@ -164,8 +166,8 @@ export default function ReportsPage() {
     try {
       const manualNormalized = normalizeAnalysisSteps(form.getValues('analysisSteps'));
       const [analysisResult, equipmentResult] = await Promise.all([
-          getSafetyAnalysis({ activityDescription: data.activityDescription! }),
-          getProtectiveEquipment({ activityDescription: data.activityDescription! })
+        getSafetyAnalysis({ activityDescription: data.activityDescription! }),
+        getProtectiveEquipment({ activityDescription: data.activityDescription! })
       ]);
 
       if (analysisResult.error || !analysisResult.data) {
@@ -174,9 +176,9 @@ export default function ReportsPage() {
           setError(errorMsg);
         }
         toast({
-            variant: 'destructive',
-            title: ptBr.toasts.errors.fetchAnalysis,
-            description: errorMsg,
+          variant: 'destructive',
+          title: ptBr.toasts.errors.fetchAnalysis,
+          description: errorMsg,
         });
       } else {
         const manualSteps = manualNormalized?.proceduralSteps ?? [];
@@ -190,26 +192,26 @@ export default function ReportsPage() {
 
         form.setValue('analysisSteps', merged, { shouldDirty: true, shouldValidate: true });
       }
-      
+
       if (equipmentResult.error || !equipmentResult.data) {
-          const errorMsg = equipmentResult.error || ptBr.validations.equipmentRecommendationFailed;
-          setError(errorMsg);
-          toast({
-              variant: 'destructive',
-              title: ptBr.toasts.errors.fetchEpi,
-              description: errorMsg,
-          });
-      } else {
-          setEquipment(equipmentResult.data);
-      }
-    } catch (e: any) {
-        const errorMsg = e.message || ptBr.errors.unexpectedError;
+        const errorMsg = equipmentResult.error || ptBr.validations.equipmentRecommendationFailed;
         setError(errorMsg);
         toast({
-            variant: 'destructive',
-            title: ptBr.toasts.errors.fetchAnalysis,
-            description: errorMsg,
+          variant: 'destructive',
+          title: ptBr.toasts.errors.fetchEpi,
+          description: errorMsg,
         });
+      } else {
+        setEquipment(equipmentResult.data);
+      }
+    } catch (e: any) {
+      const errorMsg = e.message || ptBr.errors.unexpectedError;
+      setError(errorMsg);
+      toast({
+        variant: 'destructive',
+        title: ptBr.toasts.errors.fetchAnalysis,
+        description: errorMsg,
+      });
     }
 
     setIsLoading(false);
@@ -227,55 +229,55 @@ export default function ReportsPage() {
     toast({ title: ptBr.actions.generatingPdf });
 
     try {
-        const formData = form.getValues();
-        const payload = {
-            event: N8N_EVENTS.PDF_GENERATED,
-            documentType: formData.documentType,
-            companyData: company,
-            formData,
-            analysisData: analysis,
-            equipmentData: equipment,
-        };
+      const formData = form.getValues();
+      const payload = {
+        event: N8N_EVENTS.PDF_GENERATED,
+        documentType: formData.documentType,
+        companyData: company,
+        formData,
+        analysisData: analysis,
+        equipmentData: equipment,
+      };
 
-        // Notify n8n in parallel
-        if (company?.n8nProductionUrl) {
-            notifyN8n(payload, company.n8nProductionUrl).catch(err => console.error("N8N notification failed:", err));
-        }
+      // Notify n8n in parallel
+      if (company?.n8nProductionUrl) {
+        notifyN8n(payload, company.n8nProductionUrl).catch(err => console.error("N8N notification failed:", err));
+      }
 
-        const response = await fetch('/api/generate-pdf', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload),
-        });
+      const response = await fetch('/api/generate-pdf', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
 
-        if (!response.ok) {
-            const errorData = await response.json().catch(() => ({ error: 'Falha ao decodificar a resposta de erro do servidor.' }));
-            throw new Error(errorData.error || 'Falha ao gerar o PDF no servidor.');
-        }
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Falha ao decodificar a resposta de erro do servidor.' }));
+        throw new Error(errorData.error || 'Falha ao gerar o PDF no servidor.');
+      }
 
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        const filename = `documento_seguranca_${new Date().toISOString().split('T')[0]}.pdf`;
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        a.remove();
-        toast({ title: ptBr.toasts.success.pdfDownloaded });
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      const filename = `documento_seguranca_${new Date().toISOString().split('T')[0]}.pdf`;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      a.remove();
+      toast({ title: ptBr.toasts.success.pdfDownloaded });
 
     } catch (error: any) {
-        console.error("Failed to generate or download PDF:", error);
-        toast({
-            variant: 'destructive',
-            title: ptBr.toasts.errors.pdfError,
-            description: error.message,
-        });
+      console.error("Failed to generate or download PDF:", error);
+      toast({
+        variant: 'destructive',
+        title: ptBr.toasts.errors.pdfError,
+        description: error.message,
+      });
     } finally {
-        setIsDownloading(false);
+      setIsDownloading(false);
     }
-};
+  };
 
   return (
     <>
@@ -293,31 +295,31 @@ export default function ReportsPage() {
 
         <main className="flex-grow grid grid-cols-1 xl:grid-cols-2 h-[calc(100vh-65px)]">
           <div className="h-full no-print">
-              <FormPanel
-                  form={form}
-                  onNewReport={handleNewReport}
-                  onSubmit={handleFormSubmit}
-                  isLoading={isLoading}
-                  mobileView={mobileView}
-                  works={works}
-                  employees={employees}
-                  isDataLoading={isDataLoading}
-              />
+            <FormPanel
+              form={form}
+              onNewReport={handleNewReport}
+              onSubmit={handleFormSubmit}
+              isLoading={isLoading}
+              mobileView={mobileView}
+              works={works}
+              employees={employees}
+              isDataLoading={isDataLoading}
+            />
           </div>
           <div className="h-full no-print bg-muted">
-              <PreviewPanel
-                  isLoading={isLoading}
-                  error={analysis?.proceduralSteps?.length ? null : error}
-                  liveFormData={liveFormData}
-                  analysisData={analysis}
-                  equipmentData={equipment}
-                  company={company}
-                  mobileView={mobileView}
-                  isDownloading={isDownloading}
-                  onGeneratePdf={handleDownloadPdf}
-                  isAprReady={!!(liveFormData.documentType === DOCUMENT_TYPES.APR && analysis?.proceduralSteps?.length)}
-                  isPtReady={liveFormData.documentType === DOCUMENT_TYPES.PT}
-              />
+            <PreviewPanel
+              isLoading={isLoading}
+              error={analysis?.proceduralSteps?.length ? null : error}
+              liveFormData={liveFormData}
+              analysisData={analysis}
+              equipmentData={equipment}
+              company={company}
+              mobileView={mobileView}
+              isDownloading={isDownloading}
+              onGeneratePdf={handleDownloadPdf}
+              isAprReady={!!(liveFormData.documentType === DOCUMENT_TYPES.APR && analysis?.proceduralSteps?.length)}
+              isPtReady={liveFormData.documentType === DOCUMENT_TYPES.PT}
+            />
           </div>
         </main>
       </div>
@@ -328,6 +330,7 @@ export default function ReportsPage() {
           equipmentData={equipment}
           company={company}
           error={analysis?.proceduralSteps?.length ? null : error}
+          themeColor={themeColor}
         />
       </div>
     </>

@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { EmployeeRepository } from '@/repositories/employee.repository';
+import { JobRoleRepository } from '@/repositories/job-role.repository';
 import { ErrorLogRepository } from '@/repositories/error-log.repository';
 import { z } from 'zod';
 import { ptBr } from '@/lib/data/strings';
@@ -13,7 +14,7 @@ const employeeServerSchema = z.object({
     email: z.string().email(ptBr.validations.invalidEmail),
     cpf: z.string().min(1, ptBr.validations.cpf),
     phone: z.string().optional(),
-    roleId: z.string().min(1, ptBr.validations.roleId),
+    roleId: z.string().optional(),
     roleName: z.string(),
     subcontractorId: z.string().optional().nullable(),
     subcontractorName: z.string().optional().nullable(),
@@ -52,8 +53,27 @@ export async function createEmployee(data: EmployeeServerValues) {
     }
 
     try {
+        let finalRoleId = validation.data.roleId;
+
+        // If roleId is missing or "new", creates the role
+        if ((!finalRoleId || finalRoleId === 'new') && validation.data.roleName) {
+            // Check if role already exists by name to avoid duplicates (optional optimization, but good practice)
+            // For now, simpler: just create.
+            finalRoleId = await JobRoleRepository.create({
+                name: validation.data.roleName,
+                companyId: validation.data.companyId,
+                responsibilities: "",
+                requiredCertificates: []
+            });
+        }
+
+        if (!finalRoleId) {
+            return { success: false, error: 'Função é obrigatória.' };
+        }
+
         const dataToSave = {
             ...validation.data,
+            roleId: finalRoleId,
             subcontractorId: validation.data.subcontractorId === 'N/A' ? null : validation.data.subcontractorId,
             subcontractorName: validation.data.subcontractorId === 'N/A' ? null : validation.data.subcontractorName,
         };
@@ -79,8 +99,24 @@ export async function updateEmployee(id: string, data: EmployeeServerValues) {
     }
 
     try {
+        let finalRoleId = validation.data.roleId;
+
+        if ((!finalRoleId || finalRoleId === 'new') && validation.data.roleName) {
+            finalRoleId = await JobRoleRepository.create({
+                name: validation.data.roleName,
+                companyId: validation.data.companyId,
+                responsibilities: "",
+                requiredCertificates: []
+            });
+        }
+
+        if (!finalRoleId) {
+            return { success: false, error: 'Função é obrigatória.' };
+        }
+
         const dataToSave = {
             ...validation.data,
+            roleId: finalRoleId,
             subcontractorId: validation.data.subcontractorId === 'N/A' ? null : validation.data.subcontractorId,
             subcontractorName: validation.data.subcontractorId === 'N/A' ? null : validation.data.subcontractorName,
         };

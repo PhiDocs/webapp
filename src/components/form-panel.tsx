@@ -36,48 +36,48 @@ export function FormPanel({ form, onNewReport, onSubmit, isLoading, mobileView, 
   return (
     <div className={cn("h-full xl:border-r", mobileView !== 'form' && "hidden xl:block")}>
       <ScrollArea className="h-full">
-          <div className="p-4 md:p-6 space-y-6">
+        <div className="p-4 md:p-6 space-y-6">
           <div className="flex justify-between items-start">
             <div className="space-y-2">
-                <h2 className="text-2xl font-bold tracking-tight text-foreground font-headline">
+              <h2 className="text-2xl font-bold tracking-tight text-foreground font-headline">
                 {ptBr.formPanel.title}
-                </h2>
-                <p className="text-muted-foreground">
+              </h2>
+              <p className="text-muted-foreground">
                 {ptBr.formPanel.description}
-                </p>
+              </p>
             </div>
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button
-                    variant="outline"
-                  >
-                    <RefreshCcw className="mr-2 h-4 w-4" />
-                    {ptBr.actions.startNewReport}
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>{ptBr.formPanel.newReportConfirmation.title}</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      {ptBr.formPanel.newReportConfirmation.description}
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>{ptBr.actions.cancel}</AlertDialogCancel>
-                    <AlertDialogAction onClick={onNewReport}>{ptBr.actions.continue}</AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="outline"
+                >
+                  <RefreshCcw className="mr-2 h-4 w-4" />
+                  {ptBr.actions.startNewReport}
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>{ptBr.formPanel.newReportConfirmation.title}</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    {ptBr.formPanel.newReportConfirmation.description}
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>{ptBr.actions.cancel}</AlertDialogCancel>
+                  <AlertDialogAction onClick={onNewReport}>{ptBr.actions.continue}</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
           <SafetyForm
-              form={form}
-              onSubmit={onSubmit}
-              isLoading={isLoading}
-              works={works}
-              employees={employees}
-              isDataLoading={isDataLoading}
+            form={form}
+            onSubmit={onSubmit}
+            isLoading={isLoading}
+            works={works}
+            employees={employees}
+            isDataLoading={isDataLoading}
           />
-          </div>
+        </div>
       </ScrollArea>
     </div>
   );

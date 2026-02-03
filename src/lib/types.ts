@@ -273,9 +273,13 @@ export const employeeFormSchema = z.object({
   lastName: z.string().min(1, validationMessages.lastName),
   email: z.string().email(validationMessages.invalidEmail),
   cpf: z.string().min(1, validationMessages.cpf),
-  roleId: z.string().min(1, validationMessages.roleId),
+  roleId: z.string().optional(),
+  roleName: z.string().optional(),
   subcontractorId: z.string().optional(),
   phone: z.string().optional(),
+}).refine((data) => data.roleId || data.roleName, {
+  message: "Função é obrigatória (selecione ou crie uma nova).",
+  path: ["roleId"],
 });
 
 export type EmployeeFormValues = z.infer<typeof employeeFormSchema>;

@@ -1,4 +1,5 @@
 'use client';
+import { useState } from 'react';
 
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -20,7 +21,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { DialogFooter } from '@/components/ui/dialog';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Plus, List } from 'lucide-react';
 import type { Employee, EmployeeFormValues, JobRole, Subcontractor } from '@/lib/types';
 import { employeeFormSchema } from '@/lib/types';
 
@@ -39,6 +40,8 @@ export function EmployeeForm({
   jobRoles,
   subcontractors,
 }: EmployeeFormProps) {
+  const [isCreatingRole, setIsCreatingRole] = useState(!defaultValues?.roleId);
+
   const form = useForm<EmployeeFormValues>({
     resolver: zodResolver(employeeFormSchema),
     defaultValues: {
@@ -48,7 +51,7 @@ export function EmployeeForm({
       cpf: defaultValues?.cpf || '',
       phone: defaultValues?.phone || '',
       roleId: defaultValues?.roleId || '',
-      subcontractorId: defaultValues?.subcontractorId || 'N/A',
+      roleName: defaultValues?.roleName || '',
     },
   });
 
@@ -122,55 +125,79 @@ export function EmployeeForm({
             </FormItem>
           )}
         />
-        <FormField
-          control={form.control}
-          name="roleId"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Função</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione um cargo" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {jobRoles.map((role) => (
-                    <SelectItem key={role.id} value={role.id}>
-                      {role.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <FormLabel>Função</FormLabel>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="h-6 text-xs text-muted-foreground hover:text-primary"
+              onClick={() => {
+                setIsCreatingRole(!isCreatingRole);
+                // Reset values when switching
+                if (!isCreatingRole) {
+                  form.setValue('roleId', 'new');
+                  form.setValue('roleName', '');
+                } else {
+                  form.setValue('roleId', '');
+                  form.setValue('roleName', undefined);
+                }
+              }}
+            >
+              {isCreatingRole ? (
+                <>
+                  <List className="mr-1 h-3 w-3" />
+                  Selecionar Existente
+                </>
+              ) : (
+                <>
+                  <Plus className="mr-1 h-3 w-3" />
+                  Criar Nova Função
+                </>
+              )}
+            </Button>
+          </div>
+
+          {isCreatingRole ? (
+            <FormField
+              control={form.control}
+              name="roleName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <Input placeholder="Digite o nome do novo cargo" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          ) : (
+            <FormField
+              control={form.control}
+              name="roleId"
+              render={({ field }) => (
+                <FormItem>
+                  <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione um cargo" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {jobRoles.map((role) => (
+                        <SelectItem key={role.id} value={role.id}>
+                          {role.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           )}
-        />
-        <FormField
-          control={form.control}
-          name="subcontractorId"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Empresa (se terceirizado)</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione uma empresa" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="N/A">Não aplicável</SelectItem>
-                  {subcontractors.map((sub) => (
-                    <SelectItem key={sub.id} value={sub.id}>
-                      {sub.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        </div>
         <DialogFooter>
           <Button type="submit" disabled={isPending}>
             {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
