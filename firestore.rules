@@ -75,6 +75,16 @@ service cloud.firestore {
       allow delete: if isAdmin() && resource.data.companyId == tokenCompanyId();
     }
 
+    // Signature documents (Assinafy)
+    match /signatureDocuments/{docId} {
+      allow read: if isAdmin() && resource.data.companyId == tokenCompanyId();
+      allow create: if isAdmin() && request.resource.data.companyId == tokenCompanyId();
+      allow update: if isAdmin()
+        && resource.data.companyId == tokenCompanyId()
+        && request.resource.data.companyId == resource.data.companyId;
+      allow delete: if false;
+    }
+
     // Default rule for other collections.
     // Deny access by default.
     match /{document=**} {

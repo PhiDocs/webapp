@@ -5,6 +5,7 @@ import type { SafetyAnalysisOutput, ProtectiveEquipmentOutput } from '@/server/a
 import type { SafetyFormValues, Work, Employee, Company } from '@/lib/types';
 import { getSafetyAnalysis, getProtectiveEquipment } from '@/server/ai-actions';
 import { notifyN8n } from '@/server/n8n-actions';
+import { sendDocumentForSignature } from '@/server/signature-actions';
 import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { formSchema } from '@/lib/types';
@@ -49,6 +50,7 @@ export default function ReportsPage() {
   const [equipment, setEquipment] = useState<ProtectiveEquipmentOutput | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [isSendingSignature, setIsSendingSignature] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [mobileView, setMobileView] = useState<'form' | 'preview'>('form');
 
@@ -73,7 +75,16 @@ export default function ReportsPage() {
       activityDescription: '',
       analysisSteps: [],
       responsiblePersons: [
-        { employeeId: '', name: '', role: '', signatureType: SIGNATURE_TYPES.TYPED, signatureData: '' }
+        {
+          employeeId: '',
+          name: '',
+          role: '',
+          signatureType: SIGNATURE_TYPES.TYPED,
+          signatureData: '',
+          email: '',
+          phone: '',
+          useAssinafy: false,
+        }
       ],
       teamMembers: [],
       pt: {
@@ -280,6 +291,36 @@ export default function ReportsPage() {
     }
   };
 
+  const handleSendForSignature = async () => {
+    setIsSendingSignature(true);
+    try {
+      const formData = form.getValues();
+      const result = await sendDocumentForSignature({
+        formData,
+        analysisData: analysis,
+        equipmentData: equipment,
+        company,
+      });
+
+      if (!result.success) {
+        throw new Error(result.error || 'Falha ao enviar para assinatura.');
+      }
+
+      toast({
+        title: ptBr.toasts.success.signatureSent,
+        description: ptBr.toasts.success.signatureSentDescription,
+      });
+    } catch (error: any) {
+      toast({
+        variant: 'destructive',
+        title: ptBr.toasts.errors.signatureSendFailed,
+        description: error.message,
+      });
+    } finally {
+      setIsSendingSignature(false);
+    }
+  };
+
   return (
     <>
       <div className="min-h-screen bg-background flex flex-col no-print">
@@ -314,6 +355,8 @@ export default function ReportsPage() {
             mobileView={mobileView}
             isDownloading={isDownloading}
             onGeneratePdf={handleDownloadPdf}
+            isSendingSignature={isSendingSignature}
+            onSendForSignature={handleSendForSignature}
             isAprReady={!!(liveFormData.documentType === DOCUMENT_TYPES.APR && analysis?.proceduralSteps?.length)}
             isPtReady={liveFormData.documentType === DOCUMENT_TYPES.PT}
           />

@@ -1,4 +1,4 @@
-import { z } from 'zod';
+﻿import { z } from 'zod';
 import { DOCUMENT_TYPES, PT_FIT_STATUS, SIGNATURE_TYPES } from './constants';
 import { ptBr } from './data/strings';
 
@@ -58,7 +58,14 @@ export const responsiblePersonSchema = z.object({
     if (!data.role) {
       ctx.addIssue({ code: z.ZodIssueCode.custom, message: validationMessages.responsibleRole, path: ['role'] });
     }
-    if (data.signatureType && !data.signatureData) {
+    if (data.useAssinafy && !data.email) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: validationMessages.emailRequired,
+        path: ['email'],
+      });
+    }
+    if (!data.useAssinafy && data.signatureType && !data.signatureData) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: "A assinatura é obrigatória para o método selecionado.",
@@ -67,7 +74,6 @@ export const responsiblePersonSchema = z.object({
     }
   }
 });
-
 export const teamMemberSchema = z.object({
   employeeId: z.string().optional(),
   date: z.string().min(1, validationMessages.teamDate),
@@ -201,6 +207,28 @@ export type PtFormValues = z.infer<typeof ptFormSchema>;
 export type PtTeamMember = z.infer<typeof ptTeamMemberSchema>;
 export type PtSigner = z.infer<typeof ptSignerSchema>;
 export type PtSignerInput = z.input<typeof ptSignerSchema>;
+
+// --- Signature Documents ---
+export type SignatureSigner = {
+  name: string;
+  email: string;
+  assinafySignerId?: string;
+  status: 'pending' | 'signed' | 'declined';
+};
+
+export type SignatureDocument = {
+  id: string;
+  companyId: string;
+  documentType: DocumentType;
+  documentName: string;
+  assinafyDocumentId: string;
+  assinafyAssignmentId: string;
+  status: 'pending' | 'signed' | 'declined' | 'uploaded' | 'expired';
+  signers: SignatureSigner[];
+  createdAt: string;
+  updatedAt?: string;
+  lastSyncedAt?: string;
+};
 
 
 // --- Auth Schemas ---
@@ -338,3 +366,6 @@ export type Subcontractor = {
   createdAt: string;
   deletedAt?: string | null;
 }
+
+
+

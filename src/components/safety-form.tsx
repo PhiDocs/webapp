@@ -56,7 +56,15 @@ interface SafetyFormProps {
   isDataLoading: boolean;
 }
 
-const SignatureField = ({ form, fieldPrefix }: { form: ReturnType<typeof useForm<SafetyFormValues>>, fieldPrefix: string }) => {
+const SignatureField = ({
+  form,
+  fieldPrefix,
+  disabled,
+}: {
+  form: ReturnType<typeof useForm<SafetyFormValues>>;
+  fieldPrefix: string;
+  disabled?: boolean;
+}) => {
   const signatureType = useWatch({
     control: form.control,
     name: `${fieldPrefix}.signatureType` as any,
@@ -77,6 +85,20 @@ const SignatureField = ({ form, fieldPrefix }: { form: ReturnType<typeof useForm
       reader.readAsDataURL(file);
     }
   };
+
+  if (disabled) {
+    return (
+      <div className="col-span-full space-y-2 rounded-md border p-3">
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <Badge variant="secondary" className="flex items-center gap-1">
+            <Mail className="h-3 w-3" />
+            Assinatura por e-mail
+          </Badge>
+          O campo de assinatura manual fica desativado.
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="col-span-full space-y-2 rounded-md border p-3">
@@ -176,6 +198,7 @@ export function SafetyForm({
   });
 
   const documentType = useWatch({ control: form.control, name: 'documentType' });
+  const responsibleValues = useWatch({ control: form.control, name: 'responsiblePersons' });
   const [isEditingWorkData, setIsEditingWorkData] = useState(false);
   const [activeAnalysisStep, setActiveAnalysisStep] = useState(0);
 
@@ -582,7 +605,16 @@ export function SafetyForm({
                       variant="outline"
                       size="sm"
                       onClick={() =>
-                        appendResponsible({ employeeId: '', name: '', role: '', signatureType: SIGNATURE_TYPES.TYPED, signatureData: '' })
+                        appendResponsible({
+                          employeeId: '',
+                          name: '',
+                          role: '',
+                          signatureType: SIGNATURE_TYPES.TYPED,
+                          signatureData: '',
+                          email: '',
+                          phone: '',
+                          useAssinafy: false,
+                        })
                       }
                     >
                       <PlusCircle className="mr-2 h-4 w-4" /> {ptBr.actions.addResponsible}
@@ -604,6 +636,8 @@ export function SafetyForm({
                                   if (employee) {
                                     form.setValue(`responsiblePersons.${index}.name`, `${employee.firstName} ${employee.lastName}`);
                                     form.setValue(`responsiblePersons.${index}.role`, employee.roleName || '');
+                                    form.setValue(`responsiblePersons.${index}.email`, employee.email || '');
+                                    form.setValue(`responsiblePersons.${index}.phone`, employee.phone || '');
                                   }
                                 }} defaultValue={field.value}>
                                   <FormControl>
@@ -634,7 +668,63 @@ export function SafetyForm({
                             <Trash2 className="h-4 w-4 text-destructive" />
                           </Button>
                         </div>
-                        <SignatureField form={form} fieldPrefix={`responsiblePersons.${index}`} />
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                          <FormField
+                            control={form.control}
+                            name={`responsiblePersons.${index}.email`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="flex items-center gap-2">
+                                  <Mail className="h-4 w-4" />
+                                  {ptBr.auth.email}
+                                </FormLabel>
+                                <FormControl>
+                                  <Input placeholder={ptBr.auth.emailPlaceholder} {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name={`responsiblePersons.${index}.phone`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="flex items-center gap-2">
+                                  <MessageCircle className="h-4 w-4" />
+                                  Telefone (opcional)
+                                </FormLabel>
+                                <FormControl>
+                                  <Input placeholder="(11) 99999-9999" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                        <FormField
+                          control={form.control}
+                          name={`responsiblePersons.${index}.useAssinafy`}
+                          render={({ field }) => (
+                            <FormItem className="flex items-center justify-between rounded-md border px-3 py-2">
+                              <div className="flex items-center gap-2">
+                                <Mail className="h-4 w-4" />
+                                <div>
+                                  <FormLabel>Assinar por e-mail (Assinafy)</FormLabel>
+                                  <FormDescription>Desativa assinatura manual e envia convite.</FormDescription>
+                                </div>
+                              </div>
+                              <FormControl>
+                                <Switch checked={field.value} onCheckedChange={field.onChange} />
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
+                        <SignatureField
+                          form={form}
+                          fieldPrefix={`responsiblePersons.${index}`}
+                          disabled={responsibleValues?.[index]?.useAssinafy}
+                        />
                       </div>
                     ))}
                     <FormMessage>

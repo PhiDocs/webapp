@@ -20,6 +20,8 @@ interface PreviewPanelProps {
   mobileView: 'form' | 'preview';
   isDownloading: boolean;
   onGeneratePdf: () => void;
+  isSendingSignature: boolean;
+  onSendForSignature: () => void;
   isAprReady: boolean;
   isPtReady: boolean;
 }
@@ -34,10 +36,13 @@ export function PreviewPanel({
   mobileView,
   isDownloading,
   onGeneratePdf,
+  isSendingSignature,
+  onSendForSignature,
   isAprReady,
   isPtReady,
 }: PreviewPanelProps) {
   const canDownload = isPtReady || isAprReady;
+  const canSendSignature = isAprReady;
 
   return (
     <div className={cn("relative flex-col bg-muted h-full", mobileView === 'preview' ? 'flex' : 'hidden')}>
@@ -67,24 +72,41 @@ export function PreviewPanel({
 
         </div>
       </ScrollArea>
-      <div className="sticky bottom-0 left-0 right-0 w-full bg-background/80 backdrop-blur-sm p-4 border-t">
-           <Button
-              onClick={onGeneratePdf}
-              disabled={isDownloading || !canDownload}
-              className="w-full"
-          >
-              {isDownloading ? (
-                  <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  {ptBr.actions.generatingPdf}
-                  </>
-              ) : (
-                  <>
-                  <Printer className="mr-2 h-4 w-4" />
-                  {ptBr.actions.generatePdf}
-                  </>
-              )}
-          </Button>
+      <div className="sticky bottom-0 left-0 right-0 w-full bg-background/80 backdrop-blur-sm p-4 border-t space-y-2">
+        <Button
+          onClick={onGeneratePdf}
+          disabled={isDownloading || !canDownload}
+          className="w-full"
+        >
+          {isDownloading ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              {ptBr.actions.generatingPdf}
+            </>
+          ) : (
+            <>
+              <Printer className="mr-2 h-4 w-4" />
+              {ptBr.actions.generatePdf}
+            </>
+          )}
+        </Button>
+        <Button
+          onClick={onSendForSignature}
+          disabled={isSendingSignature || !canSendSignature}
+          variant="secondary"
+          className="w-full"
+        >
+          {isSendingSignature ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              {ptBr.actions.sendingForSignature}
+            </>
+          ) : (
+            <>
+              {ptBr.actions.sendForSignature}
+            </>
+          )}
+        </Button>
       </div>
     </div>
   );

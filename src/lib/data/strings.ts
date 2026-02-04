@@ -1,4 +1,4 @@
-
+﻿
 export const ptBr = {
   documentType: {
     apr: 'APR',
@@ -7,6 +7,12 @@ export const ptBr = {
   actions: {
     generatePdf: 'Gerar e Baixar PDF',
     generatingPdf: 'Gerando PDF...',
+    sendForSignature: 'Enviar para Assinatura',
+    sendingForSignature: 'Enviando para Assinatura...',
+    downloadSignedPdf: 'Baixar PDF Assinado',
+    refresh: 'Atualizar Status',
+    refreshing: 'Atualizando...',
+    loading: 'Carregando...',
     generateAnalysis: 'Gerar Análise de Segurança',
     generatingAnalysis: 'Gerando Análise...',
     startNewReport: 'Começar Novo Relatório',
@@ -39,8 +45,22 @@ export const ptBr = {
   },
   header: {
     title: 'Safety Docs AI',
-    form: 'Formulário',
-    preview: 'Pré-visualização',
+    form: 'FormulÃ¡rio',
+    preview: 'PrÃ©-visualizaÃ§Ã£o',
+  },
+  signature: {
+    title: 'Status das Assinaturas',
+    description: 'Acompanhe quantas assinaturas foram concluÃ­das e baixe o PDF quando finalizar.',
+    empty: 'Nenhum documento enviado para assinatura ainda.',
+    counts: '{{signed}} assinadas de {{total}} (faltam {{pending}}).',
+    lastSync: 'Ãšltima sincronizaÃ§Ã£o: {{date}}',
+    status: {
+      pending: 'Pendente',
+      signed: 'Assinado',
+      declined: 'Recusado',
+      expired: 'Expirado',
+      uploaded: 'Enviado',
+    },
   },
   previewPanel: {
     loading: {
@@ -322,6 +342,7 @@ export const ptBr = {
       fileTooLarge: 'Arquivo muito grande',
       fileTooLargeDescription: 'Por favor, envie um logo menor que 2MB.',
       authError: 'Erro de Autenticação',
+      signatureSendFailed: 'Falha ao enviar para assinatura',
     },
     success: {
       pdfDownloaded: 'Download do PDF iniciado!',
@@ -334,6 +355,8 @@ export const ptBr = {
       loginSuccessDescription: 'Você será redirecionado em breve.',
       signupSuccess: 'Conta criada com sucesso!',
       signupSuccessDescription: 'Você será redirecionado para a página de login.',
+      signatureSent: 'Convites enviados',
+      signatureSentDescription: 'Os signatários receberam o e-mail de assinatura.',
     },
   },
   validations: {
@@ -375,3 +398,10 @@ export const ptBr = {
     companyLogoAlt: 'Logo da Empresa',
   }
 };
+
+
+
+
+
+
+

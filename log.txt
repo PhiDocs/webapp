@@ -178,3 +178,757 @@ For more details see https://genkit.dev/docs/plugins/google-genai/
     at async requestHandlerImpl (/home/user/studio/node_modules/next/dist/server/lib/router-server.js:384:13)
     at async Server.requestListener (/home/user/studio/node_modules/next/dist/server/lib/start-server.js:142:13)
 ---
+[2026-02-04T19:27:27.105Z] ERROR in sendDocumentForSignature: Erro ao fazer upload do documento: 401 - {"status":401,"data":null,"message":"Credenciais inválidas."}
+STACK: Error: Erro ao fazer upload do documento: 401 - {"status":401,"data":null,"message":"Credenciais inválidas."}
+    at uploadDocumentToAssinafy (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\[root-of-the-server]__f75b3710._.js:3027:19)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async sendDocumentForSignature (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\[root-of-the-server]__f75b3710._.js:3264:30)
+    at async executeActionAndPrepareForRender (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:36:3803)
+    at async C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:36:1109
+    at async handleAction (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:34:23616)
+    at async renderToHTMLOrFlightImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:41:42130)
+    at async doRender (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\5e3a2_next_dist_0224df6a._.js:2970:28)
+    at async AppPageRouteModule.handleResponse (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:43:64241)
+    at async handleResponse (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\5e3a2_next_dist_0224df6a._.js:3176:32)
+    at async Module.handler (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\5e3a2_next_dist_0224df6a._.js:3545:13)
+    at async DevServer.renderToResponseWithComponentsImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:1442:9)
+    at async DevServer.renderPageComponent (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:1494:24)
+    at async DevServer.renderToResponseImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:1544:32)
+    at async DevServer.pipeImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:1038:25)
+    at async NextNodeServer.handleCatchallRenderRequest (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\next-server.js:395:17)
+    at async DevServer.handleRequestImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:929:17)
+    at async C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\dev\next-dev-server.js:387:20
+    at async Span.traceAsyncFn (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\trace\trace.js:157:20)
+    at async DevServer.handleRequest (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\dev\next-dev-server.js:383:24)
+    at async invokeRender (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\lib\router-server.js:248:21)
+    at async handleRequest (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\lib\router-server.js:447:24)
+    at async requestHandlerImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\lib\router-server.js:496:13)
+    at async Server.requestListener (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\lib\start-server.js:226:13)
+---
+[2026-02-04T19:43:21.908Z] ERROR in sendDocumentForSignature: Erro ao criar assignment: 404 - {"status":404,"data":null,"message":"Document not found."}
+STACK: Error: Erro ao criar assignment: 404 - {"status":404,"data":null,"message":"Document not found."}
+    at createAssignment (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\[root-of-the-server]__f75b3710._.js:3092:19)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async sendDocumentForSignature (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\[root-of-the-server]__f75b3710._.js:3276:34)
+    at async executeActionAndPrepareForRender (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:36:3803)
+    at async C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:36:1109
+    at async handleAction (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:34:23616)
+    at async renderToHTMLOrFlightImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:41:42130)
+    at async doRender (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\5e3a2_next_dist_0224df6a._.js:2970:28)
+    at async AppPageRouteModule.handleResponse (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:43:64241)
+    at async handleResponse (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\5e3a2_next_dist_0224df6a._.js:3176:32)
+    at async Module.handler (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\5e3a2_next_dist_0224df6a._.js:3545:13)
+    at async DevServer.renderToResponseWithComponentsImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:1442:9)
+    at async DevServer.renderPageComponent (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:1494:24)
+    at async DevServer.renderToResponseImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:1544:32)
+    at async DevServer.pipeImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:1038:25)
+    at async NextNodeServer.handleCatchallRenderRequest (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\next-server.js:395:17)
+    at async DevServer.handleRequestImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:929:17)
+    at async C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\dev\next-dev-server.js:387:20
+    at async Span.traceAsyncFn (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\trace\trace.js:157:20)
+    at async DevServer.handleRequest (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\dev\next-dev-server.js:383:24)
+    at async invokeRender (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\lib\router-server.js:248:21)
+    at async handleRequest (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\lib\router-server.js:447:24)
+    at async requestHandlerImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\lib\router-server.js:496:13)
+    at async Server.requestListener (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\lib\start-server.js:226:13)
+---
+[2026-02-04T19:46:05.514Z] ERROR in sendDocumentForSignature: Erro ao criar signatário: 400 - {"status":400,"data":null,"message":"Um signatário com este e-mail já existe."}
+STACK: Error: Erro ao criar signatário: 400 - {"status":400,"data":null,"message":"Um signatário com este e-mail já existe."}
+    at createOrGetSigner (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\[root-of-the-server]__f75b3710._.js:3060:19)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async sendDocumentForSignature (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\[root-of-the-server]__f75b3710._.js:3262:34)
+    at async executeActionAndPrepareForRender (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:36:3803)
+    at async C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:36:1109
+    at async handleAction (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:34:23616)
+    at async renderToHTMLOrFlightImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:41:42130)
+    at async doRender (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\5e3a2_next_dist_0224df6a._.js:2970:28)
+    at async AppPageRouteModule.handleResponse (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:43:64241)
+    at async handleResponse (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\5e3a2_next_dist_0224df6a._.js:3176:32)
+    at async Module.handler (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\5e3a2_next_dist_0224df6a._.js:3545:13)
+    at async DevServer.renderToResponseWithComponentsImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:1442:9)
+    at async DevServer.renderPageComponent (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:1494:24)
+    at async DevServer.renderToResponseImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:1544:32)
+    at async DevServer.pipeImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:1038:25)
+    at async NextNodeServer.handleCatchallRenderRequest (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\next-server.js:395:17)
+    at async DevServer.handleRequestImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:929:17)
+    at async C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\dev\next-dev-server.js:387:20
+    at async Span.traceAsyncFn (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\trace\trace.js:157:20)
+    at async DevServer.handleRequest (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\dev\next-dev-server.js:383:24)
+    at async invokeRender (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\lib\router-server.js:248:21)
+    at async handleRequest (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\lib\router-server.js:447:24)
+    at async requestHandlerImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\lib\router-server.js:496:13)
+    at async Server.requestListener (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\lib\start-server.js:226:13)
+---
+[2026-02-04T20:19:00.765Z] ERROR in sendDocumentForSignature: Erro ao criar assignment: 404 - {"status":404,"data":null,"message":"Document not found."}
+STACK: Error: Erro ao criar assignment: 404 - {"status":404,"data":null,"message":"Document not found."}
+    at createAssignment (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\[root-of-the-server]__f75b3710._.js:3129:19)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async sendDocumentForSignature (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\[root-of-the-server]__f75b3710._.js:3313:34)
+    at async executeActionAndPrepareForRender (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:36:3803)
+    at async C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:36:1109
+    at async handleAction (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:34:23616)
+    at async renderToHTMLOrFlightImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:41:42130)
+    at async doRender (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\5e3a2_next_dist_0224df6a._.js:2970:28)
+    at async AppPageRouteModule.handleResponse (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:43:64241)
+    at async handleResponse (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\5e3a2_next_dist_0224df6a._.js:3176:32)
+    at async Module.handler (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\5e3a2_next_dist_0224df6a._.js:3545:13)
+    at async DevServer.renderToResponseWithComponentsImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:1442:9)
+    at async DevServer.renderPageComponent (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:1494:24)
+    at async DevServer.renderToResponseImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:1544:32)
+    at async DevServer.pipeImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:1038:25)
+    at async NextNodeServer.handleCatchallRenderRequest (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\next-server.js:395:17)
+    at async DevServer.handleRequestImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:929:17)
+    at async C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\dev\next-dev-server.js:387:20
+    at async Span.traceAsyncFn (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\trace\trace.js:157:20)
+    at async DevServer.handleRequest (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\dev\next-dev-server.js:383:24)
+    at async invokeRender (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\lib\router-server.js:248:21)
+    at async handleRequest (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\lib\router-server.js:447:24)
+    at async requestHandlerImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\lib\router-server.js:496:13)
+    at async Server.requestListener (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\lib\start-server.js:226:13)
+---
+[2026-02-04T20:23:29.758Z] ERROR in sendDocumentForSignature: Erro ao criar assignment: 404 - {"name":"Not Found","message":"Página não encontrada.","code":0,"status":404}
+STACK: Error: Erro ao criar assignment: 404 - {"name":"Not Found","message":"Página não encontrada.","code":0,"status":404}
+    at createAssignment (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\[root-of-the-server]__f75b3710._.js:3129:19)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async sendDocumentForSignature (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\[root-of-the-server]__f75b3710._.js:3313:34)
+    at async executeActionAndPrepareForRender (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:36:3803)
+    at async C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:36:1109
+    at async handleAction (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:34:23616)
+    at async renderToHTMLOrFlightImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:41:42130)
+    at async doRender (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\5e3a2_next_dist_0224df6a._.js:2970:28)
+    at async AppPageRouteModule.handleResponse (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:43:64241)
+    at async handleResponse (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\5e3a2_next_dist_0224df6a._.js:3176:32)
+    at async Module.handler (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\5e3a2_next_dist_0224df6a._.js:3545:13)
+    at async DevServer.renderToResponseWithComponentsImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:1442:9)
+    at async DevServer.renderPageComponent (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:1494:24)
+    at async DevServer.renderToResponseImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:1544:32)
+    at async DevServer.pipeImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:1038:25)
+    at async NextNodeServer.handleCatchallRenderRequest (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\next-server.js:395:17)
+    at async DevServer.handleRequestImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:929:17)
+    at async C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\dev\next-dev-server.js:387:20
+    at async Span.traceAsyncFn (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\trace\trace.js:157:20)
+    at async DevServer.handleRequest (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\dev\next-dev-server.js:383:24)
+    at async invokeRender (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\lib\router-server.js:248:21)
+    at async handleRequest (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\lib\router-server.js:447:24)
+    at async requestHandlerImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\lib\router-server.js:496:13)
+    at async Server.requestListener (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\lib\start-server.js:226:13)
+---
+[2026-02-04T20:52:19.425Z] ERROR in sendDocumentForSignature: Erro ao criar assignment: 404 - {"name":"Not Found","message":"Página não encontrada.","code":0,"status":404}
+STACK: Error: Erro ao criar assignment: 404 - {"name":"Not Found","message":"Página não encontrada.","code":0,"status":404}
+    at createAssignment (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\[root-of-the-server]__f75b3710._.js:3149:15)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async sendDocumentForSignature (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\[root-of-the-server]__f75b3710._.js:3327:34)
+    at async executeActionAndPrepareForRender (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:36:3803)
+    at async C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:36:1109
+    at async handleAction (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:34:23616)
+    at async renderToHTMLOrFlightImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:41:42130)
+    at async doRender (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\5e3a2_next_dist_0224df6a._.js:2970:28)
+    at async AppPageRouteModule.handleResponse (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:43:64241)
+    at async handleResponse (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\5e3a2_next_dist_0224df6a._.js:3176:32)
+    at async Module.handler (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\5e3a2_next_dist_0224df6a._.js:3545:13)
+    at async DevServer.renderToResponseWithComponentsImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:1442:9)
+    at async DevServer.renderPageComponent (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:1494:24)
+    at async DevServer.renderToResponseImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:1544:32)
+    at async DevServer.pipeImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:1038:25)
+    at async NextNodeServer.handleCatchallRenderRequest (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\next-server.js:395:17)
+    at async DevServer.handleRequestImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:929:17)
+    at async C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\dev\next-dev-server.js:387:20
+    at async Span.traceAsyncFn (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\trace\trace.js:157:20)
+    at async DevServer.handleRequest (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\dev\next-dev-server.js:383:24)
+    at async invokeRender (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\lib\router-server.js:248:21)
+    at async handleRequest (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\lib\router-server.js:447:24)
+    at async requestHandlerImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\lib\router-server.js:496:13)
+    at async Server.requestListener (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\lib\start-server.js:226:13)
+---
+[2026-02-04T20:59:05.352Z] ERROR in sendDocumentForSignature: Erro ao criar assignment: 404 - {"name":"Not Found","message":"Página não encontrada.","code":0,"status":404}
+STACK: Error: Erro ao criar assignment: 404 - {"name":"Not Found","message":"Página não encontrada.","code":0,"status":404}
+    at createAssignment (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\[root-of-the-server]__f75b3710._.js:3149:15)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async sendDocumentForSignature (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\[root-of-the-server]__f75b3710._.js:3327:34)
+    at async executeActionAndPrepareForRender (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:36:3803)
+    at async C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:36:1109
+    at async handleAction (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:34:23616)
+    at async renderToHTMLOrFlightImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:41:42130)
+    at async doRender (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\5e3a2_next_dist_0224df6a._.js:2970:28)
+    at async AppPageRouteModule.handleResponse (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:43:64241)
+    at async handleResponse (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\5e3a2_next_dist_0224df6a._.js:3176:32)
+    at async Module.handler (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\5e3a2_next_dist_0224df6a._.js:3545:13)
+    at async DevServer.renderToResponseWithComponentsImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:1442:9)
+    at async DevServer.renderPageComponent (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:1494:24)
+    at async DevServer.renderToResponseImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:1544:32)
+    at async DevServer.pipeImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:1038:25)
+    at async NextNodeServer.handleCatchallRenderRequest (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\next-server.js:395:17)
+    at async DevServer.handleRequestImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:929:17)
+    at async C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\dev\next-dev-server.js:387:20
+    at async Span.traceAsyncFn (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\trace\trace.js:157:20)
+    at async DevServer.handleRequest (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\dev\next-dev-server.js:383:24)
+    at async invokeRender (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\lib\router-server.js:248:21)
+    at async handleRequest (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\lib\router-server.js:447:24)
+    at async requestHandlerImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\lib\router-server.js:496:13)
+    at async Server.requestListener (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\lib\start-server.js:226:13)
+---
+[2026-02-04T21:04:29.817Z] ERROR in sendDocumentForSignature: Erro ao criar assignment: 400 - {"status":400,"data":null,"message":"Assignment cannot be created for document under 'metadata_processing' status."}
+STACK: Error: Erro ao criar assignment: 400 - {"status":400,"data":null,"message":"Assignment cannot be created for document under 'metadata_processing' status."}
+    at createAssignment (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\[root-of-the-server]__f75b3710._.js:3151:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async sendDocumentForSignature (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\[root-of-the-server]__f75b3710._.js:3332:34)
+    at async executeActionAndPrepareForRender (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:36:3803)
+    at async C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:36:1109
+    at async handleAction (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:34:23616)
+    at async renderToHTMLOrFlightImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:41:42130)
+    at async doRender (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\5e3a2_next_dist_0224df6a._.js:2970:28)
+    at async AppPageRouteModule.handleResponse (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:43:64241)
+    at async handleResponse (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\5e3a2_next_dist_0224df6a._.js:3176:32)
+    at async Module.handler (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\5e3a2_next_dist_0224df6a._.js:3545:13)
+    at async DevServer.renderToResponseWithComponentsImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:1442:9)
+    at async DevServer.renderPageComponent (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:1494:24)
+    at async DevServer.renderToResponseImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:1544:32)
+    at async DevServer.pipeImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:1038:25)
+    at async NextNodeServer.handleCatchallRenderRequest (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\next-server.js:395:17)
+    at async DevServer.handleRequestImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:929:17)
+    at async C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\dev\next-dev-server.js:387:20
+    at async Span.traceAsyncFn (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\trace\trace.js:157:20)
+    at async DevServer.handleRequest (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\dev\next-dev-server.js:383:24)
+    at async invokeRender (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\lib\router-server.js:248:21)
+    at async handleRequest (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\lib\router-server.js:447:24)
+    at async requestHandlerImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\lib\router-server.js:496:13)
+    at async Server.requestListener (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\lib\start-server.js:226:13)
+---
+[2026-02-04T21:10:11.472Z] ERROR in sendDocumentForSignature: Erro ao criar assignment: 400 - {"status":400,"data":null,"message":"Assignment cannot be created for document under 'metadata_processing' status."}
+STACK: Error: Erro ao criar assignment: 400 - {"status":400,"data":null,"message":"Assignment cannot be created for document under 'metadata_processing' status."}
+    at createAssignment (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\[root-of-the-server]__f75b3710._.js:3153:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async sendDocumentForSignature (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\[root-of-the-server]__f75b3710._.js:3348:34)
+    at async executeActionAndPrepareForRender (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:36:3803)
+    at async C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:36:1109
+    at async handleAction (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:34:23616)
+    at async renderToHTMLOrFlightImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:41:42130)
+    at async doRender (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\5e3a2_next_dist_0224df6a._.js:2970:28)
+    at async AppPageRouteModule.handleResponse (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:43:64241)
+    at async handleResponse (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\5e3a2_next_dist_0224df6a._.js:3176:32)
+    at async Module.handler (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\5e3a2_next_dist_0224df6a._.js:3545:13)
+    at async DevServer.renderToResponseWithComponentsImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:1442:9)
+    at async DevServer.renderPageComponent (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:1494:24)
+    at async DevServer.renderToResponseImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:1544:32)
+    at async DevServer.pipeImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:1038:25)
+    at async NextNodeServer.handleCatchallRenderRequest (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\next-server.js:395:17)
+    at async DevServer.handleRequestImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:929:17)
+    at async C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\dev\next-dev-server.js:387:20
+    at async Span.traceAsyncFn (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\trace\trace.js:157:20)
+    at async DevServer.handleRequest (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\dev\next-dev-server.js:383:24)
+    at async invokeRender (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\lib\router-server.js:248:21)
+    at async handleRequest (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\lib\router-server.js:447:24)
+    at async requestHandlerImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\lib\router-server.js:496:13)
+    at async Server.requestListener (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\lib\start-server.js:226:13)
+---
+[2026-02-04T21:18:11.217Z] ERROR in sendDocumentForSignature: Value for argument "data" is not a valid Firestore document. Cannot use "undefined" as a Firestore value (found in field "assinafyAssignmentId"). If you want to ignore undefined values, enable `ignoreUndefinedProperties`.
+STACK: Error: Value for argument "data" is not a valid Firestore document. Cannot use "undefined" as a Firestore value (found in field "assinafyAssignmentId"). If you want to ignore undefined values, enable `ignoreUndefinedProperties`.
+    at validateUserInput (C:\Users\kally\Desktop\Projetos\studio\node_modules\@google-cloud\firestore\build\src\serializer.js:383:19)
+    at validateUserInput (C:\Users\kally\Desktop\Projetos\studio\node_modules\@google-cloud\firestore\build\src\serializer.js:375:13)
+    at validateDocumentData (C:\Users\kally\Desktop\Projetos\studio\node_modules\@google-cloud\firestore\build\src\write-batch.js:609:40)
+    at C:\Users\kally\Desktop\Projetos\studio\node_modules\@google-cloud\firestore\build\src\reference\collection-reference.js:214:52
+    at C:\Users\kally\Desktop\Projetos\studio\node_modules\@google-cloud\firestore\build\src\telemetry\enabled-trace-util.js:110:30
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14)
+    at AsyncLocalStorageContextManager.with (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\5e3a2_@opentelemetry_a00c320d._.js:2276:40)
+    at ContextAPI.with (C:\Users\kally\Desktop\Projetos\studio\node_modules\@opentelemetry\api\build\src\api\context.js:60:46)
+    at NoopTracer.startActiveSpan (C:\Users\kally\Desktop\Projetos\studio\node_modules\@opentelemetry\api\build\src\trace\NoopTracer.js:65:31)
+    at ProxyTracer.startActiveSpan (C:\Users\kally\Desktop\Projetos\studio\node_modules\@opentelemetry\api\build\src\trace\ProxyTracer.js:36:24)
+    at EnabledTraceUtil.startActiveSpan (C:\Users\kally\Desktop\Projetos\studio\node_modules\@google-cloud\firestore\build\src\telemetry\enabled-trace-util.js:102:28)
+    at CollectionReference.add (C:\Users\kally\Desktop\Projetos\studio\node_modules\@google-cloud\firestore\build\src\reference\collection-reference.js:212:43)
+    at Object.create (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\[root-of-the-server]__f75b3710._.js:540:47)
+    at sendDocumentForSignature (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\[root-of-the-server]__f75b3710._.js:3387:262)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async executeActionAndPrepareForRender (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:36:3803)
+    at async C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:36:1109
+    at async handleAction (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:34:23616)
+    at async renderToHTMLOrFlightImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:41:42130)
+    at async doRender (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\5e3a2_next_dist_0224df6a._.js:2970:28)
+    at async AppPageRouteModule.handleResponse (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:43:64241)
+    at async handleResponse (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\5e3a2_next_dist_0224df6a._.js:3176:32)
+    at async Module.handler (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\5e3a2_next_dist_0224df6a._.js:3545:13)
+    at async DevServer.renderToResponseWithComponentsImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:1442:9)
+    at async DevServer.renderPageComponent (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:1494:24)
+    at async DevServer.renderToResponseImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:1544:32)
+    at async DevServer.pipeImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:1038:25)
+    at async NextNodeServer.handleCatchallRenderRequest (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\next-server.js:395:17)
+    at async DevServer.handleRequestImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:929:17)
+    at async C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\dev\next-dev-server.js:387:20
+    at async Span.traceAsyncFn (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\trace\trace.js:157:20)
+    at async DevServer.handleRequest (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\dev\next-dev-server.js:383:24)
+    at async invokeRender (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\lib\router-server.js:248:21)
+    at async handleRequest (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\lib\router-server.js:447:24)
+    at async requestHandlerImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\lib\router-server.js:496:13)
+    at async Server.requestListener (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\lib\start-server.js:226:13)
+---
+[2026-02-04T21:28:07.085Z] ERROR in getSignatureDocuments: 9 FAILED_PRECONDITION: The query requires an index. You can create it here: https://console.firebase.google.com/v1/r/project/studio-2124642360-17967/firestore/indexes?create_composite=CmJwcm9qZWN0cy9zdHVkaW8tMjEyNDY0MjM2MC0xNzk2Ny9kYXRhYmFzZXMvKGRlZmF1bHQpL2NvbGxlY3Rpb25Hcm91cHMvc2lnbmF0dXJlRG9jdW1lbnRzL2luZGV4ZXMvXxABGg0KCWNvbXBhbnlJZBABGg0KCWNyZWF0ZWRBdBACGgwKCF9fbmFtZV9fEAI
+STACK: Error: 9 FAILED_PRECONDITION: The query requires an index. You can create it here: https://console.firebase.google.com/v1/r/project/studio-2124642360-17967/firestore/indexes?create_composite=CmJwcm9qZWN0cy9zdHVkaW8tMjEyNDY0MjM2MC0xNzk2Ny9kYXRhYmFzZXMvKGRlZmF1bHQpL2NvbGxlY3Rpb25Hcm91cHMvc2lnbmF0dXJlRG9jdW1lbnRzL2luZGV4ZXMvXxABGg0KCWNvbXBhbnlJZBABGg0KCWNyZWF0ZWRBdBACGgwKCF9fbmFtZV9fEAI
+    at callErrorFromStatus (C:\Users\kally\Desktop\Projetos\studio\node_modules\@grpc\grpc-js\build\src\call.js:32:19)
+    at Object.onReceiveStatus (C:\Users\kally\Desktop\Projetos\studio\node_modules\@grpc\grpc-js\build\src\client.js:359:73)
+    at Object.onReceiveStatus (C:\Users\kally\Desktop\Projetos\studio\node_modules\@grpc\grpc-js\build\src\client-interceptors.js:327:181)
+    at C:\Users\kally\Desktop\Projetos\studio\node_modules\@grpc\grpc-js\build\src\resolving-call.js:135:78
+    at process.processTicksAndRejections (node:internal/process/task_queues:85:11)
+for call at
+    at ServiceClientImpl.makeServerStreamRequest (C:\Users\kally\Desktop\Projetos\studio\node_modules\@grpc\grpc-js\build\src\client.js:342:32)
+    at ServiceClientImpl.<anonymous> (C:\Users\kally\Desktop\Projetos\studio\node_modules\@grpc\grpc-js\build\src\make-client.js:105:19)
+    at C:\Users\kally\Desktop\Projetos\studio\node_modules\@google-cloud\firestore\build\src\v1\firestore_client.js:242:33
+    at C:\Users\kally\Desktop\Projetos\studio\node_modules\google-gax\build\src\streamingCalls\streamingApiCaller.js:38:28
+    at C:\Users\kally\Desktop\Projetos\studio\node_modules\google-gax\build\src\normalCalls\timeout.js:44:16
+    at Object.request (C:\Users\kally\Desktop\Projetos\studio\node_modules\google-gax\build\src\streamingCalls\streaming.js:234:40)
+    at makeRequest (C:\Users\kally\Desktop\Projetos\studio\node_modules\retry-request\index.js:159:28)
+    at retryRequest (C:\Users\kally\Desktop\Projetos\studio\node_modules\retry-request\index.js:119:5)
+    at StreamProxy.setStream (C:\Users\kally\Desktop\Projetos\studio\node_modules\google-gax\build\src\streamingCalls\streaming.js:225:37)
+    at StreamingApiCaller.call (C:\Users\kally\Desktop\Projetos\studio\node_modules\google-gax\build\src\streamingCalls\streamingApiCaller.js:54:16)
+    at C:\Users\kally\Desktop\Projetos\studio\node_modules\google-gax\build\src\createApiCall.js:112:30
+Caused by: Error: 
+    at QueryUtil._getResponse (C:\Users\kally\Desktop\Projetos\studio\node_modules\@google-cloud\firestore\build\src\reference\query-util.js:44:23)
+    at Query._getResponse (C:\Users\kally\Desktop\Projetos\studio\node_modules\@google-cloud\firestore\build\src\reference\query.js:784:32)
+    at Query._get (C:\Users\kally\Desktop\Projetos\studio\node_modules\@google-cloud\firestore\build\src\reference\query.js:777:35)
+    at C:\Users\kally\Desktop\Projetos\studio\node_modules\@google-cloud\firestore\build\src\reference\query.js:745:43
+    at C:\Users\kally\Desktop\Projetos\studio\node_modules\@google-cloud\firestore\build\src\telemetry\enabled-trace-util.js:110:30
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14)
+    at AsyncLocalStorageContextManager.with (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\5e3a2_@opentelemetry_a00c320d._.js:2276:40)
+    at ContextAPI.with (C:\Users\kally\Desktop\Projetos\studio\node_modules\@opentelemetry\api\build\src\api\context.js:60:46)
+    at NoopTracer.startActiveSpan (C:\Users\kally\Desktop\Projetos\studio\node_modules\@opentelemetry\api\build\src\trace\NoopTracer.js:65:31)
+    at ProxyTracer.startActiveSpan (C:\Users\kally\Desktop\Projetos\studio\node_modules\@opentelemetry\api\build\src\trace\ProxyTracer.js:36:24)
+    at EnabledTraceUtil.startActiveSpan (C:\Users\kally\Desktop\Projetos\studio\node_modules\@google-cloud\firestore\build\src\telemetry\enabled-trace-util.js:102:28)
+    at Query.get (C:\Users\kally\Desktop\Projetos\studio\node_modules\@google-cloud\firestore\build\src\reference\query.js:744:43)
+    at Object.getByCompany (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\[root-of-the-server]__f75b3710._.js:544:117)
+    at getSignatureDocuments (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\[root-of-the-server]__f75b3710._.js:3414:252)
+    at C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:36:3895
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14)
+    at executeActionAndPrepareForRender (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:36:3867)
+    at C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:36:1115
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async handleAction (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:34:23616)
+    at async renderToHTMLOrFlightImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:41:42130)
+    at async doRender (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\5e3a2_next_dist_c08931b8._.js:2970:28)
+    at async AppPageRouteModule.handleResponse (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:43:64241)
+    at async handleResponse (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\5e3a2_next_dist_c08931b8._.js:3176:32)
+    at async Module.handler (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\5e3a2_next_dist_c08931b8._.js:3545:13)
+    at async DevServer.renderToResponseWithComponentsImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:1442:9)
+    at async DevServer.renderPageComponent (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:1494:24)
+    at async DevServer.renderToResponseImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:1544:32)
+    at async DevServer.pipeImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:1038:25)
+    at async NextNodeServer.handleCatchallRenderRequest (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\next-server.js:395:17)
+    at async DevServer.handleRequestImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:929:17)
+    at async C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\dev\next-dev-server.js:387:20
+    at async Span.traceAsyncFn (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\trace\trace.js:157:20)
+    at async DevServer.handleRequest (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\dev\next-dev-server.js:383:24)
+    at async invokeRender (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\lib\router-server.js:248:21)
+    at async handleRequest (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\lib\router-server.js:447:24)
+    at async requestHandlerImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\lib\router-server.js:496:13)
+    at async Server.requestListener (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\lib\start-server.js:226:13)
+---
+[2026-02-04T21:28:08.230Z] ERROR in getSignatureDocuments: 9 FAILED_PRECONDITION: The query requires an index. You can create it here: https://console.firebase.google.com/v1/r/project/studio-2124642360-17967/firestore/indexes?create_composite=CmJwcm9qZWN0cy9zdHVkaW8tMjEyNDY0MjM2MC0xNzk2Ny9kYXRhYmFzZXMvKGRlZmF1bHQpL2NvbGxlY3Rpb25Hcm91cHMvc2lnbmF0dXJlRG9jdW1lbnRzL2luZGV4ZXMvXxABGg0KCWNvbXBhbnlJZBABGg0KCWNyZWF0ZWRBdBACGgwKCF9fbmFtZV9fEAI
+STACK: Error: 9 FAILED_PRECONDITION: The query requires an index. You can create it here: https://console.firebase.google.com/v1/r/project/studio-2124642360-17967/firestore/indexes?create_composite=CmJwcm9qZWN0cy9zdHVkaW8tMjEyNDY0MjM2MC0xNzk2Ny9kYXRhYmFzZXMvKGRlZmF1bHQpL2NvbGxlY3Rpb25Hcm91cHMvc2lnbmF0dXJlRG9jdW1lbnRzL2luZGV4ZXMvXxABGg0KCWNvbXBhbnlJZBABGg0KCWNyZWF0ZWRBdBACGgwKCF9fbmFtZV9fEAI
+    at callErrorFromStatus (C:\Users\kally\Desktop\Projetos\studio\node_modules\@grpc\grpc-js\build\src\call.js:32:19)
+    at Object.onReceiveStatus (C:\Users\kally\Desktop\Projetos\studio\node_modules\@grpc\grpc-js\build\src\client.js:359:73)
+    at Object.onReceiveStatus (C:\Users\kally\Desktop\Projetos\studio\node_modules\@grpc\grpc-js\build\src\client-interceptors.js:327:181)
+    at C:\Users\kally\Desktop\Projetos\studio\node_modules\@grpc\grpc-js\build\src\resolving-call.js:135:78
+    at process.processTicksAndRejections (node:internal/process/task_queues:85:11)
+for call at
+    at ServiceClientImpl.makeServerStreamRequest (C:\Users\kally\Desktop\Projetos\studio\node_modules\@grpc\grpc-js\build\src\client.js:342:32)
+    at ServiceClientImpl.<anonymous> (C:\Users\kally\Desktop\Projetos\studio\node_modules\@grpc\grpc-js\build\src\make-client.js:105:19)
+    at C:\Users\kally\Desktop\Projetos\studio\node_modules\@google-cloud\firestore\build\src\v1\firestore_client.js:242:33
+    at C:\Users\kally\Desktop\Projetos\studio\node_modules\google-gax\build\src\streamingCalls\streamingApiCaller.js:38:28
+    at C:\Users\kally\Desktop\Projetos\studio\node_modules\google-gax\build\src\normalCalls\timeout.js:44:16
+    at Object.request (C:\Users\kally\Desktop\Projetos\studio\node_modules\google-gax\build\src\streamingCalls\streaming.js:234:40)
+    at makeRequest (C:\Users\kally\Desktop\Projetos\studio\node_modules\retry-request\index.js:159:28)
+    at retryRequest (C:\Users\kally\Desktop\Projetos\studio\node_modules\retry-request\index.js:119:5)
+    at StreamProxy.setStream (C:\Users\kally\Desktop\Projetos\studio\node_modules\google-gax\build\src\streamingCalls\streaming.js:225:37)
+    at StreamingApiCaller.call (C:\Users\kally\Desktop\Projetos\studio\node_modules\google-gax\build\src\streamingCalls\streamingApiCaller.js:54:16)
+    at C:\Users\kally\Desktop\Projetos\studio\node_modules\google-gax\build\src\createApiCall.js:112:30
+Caused by: Error: 
+    at QueryUtil._getResponse (C:\Users\kally\Desktop\Projetos\studio\node_modules\@google-cloud\firestore\build\src\reference\query-util.js:44:23)
+    at Query._getResponse (C:\Users\kally\Desktop\Projetos\studio\node_modules\@google-cloud\firestore\build\src\reference\query.js:784:32)
+    at Query._get (C:\Users\kally\Desktop\Projetos\studio\node_modules\@google-cloud\firestore\build\src\reference\query.js:777:35)
+    at C:\Users\kally\Desktop\Projetos\studio\node_modules\@google-cloud\firestore\build\src\reference\query.js:745:43
+    at C:\Users\kally\Desktop\Projetos\studio\node_modules\@google-cloud\firestore\build\src\telemetry\enabled-trace-util.js:110:30
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14)
+    at AsyncLocalStorageContextManager.with (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\5e3a2_@opentelemetry_a00c320d._.js:2276:40)
+    at ContextAPI.with (C:\Users\kally\Desktop\Projetos\studio\node_modules\@opentelemetry\api\build\src\api\context.js:60:46)
+    at NoopTracer.startActiveSpan (C:\Users\kally\Desktop\Projetos\studio\node_modules\@opentelemetry\api\build\src\trace\NoopTracer.js:65:31)
+    at ProxyTracer.startActiveSpan (C:\Users\kally\Desktop\Projetos\studio\node_modules\@opentelemetry\api\build\src\trace\ProxyTracer.js:36:24)
+    at EnabledTraceUtil.startActiveSpan (C:\Users\kally\Desktop\Projetos\studio\node_modules\@google-cloud\firestore\build\src\telemetry\enabled-trace-util.js:102:28)
+    at Query.get (C:\Users\kally\Desktop\Projetos\studio\node_modules\@google-cloud\firestore\build\src\reference\query.js:744:43)
+    at Object.getByCompany (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\[root-of-the-server]__f75b3710._.js:544:117)
+    at getSignatureDocuments (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\[root-of-the-server]__f75b3710._.js:3414:252)
+    at C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:36:3895
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14)
+    at executeActionAndPrepareForRender (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:36:3867)
+    at C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:36:1115
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async handleAction (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:34:23616)
+    at async renderToHTMLOrFlightImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:41:42130)
+    at async doRender (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\5e3a2_next_dist_c08931b8._.js:2970:28)
+    at async AppPageRouteModule.handleResponse (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:43:64241)
+    at async handleResponse (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\5e3a2_next_dist_c08931b8._.js:3176:32)
+    at async Module.handler (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\5e3a2_next_dist_c08931b8._.js:3545:13)
+    at async DevServer.renderToResponseWithComponentsImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:1442:9)
+    at async DevServer.renderPageComponent (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:1494:24)
+    at async DevServer.renderToResponseImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:1544:32)
+    at async DevServer.pipeImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:1038:25)
+    at async NextNodeServer.handleCatchallRenderRequest (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\next-server.js:395:17)
+    at async DevServer.handleRequestImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:929:17)
+    at async C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\dev\next-dev-server.js:387:20
+    at async Span.traceAsyncFn (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\trace\trace.js:157:20)
+    at async DevServer.handleRequest (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\dev\next-dev-server.js:383:24)
+    at async invokeRender (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\lib\router-server.js:248:21)
+    at async handleRequest (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\lib\router-server.js:447:24)
+    at async requestHandlerImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\lib\router-server.js:496:13)
+    at async Server.requestListener (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\lib\start-server.js:226:13)
+---
+[2026-02-04T21:28:09.279Z] ERROR in getSignatureDocuments: 9 FAILED_PRECONDITION: The query requires an index. You can create it here: https://console.firebase.google.com/v1/r/project/studio-2124642360-17967/firestore/indexes?create_composite=CmJwcm9qZWN0cy9zdHVkaW8tMjEyNDY0MjM2MC0xNzk2Ny9kYXRhYmFzZXMvKGRlZmF1bHQpL2NvbGxlY3Rpb25Hcm91cHMvc2lnbmF0dXJlRG9jdW1lbnRzL2luZGV4ZXMvXxABGg0KCWNvbXBhbnlJZBABGg0KCWNyZWF0ZWRBdBACGgwKCF9fbmFtZV9fEAI
+STACK: Error: 9 FAILED_PRECONDITION: The query requires an index. You can create it here: https://console.firebase.google.com/v1/r/project/studio-2124642360-17967/firestore/indexes?create_composite=CmJwcm9qZWN0cy9zdHVkaW8tMjEyNDY0MjM2MC0xNzk2Ny9kYXRhYmFzZXMvKGRlZmF1bHQpL2NvbGxlY3Rpb25Hcm91cHMvc2lnbmF0dXJlRG9jdW1lbnRzL2luZGV4ZXMvXxABGg0KCWNvbXBhbnlJZBABGg0KCWNyZWF0ZWRBdBACGgwKCF9fbmFtZV9fEAI
+    at callErrorFromStatus (C:\Users\kally\Desktop\Projetos\studio\node_modules\@grpc\grpc-js\build\src\call.js:32:19)
+    at Object.onReceiveStatus (C:\Users\kally\Desktop\Projetos\studio\node_modules\@grpc\grpc-js\build\src\client.js:359:73)
+    at Object.onReceiveStatus (C:\Users\kally\Desktop\Projetos\studio\node_modules\@grpc\grpc-js\build\src\client-interceptors.js:327:181)
+    at C:\Users\kally\Desktop\Projetos\studio\node_modules\@grpc\grpc-js\build\src\resolving-call.js:135:78
+    at process.processTicksAndRejections (node:internal/process/task_queues:85:11)
+for call at
+    at ServiceClientImpl.makeServerStreamRequest (C:\Users\kally\Desktop\Projetos\studio\node_modules\@grpc\grpc-js\build\src\client.js:342:32)
+    at ServiceClientImpl.<anonymous> (C:\Users\kally\Desktop\Projetos\studio\node_modules\@grpc\grpc-js\build\src\make-client.js:105:19)
+    at C:\Users\kally\Desktop\Projetos\studio\node_modules\@google-cloud\firestore\build\src\v1\firestore_client.js:242:33
+    at C:\Users\kally\Desktop\Projetos\studio\node_modules\google-gax\build\src\streamingCalls\streamingApiCaller.js:38:28
+    at C:\Users\kally\Desktop\Projetos\studio\node_modules\google-gax\build\src\normalCalls\timeout.js:44:16
+    at Object.request (C:\Users\kally\Desktop\Projetos\studio\node_modules\google-gax\build\src\streamingCalls\streaming.js:234:40)
+    at makeRequest (C:\Users\kally\Desktop\Projetos\studio\node_modules\retry-request\index.js:159:28)
+    at retryRequest (C:\Users\kally\Desktop\Projetos\studio\node_modules\retry-request\index.js:119:5)
+    at StreamProxy.setStream (C:\Users\kally\Desktop\Projetos\studio\node_modules\google-gax\build\src\streamingCalls\streaming.js:225:37)
+    at StreamingApiCaller.call (C:\Users\kally\Desktop\Projetos\studio\node_modules\google-gax\build\src\streamingCalls\streamingApiCaller.js:54:16)
+    at C:\Users\kally\Desktop\Projetos\studio\node_modules\google-gax\build\src\createApiCall.js:112:30
+Caused by: Error: 
+    at QueryUtil._getResponse (C:\Users\kally\Desktop\Projetos\studio\node_modules\@google-cloud\firestore\build\src\reference\query-util.js:44:23)
+    at Query._getResponse (C:\Users\kally\Desktop\Projetos\studio\node_modules\@google-cloud\firestore\build\src\reference\query.js:784:32)
+    at Query._get (C:\Users\kally\Desktop\Projetos\studio\node_modules\@google-cloud\firestore\build\src\reference\query.js:777:35)
+    at C:\Users\kally\Desktop\Projetos\studio\node_modules\@google-cloud\firestore\build\src\reference\query.js:745:43
+    at C:\Users\kally\Desktop\Projetos\studio\node_modules\@google-cloud\firestore\build\src\telemetry\enabled-trace-util.js:110:30
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14)
+    at AsyncLocalStorageContextManager.with (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\5e3a2_@opentelemetry_a00c320d._.js:2276:40)
+    at ContextAPI.with (C:\Users\kally\Desktop\Projetos\studio\node_modules\@opentelemetry\api\build\src\api\context.js:60:46)
+    at NoopTracer.startActiveSpan (C:\Users\kally\Desktop\Projetos\studio\node_modules\@opentelemetry\api\build\src\trace\NoopTracer.js:65:31)
+    at ProxyTracer.startActiveSpan (C:\Users\kally\Desktop\Projetos\studio\node_modules\@opentelemetry\api\build\src\trace\ProxyTracer.js:36:24)
+    at EnabledTraceUtil.startActiveSpan (C:\Users\kally\Desktop\Projetos\studio\node_modules\@google-cloud\firestore\build\src\telemetry\enabled-trace-util.js:102:28)
+    at Query.get (C:\Users\kally\Desktop\Projetos\studio\node_modules\@google-cloud\firestore\build\src\reference\query.js:744:43)
+    at Object.getByCompany (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\[root-of-the-server]__f75b3710._.js:544:117)
+    at getSignatureDocuments (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\[root-of-the-server]__f75b3710._.js:3414:252)
+    at C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:36:3895
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14)
+    at executeActionAndPrepareForRender (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:36:3867)
+    at C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:36:1115
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async handleAction (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:34:23616)
+    at async renderToHTMLOrFlightImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:41:42130)
+    at async doRender (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\5e3a2_next_dist_c08931b8._.js:2970:28)
+    at async AppPageRouteModule.handleResponse (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:43:64241)
+    at async handleResponse (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\5e3a2_next_dist_c08931b8._.js:3176:32)
+    at async Module.handler (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\5e3a2_next_dist_c08931b8._.js:3545:13)
+    at async DevServer.renderToResponseWithComponentsImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:1442:9)
+    at async DevServer.renderPageComponent (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:1494:24)
+    at async DevServer.renderToResponseImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:1544:32)
+    at async DevServer.pipeImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:1038:25)
+    at async NextNodeServer.handleCatchallRenderRequest (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\next-server.js:395:17)
+    at async DevServer.handleRequestImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:929:17)
+    at async C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\dev\next-dev-server.js:387:20
+    at async Span.traceAsyncFn (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\trace\trace.js:157:20)
+    at async DevServer.handleRequest (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\dev\next-dev-server.js:383:24)
+    at async invokeRender (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\lib\router-server.js:248:21)
+    at async handleRequest (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\lib\router-server.js:447:24)
+    at async requestHandlerImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\lib\router-server.js:496:13)
+    at async Server.requestListener (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\lib\start-server.js:226:13)
+---
+[2026-02-04T21:36:42.634Z] ERROR in getSignatureDocuments: 9 FAILED_PRECONDITION: The query requires an index. You can create it here: https://console.firebase.google.com/v1/r/project/studio-2124642360-17967/firestore/indexes?create_composite=CmJwcm9qZWN0cy9zdHVkaW8tMjEyNDY0MjM2MC0xNzk2Ny9kYXRhYmFzZXMvKGRlZmF1bHQpL2NvbGxlY3Rpb25Hcm91cHMvc2lnbmF0dXJlRG9jdW1lbnRzL2luZGV4ZXMvXxABGg0KCWNvbXBhbnlJZBABGg0KCWNyZWF0ZWRBdBACGgwKCF9fbmFtZV9fEAI
+STACK: Error: 9 FAILED_PRECONDITION: The query requires an index. You can create it here: https://console.firebase.google.com/v1/r/project/studio-2124642360-17967/firestore/indexes?create_composite=CmJwcm9qZWN0cy9zdHVkaW8tMjEyNDY0MjM2MC0xNzk2Ny9kYXRhYmFzZXMvKGRlZmF1bHQpL2NvbGxlY3Rpb25Hcm91cHMvc2lnbmF0dXJlRG9jdW1lbnRzL2luZGV4ZXMvXxABGg0KCWNvbXBhbnlJZBABGg0KCWNyZWF0ZWRBdBACGgwKCF9fbmFtZV9fEAI
+    at callErrorFromStatus (C:\Users\kally\Desktop\Projetos\studio\node_modules\@grpc\grpc-js\build\src\call.js:32:19)
+    at Object.onReceiveStatus (C:\Users\kally\Desktop\Projetos\studio\node_modules\@grpc\grpc-js\build\src\client.js:359:73)
+    at Object.onReceiveStatus (C:\Users\kally\Desktop\Projetos\studio\node_modules\@grpc\grpc-js\build\src\client-interceptors.js:327:181)
+    at C:\Users\kally\Desktop\Projetos\studio\node_modules\@grpc\grpc-js\build\src\resolving-call.js:135:78
+    at process.processTicksAndRejections (node:internal/process/task_queues:85:11)
+for call at
+    at ServiceClientImpl.makeServerStreamRequest (C:\Users\kally\Desktop\Projetos\studio\node_modules\@grpc\grpc-js\build\src\client.js:342:32)
+    at ServiceClientImpl.<anonymous> (C:\Users\kally\Desktop\Projetos\studio\node_modules\@grpc\grpc-js\build\src\make-client.js:105:19)
+    at C:\Users\kally\Desktop\Projetos\studio\node_modules\@google-cloud\firestore\build\src\v1\firestore_client.js:242:33
+    at C:\Users\kally\Desktop\Projetos\studio\node_modules\google-gax\build\src\streamingCalls\streamingApiCaller.js:38:28
+    at C:\Users\kally\Desktop\Projetos\studio\node_modules\google-gax\build\src\normalCalls\timeout.js:44:16
+    at Object.request (C:\Users\kally\Desktop\Projetos\studio\node_modules\google-gax\build\src\streamingCalls\streaming.js:234:40)
+    at makeRequest (C:\Users\kally\Desktop\Projetos\studio\node_modules\retry-request\index.js:159:28)
+    at retryRequest (C:\Users\kally\Desktop\Projetos\studio\node_modules\retry-request\index.js:119:5)
+    at StreamProxy.setStream (C:\Users\kally\Desktop\Projetos\studio\node_modules\google-gax\build\src\streamingCalls\streaming.js:225:37)
+    at StreamingApiCaller.call (C:\Users\kally\Desktop\Projetos\studio\node_modules\google-gax\build\src\streamingCalls\streamingApiCaller.js:54:16)
+    at C:\Users\kally\Desktop\Projetos\studio\node_modules\google-gax\build\src\createApiCall.js:112:30
+Caused by: Error: 
+    at QueryUtil._getResponse (C:\Users\kally\Desktop\Projetos\studio\node_modules\@google-cloud\firestore\build\src\reference\query-util.js:44:23)
+    at Query._getResponse (C:\Users\kally\Desktop\Projetos\studio\node_modules\@google-cloud\firestore\build\src\reference\query.js:784:32)
+    at Query._get (C:\Users\kally\Desktop\Projetos\studio\node_modules\@google-cloud\firestore\build\src\reference\query.js:777:35)
+    at C:\Users\kally\Desktop\Projetos\studio\node_modules\@google-cloud\firestore\build\src\reference\query.js:745:43
+    at C:\Users\kally\Desktop\Projetos\studio\node_modules\@google-cloud\firestore\build\src\telemetry\enabled-trace-util.js:110:30
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14)
+    at AsyncLocalStorageContextManager.with (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\5e3a2_@opentelemetry_a00c320d._.js:2276:40)
+    at ContextAPI.with (C:\Users\kally\Desktop\Projetos\studio\node_modules\@opentelemetry\api\build\src\api\context.js:60:46)
+    at NoopTracer.startActiveSpan (C:\Users\kally\Desktop\Projetos\studio\node_modules\@opentelemetry\api\build\src\trace\NoopTracer.js:65:31)
+    at ProxyTracer.startActiveSpan (C:\Users\kally\Desktop\Projetos\studio\node_modules\@opentelemetry\api\build\src\trace\ProxyTracer.js:36:24)
+    at EnabledTraceUtil.startActiveSpan (C:\Users\kally\Desktop\Projetos\studio\node_modules\@google-cloud\firestore\build\src\telemetry\enabled-trace-util.js:102:28)
+    at Query.get (C:\Users\kally\Desktop\Projetos\studio\node_modules\@google-cloud\firestore\build\src\reference\query.js:744:43)
+    at Object.getByCompany (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\[root-of-the-server]__46b5f4f8._.js:131:117)
+    at getSignatureDocuments (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\[root-of-the-server]__46b5f4f8._.js:2980:252)
+    at C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:36:3895
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14)
+    at executeActionAndPrepareForRender (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:36:3867)
+    at C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:36:1115
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async handleAction (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:34:23616)
+    at async renderToHTMLOrFlightImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:41:42130)
+    at async doRender (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\5e3a2_next_dist_c08931b8._.js:2970:28)
+    at async AppPageRouteModule.handleResponse (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:43:64241)
+    at async handleResponse (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\5e3a2_next_dist_c08931b8._.js:3176:32)
+    at async Module.handler (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\5e3a2_next_dist_c08931b8._.js:3545:13)
+    at async DevServer.renderToResponseWithComponentsImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:1442:9)
+    at async DevServer.renderPageComponent (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:1494:24)
+    at async DevServer.renderToResponseImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:1544:32)
+    at async DevServer.pipeImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:1038:25)
+    at async NextNodeServer.handleCatchallRenderRequest (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\next-server.js:395:17)
+    at async DevServer.handleRequestImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:929:17)
+    at async C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\dev\next-dev-server.js:387:20
+    at async Span.traceAsyncFn (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\trace\trace.js:157:20)
+    at async DevServer.handleRequest (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\dev\next-dev-server.js:383:24)
+    at async invokeRender (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\lib\router-server.js:248:21)
+    at async handleRequest (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\lib\router-server.js:447:24)
+    at async requestHandlerImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\lib\router-server.js:496:13)
+    at async Server.requestListener (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\lib\start-server.js:226:13)
+---
+[2026-02-04T21:36:43.565Z] ERROR in getSignatureDocuments: 9 FAILED_PRECONDITION: The query requires an index. You can create it here: https://console.firebase.google.com/v1/r/project/studio-2124642360-17967/firestore/indexes?create_composite=CmJwcm9qZWN0cy9zdHVkaW8tMjEyNDY0MjM2MC0xNzk2Ny9kYXRhYmFzZXMvKGRlZmF1bHQpL2NvbGxlY3Rpb25Hcm91cHMvc2lnbmF0dXJlRG9jdW1lbnRzL2luZGV4ZXMvXxABGg0KCWNvbXBhbnlJZBABGg0KCWNyZWF0ZWRBdBACGgwKCF9fbmFtZV9fEAI
+STACK: Error: 9 FAILED_PRECONDITION: The query requires an index. You can create it here: https://console.firebase.google.com/v1/r/project/studio-2124642360-17967/firestore/indexes?create_composite=CmJwcm9qZWN0cy9zdHVkaW8tMjEyNDY0MjM2MC0xNzk2Ny9kYXRhYmFzZXMvKGRlZmF1bHQpL2NvbGxlY3Rpb25Hcm91cHMvc2lnbmF0dXJlRG9jdW1lbnRzL2luZGV4ZXMvXxABGg0KCWNvbXBhbnlJZBABGg0KCWNyZWF0ZWRBdBACGgwKCF9fbmFtZV9fEAI
+    at callErrorFromStatus (C:\Users\kally\Desktop\Projetos\studio\node_modules\@grpc\grpc-js\build\src\call.js:32:19)
+    at Object.onReceiveStatus (C:\Users\kally\Desktop\Projetos\studio\node_modules\@grpc\grpc-js\build\src\client.js:359:73)
+    at Object.onReceiveStatus (C:\Users\kally\Desktop\Projetos\studio\node_modules\@grpc\grpc-js\build\src\client-interceptors.js:327:181)
+    at C:\Users\kally\Desktop\Projetos\studio\node_modules\@grpc\grpc-js\build\src\resolving-call.js:135:78
+    at process.processTicksAndRejections (node:internal/process/task_queues:85:11)
+for call at
+    at ServiceClientImpl.makeServerStreamRequest (C:\Users\kally\Desktop\Projetos\studio\node_modules\@grpc\grpc-js\build\src\client.js:342:32)
+    at ServiceClientImpl.<anonymous> (C:\Users\kally\Desktop\Projetos\studio\node_modules\@grpc\grpc-js\build\src\make-client.js:105:19)
+    at C:\Users\kally\Desktop\Projetos\studio\node_modules\@google-cloud\firestore\build\src\v1\firestore_client.js:242:33
+    at C:\Users\kally\Desktop\Projetos\studio\node_modules\google-gax\build\src\streamingCalls\streamingApiCaller.js:38:28
+    at C:\Users\kally\Desktop\Projetos\studio\node_modules\google-gax\build\src\normalCalls\timeout.js:44:16
+    at Object.request (C:\Users\kally\Desktop\Projetos\studio\node_modules\google-gax\build\src\streamingCalls\streaming.js:234:40)
+    at makeRequest (C:\Users\kally\Desktop\Projetos\studio\node_modules\retry-request\index.js:159:28)
+    at retryRequest (C:\Users\kally\Desktop\Projetos\studio\node_modules\retry-request\index.js:119:5)
+    at StreamProxy.setStream (C:\Users\kally\Desktop\Projetos\studio\node_modules\google-gax\build\src\streamingCalls\streaming.js:225:37)
+    at StreamingApiCaller.call (C:\Users\kally\Desktop\Projetos\studio\node_modules\google-gax\build\src\streamingCalls\streamingApiCaller.js:54:16)
+    at C:\Users\kally\Desktop\Projetos\studio\node_modules\google-gax\build\src\createApiCall.js:112:30
+Caused by: Error: 
+    at QueryUtil._getResponse (C:\Users\kally\Desktop\Projetos\studio\node_modules\@google-cloud\firestore\build\src\reference\query-util.js:44:23)
+    at Query._getResponse (C:\Users\kally\Desktop\Projetos\studio\node_modules\@google-cloud\firestore\build\src\reference\query.js:784:32)
+    at Query._get (C:\Users\kally\Desktop\Projetos\studio\node_modules\@google-cloud\firestore\build\src\reference\query.js:777:35)
+    at C:\Users\kally\Desktop\Projetos\studio\node_modules\@google-cloud\firestore\build\src\reference\query.js:745:43
+    at C:\Users\kally\Desktop\Projetos\studio\node_modules\@google-cloud\firestore\build\src\telemetry\enabled-trace-util.js:110:30
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14)
+    at AsyncLocalStorageContextManager.with (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\5e3a2_@opentelemetry_a00c320d._.js:2276:40)
+    at ContextAPI.with (C:\Users\kally\Desktop\Projetos\studio\node_modules\@opentelemetry\api\build\src\api\context.js:60:46)
+    at NoopTracer.startActiveSpan (C:\Users\kally\Desktop\Projetos\studio\node_modules\@opentelemetry\api\build\src\trace\NoopTracer.js:65:31)
+    at ProxyTracer.startActiveSpan (C:\Users\kally\Desktop\Projetos\studio\node_modules\@opentelemetry\api\build\src\trace\ProxyTracer.js:36:24)
+    at EnabledTraceUtil.startActiveSpan (C:\Users\kally\Desktop\Projetos\studio\node_modules\@google-cloud\firestore\build\src\telemetry\enabled-trace-util.js:102:28)
+    at Query.get (C:\Users\kally\Desktop\Projetos\studio\node_modules\@google-cloud\firestore\build\src\reference\query.js:744:43)
+    at Object.getByCompany (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\[root-of-the-server]__46b5f4f8._.js:131:117)
+    at getSignatureDocuments (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\[root-of-the-server]__46b5f4f8._.js:2980:252)
+    at C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:36:3895
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14)
+    at executeActionAndPrepareForRender (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:36:3867)
+    at C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:36:1115
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async handleAction (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:34:23616)
+    at async renderToHTMLOrFlightImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:41:42130)
+    at async doRender (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\5e3a2_next_dist_c08931b8._.js:2970:28)
+    at async AppPageRouteModule.handleResponse (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:43:64241)
+    at async handleResponse (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\5e3a2_next_dist_c08931b8._.js:3176:32)
+    at async Module.handler (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\5e3a2_next_dist_c08931b8._.js:3545:13)
+    at async DevServer.renderToResponseWithComponentsImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:1442:9)
+    at async DevServer.renderPageComponent (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:1494:24)
+    at async DevServer.renderToResponseImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:1544:32)
+    at async DevServer.pipeImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:1038:25)
+    at async NextNodeServer.handleCatchallRenderRequest (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\next-server.js:395:17)
+    at async DevServer.handleRequestImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:929:17)
+    at async C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\dev\next-dev-server.js:387:20
+    at async Span.traceAsyncFn (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\trace\trace.js:157:20)
+    at async DevServer.handleRequest (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\dev\next-dev-server.js:383:24)
+    at async invokeRender (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\lib\router-server.js:248:21)
+    at async handleRequest (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\lib\router-server.js:447:24)
+    at async requestHandlerImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\lib\router-server.js:496:13)
+    at async Server.requestListener (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\lib\start-server.js:226:13)
+---
+[2026-02-04T21:36:47.106Z] ERROR in getSignatureDocuments: 9 FAILED_PRECONDITION: The query requires an index. You can create it here: https://console.firebase.google.com/v1/r/project/studio-2124642360-17967/firestore/indexes?create_composite=CmJwcm9qZWN0cy9zdHVkaW8tMjEyNDY0MjM2MC0xNzk2Ny9kYXRhYmFzZXMvKGRlZmF1bHQpL2NvbGxlY3Rpb25Hcm91cHMvc2lnbmF0dXJlRG9jdW1lbnRzL2luZGV4ZXMvXxABGg0KCWNvbXBhbnlJZBABGg0KCWNyZWF0ZWRBdBACGgwKCF9fbmFtZV9fEAI
+STACK: Error: 9 FAILED_PRECONDITION: The query requires an index. You can create it here: https://console.firebase.google.com/v1/r/project/studio-2124642360-17967/firestore/indexes?create_composite=CmJwcm9qZWN0cy9zdHVkaW8tMjEyNDY0MjM2MC0xNzk2Ny9kYXRhYmFzZXMvKGRlZmF1bHQpL2NvbGxlY3Rpb25Hcm91cHMvc2lnbmF0dXJlRG9jdW1lbnRzL2luZGV4ZXMvXxABGg0KCWNvbXBhbnlJZBABGg0KCWNyZWF0ZWRBdBACGgwKCF9fbmFtZV9fEAI
+    at callErrorFromStatus (C:\Users\kally\Desktop\Projetos\studio\node_modules\@grpc\grpc-js\build\src\call.js:32:19)
+    at Object.onReceiveStatus (C:\Users\kally\Desktop\Projetos\studio\node_modules\@grpc\grpc-js\build\src\client.js:359:73)
+    at Object.onReceiveStatus (C:\Users\kally\Desktop\Projetos\studio\node_modules\@grpc\grpc-js\build\src\client-interceptors.js:327:181)
+    at C:\Users\kally\Desktop\Projetos\studio\node_modules\@grpc\grpc-js\build\src\resolving-call.js:135:78
+    at process.processTicksAndRejections (node:internal/process/task_queues:85:11)
+for call at
+    at ServiceClientImpl.makeServerStreamRequest (C:\Users\kally\Desktop\Projetos\studio\node_modules\@grpc\grpc-js\build\src\client.js:342:32)
+    at ServiceClientImpl.<anonymous> (C:\Users\kally\Desktop\Projetos\studio\node_modules\@grpc\grpc-js\build\src\make-client.js:105:19)
+    at C:\Users\kally\Desktop\Projetos\studio\node_modules\@google-cloud\firestore\build\src\v1\firestore_client.js:242:33
+    at C:\Users\kally\Desktop\Projetos\studio\node_modules\google-gax\build\src\streamingCalls\streamingApiCaller.js:38:28
+    at C:\Users\kally\Desktop\Projetos\studio\node_modules\google-gax\build\src\normalCalls\timeout.js:44:16
+    at Object.request (C:\Users\kally\Desktop\Projetos\studio\node_modules\google-gax\build\src\streamingCalls\streaming.js:234:40)
+    at makeRequest (C:\Users\kally\Desktop\Projetos\studio\node_modules\retry-request\index.js:159:28)
+    at retryRequest (C:\Users\kally\Desktop\Projetos\studio\node_modules\retry-request\index.js:119:5)
+    at StreamProxy.setStream (C:\Users\kally\Desktop\Projetos\studio\node_modules\google-gax\build\src\streamingCalls\streaming.js:225:37)
+    at StreamingApiCaller.call (C:\Users\kally\Desktop\Projetos\studio\node_modules\google-gax\build\src\streamingCalls\streamingApiCaller.js:54:16)
+    at C:\Users\kally\Desktop\Projetos\studio\node_modules\google-gax\build\src\createApiCall.js:112:30
+Caused by: Error: 
+    at QueryUtil._getResponse (C:\Users\kally\Desktop\Projetos\studio\node_modules\@google-cloud\firestore\build\src\reference\query-util.js:44:23)
+    at Query._getResponse (C:\Users\kally\Desktop\Projetos\studio\node_modules\@google-cloud\firestore\build\src\reference\query.js:784:32)
+    at Query._get (C:\Users\kally\Desktop\Projetos\studio\node_modules\@google-cloud\firestore\build\src\reference\query.js:777:35)
+    at C:\Users\kally\Desktop\Projetos\studio\node_modules\@google-cloud\firestore\build\src\reference\query.js:745:43
+    at C:\Users\kally\Desktop\Projetos\studio\node_modules\@google-cloud\firestore\build\src\telemetry\enabled-trace-util.js:110:30
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14)
+    at AsyncLocalStorageContextManager.with (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\5e3a2_@opentelemetry_a00c320d._.js:2276:40)
+    at ContextAPI.with (C:\Users\kally\Desktop\Projetos\studio\node_modules\@opentelemetry\api\build\src\api\context.js:60:46)
+    at NoopTracer.startActiveSpan (C:\Users\kally\Desktop\Projetos\studio\node_modules\@opentelemetry\api\build\src\trace\NoopTracer.js:65:31)
+    at ProxyTracer.startActiveSpan (C:\Users\kally\Desktop\Projetos\studio\node_modules\@opentelemetry\api\build\src\trace\ProxyTracer.js:36:24)
+    at EnabledTraceUtil.startActiveSpan (C:\Users\kally\Desktop\Projetos\studio\node_modules\@google-cloud\firestore\build\src\telemetry\enabled-trace-util.js:102:28)
+    at Query.get (C:\Users\kally\Desktop\Projetos\studio\node_modules\@google-cloud\firestore\build\src\reference\query.js:744:43)
+    at Object.getByCompany (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\[root-of-the-server]__46b5f4f8._.js:131:117)
+    at getSignatureDocuments (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\[root-of-the-server]__46b5f4f8._.js:2980:252)
+    at C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:36:3895
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14)
+    at executeActionAndPrepareForRender (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:36:3867)
+    at C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:36:1115
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async handleAction (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:34:23616)
+    at async renderToHTMLOrFlightImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:41:42130)
+    at async doRender (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\5e3a2_next_dist_c08931b8._.js:2970:28)
+    at async AppPageRouteModule.handleResponse (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:43:64241)
+    at async handleResponse (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\5e3a2_next_dist_c08931b8._.js:3176:32)
+    at async Module.handler (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\5e3a2_next_dist_c08931b8._.js:3545:13)
+    at async DevServer.renderToResponseWithComponentsImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:1442:9)
+    at async DevServer.renderPageComponent (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:1494:24)
+    at async DevServer.renderToResponseImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:1544:32)
+    at async DevServer.pipeImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:1038:25)
+    at async NextNodeServer.handleCatchallRenderRequest (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\next-server.js:395:17)
+    at async DevServer.handleRequestImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:929:17)
+    at async C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\dev\next-dev-server.js:387:20
+    at async Span.traceAsyncFn (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\trace\trace.js:157:20)
+    at async DevServer.handleRequest (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\dev\next-dev-server.js:383:24)
+    at async invokeRender (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\lib\router-server.js:248:21)
+    at async handleRequest (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\lib\router-server.js:447:24)
+    at async requestHandlerImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\lib\router-server.js:496:13)
+    at async Server.requestListener (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\lib\start-server.js:226:13)
+---
+[2026-02-04T21:37:29.042Z] ERROR in getSignatureDocuments: 9 FAILED_PRECONDITION: The query requires an index. You can create it here: https://console.firebase.google.com/v1/r/project/studio-2124642360-17967/firestore/indexes?create_composite=CmJwcm9qZWN0cy9zdHVkaW8tMjEyNDY0MjM2MC0xNzk2Ny9kYXRhYmFzZXMvKGRlZmF1bHQpL2NvbGxlY3Rpb25Hcm91cHMvc2lnbmF0dXJlRG9jdW1lbnRzL2luZGV4ZXMvXxABGg0KCWNvbXBhbnlJZBABGg0KCWNyZWF0ZWRBdBACGgwKCF9fbmFtZV9fEAI
+STACK: Error: 9 FAILED_PRECONDITION: The query requires an index. You can create it here: https://console.firebase.google.com/v1/r/project/studio-2124642360-17967/firestore/indexes?create_composite=CmJwcm9qZWN0cy9zdHVkaW8tMjEyNDY0MjM2MC0xNzk2Ny9kYXRhYmFzZXMvKGRlZmF1bHQpL2NvbGxlY3Rpb25Hcm91cHMvc2lnbmF0dXJlRG9jdW1lbnRzL2luZGV4ZXMvXxABGg0KCWNvbXBhbnlJZBABGg0KCWNyZWF0ZWRBdBACGgwKCF9fbmFtZV9fEAI
+    at callErrorFromStatus (C:\Users\kally\Desktop\Projetos\studio\node_modules\@grpc\grpc-js\build\src\call.js:32:19)
+    at Object.onReceiveStatus (C:\Users\kally\Desktop\Projetos\studio\node_modules\@grpc\grpc-js\build\src\client.js:359:73)
+    at Object.onReceiveStatus (C:\Users\kally\Desktop\Projetos\studio\node_modules\@grpc\grpc-js\build\src\client-interceptors.js:327:181)
+    at C:\Users\kally\Desktop\Projetos\studio\node_modules\@grpc\grpc-js\build\src\resolving-call.js:135:78
+    at process.processTicksAndRejections (node:internal/process/task_queues:85:11)
+for call at
+    at ServiceClientImpl.makeServerStreamRequest (C:\Users\kally\Desktop\Projetos\studio\node_modules\@grpc\grpc-js\build\src\client.js:342:32)
+    at ServiceClientImpl.<anonymous> (C:\Users\kally\Desktop\Projetos\studio\node_modules\@grpc\grpc-js\build\src\make-client.js:105:19)
+    at C:\Users\kally\Desktop\Projetos\studio\node_modules\@google-cloud\firestore\build\src\v1\firestore_client.js:242:33
+    at C:\Users\kally\Desktop\Projetos\studio\node_modules\google-gax\build\src\streamingCalls\streamingApiCaller.js:38:28
+    at C:\Users\kally\Desktop\Projetos\studio\node_modules\google-gax\build\src\normalCalls\timeout.js:44:16
+    at Object.request (C:\Users\kally\Desktop\Projetos\studio\node_modules\google-gax\build\src\streamingCalls\streaming.js:234:40)
+    at makeRequest (C:\Users\kally\Desktop\Projetos\studio\node_modules\retry-request\index.js:159:28)
+    at retryRequest (C:\Users\kally\Desktop\Projetos\studio\node_modules\retry-request\index.js:119:5)
+    at StreamProxy.setStream (C:\Users\kally\Desktop\Projetos\studio\node_modules\google-gax\build\src\streamingCalls\streaming.js:225:37)
+    at StreamingApiCaller.call (C:\Users\kally\Desktop\Projetos\studio\node_modules\google-gax\build\src\streamingCalls\streamingApiCaller.js:54:16)
+    at C:\Users\kally\Desktop\Projetos\studio\node_modules\google-gax\build\src\createApiCall.js:112:30
+Caused by: Error: 
+    at QueryUtil._getResponse (C:\Users\kally\Desktop\Projetos\studio\node_modules\@google-cloud\firestore\build\src\reference\query-util.js:44:23)
+    at Query._getResponse (C:\Users\kally\Desktop\Projetos\studio\node_modules\@google-cloud\firestore\build\src\reference\query.js:784:32)
+    at Query._get (C:\Users\kally\Desktop\Projetos\studio\node_modules\@google-cloud\firestore\build\src\reference\query.js:777:35)
+    at C:\Users\kally\Desktop\Projetos\studio\node_modules\@google-cloud\firestore\build\src\reference\query.js:745:43
+    at C:\Users\kally\Desktop\Projetos\studio\node_modules\@google-cloud\firestore\build\src\telemetry\enabled-trace-util.js:110:30
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14)
+    at AsyncLocalStorageContextManager.with (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\5e3a2_@opentelemetry_a00c320d._.js:2276:40)
+    at ContextAPI.with (C:\Users\kally\Desktop\Projetos\studio\node_modules\@opentelemetry\api\build\src\api\context.js:60:46)
+    at NoopTracer.startActiveSpan (C:\Users\kally\Desktop\Projetos\studio\node_modules\@opentelemetry\api\build\src\trace\NoopTracer.js:65:31)
+    at ProxyTracer.startActiveSpan (C:\Users\kally\Desktop\Projetos\studio\node_modules\@opentelemetry\api\build\src\trace\ProxyTracer.js:36:24)
+    at EnabledTraceUtil.startActiveSpan (C:\Users\kally\Desktop\Projetos\studio\node_modules\@google-cloud\firestore\build\src\telemetry\enabled-trace-util.js:102:28)
+    at Query.get (C:\Users\kally\Desktop\Projetos\studio\node_modules\@google-cloud\firestore\build\src\reference\query.js:744:43)
+    at Object.getByCompany (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\[root-of-the-server]__46b5f4f8._.js:131:117)
+    at getSignatureDocuments (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\[root-of-the-server]__46b5f4f8._.js:2980:252)
+    at C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:36:3895
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14)
+    at executeActionAndPrepareForRender (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:36:3867)
+    at C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:36:1115
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async handleAction (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:34:23616)
+    at async renderToHTMLOrFlightImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:41:42130)
+    at async doRender (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\5e3a2_next_dist_c08931b8._.js:2970:28)
+    at async AppPageRouteModule.handleResponse (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:43:64241)
+    at async handleResponse (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\5e3a2_next_dist_c08931b8._.js:3176:32)
+    at async Module.handler (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\5e3a2_next_dist_c08931b8._.js:3545:13)
+    at async DevServer.renderToResponseWithComponentsImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:1442:9)
+    at async DevServer.renderPageComponent (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:1494:24)
+    at async DevServer.renderToResponseImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:1544:32)
+    at async DevServer.pipeImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:1038:25)
+    at async NextNodeServer.handleCatchallRenderRequest (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\next-server.js:395:17)
+    at async DevServer.handleRequestImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:929:17)
+    at async C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\dev\next-dev-server.js:387:20
+    at async Span.traceAsyncFn (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\trace\trace.js:157:20)
+    at async DevServer.handleRequest (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\dev\next-dev-server.js:383:24)
+    at async invokeRender (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\lib\router-server.js:248:21)
+    at async handleRequest (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\lib\router-server.js:447:24)
+    at async requestHandlerImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\lib\router-server.js:496:13)
+    at async Server.requestListener (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\lib\start-server.js:226:13)
+---
+[2026-02-04T21:38:05.117Z] ERROR in getSignatureDocuments: 9 FAILED_PRECONDITION: The query requires an index. You can create it here: https://console.firebase.google.com/v1/r/project/studio-2124642360-17967/firestore/indexes?create_composite=CmJwcm9qZWN0cy9zdHVkaW8tMjEyNDY0MjM2MC0xNzk2Ny9kYXRhYmFzZXMvKGRlZmF1bHQpL2NvbGxlY3Rpb25Hcm91cHMvc2lnbmF0dXJlRG9jdW1lbnRzL2luZGV4ZXMvXxABGg0KCWNvbXBhbnlJZBABGg0KCWNyZWF0ZWRBdBACGgwKCF9fbmFtZV9fEAI
+STACK: Error: 9 FAILED_PRECONDITION: The query requires an index. You can create it here: https://console.firebase.google.com/v1/r/project/studio-2124642360-17967/firestore/indexes?create_composite=CmJwcm9qZWN0cy9zdHVkaW8tMjEyNDY0MjM2MC0xNzk2Ny9kYXRhYmFzZXMvKGRlZmF1bHQpL2NvbGxlY3Rpb25Hcm91cHMvc2lnbmF0dXJlRG9jdW1lbnRzL2luZGV4ZXMvXxABGg0KCWNvbXBhbnlJZBABGg0KCWNyZWF0ZWRBdBACGgwKCF9fbmFtZV9fEAI
+    at callErrorFromStatus (C:\Users\kally\Desktop\Projetos\studio\node_modules\@grpc\grpc-js\build\src\call.js:32:19)
+    at Object.onReceiveStatus (C:\Users\kally\Desktop\Projetos\studio\node_modules\@grpc\grpc-js\build\src\client.js:359:73)
+    at Object.onReceiveStatus (C:\Users\kally\Desktop\Projetos\studio\node_modules\@grpc\grpc-js\build\src\client-interceptors.js:327:181)
+    at C:\Users\kally\Desktop\Projetos\studio\node_modules\@grpc\grpc-js\build\src\resolving-call.js:135:78
+    at process.processTicksAndRejections (node:internal/process/task_queues:85:11)
+for call at
+    at ServiceClientImpl.makeServerStreamRequest (C:\Users\kally\Desktop\Projetos\studio\node_modules\@grpc\grpc-js\build\src\client.js:342:32)
+    at ServiceClientImpl.<anonymous> (C:\Users\kally\Desktop\Projetos\studio\node_modules\@grpc\grpc-js\build\src\make-client.js:105:19)
+    at C:\Users\kally\Desktop\Projetos\studio\node_modules\@google-cloud\firestore\build\src\v1\firestore_client.js:242:33
+    at C:\Users\kally\Desktop\Projetos\studio\node_modules\google-gax\build\src\streamingCalls\streamingApiCaller.js:38:28
+    at C:\Users\kally\Desktop\Projetos\studio\node_modules\google-gax\build\src\normalCalls\timeout.js:44:16
+    at Object.request (C:\Users\kally\Desktop\Projetos\studio\node_modules\google-gax\build\src\streamingCalls\streaming.js:234:40)
+    at makeRequest (C:\Users\kally\Desktop\Projetos\studio\node_modules\retry-request\index.js:159:28)
+    at retryRequest (C:\Users\kally\Desktop\Projetos\studio\node_modules\retry-request\index.js:119:5)
+    at StreamProxy.setStream (C:\Users\kally\Desktop\Projetos\studio\node_modules\google-gax\build\src\streamingCalls\streaming.js:225:37)
+    at StreamingApiCaller.call (C:\Users\kally\Desktop\Projetos\studio\node_modules\google-gax\build\src\streamingCalls\streamingApiCaller.js:54:16)
+    at C:\Users\kally\Desktop\Projetos\studio\node_modules\google-gax\build\src\createApiCall.js:112:30
+Caused by: Error: 
+    at QueryUtil._getResponse (C:\Users\kally\Desktop\Projetos\studio\node_modules\@google-cloud\firestore\build\src\reference\query-util.js:44:23)
+    at Query._getResponse (C:\Users\kally\Desktop\Projetos\studio\node_modules\@google-cloud\firestore\build\src\reference\query.js:784:32)
+    at Query._get (C:\Users\kally\Desktop\Projetos\studio\node_modules\@google-cloud\firestore\build\src\reference\query.js:777:35)
+    at C:\Users\kally\Desktop\Projetos\studio\node_modules\@google-cloud\firestore\build\src\reference\query.js:745:43
+    at C:\Users\kally\Desktop\Projetos\studio\node_modules\@google-cloud\firestore\build\src\telemetry\enabled-trace-util.js:110:30
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14)
+    at AsyncLocalStorageContextManager.with (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\5e3a2_@opentelemetry_a00c320d._.js:2276:40)
+    at ContextAPI.with (C:\Users\kally\Desktop\Projetos\studio\node_modules\@opentelemetry\api\build\src\api\context.js:60:46)
+    at NoopTracer.startActiveSpan (C:\Users\kally\Desktop\Projetos\studio\node_modules\@opentelemetry\api\build\src\trace\NoopTracer.js:65:31)
+    at ProxyTracer.startActiveSpan (C:\Users\kally\Desktop\Projetos\studio\node_modules\@opentelemetry\api\build\src\trace\ProxyTracer.js:36:24)
+    at EnabledTraceUtil.startActiveSpan (C:\Users\kally\Desktop\Projetos\studio\node_modules\@google-cloud\firestore\build\src\telemetry\enabled-trace-util.js:102:28)
+    at Query.get (C:\Users\kally\Desktop\Projetos\studio\node_modules\@google-cloud\firestore\build\src\reference\query.js:744:43)
+    at Object.getByCompany (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\[root-of-the-server]__46b5f4f8._.js:131:117)
+    at getSignatureDocuments (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\[root-of-the-server]__46b5f4f8._.js:2980:252)
+    at C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:36:3895
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14)
+    at executeActionAndPrepareForRender (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:36:3867)
+    at C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:36:1115
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async handleAction (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:34:23616)
+    at async renderToHTMLOrFlightImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:41:42130)
+    at async doRender (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\5e3a2_next_dist_c08931b8._.js:2970:28)
+    at async AppPageRouteModule.handleResponse (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:43:64241)
+    at async handleResponse (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\5e3a2_next_dist_c08931b8._.js:3176:32)
+    at async Module.handler (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\5e3a2_next_dist_c08931b8._.js:3545:13)
+    at async DevServer.renderToResponseWithComponentsImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:1442:9)
+    at async DevServer.renderPageComponent (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:1494:24)
+    at async DevServer.renderToResponseImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:1544:32)
+    at async DevServer.pipeImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:1038:25)
+    at async NextNodeServer.handleCatchallRenderRequest (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\next-server.js:395:17)
+    at async DevServer.handleRequestImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:929:17)
+    at async C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\dev\next-dev-server.js:387:20
+    at async Span.traceAsyncFn (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\trace\trace.js:157:20)
+    at async DevServer.handleRequest (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\dev\next-dev-server.js:383:24)
+    at async invokeRender (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\lib\router-server.js:248:21)
+    at async handleRequest (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\lib\router-server.js:447:24)
+    at async requestHandlerImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\lib\router-server.js:496:13)
+    at async Server.requestListener (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\lib\start-server.js:226:13)
+---

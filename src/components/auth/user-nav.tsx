@@ -1,9 +1,9 @@
-'use client';
+﻿'use client';
 
 import { useRouter } from 'next/navigation';
 import { signOut } from '@/server/auth-actions';
 import { Button } from '@/components/ui/button';
-import { LogOut, LayoutDashboard, FileText } from 'lucide-react';
+import { LogOut, LayoutDashboard, FileText, PenLine } from 'lucide-react';
 import { useSession } from './session-provider';
 import { auth } from '@/firebase/config';
 import {
@@ -50,7 +50,11 @@ export function UserNav() {
   };
 
   const handleReportsClick = () => {
-      router.push('/reports');
+    router.push('/reports');
+  };
+
+  const handleSignaturesClick = () => {
+    router.push('/signatures');
   };
 
   return (
@@ -77,6 +81,10 @@ export function UserNav() {
                 <FileText className="mr-2 h-4 w-4" /> 
                 <span>Relatórios</span>
             </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleSignaturesClick} className="cursor-pointer">
+                <PenLine className="mr-2 h-4 w-4" /> 
+                <span>Assinaturas</span>
+            </DropdownMenuItem>
             {user.role === 'admin' && user.companyId && (
                 <DropdownMenuItem onClick={handleAdminPanelClick} className="cursor-pointer">
                     <LayoutDashboard className="mr-2 h-4 w-4" />
@@ -92,3 +100,5 @@ export function UserNav() {
     </DropdownMenu>
   );
 }
+
+
