@@ -42,6 +42,13 @@ export const responsiblePersonSchema = z.object({
   role: z.string(),
   signatureType: signatureTypeSchema.default(SIGNATURE_TYPES.TYPED),
   signatureData: z.string().optional(),
+  // Assinafy integration fields
+  email: z.string().email().optional(),
+  phone: z.string().optional(),
+  useAssinafy: z.boolean().default(false),
+  assinafySignerId: z.string().optional(),
+  assinafySigningUrl: z.string().optional(),
+  assinafyStatus: z.enum(['pending', 'signed', 'declined']).optional(),
 }).superRefine((data, ctx) => {
   // Only validate if an employee was selected
   if (data.employeeId) {

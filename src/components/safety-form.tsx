@@ -43,6 +43,9 @@ import { RadioGroup, RadioGroupItem } from './ui/radio-group';
 import { ptBr } from '@/lib/data/strings';
 import { DOCUMENT_TYPES, SIGNATURE_TYPES } from '@/lib/constants';
 import { Skeleton } from './ui/skeleton';
+import { Switch } from './ui/switch';
+import { Badge } from './ui/badge';
+import { Mail, MessageCircle } from 'lucide-react';
 
 interface SafetyFormProps {
   form: ReturnType<typeof useForm<SafetyFormValues>>;
@@ -205,18 +208,25 @@ export function SafetyForm({
                     <FileText className="inline-block mr-2" /> {ptBr.safetyForm.documentType}
                   </FormLabel>
                   <FormControl>
-                    <Tabs
-                      value={field.value}
-                      onValueChange={(value) => {
-                        field.onChange(value);
-                      }}
-                      className="w-full"
-                    >
-                      <TabsList className="grid w-full grid-cols-2">
-                        <TabsTrigger value={DOCUMENT_TYPES.APR}>{ptBr.documentType.apr}</TabsTrigger>
-                        <TabsTrigger value={DOCUMENT_TYPES.PT}>{ptBr.documentType.pt}</TabsTrigger>
-                      </TabsList>
-                    </Tabs>
+                    <div className="flex items-center justify-between p-4 border rounded-lg bg-primary/5">
+                      <div className="flex items-center gap-2">
+                        <FileText className="h-5 w-5 text-primary" />
+                        <span className="font-semibold text-lg">
+                          {field.value === DOCUMENT_TYPES.APR ? ptBr.documentType.apr : ptBr.documentType.pt}
+                        </span>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          const newType = field.value === DOCUMENT_TYPES.APR ? DOCUMENT_TYPES.PT : DOCUMENT_TYPES.APR;
+                          field.onChange(newType);
+                        }}
+                      >
+                        Alterar para {field.value === DOCUMENT_TYPES.APR ? ptBr.documentType.pt : ptBr.documentType.apr}
+                      </Button>
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>

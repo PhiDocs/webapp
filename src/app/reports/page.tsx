@@ -20,7 +20,7 @@ import { useSession } from '@/components/auth/session-provider';
 import { getWorks } from '@/server/work-actions';
 import { getEmployees } from '@/server/employee-actions';
 import { getCompanyById } from '@/server/company-actions';
-import { useDominantColor } from '@/hooks/use-dominant-color';
+import { FloatingPreview } from '@/components/floating-preview';
 
 function normalizeAnalysisSteps(steps: any[] | undefined): SafetyAnalysisOutput | null {
   if (!steps || steps.length === 0) return null;
@@ -57,7 +57,8 @@ export default function ReportsPage() {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [isDataLoading, setIsDataLoading] = useState(true);
   const { toast } = useToast();
-  const themeColor = useDominantColor(company?.logo);
+  const [showFloatingPreview, setShowFloatingPreview] = useState(true);
+  const [isPreviewMinimized, setIsPreviewMinimized] = useState(false);
 
   const form = useForm<SafetyFormValues>({
     resolver: zodResolver(formSchema),
@@ -289,7 +290,8 @@ export default function ReportsPage() {
           <UserNav />
         </Header>
 
-        <main className="flex-grow h-[calc(100vh-65px)]">
+        <main className={`flex-grow h-[calc(100vh-65px)] transition-all duration-300 ${showFloatingPreview ? (isPreviewMinimized ? 'mr-16' : 'mr-[500px]') : 'mr-0'
+          }`}>
           <FormPanel
             form={form}
             onNewReport={handleNewReport}
@@ -299,6 +301,8 @@ export default function ReportsPage() {
             works={works}
             employees={employees}
             isDataLoading={isDataLoading}
+            showFloatingPreview={showFloatingPreview}
+            onToggleFloatingPreview={() => setShowFloatingPreview(!showFloatingPreview)}
           />
           <PreviewPanel
             isLoading={isLoading}
@@ -315,6 +319,20 @@ export default function ReportsPage() {
           />
         </main>
       </div>
+
+      {/* Floating Preview Panel */}
+      {showFloatingPreview && (
+        <FloatingPreview
+          formData={liveFormData}
+          analysisData={analysis}
+          equipmentData={equipment}
+          company={company}
+          error={analysis?.proceduralSteps?.length ? null : error}
+          onClose={() => setShowFloatingPreview(false)}
+          onMinimizedChange={setIsPreviewMinimized}
+        />
+      )}
+
       <div className="print-only">
         <PrintPreview
           formData={liveFormData}
@@ -322,7 +340,6 @@ export default function ReportsPage() {
           equipmentData={equipment}
           company={company}
           error={analysis?.proceduralSteps?.length ? null : error}
-          themeColor={themeColor}
         />
       </div>
     </>

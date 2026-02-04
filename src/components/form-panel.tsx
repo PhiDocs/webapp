@@ -6,7 +6,7 @@ import { SafetyForm } from '@/components/safety-form';
 import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
-import { RefreshCcw } from 'lucide-react';
+import { RefreshCcw, Eye, EyeOff } from 'lucide-react';
 import { cn } from "@/lib/utils";
 import {
   AlertDialog,
@@ -30,9 +30,11 @@ interface FormPanelProps {
   works: Work[];
   employees: Employee[];
   isDataLoading: boolean;
+  showFloatingPreview?: boolean;
+  onToggleFloatingPreview?: () => void;
 }
 
-export function FormPanel({ form, onNewReport, onSubmit, isLoading, mobileView, works, employees, isDataLoading }: FormPanelProps) {
+export function FormPanel({ form, onNewReport, onSubmit, isLoading, mobileView, works, employees, isDataLoading, showFloatingPreview, onToggleFloatingPreview }: FormPanelProps) {
   return (
     <div className={cn("h-full", mobileView !== 'form' && "hidden")}>
       <ScrollArea className="h-full">
@@ -46,28 +48,50 @@ export function FormPanel({ form, onNewReport, onSubmit, isLoading, mobileView, 
                 {ptBr.formPanel.description}
               </p>
             </div>
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
+            <div className="flex gap-2">
+              {onToggleFloatingPreview && (
                 <Button
                   variant="outline"
+                  size="sm"
+                  onClick={onToggleFloatingPreview}
+                  title={showFloatingPreview ? "Ocultar pré-visualização" : "Mostrar pré-visualização"}
                 >
-                  <RefreshCcw className="mr-2 h-4 w-4" />
-                  {ptBr.actions.startNewReport}
+                  {showFloatingPreview ? (
+                    <>
+                      <EyeOff className="mr-2 h-4 w-4" />
+                      Ocultar Preview
+                    </>
+                  ) : (
+                    <>
+                      <Eye className="mr-2 h-4 w-4" />
+                      Mostrar Preview
+                    </>
+                  )}
                 </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>{ptBr.formPanel.newReportConfirmation.title}</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    {ptBr.formPanel.newReportConfirmation.description}
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>{ptBr.actions.cancel}</AlertDialogCancel>
-                  <AlertDialogAction onClick={onNewReport}>{ptBr.actions.continue}</AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
+              )}
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    variant="outline"
+                  >
+                    <RefreshCcw className="mr-2 h-4 w-4" />
+                    {ptBr.actions.startNewReport}
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>{ptBr.formPanel.newReportConfirmation.title}</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      {ptBr.formPanel.newReportConfirmation.description}
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>{ptBr.actions.cancel}</AlertDialogCancel>
+                    <AlertDialogAction onClick={onNewReport}>{ptBr.actions.continue}</AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
           </div>
           <SafetyForm
             form={form}
