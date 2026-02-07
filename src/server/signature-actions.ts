@@ -16,9 +16,45 @@ function buildDocumentName(formData: SafetyFormValues) {
 }
 
 function getSignersFromForm(formData: SafetyFormValues): Array<{ name: string; email: string }> {
-  return (formData.responsiblePersons || [])
+  if (formData.documentType === DOCUMENT_TYPES.PT) {
+    const ptSigners: Array<{ name: string; email: string }> = [];
+    const pt = formData.pt;
+
+    // Colaboradores, vigias e resgatistas
+    const allTeamMembers = [
+      ...(pt.ptColaboradores || []),
+      ...(pt.ptVigias || []),
+      ...(pt.ptResgatistas || []),
+    ];
+    for (const member of allTeamMembers) {
+      if (member.name && member.useAssinafy && member.email) {
+        ptSigners.push({ name: member.name, email: member.email });
+      }
+    }
+
+    // Signatários (gestor, responsável, SESMT)
+    if (pt.ptGestorArea?.name && pt.ptGestorArea?.useAssinafy) {
+      ptSigners.push({ name: pt.ptGestorArea.name, email: pt.ptGestorArea.email || '' });
+    }
+    if (pt.ptResponsavelAtividade?.name && pt.ptResponsavelAtividade?.useAssinafy) {
+      ptSigners.push({ name: pt.ptResponsavelAtividade.name, email: pt.ptResponsavelAtividade.email || '' });
+    }
+    if (pt.ptSesmt?.name && pt.ptSesmt?.useAssinafy) {
+      ptSigners.push({ name: pt.ptSesmt.name, email: pt.ptSesmt.email || '' });
+    }
+    return ptSigners;
+  }
+
+  // APR: responsáveis + equipe de trabalho
+  const responsibleSigners = (formData.responsiblePersons || [])
     .filter(p => p.name && p.useAssinafy)
     .map(p => ({ name: p.name, email: p.email || '' }));
+
+  const teamSigners = (formData.teamMembers || [])
+    .filter(m => m.name && m.useAssinafy)
+    .map(m => ({ name: m.name, email: m.email || '' }));
+
+  return [...responsibleSigners, ...teamSigners];
 }
 
 export async function sendDocumentForSignature({
@@ -37,13 +73,9 @@ export async function sendDocumentForSignature({
       return { success: false, error: 'Empresa n\u00e3o identificada.' };
     }
 
-    if (formData.documentType !== DOCUMENT_TYPES.APR) {
-      return { success: false, error: 'Envio por e-mail dispon\u00edvel apenas para APR no momento.' };
-    }
-
     const signersInput = getSignersFromForm(formData);
     if (signersInput.length === 0) {
-      return { success: false, error: 'Selecione pelo menos um respons\u00e1vel para assinar por e-mail.' };
+      return { success: false, error: 'Selecione pelo menos um signat\u00e1rio para assinar por e-mail.' };
     }
     const missingEmail = signersInput.find(s => !s.email);
     if (missingEmail) {

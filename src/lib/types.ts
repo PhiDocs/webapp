@@ -1,5 +1,5 @@
-﻿import { z } from 'zod';
-import { DOCUMENT_TYPES, PT_FIT_STATUS, SIGNATURE_TYPES } from './constants';
+import { z } from 'zod';
+import { DOCUMENT_TYPES, PT_FIT_STATUS } from './constants';
 import { ptBr } from './data/strings';
 
 const validationMessages = {
@@ -30,22 +30,14 @@ const validationMessages = {
 };
 
 
-const signatureTypeSchema = z.enum([
-  SIGNATURE_TYPES.TYPED,
-  SIGNATURE_TYPES.DRAW,
-  SIGNATURE_TYPES.UPLOAD
-]);
-
 export const responsiblePersonSchema = z.object({
   employeeId: z.string().optional(),
   name: z.string(),
   role: z.string(),
-  signatureType: signatureTypeSchema.default(SIGNATURE_TYPES.TYPED),
-  signatureData: z.string().optional(),
-  // Assinafy integration fields
+  // Assinafy integration fields (assinatura por e-mail)
   email: z.string().email().optional(),
   phone: z.string().optional(),
-  useAssinafy: z.boolean().default(false),
+  useAssinafy: z.boolean().default(true),
   assinafySignerId: z.string().optional(),
   assinafySigningUrl: z.string().optional(),
   assinafyStatus: z.enum(['pending', 'signed', 'declined']).optional(),
@@ -58,18 +50,11 @@ export const responsiblePersonSchema = z.object({
     if (!data.role) {
       ctx.addIssue({ code: z.ZodIssueCode.custom, message: validationMessages.responsibleRole, path: ['role'] });
     }
-    if (data.useAssinafy && !data.email) {
+    if (!data.email) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: validationMessages.emailRequired,
         path: ['email'],
-      });
-    }
-    if (!data.useAssinafy && data.signatureType && !data.signatureData) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "A assinatura é obrigatória para o método selecionado.",
-        path: ['signatureData'],
       });
     }
   }
@@ -79,8 +64,9 @@ export const teamMemberSchema = z.object({
   date: z.string().min(1, validationMessages.teamDate),
   name: z.string().min(1, validationMessages.teamName),
   role: z.string().min(1, validationMessages.teamRole),
-  signatureType: signatureTypeSchema.default(SIGNATURE_TYPES.TYPED),
-  signatureData: z.string().optional(),
+  email: z.string().email().optional(),
+  phone: z.string().optional(),
+  useAssinafy: z.boolean().default(true),
 });
 
 export const analysisStepSchema = z.object({
@@ -98,19 +84,25 @@ export const ptTeamMemberSchema = z.object({
   func: z.string(),
   empresa: z.string(),
   apto: z.enum([PT_FIT_STATUS.YES, PT_FIT_STATUS.NO, PT_FIT_STATUS.EMPTY]),
+  email: z.string().email().optional(),
+  phone: z.string().optional(),
+  useAssinafy: z.boolean().default(true),
 });
 
 const ptSignerSchema = z.object({
   name: z.string().optional(),
-  signatureType: signatureTypeSchema.default(SIGNATURE_TYPES.TYPED),
-  signatureData: z.string().optional(),
+  email: z.string().email().optional(),
+  phone: z.string().optional(),
+  useAssinafy: z.boolean().default(true),
+  assinafySignerId: z.string().optional(),
+  assinafySigningUrl: z.string().optional(),
+  assinafyStatus: z.enum(['pending', 'signed', 'declined']).optional(),
 }).superRefine((data, ctx) => {
-  // Only require a signature if the name is filled
-  if (data.name && data.signatureType && !data.signatureData) {
+  if (data.name && !data.email) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
-      message: "A assinatura é obrigatória para o método selecionado.",
-      path: ['signatureData'],
+      message: "E-mail é obrigatório para assinatura por e-mail.",
+      path: ['email'],
     });
   }
 });

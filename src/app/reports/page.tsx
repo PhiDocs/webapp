@@ -14,7 +14,7 @@ import { Header } from '@/components/header';
 import { FormPanel } from '@/components/form-panel';
 import { PreviewPanel } from '@/components/preview-panel';
 import { ptBr } from '@/lib/data/strings';
-import { DOCUMENT_TYPES, N8N_EVENTS, PT_FIT_STATUS, SIGNATURE_TYPES } from '@/lib/constants';
+import { DOCUMENT_TYPES, N8N_EVENTS, PT_FIT_STATUS } from '@/lib/constants';
 import { PrintPreview } from '@/components/print-preview';
 import { UserNav } from '@/components/auth/user-nav';
 import { useSession } from '@/components/auth/session-provider';
@@ -79,11 +79,9 @@ export default function ReportsPage() {
           employeeId: '',
           name: '',
           role: '',
-          signatureType: SIGNATURE_TYPES.TYPED,
-          signatureData: '',
           email: '',
           phone: '',
-          useAssinafy: false,
+          useAssinafy: true,
         }
       ],
       teamMembers: [],
@@ -113,9 +111,9 @@ export default function ReportsPage() {
         ptColaboradores: [],
         ptVigias: [],
         ptResgatistas: [],
-        ptGestorArea: { name: '', signatureType: SIGNATURE_TYPES.TYPED, signatureData: '' },
-        ptResponsavelAtividade: { name: '', signatureType: SIGNATURE_TYPES.TYPED, signatureData: '' },
-        ptSesmt: { name: '', signatureType: SIGNATURE_TYPES.TYPED, signatureData: '' },
+        ptGestorArea: { name: '', email: '', phone: '', useAssinafy: true },
+        ptResponsavelAtividade: { name: '', email: '', phone: '', useAssinafy: true },
+        ptSesmt: { name: '', email: '', phone: '', useAssinafy: true },
       },
     },
     mode: 'onChange',

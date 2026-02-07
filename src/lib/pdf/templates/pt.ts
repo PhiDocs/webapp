@@ -23,13 +23,6 @@ function isValidBase64(str: string | undefined): boolean {
   }
 }
 
-function getSignatureContent(signatureData: string | undefined, name: string): Content {
-  if (isValidBase64(signatureData)) {
-    return { image: signatureData, width: 100, height: 40, alignment: 'center' };
-  }
-  return { text: name, style: 'signature', alignment: 'center' };
-}
-
 function Checkbox(checked: boolean): Content {
   return { text: checked ? '☑' : '☐', fontSize: 12 };
 }
@@ -249,9 +242,9 @@ export function generatePTPages(formData: PdfFormData): Content[] {
                         widths: ['*', '*', '*'],
                         body: [
                             [
-                                {stack: [getSignatureContent(ptData.ptGestorArea?.signatureData, ptData.ptGestorArea?.name || ''), {text: ptData.ptGestorArea?.name || 'Gestor da Área', style: 'td', alignment: 'center', margin:[0,2,0,0] }], border: [false, false, false, false], margin: [5, 5]},
-                                {stack: [getSignatureContent(ptData.ptResponsavelAtividade?.signatureData, ptData.ptResponsavelAtividade?.name || ''), {text: ptData.ptResponsavelAtividade?.name || 'Responsável Atividade', style: 'td', alignment: 'center', margin:[0,2,0,0] }], border: [false, false, false, false], margin: [5, 5]},
-                                {stack: [getSignatureContent(ptData.ptSesmt?.signatureData, ptData.ptSesmt?.name || ''), {text: ptData.ptSesmt?.name || 'SESMT', style: 'td', alignment: 'center', margin:[0,2,0,0] }], border: [false, false, false, false], margin: [5, 5]},
+                                {stack: [{text: '', margin: [0, 20, 0, 0]}, {text: ptData.ptGestorArea?.name || 'Gestor da Área', style: 'td', alignment: 'center', margin:[0,2,0,0] }], border: [false, false, false, false], margin: [5, 5]},
+                                {stack: [{text: '', margin: [0, 20, 0, 0]}, {text: ptData.ptResponsavelAtividade?.name || 'Responsável Atividade', style: 'td', alignment: 'center', margin:[0,2,0,0] }], border: [false, false, false, false], margin: [5, 5]},
+                                {stack: [{text: '', margin: [0, 20, 0, 0]}, {text: ptData.ptSesmt?.name || 'SESMT', style: 'td', alignment: 'center', margin:[0,2,0,0] }], border: [false, false, false, false], margin: [5, 5]},
                             ]
                         ]
                     },

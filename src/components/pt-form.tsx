@@ -15,13 +15,13 @@ import { Separator } from '@/components/ui/separator';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ptChecklistItems } from '@/lib/data/pt-checklist';
 import { Button } from './ui/button';
-import { PlusCircle, Trash2 } from 'lucide-react';
+import { PlusCircle, Trash2, Mail, MessageCircle } from 'lucide-react';
 import { RadioGroup, RadioGroupItem } from './ui/radio-group';
 import { Switch } from './ui/switch';
-import { SignaturePad } from './signature-pad';
-import { ChangeEvent } from 'react';
+import { Badge } from './ui/badge';
+import { PhoneInput } from './ui/phone-input';
 import { ptBr } from '@/lib/data/strings';
-import { PT_FIT_STATUS, SIGNATURE_TYPES } from '@/lib/constants';
+import { PT_FIT_STATUS } from '@/lib/constants';
 
 
 interface PTFormProps {
@@ -77,37 +77,80 @@ const CheckboxField = ({ form, name, label }: { form: UseFormReturn<SafetyFormVa
             type="button"
             variant="outline"
             size="sm"
-            onClick={() => append({ name: '', rgCpf: '', func: '', empresa: '', apto: PT_FIT_STATUS.EMPTY })}
+            onClick={() => append({ name: '', rgCpf: '', func: '', empresa: '', apto: PT_FIT_STATUS.EMPTY, email: '', phone: '', useAssinafy: true })}
           >
             <PlusCircle className="mr-2 h-4 w-4" /> {ptBr.actions.add}
           </Button>
         </div>
         <div className="space-y-4">
           {fields.map((item, index) => (
-            <div key={item.id} className="flex items-start gap-2">
-              <div className={`grid grid-cols-1 ${showEmpresa ? 'md:grid-cols-4' : 'md:grid-cols-3'} gap-4 flex-grow`}>
-                <FormField control={control} name={`${name}.${index}.name`} render={({ field }) => (<FormItem><FormLabel className={index !== 0 ? 'sr-only' : ''}>{ptBr.ptForm.name}</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>)} />
-                <FormField control={control} name={`${name}.${index}.rgCpf`} render={({ field }) => (<FormItem><FormLabel className={index !== 0 ? 'sr-only' : ''}>{ptBr.ptForm.rgCpf}</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>)} />
-                <FormField control={control} name={`${name}.${index}.func`} render={({ field }) => (<FormItem><FormLabel className={index !== 0 ? 'sr-only' : ''}>{ptBr.ptForm.role}</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>)} />
-                {showEmpresa && <FormField control={control} name={`${name}.${index}.empresa`} render={({ field }) => (<FormItem><FormLabel className={index !== 0 ? 'sr-only' : ''}>{ptBr.ptForm.company}</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>)} />}
+            <div key={item.id} className="flex flex-col gap-2 rounded-lg border p-4">
+              <div className="flex items-start gap-2">
+                <div className={`grid grid-cols-1 ${showEmpresa ? 'md:grid-cols-4' : 'md:grid-cols-3'} gap-4 flex-grow`}>
+                  <FormField control={control} name={`${name}.${index}.name`} render={({ field }) => (<FormItem><FormLabel className={index !== 0 ? 'sr-only' : ''}>{ptBr.ptForm.name}</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>)} />
+                  <FormField control={control} name={`${name}.${index}.rgCpf`} render={({ field }) => (<FormItem><FormLabel className={index !== 0 ? 'sr-only' : ''}>{ptBr.ptForm.rgCpf}</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>)} />
+                  <FormField control={control} name={`${name}.${index}.func`} render={({ field }) => (<FormItem><FormLabel className={index !== 0 ? 'sr-only' : ''}>{ptBr.ptForm.role}</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>)} />
+                  {showEmpresa && <FormField control={control} name={`${name}.${index}.empresa`} render={({ field }) => (<FormItem><FormLabel className={index !== 0 ? 'sr-only' : ''}>{ptBr.ptForm.company}</FormLabel><FormControl><Input {...field} /></FormControl></FormItem>)} />}
+                  <FormField
+                    control={control}
+                    name={`${name}.${index}.apto`}
+                    render={({ field }) => (
+                      <FormItem className="space-y-2"><FormLabel className={index !== 0 ? 'sr-only' : ''}>{ptBr.ptForm.isFit}</FormLabel>
+                        <FormControl>
+                          <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex items-center space-x-4">
+                            <FormItem className="flex items-center space-x-2 space-y-0"><FormControl><RadioGroupItem value={PT_FIT_STATUS.YES} /></FormControl><FormLabel className="font-normal">{ptBr.ptForm.yes}</FormLabel></FormItem>
+                            <FormItem className="flex items-center space-x-2 space-y-0"><FormControl><RadioGroupItem value={PT_FIT_STATUS.NO} /></FormControl><FormLabel className="font-normal">{ptBr.ptForm.no}</FormLabel></FormItem>
+                          </RadioGroup>
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                <Button type="button" variant="ghost" size="icon" className="mt-8" onClick={() => remove(index)}>
+                  <Trash2 className="h-4 w-4 text-destructive" />
+                </Button>
+              </div>
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <FormField
                   control={control}
-                  name={`${name}.${index}.apto`}
+                  name={`${name}.${index}.email`}
                   render={({ field }) => (
-                    <FormItem className="space-y-2"><FormLabel className={index !== 0 ? 'sr-only' : ''}>{ptBr.ptForm.isFit}</FormLabel>
+                    <FormItem>
+                      <FormLabel className="flex items-center gap-2 text-xs font-normal">
+                        <Mail className="h-3 w-3" />
+                        {ptBr.auth.email}
+                      </FormLabel>
                       <FormControl>
-                        <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex items-center space-x-4">
-                          <FormItem className="flex items-center space-x-2 space-y-0"><FormControl><RadioGroupItem value={PT_FIT_STATUS.YES} /></FormControl><FormLabel className="font-normal">{ptBr.ptForm.yes}</FormLabel></FormItem>
-                          <FormItem className="flex items-center space-x-2 space-y-0"><FormControl><RadioGroupItem value={PT_FIT_STATUS.NO} /></FormControl><FormLabel className="font-normal">{ptBr.ptForm.no}</FormLabel></FormItem>
-                        </RadioGroup>
+                        <Input placeholder={ptBr.auth.emailPlaceholder} {...field} />
                       </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={control}
+                  name={`${name}.${index}.phone`}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="flex items-center gap-2 text-xs font-normal">
+                        <MessageCircle className="h-3 w-3" />
+                        Telefone (opcional)
+                      </FormLabel>
+                      <FormControl>
+                        <PhoneInput value={field.value} onChange={field.onChange} onBlur={field.onBlur} />
+                      </FormControl>
+                      <FormMessage />
                     </FormItem>
                   )}
                 />
               </div>
-              <Button type="button" variant="ghost" size="icon" className="mt-8" onClick={() => remove(index)}>
-                <Trash2 className="h-4 w-4 text-destructive" />
-              </Button>
+              <div className="flex items-center gap-2 rounded-md border px-3 py-2 text-sm text-muted-foreground">
+                <Badge variant="secondary" className="flex items-center gap-1">
+                  <Mail className="h-3 w-3" />
+                  Assinatura por e-mail
+                </Badge>
+                A assinatura será enviada por e-mail via Assinafy.
+              </div>
             </div>
           ))}
         </div>
@@ -115,99 +158,63 @@ const CheckboxField = ({ form, name, label }: { form: UseFormReturn<SafetyFormVa
     );
   };
 
-  const SignatureField = ({ form, fieldPrefix, label }: { form: ReturnType<typeof useForm<SafetyFormValues>>, fieldPrefix: string, label: string }) => {
-    const signatureType = useWatch({
-      control: form.control,
-      name: `${fieldPrefix}.signatureType` as any,
-    });
-
-    const handleFileUpload = (e: ChangeEvent<HTMLInputElement>, field: any) => {
-        const file = e.target.files?.[0];
-        if (file) {
-            if (file.size > 1 * 1024 * 1024) { // 1MB limit
-                form.setError(`${fieldPrefix}.signatureData` as any, { type: 'manual', message: ptBr.other.imageTooLarge });
-                return;
-            }
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                field.onChange(reader.result as string);
-                form.clearErrors(`${fieldPrefix}.signatureData` as any);
-            };
-            reader.readAsDataURL(file);
-        }
-    };
-  
+  const SignerField = ({ form, fieldPrefix, label }: { form: ReturnType<typeof useForm<SafetyFormValues>>, fieldPrefix: string, label: string }) => {
     return (
-        <FormItem>
-            <FormLabel>{label}</FormLabel>
+        <div className="flex flex-col gap-2 rounded-lg border p-4">
+            <FormLabel className="text-sm font-semibold">{label}</FormLabel>
             <FormField
                 control={form.control}
                 name={`${fieldPrefix}.name` as any}
                 render={({ field }) => (
                     <FormItem>
-                    <FormLabel className='text-xs font-normal'>{ptBr.ptForm.signerName}</FormLabel>
-                    <FormControl><Input {...field} placeholder={ptBr.ptForm.signerNamePlaceholder} /></FormControl>
-                    <FormMessage />
-                    </FormItem>
-            )}/>
-            <div className="col-span-full space-y-2 rounded-md border p-3 mt-2">
-                <FormField
-                control={form.control}
-                name={`${fieldPrefix}.signatureType` as any}
-                render={({ field }) => (
-                    <FormItem className="space-y-2">
-                    <FormLabel className="text-xs">{ptBr.safetyForm.signatureMethod}</FormLabel>
-                    <FormControl>
-                        <RadioGroup
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                        className="flex flex-wrap items-center gap-x-4 gap-y-2"
-                        >
-                        <FormItem className="flex items-center space-x-2 space-y-0">
-                            <FormControl><RadioGroupItem value={SIGNATURE_TYPES.TYPED} /></FormControl>
-                            <FormLabel className="font-normal text-sm leading-tight">{ptBr.safetyForm.signatureTyped}</FormLabel>
-                        </FormItem>
-                        <FormItem className="flex items-center space-x-2 space-y-0">
-                            <FormControl><RadioGroupItem value={SIGNATURE_TYPES.DRAW} /></FormControl>
-                            <FormLabel className="font-normal text-sm leading-tight">{ptBr.safetyForm.signatureDraw}</FormLabel>
-                        </FormItem>
-                        <FormItem className="flex items-center space-x-2 space-y-0">
-                            <FormControl><RadioGroupItem value={SIGNATURE_TYPES.UPLOAD} /></FormControl>
-                            <FormLabel className="font-normal text-sm leading-tight">{ptBr.safetyForm.signatureUpload}</FormLabel>
-                        </FormItem>
-                        </RadioGroup>
-                    </FormControl>
+                        <FormLabel className='text-xs font-normal'>{ptBr.ptForm.signerName}</FormLabel>
+                        <FormControl><Input {...field} placeholder={ptBr.ptForm.signerNamePlaceholder} /></FormControl>
+                        <FormMessage />
                     </FormItem>
                 )}
+            />
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <FormField
+                    control={form.control}
+                    name={`${fieldPrefix}.email` as any}
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel className="flex items-center gap-2 text-xs font-normal">
+                                <Mail className="h-3 w-3" />
+                                {ptBr.auth.email}
+                            </FormLabel>
+                            <FormControl>
+                                <Input placeholder={ptBr.auth.emailPlaceholder} {...field} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
                 />
-        
                 <FormField
-                control={form.control}
-                name={`${fieldPrefix}.signatureData` as any}
-                render={({ field }) => (
-                    <FormItem>
-                    {signatureType === SIGNATURE_TYPES.TYPED && (
-                        <FormControl>
-                        <Input placeholder={ptBr.safetyForm.signatureTypedPlaceholder} {...field} />
-                        </FormControl>
+                    control={form.control}
+                    name={`${fieldPrefix}.phone` as any}
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel className="flex items-center gap-2 text-xs font-normal">
+                                <MessageCircle className="h-3 w-3" />
+                                Telefone (opcional)
+                            </FormLabel>
+                            <FormControl>
+                                <PhoneInput value={field.value} onChange={field.onChange} onBlur={field.onBlur} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
                     )}
-                    {signatureType === SIGNATURE_TYPES.DRAW && (
-                        <SignaturePad
-                        value={field.value}
-                        onChange={field.onChange}
-                        />
-                    )}
-                    {signatureType === SIGNATURE_TYPES.UPLOAD && (
-                        <FormControl>
-                            <Input type="file" accept="image/png, image/jpeg" onChange={(e) => handleFileUpload(e, field)} />
-                        </FormControl>
-                    )}
-                    <FormMessage />
-                    </FormItem>
-                )}
                 />
             </div>
-      </FormItem>
+            <div className="flex items-center gap-2 rounded-md border px-3 py-2 text-sm text-muted-foreground">
+                <Badge variant="secondary" className="flex items-center gap-1">
+                    <Mail className="h-3 w-3" />
+                    Assinatura por e-mail
+                </Badge>
+                A assinatura será enviada por e-mail via Assinafy.
+            </div>
+        </div>
     );
   };
 
@@ -374,9 +381,9 @@ export function PTForm({ form }: PTFormProps) {
            {/* Signatures */}
           <SectionTitle>{ptBr.ptForm.signatures}</SectionTitle>
            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <SignatureField form={form} fieldPrefix="pt.ptGestorArea" label={ptBr.ptForm.areaManager} />
-                <SignatureField form={form} fieldPrefix="pt.ptResponsavelAtividade" label={ptBr.ptForm.activityResponsible} />
-                <SignatureField form={form} fieldPrefix="pt.ptSesmt" label={ptBr.ptForm.sesmt} />
+                <SignerField form={form} fieldPrefix="pt.ptGestorArea" label={ptBr.ptForm.areaManager} />
+                <SignerField form={form} fieldPrefix="pt.ptResponsavelAtividade" label={ptBr.ptForm.activityResponsible} />
+                <SignerField form={form} fieldPrefix="pt.ptSesmt" label={ptBr.ptForm.sesmt} />
            </div>
 
 

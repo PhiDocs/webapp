@@ -21,12 +21,6 @@ function isValidBase64(str: string | undefined): boolean {
   }
 }
 
-function getSignatureContent(signatureData: string | undefined, name: string): Content {
-  if (isValidBase64(signatureData)) {
-    return { image: signatureData, width: 100, height: 40, alignment: 'center' };
-  }
-  return { text: name, style: 'signature', alignment: 'center' };
-}
 
 // --- APR Document Generation ---
 type PdfFormData = SafetyFormValues & {
@@ -144,7 +138,7 @@ export function generateAPRPages(formData: PdfFormData, analysisData: SafetyAnal
         responsibleBody.push([
             { text: p.name || '...', style: 'td', alignment: 'left', margin: [5, 15] },
             { text: p.role || '...', style: 'td', alignment: 'left', margin: [5, 15] },
-             {stack: [getSignatureContent(p.signatureData, p.name)], border: [true, false, false, false], borderColor: ['#ccc', '#ccc', '#ccc', '#ccc'], margin: [5, 5]},
+            { text: '', style: 'td', margin: [5, 15] },
         ]);
     });
 

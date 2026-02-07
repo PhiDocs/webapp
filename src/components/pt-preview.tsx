@@ -2,34 +2,20 @@ import React from 'react';
 import type { SafetyFormValues, PtTeamMember, PtSignerInput, Company } from '@/lib/types';
 import { ptChecklistItems } from '@/lib/data/pt-checklist';
 import { ptBr } from '@/lib/data/strings';
-import { PT_FIT_STATUS, SIGNATURE_TYPES } from '@/lib/constants';
+import { PT_FIT_STATUS } from '@/lib/constants';
 
 interface PTPreviewProps {
   formData: SafetyFormValues;
   company: Company | null;
 }
 
-const SignaturePreview = ({ signer, label }: { signer?: PtSignerInput, label: string }) => {
+const SignerPreview = ({ signer, label }: { signer?: PtSignerInput, label: string }) => {
     if (!signer) return null;
-    const { signatureData, signatureType, name } = signer;
-
-    const signatureContent = () => {
-        if (!signatureData) {
-            return <div className="h-12 w-full"></div>;
-        }
-        if (signatureType === SIGNATURE_TYPES.TYPED) {
-            return <p className="font-serif italic text-sm text-center h-12 flex items-center justify-center">{signatureData}</p>;
-        }
-        if (signatureType === SIGNATURE_TYPES.DRAW || signatureType === SIGNATURE_TYPES.UPLOAD) {
-            return <img src={signatureData} alt={ptBr.other.signatureAlt} className="h-12 w-full object-contain mx-auto" />;
-        }
-        return <div className="h-12 w-full"></div>;
-    }
 
     return (
         <div className='border-t border-black mx-4 pt-1'>
-            {signatureContent()}
-            <p className='text-xs text-center'>{name || label}</p>
+            <div className="h-12 w-full"></div>
+            <p className='text-xs text-center'>{signer.name || label}</p>
         </div>
     );
 };
@@ -209,9 +195,9 @@ export function PTPreview({ formData, company }: PTPreviewProps) {
 
         <Section title={ptBr.printPreview.pt.signatures} className="!mt-4">
              <div className="grid grid-cols-3 gap-2 pt-2 text-center border border-black border-t-0 text-xs">
-                <SignaturePreview signer={ptData.ptGestorArea} label={ptBr.printPreview.pt.areaManager} />
-                <SignaturePreview signer={ptData.ptResponsavelAtividade} label={ptBr.printPreview.pt.activityResponsible} />
-                <SignaturePreview signer={ptData.ptSesmt} label={ptBr.printPreview.pt.sesmt} />
+                <SignerPreview signer={ptData.ptGestorArea} label={ptBr.printPreview.pt.areaManager} />
+                <SignerPreview signer={ptData.ptResponsavelAtividade} label={ptBr.printPreview.pt.activityResponsible} />
+                <SignerPreview signer={ptData.ptSesmt} label={ptBr.printPreview.pt.sesmt} />
              </div>
         </Section>
       </main>

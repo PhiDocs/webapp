@@ -1,8 +1,19 @@
 'use server';
 
-const API_URL = process.env.ASSINAFY_API_URL!;
-const API_KEY = process.env.ASSINAFY_API_KEY!;
-const WORKSPACE_ID = process.env.ASSINAFY_WORKSPACE_ACCOUNT_ID!;
+const API_URL = process.env.ASSINAFY_API_URL;
+const API_KEY = process.env.ASSINAFY_API_KEY;
+const WORKSPACE_ID = process.env.ASSINAFY_WORKSPACE_ACCOUNT_ID;
+
+function assertAssinafyConfig() {
+    if (!API_URL || !API_KEY || !WORKSPACE_ID) {
+        const missing = [
+            !API_URL && 'ASSINAFY_API_URL',
+            !API_KEY && 'ASSINAFY_API_KEY',
+            !WORKSPACE_ID && 'ASSINAFY_WORKSPACE_ACCOUNT_ID',
+        ].filter(Boolean).join(', ');
+        throw new Error(`Configuração Assinafy incompleta. Variáveis faltando no .env: ${missing}`);
+    }
+}
 
 // ===== TIPOS =====
 export type AssinafyDocumentStatus =
@@ -73,6 +84,7 @@ export async function uploadDocumentToAssinafy(
     pdfBlob: Blob,
     documentName: string
 ): Promise<AssinafyUploadResult> {
+    assertAssinafyConfig();
     try {
         const formData = new FormData();
         formData.append('file', pdfBlob, documentName);
@@ -116,6 +128,7 @@ export async function createOrGetSigner(
     email: string,
     whatsappPhone?: string
 ): Promise<AssinafySignerResult> {
+    assertAssinafyConfig();
     try {
         // Formatar telefone para padrão internacional se fornecido
         const formattedPhone = whatsappPhone
@@ -211,6 +224,7 @@ export async function createAssignment(
     documentId: string,
     signers: AssinafySignerInfo[]
 ): Promise<AssinafyAssignmentResult> {
+    assertAssinafyConfig();
     try {
         const endpoint = `${API_URL}/documents/${documentId}/assignments`;
 
@@ -266,6 +280,7 @@ export async function createAssignment(
 export async function getDocumentStatus(
     documentId: string
 ): Promise<AssinafyDocumentStatusResult> {
+    assertAssinafyConfig();
     try {
         const response = await fetch(
             `${API_URL}/documents/${documentId}`,
@@ -316,6 +331,7 @@ export async function waitForDocumentReady(
 export async function downloadSignedDocument(
     documentId: string
 ): Promise<Blob> {
+    assertAssinafyConfig();
     try {
         const response = await fetch(
             `${API_URL}/documents/${documentId}/download/signed`,
@@ -341,6 +357,7 @@ export async function downloadSignedDocument(
 export async function resendAssignmentNotification(
     assignmentId: string
 ): Promise<{ success: boolean }> {
+    assertAssinafyConfig();
     try {
         const response = await fetch(
             `${API_URL}/assignments/${assignmentId}/resend`,

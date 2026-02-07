@@ -45,12 +45,12 @@ export const ptBr = {
   },
   header: {
     title: 'Safety Docs AI',
-    form: 'FormulÃ¡rio',
-    preview: 'PrÃ©-visualizaÃ§Ã£o',
+    form: 'Formulário',
+    preview: 'Pré-visualização',
   },
   signature: {
     title: 'Status das Assinaturas',
-    description: 'Acompanhe quantas assinaturas foram concluÃ­das e baixe o PDF quando finalizar.',
+    description: 'Acompanhe quantas assinaturas foram concluí­das e baixe o PDF quando finalizar.',
     empty: 'Nenhum documento enviado para assinatura ainda.',
     counts: '{{signed}} assinadas de {{total}} (faltam {{pending}}).',
     lastSync: 'Ãšltima sincronizaÃ§Ã£o: {{date}}',

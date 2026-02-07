@@ -42,6 +42,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { formatPhoneDisplay } from '@/lib/utils/phone-validator';
 
 interface EmployeesTableProps {
     companyId: string;
@@ -201,7 +202,7 @@ export function EmployeesTable({ companyId }: EmployeesTableProps) {
                                             )}
                                         </TableCell>
                                         <TableCell className="hidden md:table-cell">{employee.email}</TableCell>
-                                        <TableCell className="hidden md:table-cell">{employee.phone || '-'}</TableCell>
+                                        <TableCell className="hidden md:table-cell">{employee.phone ? formatPhoneDisplay(employee.phone) : '-'}</TableCell>
                                         <TableCell className="hidden lg:table-cell">{employee.roleName}</TableCell>
                                         <TableCell className="text-right">
                                             <AlertDialog>

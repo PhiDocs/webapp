@@ -5,7 +5,7 @@ import { Logo } from '@/components/icons/logo';
 import { PTPreview } from './pt-preview';
 import { ClipboardList, UserCheck, ShieldCheck, HardHat, Construction, Users, AlertTriangle } from 'lucide-react';
 import { ptBr } from '@/lib/data/strings';
-import { DOCUMENT_TYPES, SIGNATURE_TYPES } from '@/lib/constants';
+import { DOCUMENT_TYPES } from '@/lib/constants';
 
 
 interface PrintPreviewProps {
@@ -15,22 +15,6 @@ interface PrintPreviewProps {
   company: Company | null;
   error?: string | null;
 }
-
-const SignaturePreview = ({ signatureData, signatureType }: { signatureData?: string, signatureType?: string }) => {
-  if (!signatureData) {
-    return <div className="h-12 w-full border-b border-dashed"></div>;
-  }
-
-  if (signatureType === SIGNATURE_TYPES.TYPED) {
-    return <p className="font-serif italic text-lg text-center h-12 flex items-center justify-center">{signatureData}</p>;
-  }
-
-  if (signatureType === SIGNATURE_TYPES.DRAW || signatureType === SIGNATURE_TYPES.UPLOAD) {
-    return <img src={signatureData} alt={ptBr.other.signatureAlt} className="h-12 object-contain mx-auto" />;
-  }
-
-  return <div className="h-12 w-full border-b border-dashed"></div>;
-};
 
 function APRHeader({ data, company }: { data: SafetyFormValues; company: Company | null }) {
   return (
@@ -103,12 +87,12 @@ function ResponsiblesSection({ data }: { data: SafetyFormValues }) {
           </tr>
         </thead>
         <tbody>
-          {(data.responsiblePersons?.length > 0 ? data.responsiblePersons : [{ name: '', role: '', signatureType: 'typed', signatureData: '' }]).map((person, index: number) => (
+          {(data.responsiblePersons?.length > 0 ? data.responsiblePersons : [{ name: '', role: '' }]).map((person, index: number) => (
             <tr key={`resp-${index}`} className="avoid-break">
               <td className="h-16">{person.name || '...'}</td>
               <td>{person.role || '...'}</td>
               <td>
-                <SignaturePreview signatureData={person.signatureData} signatureType={person.signatureType} />
+                <div className="h-12 w-full border-b border-dashed"></div>
               </td>
             </tr>
           ))}
@@ -127,10 +111,9 @@ function TeamSection({ data }: { data: SafetyFormValues }) {
       <table className="w-full border-collapse border mt-0 analysis-table">
         <thead>
           <tr>
-            <th className="text-left w-[25%]">{ptBr.printPreview.apr.date}</th>
-            <th className="text-left w-[35%]">{ptBr.printPreview.apr.name}</th>
-            <th className="text-left w-[20%]">{ptBr.printPreview.apr.role}</th>
-            <th className="text-left w-[20%]">{ptBr.printPreview.apr.signature}</th>
+            <th className="text-left w-[30%]">{ptBr.printPreview.apr.date}</th>
+            <th className="text-left w-[40%]">{ptBr.printPreview.apr.name}</th>
+            <th className="text-left w-[30%]">{ptBr.printPreview.apr.role}</th>
           </tr>
         </thead>
         <tbody>
@@ -139,9 +122,6 @@ function TeamSection({ data }: { data: SafetyFormValues }) {
               <td className="h-10">{getShortDate(member.date)}</td>
               <td>{member.name}</td>
               <td>{member.role}</td>
-              <td>
-                <SignaturePreview signatureData={member.signatureData} signatureType={member.signatureType} />
-              </td>
             </tr>
           ))}
         </tbody>

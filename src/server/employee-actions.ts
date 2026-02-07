@@ -71,11 +71,12 @@ export async function createEmployee(data: EmployeeServerValues) {
             return { success: false, error: 'Função é obrigatória.' };
         }
 
+        const hasSubcontractor = validation.data.subcontractorId && validation.data.subcontractorId !== 'N/A';
         const dataToSave = {
             ...validation.data,
             roleId: finalRoleId,
-            subcontractorId: validation.data.subcontractorId === 'N/A' ? null : validation.data.subcontractorId,
-            subcontractorName: validation.data.subcontractorId === 'N/A' ? null : validation.data.subcontractorName,
+            subcontractorId: hasSubcontractor ? validation.data.subcontractorId : null,
+            subcontractorName: hasSubcontractor ? (validation.data.subcontractorName ?? null) : null,
         };
         await EmployeeRepository.create(dataToSave);
         revalidatePath(`/company/${validation.data.companyId}`);
@@ -114,11 +115,12 @@ export async function updateEmployee(id: string, data: EmployeeServerValues) {
             return { success: false, error: 'Função é obrigatória.' };
         }
 
+        const hasSubcontractor = validation.data.subcontractorId && validation.data.subcontractorId !== 'N/A';
         const dataToSave = {
             ...validation.data,
             roleId: finalRoleId,
-            subcontractorId: validation.data.subcontractorId === 'N/A' ? null : validation.data.subcontractorId,
-            subcontractorName: validation.data.subcontractorId === 'N/A' ? null : validation.data.subcontractorName,
+            subcontractorId: hasSubcontractor ? validation.data.subcontractorId : null,
+            subcontractorName: hasSubcontractor ? (validation.data.subcontractorName ?? null) : null,
         };
         await EmployeeRepository.update(id, dataToSave);
         revalidatePath(`/company/${validation.data.companyId}`);

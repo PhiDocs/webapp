@@ -1,7 +1,7 @@
 'use client';
 
 import { useForm, useFieldArray, useWatch } from 'react-hook-form';
-import React, { type ChangeEvent, useState } from 'react';
+import React, { useState } from 'react';
 import type { SafetyFormValues, Work, Employee } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import {
@@ -38,13 +38,11 @@ import {
 } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { PTForm } from './pt-form';
-import { SignaturePad } from './signature-pad';
-import { RadioGroup, RadioGroupItem } from './ui/radio-group';
 import { ptBr } from '@/lib/data/strings';
-import { DOCUMENT_TYPES, SIGNATURE_TYPES } from '@/lib/constants';
+import { DOCUMENT_TYPES } from '@/lib/constants';
 import { Skeleton } from './ui/skeleton';
-import { Switch } from './ui/switch';
 import { Badge } from './ui/badge';
+import { PhoneInput } from './ui/phone-input';
 import { Mail, MessageCircle } from 'lucide-react';
 
 interface SafetyFormProps {
@@ -56,110 +54,6 @@ interface SafetyFormProps {
   isDataLoading: boolean;
 }
 
-const SignatureField = ({
-  form,
-  fieldPrefix,
-  disabled,
-}: {
-  form: ReturnType<typeof useForm<SafetyFormValues>>;
-  fieldPrefix: string;
-  disabled?: boolean;
-}) => {
-  const signatureType = useWatch({
-    control: form.control,
-    name: `${fieldPrefix}.signatureType` as any,
-  });
-
-  const handleFileUpload = (e: ChangeEvent<HTMLInputElement>, field: any) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      if (file.size > 1 * 1024 * 1024) { // 1MB limit
-        form.setError(`${fieldPrefix}.signatureData` as any, { type: 'manual', message: ptBr.other.imageTooLarge });
-        return;
-      }
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        field.onChange(reader.result as string);
-        form.clearErrors(`${fieldPrefix}.signatureData` as any);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  if (disabled) {
-    return (
-      <div className="col-span-full space-y-2 rounded-md border p-3">
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Badge variant="secondary" className="flex items-center gap-1">
-            <Mail className="h-3 w-3" />
-            Assinatura por e-mail
-          </Badge>
-          O campo de assinatura manual fica desativado.
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="col-span-full space-y-2 rounded-md border p-3">
-      <FormField
-        control={form.control}
-        name={`${fieldPrefix}.signatureType` as any}
-        render={({ field }) => (
-          <FormItem className="space-y-2">
-            <FormLabel className="text-xs">{ptBr.safetyForm.signatureMethod}</FormLabel>
-            <FormControl>
-              <RadioGroup
-                onValueChange={field.onChange}
-                defaultValue={field.value}
-                className="flex items-center space-x-4"
-              >
-                <FormItem className="flex items-center space-x-2 space-y-0">
-                  <FormControl><RadioGroupItem value={SIGNATURE_TYPES.TYPED} /></FormControl>
-                  <FormLabel className="font-normal text-sm">{ptBr.safetyForm.signatureTyped}</FormLabel>
-                </FormItem>
-                <FormItem className="flex items-center space-x-2 space-y-0">
-                  <FormControl><RadioGroupItem value={SIGNATURE_TYPES.DRAW} /></FormControl>
-                  <FormLabel className="font-normal text-sm">{ptBr.safetyForm.signatureDraw}</FormLabel>
-                </FormItem>
-                <FormItem className="flex items-center space-x-2 space-y-0">
-                  <FormControl><RadioGroupItem value={SIGNATURE_TYPES.UPLOAD} /></FormControl>
-                  <FormLabel className="font-normal text-sm">{ptBr.safetyForm.signatureUpload}</FormLabel>
-                </FormItem>
-              </RadioGroup>
-            </FormControl>
-          </FormItem>
-        )}
-      />
-
-      <FormField
-        control={form.control}
-        name={`${fieldPrefix}.signatureData` as any}
-        render={({ field }) => (
-          <FormItem>
-            {signatureType === SIGNATURE_TYPES.TYPED && (
-              <FormControl>
-                <Input placeholder={ptBr.safetyForm.signatureTypedPlaceholder} {...field} />
-              </FormControl>
-            )}
-            {signatureType === SIGNATURE_TYPES.DRAW && (
-              <SignaturePad
-                value={field.value}
-                onChange={field.onChange}
-              />
-            )}
-            {signatureType === SIGNATURE_TYPES.UPLOAD && (
-              <FormControl>
-                <Input type="file" accept="image/png, image/jpeg" onChange={(e) => handleFileUpload(e, field)} />
-              </FormControl>
-            )}
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-    </div>
-  );
-};
 
 export function SafetyForm({
   form,
@@ -198,7 +92,6 @@ export function SafetyForm({
   });
 
   const documentType = useWatch({ control: form.control, name: 'documentType' });
-  const responsibleValues = useWatch({ control: form.control, name: 'responsiblePersons' });
   const [isEditingWorkData, setIsEditingWorkData] = useState(false);
   const [activeAnalysisStep, setActiveAnalysisStep] = useState(0);
 
@@ -523,7 +416,7 @@ export function SafetyForm({
                       variant="outline"
                       size="sm"
                       onClick={() =>
-                        appendTeamMember({ employeeId: '', date: '', name: '', role: '', signatureType: SIGNATURE_TYPES.TYPED, signatureData: '' })
+                        appendTeamMember({ employeeId: '', date: '', name: '', role: '', email: '', phone: '', useAssinafy: true })
                       }
                     >
                       <PlusCircle className="mr-2 h-4 w-4" /> {ptBr.actions.addMember}
@@ -534,50 +427,39 @@ export function SafetyForm({
                     {teamMemberFields.map((item, index) => (
                       <div key={item.id} className="flex flex-col gap-2 rounded-lg border p-4">
                         <div className="flex items-start gap-2">
-                          <div className="grid grid-cols-1 gap-x-4 gap-y-2 sm:grid-cols-2 flex-grow">
-                            <FormField
-                              control={form.control}
-                              name={`teamMembers.${index}.date`}
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>{ptBr.safetyForm.teamDate}</FormLabel>
-                                  <FormControl><Input type="date" {...field} /></FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                            <FormField
-                              control={form.control}
-                              name={`teamMembers.${index}.employeeId`}
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>{ptBr.safetyForm.teamName}</FormLabel>
-                                  <Select onValueChange={(employeeId) => {
-                                    field.onChange(employeeId);
-                                    const employee = employees.find(e => e.id === employeeId);
-                                    if (employee) {
-                                      form.setValue(`teamMembers.${index}.name`, `${employee.firstName} ${employee.lastName}`);
-                                      form.setValue(`teamMembers.${index}.role`, employee.roleName || '');
-                                    }
-                                  }} defaultValue={field.value}>
-                                    <FormControl>
-                                      <SelectTrigger>
-                                        <SelectValue placeholder={ptBr.safetyForm.selectEmployeePlaceholder} />
-                                      </SelectTrigger>
-                                    </FormControl>
-                                    <SelectContent>
-                                      {employees.map((emp) => (
-                                        <SelectItem key={emp.id} value={emp.id}>
-                                          {emp.firstName} {emp.lastName} ({emp.roleName})
-                                        </SelectItem>
-                                      ))}
-                                    </SelectContent>
-                                  </Select>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                          </div>
+                          <FormField
+                            control={form.control}
+                            name={`teamMembers.${index}.employeeId`}
+                            render={({ field }) => (
+                              <FormItem className="flex-grow">
+                                <FormLabel>{ptBr.safetyForm.teamName}</FormLabel>
+                                <Select onValueChange={(employeeId) => {
+                                  field.onChange(employeeId);
+                                  const employee = employees.find(e => e.id === employeeId);
+                                  if (employee) {
+                                    form.setValue(`teamMembers.${index}.name`, `${employee.firstName} ${employee.lastName}`);
+                                    form.setValue(`teamMembers.${index}.role`, employee.roleName || '');
+                                    form.setValue(`teamMembers.${index}.email`, employee.email || '');
+                                    form.setValue(`teamMembers.${index}.phone`, employee.phone || '');
+                                  }
+                                }} defaultValue={field.value}>
+                                  <FormControl>
+                                    <SelectTrigger>
+                                      <SelectValue placeholder={ptBr.safetyForm.selectEmployeePlaceholder} />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    {employees.map((emp) => (
+                                      <SelectItem key={emp.id} value={emp.id}>
+                                        {emp.firstName} {emp.lastName} ({emp.roleName})
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
                           <Button
                             type="button"
                             variant="ghost"
@@ -588,7 +470,58 @@ export function SafetyForm({
                             <Trash2 className="h-4 w-4 text-destructive" />
                           </Button>
                         </div>
-                        <SignatureField form={form} fieldPrefix={`teamMembers.${index}`} />
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                          <FormField
+                            control={form.control}
+                            name={`teamMembers.${index}.date`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>{ptBr.safetyForm.teamDate}</FormLabel>
+                                <FormControl><Input type="date" {...field} /></FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name={`teamMembers.${index}.email`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="flex items-center gap-2">
+                                  <Mail className="h-4 w-4" />
+                                  {ptBr.auth.email}
+                                </FormLabel>
+                                <FormControl>
+                                  <Input placeholder={ptBr.auth.emailPlaceholder} {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name={`teamMembers.${index}.phone`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="flex items-center gap-2">
+                                  <MessageCircle className="h-4 w-4" />
+                                  Telefone (opcional)
+                                </FormLabel>
+                                <FormControl>
+                                  <PhoneInput value={field.value} onChange={field.onChange} onBlur={field.onBlur} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                        <div className="flex items-center gap-2 rounded-md border px-3 py-2 text-sm text-muted-foreground">
+                          <Badge variant="secondary" className="flex items-center gap-1">
+                            <Mail className="h-3 w-3" />
+                            Assinatura por e-mail
+                          </Badge>
+                          A assinatura será enviada por e-mail via Assinafy.
+                        </div>
                       </div>
                     ))}
                     <FormMessage>
@@ -609,11 +542,9 @@ export function SafetyForm({
                           employeeId: '',
                           name: '',
                           role: '',
-                          signatureType: SIGNATURE_TYPES.TYPED,
-                          signatureData: '',
                           email: '',
                           phone: '',
-                          useAssinafy: false,
+                          useAssinafy: true,
                         })
                       }
                     >
@@ -695,36 +626,20 @@ export function SafetyForm({
                                   Telefone (opcional)
                                 </FormLabel>
                                 <FormControl>
-                                  <Input placeholder="(11) 99999-9999" {...field} />
+                                  <PhoneInput value={field.value} onChange={field.onChange} onBlur={field.onBlur} />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
                             )}
                           />
                         </div>
-                        <FormField
-                          control={form.control}
-                          name={`responsiblePersons.${index}.useAssinafy`}
-                          render={({ field }) => (
-                            <FormItem className="flex items-center justify-between rounded-md border px-3 py-2">
-                              <div className="flex items-center gap-2">
-                                <Mail className="h-4 w-4" />
-                                <div>
-                                  <FormLabel>Assinar por e-mail (Assinafy)</FormLabel>
-                                  <FormDescription>Desativa assinatura manual e envia convite.</FormDescription>
-                                </div>
-                              </div>
-                              <FormControl>
-                                <Switch checked={field.value} onCheckedChange={field.onChange} />
-                              </FormControl>
-                            </FormItem>
-                          )}
-                        />
-                        <SignatureField
-                          form={form}
-                          fieldPrefix={`responsiblePersons.${index}`}
-                          disabled={responsibleValues?.[index]?.useAssinafy}
-                        />
+                        <div className="flex items-center gap-2 rounded-md border px-3 py-2 text-sm text-muted-foreground">
+                          <Badge variant="secondary" className="flex items-center gap-1">
+                            <Mail className="h-3 w-3" />
+                            Assinatura por e-mail
+                          </Badge>
+                          A assinatura será enviada por e-mail via Assinafy.
+                        </div>
                       </div>
                     ))}
                     <FormMessage>

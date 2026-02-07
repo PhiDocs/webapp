@@ -42,7 +42,7 @@ export function PreviewPanel({
   isPtReady,
 }: PreviewPanelProps) {
   const canDownload = isPtReady || isAprReady;
-  const canSendSignature = isAprReady;
+  const canSendSignature = isAprReady || isPtReady;
 
   return (
     <div className={cn("relative flex-col bg-muted h-full", mobileView === 'preview' ? 'flex' : 'hidden')}>
