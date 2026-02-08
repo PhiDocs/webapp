@@ -204,7 +204,9 @@ export type PtSignerInput = z.input<typeof ptSignerSchema>;
 export type SignatureSigner = {
   name: string;
   email: string;
+  phone?: string;
   assinafySignerId?: string;
+  signingUrl?: string;
   status: 'pending' | 'signed' | 'declined';
 };
 
@@ -217,6 +219,8 @@ export type SignatureDocument = {
   assinafyAssignmentId: string;
   status: 'pending' | 'signed' | 'declined' | 'uploaded' | 'expired';
   signers: SignatureSigner[];
+  /** Array plano de e-mails para consulta no Firestore (array-contains) */
+  signerEmails: string[];
   createdAt: string;
   updatedAt?: string;
   lastSyncedAt?: string;

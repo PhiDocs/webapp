@@ -33,6 +33,20 @@ export const SignatureDocumentRepository = {
     return { id: doc.id, ...doc.data() } as SignatureDocument;
   },
 
+  async getBySignerEmail(email: string): Promise<SignatureDocument[]> {
+    const snapshot = await signatureCollection
+      .where('signerEmails', 'array-contains', email.toLowerCase())
+      .orderBy('createdAt', 'desc')
+      .get();
+
+    if (snapshot.empty) return [];
+
+    return snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+    })) as SignatureDocument[];
+  },
+
   async update(id: string, data: Partial<SignatureDocument>): Promise<void> {
     await signatureCollection.doc(id).update(data);
   },

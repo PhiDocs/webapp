@@ -9,6 +9,7 @@
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "migrate-deleted-at": "tsx scripts/migrate-deleted-at.ts",
+    "migrate-signer-emails": "tsx scripts/migrate-signer-emails.ts",
     "remove-activity-description": "tsx scripts/remove-activity-description.ts",
     "pull-firestore-rules": "node scripts/pull-firestore-rules.js",
     "update-firestore": "firebase deploy --only firestore:rules,firestore:indexes"

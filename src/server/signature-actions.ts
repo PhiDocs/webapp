@@ -15,9 +15,11 @@ function buildDocumentName(formData: SafetyFormValues) {
   return `documento_${base}${workName}_${date}.pdf`;
 }
 
-function getSignersFromForm(formData: SafetyFormValues): Array<{ name: string; email: string }> {
+type SignerInput = { name: string; email: string; phone?: string };
+
+function getSignersFromForm(formData: SafetyFormValues): SignerInput[] {
   if (formData.documentType === DOCUMENT_TYPES.PT) {
-    const ptSigners: Array<{ name: string; email: string }> = [];
+    const ptSigners: SignerInput[] = [];
     const pt = formData.pt;
 
     // Colaboradores, vigias e resgatistas
@@ -28,19 +30,19 @@ function getSignersFromForm(formData: SafetyFormValues): Array<{ name: string; e
     ];
     for (const member of allTeamMembers) {
       if (member.name && member.useAssinafy && member.email) {
-        ptSigners.push({ name: member.name, email: member.email });
+        ptSigners.push({ name: member.name, email: member.email, phone: member.phone });
       }
     }
 
     // Signatários (gestor, responsável, SESMT)
     if (pt.ptGestorArea?.name && pt.ptGestorArea?.useAssinafy) {
-      ptSigners.push({ name: pt.ptGestorArea.name, email: pt.ptGestorArea.email || '' });
+      ptSigners.push({ name: pt.ptGestorArea.name, email: pt.ptGestorArea.email || '', phone: pt.ptGestorArea.phone });
     }
     if (pt.ptResponsavelAtividade?.name && pt.ptResponsavelAtividade?.useAssinafy) {
-      ptSigners.push({ name: pt.ptResponsavelAtividade.name, email: pt.ptResponsavelAtividade.email || '' });
+      ptSigners.push({ name: pt.ptResponsavelAtividade.name, email: pt.ptResponsavelAtividade.email || '', phone: pt.ptResponsavelAtividade.phone });
     }
     if (pt.ptSesmt?.name && pt.ptSesmt?.useAssinafy) {
-      ptSigners.push({ name: pt.ptSesmt.name, email: pt.ptSesmt.email || '' });
+      ptSigners.push({ name: pt.ptSesmt.name, email: pt.ptSesmt.email || '', phone: pt.ptSesmt.phone });
     }
     return ptSigners;
   }
@@ -48,11 +50,11 @@ function getSignersFromForm(formData: SafetyFormValues): Array<{ name: string; e
   // APR: responsáveis + equipe de trabalho
   const responsibleSigners = (formData.responsiblePersons || [])
     .filter(p => p.name && p.useAssinafy)
-    .map(p => ({ name: p.name, email: p.email || '' }));
+    .map(p => ({ name: p.name, email: p.email || '', phone: p.phone }));
 
   const teamSigners = (formData.teamMembers || [])
     .filter(m => m.name && m.useAssinafy)
-    .map(m => ({ name: m.name, email: m.email || '' }));
+    .map(m => ({ name: m.name, email: m.email || '', phone: m.phone }));
 
   return [...responsibleSigners, ...teamSigners];
 }
@@ -92,10 +94,11 @@ export async function sendDocumentForSignature({
 
     const signers: SignatureSigner[] = [];
     for (const signer of signersInput) {
-      const signerResult = await createOrGetSigner(signer.name, signer.email);
+      const signerResult = await createOrGetSigner(signer.name, signer.email, signer.phone);
       signers.push({
         name: signer.name,
         email: signer.email,
+        phone: signer.phone,
         assinafySignerId: signerResult.signerId,
         status: 'pending',
       });
@@ -106,6 +109,17 @@ export async function sendDocumentForSignature({
       signers.map(s => ({ id: s.assinafySignerId!, email: s.email }))
     );
 
+    // Associar signing URLs a cada signatário
+    const signingUrls = assignmentResult.signingUrls || [];
+    for (const signer of signers) {
+      const match = signingUrls.find(u => u.signer_id === signer.assinafySignerId);
+      if (match) {
+        signer.signingUrl = match.url;
+      }
+    }
+
+    const signerEmails = signers.map(s => s.email.toLowerCase());
+
     const now = new Date().toISOString();
     const signatureDocument: Omit<SignatureDocument, 'id'> = {
       companyId: company.id,
@@ -115,6 +129,7 @@ export async function sendDocumentForSignature({
       assinafyAssignmentId: assignmentResult.assignmentId,
       status: 'pending',
       signers,
+      signerEmails,
       createdAt: now,
       updatedAt: now,
       lastSyncedAt: now,
@@ -140,6 +155,21 @@ export async function getSignatureDocuments(companyId: string) {
   } catch (e: unknown) {
     const error = e instanceof Error ? e : new Error(String(e ?? 'Erro desconhecido ao buscar assinaturas.'));
     await ErrorLogRepository.log(error, 'getSignatureDocuments');
+    return { success: false, error: error.message };
+  }
+}
+
+export async function getSignatureDocumentsByEmail(email: string) {
+  if (!email) {
+    return { success: false, error: 'E-mail não fornecido.' };
+  }
+
+  try {
+    const documents = await SignatureDocumentRepository.getBySignerEmail(email);
+    return { success: true, data: documents };
+  } catch (e: unknown) {
+    const error = e instanceof Error ? e : new Error(String(e ?? 'Erro desconhecido ao buscar documentos por e-mail.'));
+    await ErrorLogRepository.log(error, 'getSignatureDocumentsByEmail');
     return { success: false, error: error.message };
   }
 }

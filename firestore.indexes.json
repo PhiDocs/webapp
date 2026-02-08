@@ -2,6 +2,34 @@
 {
   "indexes": [
     {
+      "collectionGroup": "signatureDocuments",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "signerEmails",
+          "arrayConfig": "CONTAINS"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "signatureDocuments",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "companyId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
       "collectionGroup": "works",
       "queryScope": "COLLECTION",
       "fields": [
