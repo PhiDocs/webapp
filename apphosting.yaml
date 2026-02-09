@@ -2,8 +2,65 @@
 # https://firebase.google.com/docs/app-hosting/configure
 
 runConfig:
-  # Increase this value if you'd like to automatically spin up
-  # more instances in response to increased traffic.
   maxInstances: 1
-  # Set the timeout for server-side rendering and API calls.
   timeoutSeconds: 120
+
+env:
+  # Firebase Admin SDK
+  - variable: FIREBASE_PROJECT_ID
+    value: studio-2124642360-17967
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: FIREBASE_CLIENT_EMAIL
+    value: firebase-adminsdk-fbsvc@studio-2124642360-17967.iam.gserviceaccount.com
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: FIREBASE_PRIVATE_KEY
+    secret: FIREBASE_PRIVATE_KEY
+    availability:
+      - BUILD
+      - RUNTIME
+
+  # Firebase Client (public)
+  - variable: NEXT_PUBLIC_FIREBASE_PROJECT_ID
+    value: studio-2124642360-17967
+    availability:
+      - BUILD
+      - RUNTIME
+
+  # Assinafy API
+  - variable: ASSINAFY_API_URL
+    value: https://api.assinafy.com.br/v1
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: ASSINAFY_API_KEY
+    secret: ASSINAFY_API_KEY
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: ASSINAFY_WORKSPACE_ACCOUNT_ID
+    value: 10199457a9b2798c700de867896a
+    availability:
+      - BUILD
+      - RUNTIME
+
+  # Google AI (Gemini)
+  - variable: GEMINI_API_KEY
+    secret: GEMINI_API_KEY
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: GENAI_MODEL
+    value: googleai/gemini-2.5-flash
+    availability:
+      - BUILD
+      - RUNTIME
+
+  # n8n Webhook (opcional)
+  - variable: N8N_PRODUCTION_URL
+    value: https://seu.n8n.url/webhook/production
+    availability:
+      - RUNTIME

@@ -128,7 +128,7 @@ function DraftCard({
               <FileText className="h-4 w-4 text-muted-foreground" />
               <h3 className="text-lg font-semibold">{item.documentName}</h3>
               <Badge variant="secondary">Rascunho</Badge>
-              <Badge variant="outline">{item.documentType}</Badge>
+              <Badge variant="outline">{String(item.documentType)}</Badge>
             </div>
             <div className="text-sm text-muted-foreground">
               Criado em {formatDate(item.createdAt)}
