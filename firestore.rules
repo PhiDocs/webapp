@@ -85,6 +85,21 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // Saved documents (drafts and history)
+    match /documents/{docId} {
+      allow read: if isAdmin() && resource.data.companyId == tokenCompanyId();
+      allow create: if isAdmin() && request.resource.data.companyId == tokenCompanyId();
+      allow update: if isAdmin()
+        && resource.data.companyId == tokenCompanyId()
+        && request.resource.data.companyId == resource.data.companyId;
+      allow delete: if isAdmin() && resource.data.companyId == tokenCompanyId();
+    }
+
+    // Error logs (server-side only, deny client access)
+    match /errorLogs/{logId} {
+      allow read, write: if false;
+    }
+
     // Default rule for other collections.
     // Deny access by default.
     match /{document=**} {
