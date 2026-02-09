@@ -37,10 +37,10 @@ function APRHeader({ data, company }: { data: SafetyFormValues; company: Company
         </div>
         <div className="flex flex-col gap-1 items-end text-xs text-gray-600 shrink-0">
           <div className="px-3 py-1 border rounded-md bg-gray-50">
-            <span className="font-semibold">{ptBr.printPreview.apr.aprNumber}</span> {data.documentType === DOCUMENT_TYPES.APR ? 'APR' : 'PT'} Nº {data.revisionNumber || '01'}
+            <span className="font-semibold">{ptBr.printPreview.apr.aprNumber}</span> {data.documentType === DOCUMENT_TYPES.APR ? 'APR' : 'PT'} Nº {'01'}
           </div>
           <div className="px-3 py-1 border rounded-md bg-gray-50">
-            <span className="font-semibold">{ptBr.printPreview.apr.revision}</span> {data.revisionNumber || '01'}
+            <span className="font-semibold">{ptBr.printPreview.apr.review}</span> {'01'}
           </div>
         </div>
       </div>

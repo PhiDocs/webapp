@@ -5,6 +5,7 @@ import { ErrorLogRepository } from '@/repositories/error-log.repository';
 import type { SafetyFormValues, SavedDocument } from '@/lib/types';
 import type { SafetyAnalysisOutput, ProtectiveEquipmentOutput } from '@/server/ai-actions';
 import { DOCUMENT_TYPES } from '@/lib/constants';
+import type { DocumentType } from '@/lib/constants';
 
 function buildDocumentName(formData: SafetyFormValues) {
   const base = formData.documentType === DOCUMENT_TYPES.APR ? 'APR' : 'PT';
@@ -41,7 +42,7 @@ export async function saveDocument({
         analysisData,
         equipmentData,
         documentName,
-        documentType: formData.documentType,
+        documentType: formData.documentType as DocumentType,
         updatedAt: now,
       });
       return { success: true, documentId };
@@ -50,7 +51,7 @@ export async function saveDocument({
     // Criar novo documento
     const newId = await DocumentRepository.create({
       companyId,
-      documentType: formData.documentType,
+      documentType: formData.documentType as DocumentType,
       documentName,
       status: 'draft',
       formData,

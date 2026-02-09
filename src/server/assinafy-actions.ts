@@ -1,8 +1,8 @@
 'use server';
 
-const API_URL = process.env.ASSINAFY_API_URL;
-const API_KEY = process.env.ASSINAFY_API_KEY;
-const WORKSPACE_ID = process.env.ASSINAFY_WORKSPACE_ACCOUNT_ID;
+const API_URL = process.env.ASSINAFY_API_URL ?? '';
+const API_KEY = process.env.ASSINAFY_API_KEY ?? '';
+const WORKSPACE_ID = process.env.ASSINAFY_WORKSPACE_ACCOUNT_ID ?? '';
 
 function assertAssinafyConfig() {
     if (!API_URL || !API_KEY || !WORKSPACE_ID) {

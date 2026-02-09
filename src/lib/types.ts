@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { DOCUMENT_TYPES, PT_FIT_STATUS } from './constants';
+import { DOCUMENT_TYPES, PT_FIT_STATUS, type DocumentType } from './constants';
 import { ptBr } from './data/strings';
 
 const validationMessages = {
@@ -196,8 +196,8 @@ export type ResponsiblePerson = z.infer<typeof responsiblePersonSchema>;
 export type TeamMember = z.infer<typeof teamMemberSchema>;
 export type AnalysisStep = z.infer<typeof analysisStepSchema>;
 export type PtFormValues = z.infer<typeof ptFormSchema>;
-export type PtTeamMember = z.infer<typeof ptTeamMemberSchema>;
-export type PtSigner = z.infer<typeof ptSignerSchema>;
+export type PtTeamMember = z.input<typeof ptTeamMemberSchema>;
+export type PtSigner = z.input<typeof ptSignerSchema>;
 export type PtSignerInput = z.input<typeof ptSignerSchema>;
 
 // --- Signature Documents ---
