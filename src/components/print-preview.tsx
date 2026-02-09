@@ -16,6 +16,8 @@ interface PrintPreviewProps {
   error?: string | null;
 }
 
+const Empty = () => <span className="italic text-gray-400">{ptBr.other.notFilled}</span>;
+
 function APRHeader({ data, company }: { data: SafetyFormValues; company: Company | null }) {
   return (
     <header className="print-header avoid-break">
@@ -27,7 +29,7 @@ function APRHeader({ data, company }: { data: SafetyFormValues; company: Company
             <Logo className="h-12 w-12 text-gray-700" />
           )}
           <div className='flex-1 min-w-0'>
-            <h1 className="text-xl font-bold text-gray-800 break-words">{company?.name || '...'}</h1>
+            <h1 className="text-xl font-bold text-gray-800 break-words">{company?.name || <Empty />}</h1>
             <p className='text-sm mt-2 font-bold'>
               {ptBr.printPreview.apr.title}
             </p>
@@ -81,19 +83,15 @@ function ResponsiblesSection({ data }: { data: SafetyFormValues }) {
       <table className="w-full border-collapse border mt-0 analysis-table">
         <thead>
           <tr>
-            <th className="text-left w-[40%]">{ptBr.printPreview.apr.name}</th>
-            <th className="text-left w-[30%]">{ptBr.printPreview.apr.role}</th>
-            <th className="text-left w-[30%]">{ptBr.printPreview.apr.signature}</th>
+            <th className="text-left w-[50%]">{ptBr.printPreview.apr.name}</th>
+            <th className="text-left w-[50%]">{ptBr.printPreview.apr.role}</th>
           </tr>
         </thead>
         <tbody>
           {(data.responsiblePersons?.length > 0 ? data.responsiblePersons : [{ name: '', role: '' }]).map((person, index: number) => (
             <tr key={`resp-${index}`} className="avoid-break">
-              <td className="h-16">{person.name || '...'}</td>
-              <td>{person.role || '...'}</td>
-              <td>
-                <div className="h-12 w-full border-b border-dashed"></div>
-              </td>
+              <td className="h-10">{person.name || <Empty />}</td>
+              <td>{person.role || <Empty />}</td>
             </tr>
           ))}
         </tbody>
@@ -119,9 +117,9 @@ function TeamSection({ data }: { data: SafetyFormValues }) {
         <tbody>
           {teamMembers.map((member: any, index: number) => (
             <tr key={`team-${index}`} className="avoid-break">
-              <td className="h-10">{getShortDate(member.date)}</td>
-              <td>{member.name}</td>
-              <td>{member.role}</td>
+              <td className="h-10">{getShortDate(member.date) || <Empty />}</td>
+              <td>{member.name || <Empty />}</td>
+              <td>{member.role || <Empty />}</td>
             </tr>
           ))}
         </tbody>
@@ -183,7 +181,7 @@ function EquipmentSection({ data }: { data: ProtectiveEquipmentOutput | null }) 
 }
 
 function getShortDate(dateString: string | undefined) {
-  if (!dateString) return '...';
+  if (!dateString) return null;
   try {
     const date = new Date(dateString);
     const zonedDate = new Date(date.valueOf() + date.getTimezoneOffset() * 60 * 1000);
@@ -206,18 +204,18 @@ function APRPreviewContent({ formData, analysisData, equipmentData, company, err
           <table className="w-full border-collapse info-grid">
             <tbody>
               <tr>
-                <td className="w-1/2"><strong>{ptBr.printPreview.apr.workName}</strong>{formData.workName || '...'}</td>
-                <td className="w-1/2"><strong>{ptBr.printPreview.apr.workAddress}</strong>{formData.workAddress || '...'}</td>
+                <td className="w-1/2"><strong>{ptBr.printPreview.apr.workName}</strong>{formData.workName || <Empty />}</td>
+                <td className="w-1/2"><strong>{ptBr.printPreview.apr.workAddress}</strong>{formData.workAddress || <Empty />}</td>
               </tr>
               <tr>
-                <td><strong>{ptBr.printPreview.apr.startDate}</strong>{getShortDate(formData.startDate)}</td>
-                <td><strong>{ptBr.printPreview.apr.endDate}</strong>{getShortDate(formData.endDate)}</td>
+                <td><strong>{ptBr.printPreview.apr.startDate}</strong>{getShortDate(formData.startDate) || <Empty />}</td>
+                <td><strong>{ptBr.printPreview.apr.endDate}</strong>{getShortDate(formData.endDate) || <Empty />}</td>
               </tr>
               <tr>
-                <td colSpan={2}><strong>{ptBr.printPreview.apr.workLocation}</strong>{formData.workLocationDetails || '...'}</td>
+                <td colSpan={2}><strong>{ptBr.printPreview.apr.workLocation}</strong>{formData.workLocationDetails || <Empty />}</td>
               </tr>
               <tr>
-                <td colSpan={2}><strong>{ptBr.printPreview.apr.activityDescription}</strong>{formData.activityDescription || '...'}</td>
+                <td colSpan={2}><strong>{ptBr.printPreview.apr.activityDescription}</strong>{formData.activityDescription || <Empty />}</td>
               </tr>
             </tbody>
           </table>
@@ -236,8 +234,8 @@ function APRPreviewContent({ formData, analysisData, equipmentData, company, err
           <AnalysisTable steps={analysisData.proceduralSteps} />
         ) : (
           <Section title={ptBr.printPreview.apr.operationalProcedure} icon={ShieldCheck}>
-            <div className="text-center text-gray-500 italic py-8 border-2 border-dashed rounded-lg">
-              {ptBr.printPreview.apr.analysisPlaceholder}
+            <div className="text-center py-8">
+              <Empty />
             </div>
           </Section>
         )}

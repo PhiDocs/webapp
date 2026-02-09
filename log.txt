@@ -1118,3 +1118,1101 @@ STACK: TypeError: Failed to parse URL from undefined/accounts/undefined/document
     at async requestHandlerImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/lib/router-server.js:496:13)
     at async Server.requestListener (/Users/igor.custodio/development/studio/node_modules/next/dist/server/lib/start-server.js:226:13)
 ---
+[2026-02-09T09:43:48.592Z] ERROR in resendSignatureNotification: Erro ao reenviar convite: 404 - {"name":"Not Found","message":"Página não encontrada.","code":0,"status":404}
+STACK: Error: Erro ao reenviar convite: 404 - {"name":"Not Found","message":"Página não encontrada.","code":0,"status":404}
+    at resendAssignmentNotification (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/[root-of-the-server]__0d2c1d64._.js:2742:19)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async resendSignatureNotification (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/[root-of-the-server]__0d2c1d64._.js:3072:9)
+    at async executeActionAndPrepareForRender (/Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:36:3803)
+    at async /Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:36:1109
+    at async handleAction (/Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:34:23616)
+    at async renderToHTMLOrFlightImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:41:42130)
+    at async doRender (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/node_modules_next_dist_c39a03eb._.js:2970:28)
+    at async AppPageRouteModule.handleResponse (/Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:43:64241)
+    at async handleResponse (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/node_modules_next_dist_c39a03eb._.js:3176:32)
+    at async Module.handler (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/node_modules_next_dist_c39a03eb._.js:3547:20)
+    at async DevServer.renderToResponseWithComponentsImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:1442:9)
+    at async DevServer.renderPageComponent (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:1494:24)
+    at async DevServer.renderToResponseImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:1544:32)
+    at async DevServer.pipeImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:1038:25)
+    at async NextNodeServer.handleCatchallRenderRequest (/Users/igor.custodio/development/studio/node_modules/next/dist/server/next-server.js:395:17)
+    at async DevServer.handleRequestImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:929:17)
+    at async /Users/igor.custodio/development/studio/node_modules/next/dist/server/dev/next-dev-server.js:387:20
+    at async Span.traceAsyncFn (/Users/igor.custodio/development/studio/node_modules/next/dist/trace/trace.js:157:20)
+    at async DevServer.handleRequest (/Users/igor.custodio/development/studio/node_modules/next/dist/server/dev/next-dev-server.js:383:24)
+    at async invokeRender (/Users/igor.custodio/development/studio/node_modules/next/dist/server/lib/router-server.js:248:21)
+    at async handleRequest (/Users/igor.custodio/development/studio/node_modules/next/dist/server/lib/router-server.js:447:24)
+    at async requestHandlerImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/lib/router-server.js:496:13)
+    at async Server.requestListener (/Users/igor.custodio/development/studio/node_modules/next/dist/server/lib/start-server.js:226:13)
+---
+[2026-02-09T09:56:42.687Z] ERROR in assinafy-download-api: Value for argument "documentPath" is not a valid resource path. Path must be a non-empty string.
+STACK: Error: Value for argument "documentPath" is not a valid resource path. Path must be a non-empty string.
+    at validateResourcePath (/Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/path.js:483:15)
+    at CollectionReference.doc (/Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/reference/collection-reference.js:184:45)
+    at Object.getById (/Users/igor.custodio/development/studio/.next/dev/server/chunks/[root-of-the-server]__a2757cc0._.js:96:47)
+    at GET (/Users/igor.custodio/development/studio/.next/dev/server/chunks/[root-of-the-server]__a2757cc0._.js:562:224)
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:59:14)
+    at AppRouteRouteModule.do (/Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-route-turbo.runtime.dev.js:5:37945)
+    at /Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-route-turbo.runtime.dev.js:5:47941
+    at /Users/igor.custodio/development/studio/node_modules/next/dist/server/lib/trace/tracer.js:185:36
+    at NoopContextManager.with (/Users/igor.custodio/development/studio/node_modules/@opentelemetry/api/build/src/context/NoopContextManager.js:25:19)
+    at ContextAPI.with (/Users/igor.custodio/development/studio/node_modules/@opentelemetry/api/build/src/api/context.js:60:46)
+    at NoopTracer.startActiveSpan (/Users/igor.custodio/development/studio/node_modules/@opentelemetry/api/build/src/trace/NoopTracer.js:65:31)
+    at ProxyTracer.startActiveSpan (/Users/igor.custodio/development/studio/node_modules/@opentelemetry/api/build/src/trace/ProxyTracer.js:36:24)
+    at /Users/igor.custodio/development/studio/node_modules/next/dist/server/lib/trace/tracer.js:154:103
+    at NoopContextManager.with (/Users/igor.custodio/development/studio/node_modules/@opentelemetry/api/build/src/context/NoopContextManager.js:25:19)
+    at ContextAPI.with (/Users/igor.custodio/development/studio/node_modules/@opentelemetry/api/build/src/api/context.js:60:46)
+    at NextTracerImpl.trace (/Users/igor.custodio/development/studio/node_modules/next/dist/server/lib/trace/tracer.js:154:28)
+    at /Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-route-turbo.runtime.dev.js:5:47780
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14)
+    at /Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-route-turbo.runtime.dev.js:5:45275
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14)
+    at /Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-route-turbo.runtime.dev.js:5:45232
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14)
+    at AppRouteRouteModule.handle (/Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-route-turbo.runtime.dev.js:5:45186)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+---
+[2026-02-09T10:22:37.129Z] ERROR in getDocuments: 9 FAILED_PRECONDITION: The query requires an index. You can create it here: https://console.firebase.google.com/v1/r/project/studio-2124642360-17967/firestore/indexes?create_composite=Cllwcm9qZWN0cy9zdHVkaW8tMjEyNDY0MjM2MC0xNzk2Ny9kYXRhYmFzZXMvKGRlZmF1bHQpL2NvbGxlY3Rpb25Hcm91cHMvZG9jdW1lbnRzL2luZGV4ZXMvXxABGg0KCWNvbXBhbnlJZBABGg0KCXVwZGF0ZWRBdBACGgwKCF9fbmFtZV9fEAI
+STACK: Error: 9 FAILED_PRECONDITION: The query requires an index. You can create it here: https://console.firebase.google.com/v1/r/project/studio-2124642360-17967/firestore/indexes?create_composite=Cllwcm9qZWN0cy9zdHVkaW8tMjEyNDY0MjM2MC0xNzk2Ny9kYXRhYmFzZXMvKGRlZmF1bHQpL2NvbGxlY3Rpb25Hcm91cHMvZG9jdW1lbnRzL2luZGV4ZXMvXxABGg0KCWNvbXBhbnlJZBABGg0KCXVwZGF0ZWRBdBACGgwKCF9fbmFtZV9fEAI
+    at callErrorFromStatus (/Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/call.js:32:19)
+    at Object.onReceiveStatus (/Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/client.js:359:73)
+    at Object.onReceiveStatus (/Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/client-interceptors.js:327:181)
+    at /Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/resolving-call.js:135:78
+    at process.processTicksAndRejections (node:internal/process/task_queues:84:11)
+for call at
+    at ServiceClientImpl.makeServerStreamRequest (/Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/client.js:342:32)
+    at ServiceClientImpl.<anonymous> (/Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/make-client.js:105:19)
+    at /Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/v1/firestore_client.js:242:33
+    at /Users/igor.custodio/development/studio/node_modules/google-gax/build/src/streamingCalls/streamingApiCaller.js:38:28
+    at /Users/igor.custodio/development/studio/node_modules/google-gax/build/src/normalCalls/timeout.js:44:16
+    at Object.request (/Users/igor.custodio/development/studio/node_modules/google-gax/build/src/streamingCalls/streaming.js:234:40)
+    at makeRequest (/Users/igor.custodio/development/studio/node_modules/retry-request/index.js:159:28)
+    at retryRequest (/Users/igor.custodio/development/studio/node_modules/retry-request/index.js:119:5)
+    at StreamProxy.setStream (/Users/igor.custodio/development/studio/node_modules/google-gax/build/src/streamingCalls/streaming.js:225:37)
+    at StreamingApiCaller.call (/Users/igor.custodio/development/studio/node_modules/google-gax/build/src/streamingCalls/streamingApiCaller.js:54:16)
+    at /Users/igor.custodio/development/studio/node_modules/google-gax/build/src/createApiCall.js:112:30
+Caused by: Error: 
+    at QueryUtil._getResponse (/Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/reference/query-util.js:44:23)
+    at Query._getResponse (/Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/reference/query.js:784:32)
+    at Query._get (/Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/reference/query.js:777:35)
+    at /Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/reference/query.js:745:43
+    at /Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:110:30
+    at NoopContextManager.with (/Users/igor.custodio/development/studio/node_modules/@opentelemetry/api/build/src/context/NoopContextManager.js:25:19)
+    at ContextAPI.with (/Users/igor.custodio/development/studio/node_modules/@opentelemetry/api/build/src/api/context.js:60:46)
+    at NoopTracer.startActiveSpan (/Users/igor.custodio/development/studio/node_modules/@opentelemetry/api/build/src/trace/NoopTracer.js:65:31)
+    at ProxyTracer.startActiveSpan (/Users/igor.custodio/development/studio/node_modules/@opentelemetry/api/build/src/trace/ProxyTracer.js:36:24)
+    at EnabledTraceUtil.startActiveSpan (/Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:102:28)
+    at Query.get (/Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/reference/query.js:744:43)
+    at Object.getByCompany (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/[root-of-the-server]__dfe5c1c9._.js:50:108)
+    at getDocuments (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/[root-of-the-server]__dfe5c1c9._.js:290:197)
+    at /Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:36:3895
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14)
+    at executeActionAndPrepareForRender (/Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:36:3867)
+    at /Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:36:1115
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async handleAction (/Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:34:23616)
+    at async renderToHTMLOrFlightImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:41:42130)
+    at async doRender (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/node_modules_next_dist_5fdd64e6._.js:2970:28)
+    at async AppPageRouteModule.handleResponse (/Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:43:64241)
+    at async handleResponse (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/node_modules_next_dist_5fdd64e6._.js:3176:32)
+    at async Module.handler (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/node_modules_next_dist_5fdd64e6._.js:3547:20)
+    at async DevServer.renderToResponseWithComponentsImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:1442:9)
+    at async DevServer.renderPageComponent (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:1494:24)
+    at async DevServer.renderToResponseImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:1544:32)
+    at async DevServer.pipeImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:1038:25)
+    at async NextNodeServer.handleCatchallRenderRequest (/Users/igor.custodio/development/studio/node_modules/next/dist/server/next-server.js:395:17)
+    at async DevServer.handleRequestImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:929:17)
+    at async /Users/igor.custodio/development/studio/node_modules/next/dist/server/dev/next-dev-server.js:387:20
+    at async Span.traceAsyncFn (/Users/igor.custodio/development/studio/node_modules/next/dist/trace/trace.js:157:20)
+    at async DevServer.handleRequest (/Users/igor.custodio/development/studio/node_modules/next/dist/server/dev/next-dev-server.js:383:24)
+    at async invokeRender (/Users/igor.custodio/development/studio/node_modules/next/dist/server/lib/router-server.js:248:21)
+    at async handleRequest (/Users/igor.custodio/development/studio/node_modules/next/dist/server/lib/router-server.js:447:24)
+    at async requestHandlerImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/lib/router-server.js:496:13)
+    at async Server.requestListener (/Users/igor.custodio/development/studio/node_modules/next/dist/server/lib/start-server.js:226:13)
+---
+[2026-02-09T10:22:38.024Z] ERROR in getDocuments: 9 FAILED_PRECONDITION: The query requires an index. You can create it here: https://console.firebase.google.com/v1/r/project/studio-2124642360-17967/firestore/indexes?create_composite=Cllwcm9qZWN0cy9zdHVkaW8tMjEyNDY0MjM2MC0xNzk2Ny9kYXRhYmFzZXMvKGRlZmF1bHQpL2NvbGxlY3Rpb25Hcm91cHMvZG9jdW1lbnRzL2luZGV4ZXMvXxABGg0KCWNvbXBhbnlJZBABGg0KCXVwZGF0ZWRBdBACGgwKCF9fbmFtZV9fEAI
+STACK: Error: 9 FAILED_PRECONDITION: The query requires an index. You can create it here: https://console.firebase.google.com/v1/r/project/studio-2124642360-17967/firestore/indexes?create_composite=Cllwcm9qZWN0cy9zdHVkaW8tMjEyNDY0MjM2MC0xNzk2Ny9kYXRhYmFzZXMvKGRlZmF1bHQpL2NvbGxlY3Rpb25Hcm91cHMvZG9jdW1lbnRzL2luZGV4ZXMvXxABGg0KCWNvbXBhbnlJZBABGg0KCXVwZGF0ZWRBdBACGgwKCF9fbmFtZV9fEAI
+    at callErrorFromStatus (/Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/call.js:32:19)
+    at Object.onReceiveStatus (/Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/client.js:359:73)
+    at Object.onReceiveStatus (/Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/client-interceptors.js:327:181)
+    at /Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/resolving-call.js:135:78
+    at process.processTicksAndRejections (node:internal/process/task_queues:84:11)
+for call at
+    at ServiceClientImpl.makeServerStreamRequest (/Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/client.js:342:32)
+    at ServiceClientImpl.<anonymous> (/Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/make-client.js:105:19)
+    at /Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/v1/firestore_client.js:242:33
+    at /Users/igor.custodio/development/studio/node_modules/google-gax/build/src/streamingCalls/streamingApiCaller.js:38:28
+    at /Users/igor.custodio/development/studio/node_modules/google-gax/build/src/normalCalls/timeout.js:44:16
+    at Object.request (/Users/igor.custodio/development/studio/node_modules/google-gax/build/src/streamingCalls/streaming.js:234:40)
+    at makeRequest (/Users/igor.custodio/development/studio/node_modules/retry-request/index.js:159:28)
+    at retryRequest (/Users/igor.custodio/development/studio/node_modules/retry-request/index.js:119:5)
+    at StreamProxy.setStream (/Users/igor.custodio/development/studio/node_modules/google-gax/build/src/streamingCalls/streaming.js:225:37)
+    at StreamingApiCaller.call (/Users/igor.custodio/development/studio/node_modules/google-gax/build/src/streamingCalls/streamingApiCaller.js:54:16)
+    at /Users/igor.custodio/development/studio/node_modules/google-gax/build/src/createApiCall.js:112:30
+Caused by: Error: 
+    at QueryUtil._getResponse (/Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/reference/query-util.js:44:23)
+    at Query._getResponse (/Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/reference/query.js:784:32)
+    at Query._get (/Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/reference/query.js:777:35)
+    at /Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/reference/query.js:745:43
+    at /Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:110:30
+    at NoopContextManager.with (/Users/igor.custodio/development/studio/node_modules/@opentelemetry/api/build/src/context/NoopContextManager.js:25:19)
+    at ContextAPI.with (/Users/igor.custodio/development/studio/node_modules/@opentelemetry/api/build/src/api/context.js:60:46)
+    at NoopTracer.startActiveSpan (/Users/igor.custodio/development/studio/node_modules/@opentelemetry/api/build/src/trace/NoopTracer.js:65:31)
+    at ProxyTracer.startActiveSpan (/Users/igor.custodio/development/studio/node_modules/@opentelemetry/api/build/src/trace/ProxyTracer.js:36:24)
+    at EnabledTraceUtil.startActiveSpan (/Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:102:28)
+    at Query.get (/Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/reference/query.js:744:43)
+    at Object.getByCompany (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/[root-of-the-server]__dfe5c1c9._.js:50:108)
+    at getDocuments (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/[root-of-the-server]__dfe5c1c9._.js:290:197)
+    at /Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:36:3895
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14)
+    at executeActionAndPrepareForRender (/Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:36:3867)
+    at /Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:36:1115
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async handleAction (/Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:34:23616)
+    at async renderToHTMLOrFlightImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:41:42130)
+    at async doRender (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/node_modules_next_dist_5fdd64e6._.js:2970:28)
+    at async AppPageRouteModule.handleResponse (/Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:43:64241)
+    at async handleResponse (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/node_modules_next_dist_5fdd64e6._.js:3176:32)
+    at async Module.handler (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/node_modules_next_dist_5fdd64e6._.js:3547:20)
+    at async DevServer.renderToResponseWithComponentsImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:1442:9)
+    at async DevServer.renderPageComponent (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:1494:24)
+    at async DevServer.renderToResponseImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:1544:32)
+    at async DevServer.pipeImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:1038:25)
+    at async NextNodeServer.handleCatchallRenderRequest (/Users/igor.custodio/development/studio/node_modules/next/dist/server/next-server.js:395:17)
+    at async DevServer.handleRequestImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:929:17)
+    at async /Users/igor.custodio/development/studio/node_modules/next/dist/server/dev/next-dev-server.js:387:20
+    at async Span.traceAsyncFn (/Users/igor.custodio/development/studio/node_modules/next/dist/trace/trace.js:157:20)
+    at async DevServer.handleRequest (/Users/igor.custodio/development/studio/node_modules/next/dist/server/dev/next-dev-server.js:383:24)
+    at async invokeRender (/Users/igor.custodio/development/studio/node_modules/next/dist/server/lib/router-server.js:248:21)
+    at async handleRequest (/Users/igor.custodio/development/studio/node_modules/next/dist/server/lib/router-server.js:447:24)
+    at async requestHandlerImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/lib/router-server.js:496:13)
+    at async Server.requestListener (/Users/igor.custodio/development/studio/node_modules/next/dist/server/lib/start-server.js:226:13)
+---
+[2026-02-09T10:22:53.416Z] ERROR in getDocuments: 9 FAILED_PRECONDITION: The query requires an index. You can create it here: https://console.firebase.google.com/v1/r/project/studio-2124642360-17967/firestore/indexes?create_composite=Cllwcm9qZWN0cy9zdHVkaW8tMjEyNDY0MjM2MC0xNzk2Ny9kYXRhYmFzZXMvKGRlZmF1bHQpL2NvbGxlY3Rpb25Hcm91cHMvZG9jdW1lbnRzL2luZGV4ZXMvXxABGg0KCWNvbXBhbnlJZBABGg0KCXVwZGF0ZWRBdBACGgwKCF9fbmFtZV9fEAI
+STACK: Error: 9 FAILED_PRECONDITION: The query requires an index. You can create it here: https://console.firebase.google.com/v1/r/project/studio-2124642360-17967/firestore/indexes?create_composite=Cllwcm9qZWN0cy9zdHVkaW8tMjEyNDY0MjM2MC0xNzk2Ny9kYXRhYmFzZXMvKGRlZmF1bHQpL2NvbGxlY3Rpb25Hcm91cHMvZG9jdW1lbnRzL2luZGV4ZXMvXxABGg0KCWNvbXBhbnlJZBABGg0KCXVwZGF0ZWRBdBACGgwKCF9fbmFtZV9fEAI
+    at callErrorFromStatus (/Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/call.js:32:19)
+    at Object.onReceiveStatus (/Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/client.js:359:73)
+    at Object.onReceiveStatus (/Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/client-interceptors.js:327:181)
+    at /Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/resolving-call.js:135:78
+    at process.processTicksAndRejections (node:internal/process/task_queues:84:11)
+for call at
+    at ServiceClientImpl.makeServerStreamRequest (/Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/client.js:342:32)
+    at ServiceClientImpl.<anonymous> (/Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/make-client.js:105:19)
+    at /Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/v1/firestore_client.js:242:33
+    at /Users/igor.custodio/development/studio/node_modules/google-gax/build/src/streamingCalls/streamingApiCaller.js:38:28
+    at /Users/igor.custodio/development/studio/node_modules/google-gax/build/src/normalCalls/timeout.js:44:16
+    at Object.request (/Users/igor.custodio/development/studio/node_modules/google-gax/build/src/streamingCalls/streaming.js:234:40)
+    at makeRequest (/Users/igor.custodio/development/studio/node_modules/retry-request/index.js:159:28)
+    at retryRequest (/Users/igor.custodio/development/studio/node_modules/retry-request/index.js:119:5)
+    at StreamProxy.setStream (/Users/igor.custodio/development/studio/node_modules/google-gax/build/src/streamingCalls/streaming.js:225:37)
+    at StreamingApiCaller.call (/Users/igor.custodio/development/studio/node_modules/google-gax/build/src/streamingCalls/streamingApiCaller.js:54:16)
+    at /Users/igor.custodio/development/studio/node_modules/google-gax/build/src/createApiCall.js:112:30
+Caused by: Error: 
+    at QueryUtil._getResponse (/Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/reference/query-util.js:44:23)
+    at Query._getResponse (/Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/reference/query.js:784:32)
+    at Query._get (/Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/reference/query.js:777:35)
+    at /Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/reference/query.js:745:43
+    at /Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:110:30
+    at NoopContextManager.with (/Users/igor.custodio/development/studio/node_modules/@opentelemetry/api/build/src/context/NoopContextManager.js:25:19)
+    at ContextAPI.with (/Users/igor.custodio/development/studio/node_modules/@opentelemetry/api/build/src/api/context.js:60:46)
+    at NoopTracer.startActiveSpan (/Users/igor.custodio/development/studio/node_modules/@opentelemetry/api/build/src/trace/NoopTracer.js:65:31)
+    at ProxyTracer.startActiveSpan (/Users/igor.custodio/development/studio/node_modules/@opentelemetry/api/build/src/trace/ProxyTracer.js:36:24)
+    at EnabledTraceUtil.startActiveSpan (/Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:102:28)
+    at Query.get (/Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/reference/query.js:744:43)
+    at Object.getByCompany (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/[root-of-the-server]__dfe5c1c9._.js:50:108)
+    at getDocuments (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/[root-of-the-server]__dfe5c1c9._.js:290:197)
+    at /Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:36:3895
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14)
+    at executeActionAndPrepareForRender (/Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:36:3867)
+    at /Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:36:1115
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async handleAction (/Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:34:23616)
+    at async renderToHTMLOrFlightImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:41:42130)
+    at async doRender (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/node_modules_next_dist_5fdd64e6._.js:2970:28)
+    at async AppPageRouteModule.handleResponse (/Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:43:64241)
+    at async handleResponse (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/node_modules_next_dist_5fdd64e6._.js:3176:32)
+    at async Module.handler (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/node_modules_next_dist_5fdd64e6._.js:3547:20)
+    at async DevServer.renderToResponseWithComponentsImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:1442:9)
+    at async DevServer.renderPageComponent (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:1494:24)
+    at async DevServer.renderToResponseImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:1544:32)
+    at async DevServer.pipeImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:1038:25)
+    at async NextNodeServer.handleCatchallRenderRequest (/Users/igor.custodio/development/studio/node_modules/next/dist/server/next-server.js:395:17)
+    at async DevServer.handleRequestImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:929:17)
+    at async /Users/igor.custodio/development/studio/node_modules/next/dist/server/dev/next-dev-server.js:387:20
+    at async Span.traceAsyncFn (/Users/igor.custodio/development/studio/node_modules/next/dist/trace/trace.js:157:20)
+    at async DevServer.handleRequest (/Users/igor.custodio/development/studio/node_modules/next/dist/server/dev/next-dev-server.js:383:24)
+    at async invokeRender (/Users/igor.custodio/development/studio/node_modules/next/dist/server/lib/router-server.js:248:21)
+    at async handleRequest (/Users/igor.custodio/development/studio/node_modules/next/dist/server/lib/router-server.js:447:24)
+    at async requestHandlerImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/lib/router-server.js:496:13)
+    at async Server.requestListener (/Users/igor.custodio/development/studio/node_modules/next/dist/server/lib/start-server.js:226:13)
+---
+[2026-02-09T10:22:53.882Z] ERROR in getDocuments: 9 FAILED_PRECONDITION: The query requires an index. You can create it here: https://console.firebase.google.com/v1/r/project/studio-2124642360-17967/firestore/indexes?create_composite=Cllwcm9qZWN0cy9zdHVkaW8tMjEyNDY0MjM2MC0xNzk2Ny9kYXRhYmFzZXMvKGRlZmF1bHQpL2NvbGxlY3Rpb25Hcm91cHMvZG9jdW1lbnRzL2luZGV4ZXMvXxABGg0KCWNvbXBhbnlJZBABGg0KCXVwZGF0ZWRBdBACGgwKCF9fbmFtZV9fEAI
+STACK: Error: 9 FAILED_PRECONDITION: The query requires an index. You can create it here: https://console.firebase.google.com/v1/r/project/studio-2124642360-17967/firestore/indexes?create_composite=Cllwcm9qZWN0cy9zdHVkaW8tMjEyNDY0MjM2MC0xNzk2Ny9kYXRhYmFzZXMvKGRlZmF1bHQpL2NvbGxlY3Rpb25Hcm91cHMvZG9jdW1lbnRzL2luZGV4ZXMvXxABGg0KCWNvbXBhbnlJZBABGg0KCXVwZGF0ZWRBdBACGgwKCF9fbmFtZV9fEAI
+    at callErrorFromStatus (/Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/call.js:32:19)
+    at Object.onReceiveStatus (/Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/client.js:359:73)
+    at Object.onReceiveStatus (/Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/client-interceptors.js:327:181)
+    at /Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/resolving-call.js:135:78
+    at process.processTicksAndRejections (node:internal/process/task_queues:84:11)
+for call at
+    at ServiceClientImpl.makeServerStreamRequest (/Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/client.js:342:32)
+    at ServiceClientImpl.<anonymous> (/Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/make-client.js:105:19)
+    at /Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/v1/firestore_client.js:242:33
+    at /Users/igor.custodio/development/studio/node_modules/google-gax/build/src/streamingCalls/streamingApiCaller.js:38:28
+    at /Users/igor.custodio/development/studio/node_modules/google-gax/build/src/normalCalls/timeout.js:44:16
+    at Object.request (/Users/igor.custodio/development/studio/node_modules/google-gax/build/src/streamingCalls/streaming.js:234:40)
+    at makeRequest (/Users/igor.custodio/development/studio/node_modules/retry-request/index.js:159:28)
+    at retryRequest (/Users/igor.custodio/development/studio/node_modules/retry-request/index.js:119:5)
+    at StreamProxy.setStream (/Users/igor.custodio/development/studio/node_modules/google-gax/build/src/streamingCalls/streaming.js:225:37)
+    at StreamingApiCaller.call (/Users/igor.custodio/development/studio/node_modules/google-gax/build/src/streamingCalls/streamingApiCaller.js:54:16)
+    at /Users/igor.custodio/development/studio/node_modules/google-gax/build/src/createApiCall.js:112:30
+Caused by: Error: 
+    at QueryUtil._getResponse (/Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/reference/query-util.js:44:23)
+    at Query._getResponse (/Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/reference/query.js:784:32)
+    at Query._get (/Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/reference/query.js:777:35)
+    at /Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/reference/query.js:745:43
+    at /Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:110:30
+    at NoopContextManager.with (/Users/igor.custodio/development/studio/node_modules/@opentelemetry/api/build/src/context/NoopContextManager.js:25:19)
+    at ContextAPI.with (/Users/igor.custodio/development/studio/node_modules/@opentelemetry/api/build/src/api/context.js:60:46)
+    at NoopTracer.startActiveSpan (/Users/igor.custodio/development/studio/node_modules/@opentelemetry/api/build/src/trace/NoopTracer.js:65:31)
+    at ProxyTracer.startActiveSpan (/Users/igor.custodio/development/studio/node_modules/@opentelemetry/api/build/src/trace/ProxyTracer.js:36:24)
+    at EnabledTraceUtil.startActiveSpan (/Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:102:28)
+    at Query.get (/Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/reference/query.js:744:43)
+    at Object.getByCompany (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/[root-of-the-server]__dfe5c1c9._.js:50:108)
+    at getDocuments (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/[root-of-the-server]__dfe5c1c9._.js:290:197)
+    at /Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:36:3895
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14)
+    at executeActionAndPrepareForRender (/Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:36:3867)
+    at /Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:36:1115
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async handleAction (/Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:34:23616)
+    at async renderToHTMLOrFlightImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:41:42130)
+    at async doRender (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/node_modules_next_dist_5fdd64e6._.js:2970:28)
+    at async AppPageRouteModule.handleResponse (/Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:43:64241)
+    at async handleResponse (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/node_modules_next_dist_5fdd64e6._.js:3176:32)
+    at async Module.handler (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/node_modules_next_dist_5fdd64e6._.js:3547:20)
+    at async DevServer.renderToResponseWithComponentsImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:1442:9)
+    at async DevServer.renderPageComponent (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:1494:24)
+    at async DevServer.renderToResponseImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:1544:32)
+    at async DevServer.pipeImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:1038:25)
+    at async NextNodeServer.handleCatchallRenderRequest (/Users/igor.custodio/development/studio/node_modules/next/dist/server/next-server.js:395:17)
+    at async DevServer.handleRequestImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:929:17)
+    at async /Users/igor.custodio/development/studio/node_modules/next/dist/server/dev/next-dev-server.js:387:20
+    at async Span.traceAsyncFn (/Users/igor.custodio/development/studio/node_modules/next/dist/trace/trace.js:157:20)
+    at async DevServer.handleRequest (/Users/igor.custodio/development/studio/node_modules/next/dist/server/dev/next-dev-server.js:383:24)
+    at async invokeRender (/Users/igor.custodio/development/studio/node_modules/next/dist/server/lib/router-server.js:248:21)
+    at async handleRequest (/Users/igor.custodio/development/studio/node_modules/next/dist/server/lib/router-server.js:447:24)
+    at async requestHandlerImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/lib/router-server.js:496:13)
+    at async Server.requestListener (/Users/igor.custodio/development/studio/node_modules/next/dist/server/lib/start-server.js:226:13)
+---
+[2026-02-09T10:22:58.572Z] ERROR in getDocuments: 9 FAILED_PRECONDITION: The query requires an index. You can create it here: https://console.firebase.google.com/v1/r/project/studio-2124642360-17967/firestore/indexes?create_composite=Cllwcm9qZWN0cy9zdHVkaW8tMjEyNDY0MjM2MC0xNzk2Ny9kYXRhYmFzZXMvKGRlZmF1bHQpL2NvbGxlY3Rpb25Hcm91cHMvZG9jdW1lbnRzL2luZGV4ZXMvXxABGg0KCWNvbXBhbnlJZBABGg0KCXVwZGF0ZWRBdBACGgwKCF9fbmFtZV9fEAI
+STACK: Error: 9 FAILED_PRECONDITION: The query requires an index. You can create it here: https://console.firebase.google.com/v1/r/project/studio-2124642360-17967/firestore/indexes?create_composite=Cllwcm9qZWN0cy9zdHVkaW8tMjEyNDY0MjM2MC0xNzk2Ny9kYXRhYmFzZXMvKGRlZmF1bHQpL2NvbGxlY3Rpb25Hcm91cHMvZG9jdW1lbnRzL2luZGV4ZXMvXxABGg0KCWNvbXBhbnlJZBABGg0KCXVwZGF0ZWRBdBACGgwKCF9fbmFtZV9fEAI
+    at callErrorFromStatus (/Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/call.js:32:19)
+    at Object.onReceiveStatus (/Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/client.js:359:73)
+    at Object.onReceiveStatus (/Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/client-interceptors.js:327:181)
+    at /Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/resolving-call.js:135:78
+    at process.processTicksAndRejections (node:internal/process/task_queues:84:11)
+for call at
+    at ServiceClientImpl.makeServerStreamRequest (/Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/client.js:342:32)
+    at ServiceClientImpl.<anonymous> (/Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/make-client.js:105:19)
+    at /Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/v1/firestore_client.js:242:33
+    at /Users/igor.custodio/development/studio/node_modules/google-gax/build/src/streamingCalls/streamingApiCaller.js:38:28
+    at /Users/igor.custodio/development/studio/node_modules/google-gax/build/src/normalCalls/timeout.js:44:16
+    at Object.request (/Users/igor.custodio/development/studio/node_modules/google-gax/build/src/streamingCalls/streaming.js:234:40)
+    at makeRequest (/Users/igor.custodio/development/studio/node_modules/retry-request/index.js:159:28)
+    at retryRequest (/Users/igor.custodio/development/studio/node_modules/retry-request/index.js:119:5)
+    at StreamProxy.setStream (/Users/igor.custodio/development/studio/node_modules/google-gax/build/src/streamingCalls/streaming.js:225:37)
+    at StreamingApiCaller.call (/Users/igor.custodio/development/studio/node_modules/google-gax/build/src/streamingCalls/streamingApiCaller.js:54:16)
+    at /Users/igor.custodio/development/studio/node_modules/google-gax/build/src/createApiCall.js:112:30
+Caused by: Error: 
+    at QueryUtil._getResponse (/Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/reference/query-util.js:44:23)
+    at Query._getResponse (/Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/reference/query.js:784:32)
+    at Query._get (/Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/reference/query.js:777:35)
+    at /Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/reference/query.js:745:43
+    at /Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:110:30
+    at NoopContextManager.with (/Users/igor.custodio/development/studio/node_modules/@opentelemetry/api/build/src/context/NoopContextManager.js:25:19)
+    at ContextAPI.with (/Users/igor.custodio/development/studio/node_modules/@opentelemetry/api/build/src/api/context.js:60:46)
+    at NoopTracer.startActiveSpan (/Users/igor.custodio/development/studio/node_modules/@opentelemetry/api/build/src/trace/NoopTracer.js:65:31)
+    at ProxyTracer.startActiveSpan (/Users/igor.custodio/development/studio/node_modules/@opentelemetry/api/build/src/trace/ProxyTracer.js:36:24)
+    at EnabledTraceUtil.startActiveSpan (/Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:102:28)
+    at Query.get (/Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/reference/query.js:744:43)
+    at Object.getByCompany (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/[root-of-the-server]__dfe5c1c9._.js:50:108)
+    at getDocuments (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/[root-of-the-server]__dfe5c1c9._.js:290:197)
+    at /Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:36:3895
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14)
+    at executeActionAndPrepareForRender (/Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:36:3867)
+    at /Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:36:1115
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async handleAction (/Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:34:23616)
+    at async renderToHTMLOrFlightImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:41:42130)
+    at async doRender (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/node_modules_next_dist_5fdd64e6._.js:2970:28)
+    at async AppPageRouteModule.handleResponse (/Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:43:64241)
+    at async handleResponse (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/node_modules_next_dist_5fdd64e6._.js:3176:32)
+    at async Module.handler (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/node_modules_next_dist_5fdd64e6._.js:3547:20)
+    at async DevServer.renderToResponseWithComponentsImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:1442:9)
+    at async DevServer.renderPageComponent (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:1494:24)
+    at async DevServer.renderToResponseImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:1544:32)
+    at async DevServer.pipeImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:1038:25)
+    at async NextNodeServer.handleCatchallRenderRequest (/Users/igor.custodio/development/studio/node_modules/next/dist/server/next-server.js:395:17)
+    at async DevServer.handleRequestImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:929:17)
+    at async /Users/igor.custodio/development/studio/node_modules/next/dist/server/dev/next-dev-server.js:387:20
+    at async Span.traceAsyncFn (/Users/igor.custodio/development/studio/node_modules/next/dist/trace/trace.js:157:20)
+    at async DevServer.handleRequest (/Users/igor.custodio/development/studio/node_modules/next/dist/server/dev/next-dev-server.js:383:24)
+    at async invokeRender (/Users/igor.custodio/development/studio/node_modules/next/dist/server/lib/router-server.js:248:21)
+    at async handleRequest (/Users/igor.custodio/development/studio/node_modules/next/dist/server/lib/router-server.js:447:24)
+    at async requestHandlerImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/lib/router-server.js:496:13)
+    at async Server.requestListener (/Users/igor.custodio/development/studio/node_modules/next/dist/server/lib/start-server.js:226:13)
+---
+[2026-02-09T10:22:58.988Z] ERROR in getDocuments: 9 FAILED_PRECONDITION: The query requires an index. You can create it here: https://console.firebase.google.com/v1/r/project/studio-2124642360-17967/firestore/indexes?create_composite=Cllwcm9qZWN0cy9zdHVkaW8tMjEyNDY0MjM2MC0xNzk2Ny9kYXRhYmFzZXMvKGRlZmF1bHQpL2NvbGxlY3Rpb25Hcm91cHMvZG9jdW1lbnRzL2luZGV4ZXMvXxABGg0KCWNvbXBhbnlJZBABGg0KCXVwZGF0ZWRBdBACGgwKCF9fbmFtZV9fEAI
+STACK: Error: 9 FAILED_PRECONDITION: The query requires an index. You can create it here: https://console.firebase.google.com/v1/r/project/studio-2124642360-17967/firestore/indexes?create_composite=Cllwcm9qZWN0cy9zdHVkaW8tMjEyNDY0MjM2MC0xNzk2Ny9kYXRhYmFzZXMvKGRlZmF1bHQpL2NvbGxlY3Rpb25Hcm91cHMvZG9jdW1lbnRzL2luZGV4ZXMvXxABGg0KCWNvbXBhbnlJZBABGg0KCXVwZGF0ZWRBdBACGgwKCF9fbmFtZV9fEAI
+    at callErrorFromStatus (/Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/call.js:32:19)
+    at Object.onReceiveStatus (/Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/client.js:359:73)
+    at Object.onReceiveStatus (/Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/client-interceptors.js:327:181)
+    at /Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/resolving-call.js:135:78
+    at process.processTicksAndRejections (node:internal/process/task_queues:84:11)
+for call at
+    at ServiceClientImpl.makeServerStreamRequest (/Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/client.js:342:32)
+    at ServiceClientImpl.<anonymous> (/Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/make-client.js:105:19)
+    at /Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/v1/firestore_client.js:242:33
+    at /Users/igor.custodio/development/studio/node_modules/google-gax/build/src/streamingCalls/streamingApiCaller.js:38:28
+    at /Users/igor.custodio/development/studio/node_modules/google-gax/build/src/normalCalls/timeout.js:44:16
+    at Object.request (/Users/igor.custodio/development/studio/node_modules/google-gax/build/src/streamingCalls/streaming.js:234:40)
+    at makeRequest (/Users/igor.custodio/development/studio/node_modules/retry-request/index.js:159:28)
+    at retryRequest (/Users/igor.custodio/development/studio/node_modules/retry-request/index.js:119:5)
+    at StreamProxy.setStream (/Users/igor.custodio/development/studio/node_modules/google-gax/build/src/streamingCalls/streaming.js:225:37)
+    at StreamingApiCaller.call (/Users/igor.custodio/development/studio/node_modules/google-gax/build/src/streamingCalls/streamingApiCaller.js:54:16)
+    at /Users/igor.custodio/development/studio/node_modules/google-gax/build/src/createApiCall.js:112:30
+Caused by: Error: 
+    at QueryUtil._getResponse (/Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/reference/query-util.js:44:23)
+    at Query._getResponse (/Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/reference/query.js:784:32)
+    at Query._get (/Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/reference/query.js:777:35)
+    at /Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/reference/query.js:745:43
+    at /Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:110:30
+    at NoopContextManager.with (/Users/igor.custodio/development/studio/node_modules/@opentelemetry/api/build/src/context/NoopContextManager.js:25:19)
+    at ContextAPI.with (/Users/igor.custodio/development/studio/node_modules/@opentelemetry/api/build/src/api/context.js:60:46)
+    at NoopTracer.startActiveSpan (/Users/igor.custodio/development/studio/node_modules/@opentelemetry/api/build/src/trace/NoopTracer.js:65:31)
+    at ProxyTracer.startActiveSpan (/Users/igor.custodio/development/studio/node_modules/@opentelemetry/api/build/src/trace/ProxyTracer.js:36:24)
+    at EnabledTraceUtil.startActiveSpan (/Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:102:28)
+    at Query.get (/Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/reference/query.js:744:43)
+    at Object.getByCompany (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/[root-of-the-server]__dfe5c1c9._.js:50:108)
+    at getDocuments (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/[root-of-the-server]__dfe5c1c9._.js:290:197)
+    at /Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:36:3895
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14)
+    at executeActionAndPrepareForRender (/Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:36:3867)
+    at /Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:36:1115
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async handleAction (/Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:34:23616)
+    at async renderToHTMLOrFlightImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:41:42130)
+    at async doRender (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/node_modules_next_dist_5fdd64e6._.js:2970:28)
+    at async AppPageRouteModule.handleResponse (/Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:43:64241)
+    at async handleResponse (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/node_modules_next_dist_5fdd64e6._.js:3176:32)
+    at async Module.handler (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/node_modules_next_dist_5fdd64e6._.js:3547:20)
+    at async DevServer.renderToResponseWithComponentsImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:1442:9)
+    at async DevServer.renderPageComponent (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:1494:24)
+    at async DevServer.renderToResponseImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:1544:32)
+    at async DevServer.pipeImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:1038:25)
+    at async NextNodeServer.handleCatchallRenderRequest (/Users/igor.custodio/development/studio/node_modules/next/dist/server/next-server.js:395:17)
+    at async DevServer.handleRequestImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:929:17)
+    at async /Users/igor.custodio/development/studio/node_modules/next/dist/server/dev/next-dev-server.js:387:20
+    at async Span.traceAsyncFn (/Users/igor.custodio/development/studio/node_modules/next/dist/trace/trace.js:157:20)
+    at async DevServer.handleRequest (/Users/igor.custodio/development/studio/node_modules/next/dist/server/dev/next-dev-server.js:383:24)
+    at async invokeRender (/Users/igor.custodio/development/studio/node_modules/next/dist/server/lib/router-server.js:248:21)
+    at async handleRequest (/Users/igor.custodio/development/studio/node_modules/next/dist/server/lib/router-server.js:447:24)
+    at async requestHandlerImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/lib/router-server.js:496:13)
+    at async Server.requestListener (/Users/igor.custodio/development/studio/node_modules/next/dist/server/lib/start-server.js:226:13)
+---
+[2026-02-09T10:23:44.718Z] ERROR in getDocuments: 9 FAILED_PRECONDITION: The query requires an index. You can create it here: https://console.firebase.google.com/v1/r/project/studio-2124642360-17967/firestore/indexes?create_composite=Cllwcm9qZWN0cy9zdHVkaW8tMjEyNDY0MjM2MC0xNzk2Ny9kYXRhYmFzZXMvKGRlZmF1bHQpL2NvbGxlY3Rpb25Hcm91cHMvZG9jdW1lbnRzL2luZGV4ZXMvXxABGg0KCWNvbXBhbnlJZBABGg0KCXVwZGF0ZWRBdBACGgwKCF9fbmFtZV9fEAI
+STACK: Error: 9 FAILED_PRECONDITION: The query requires an index. You can create it here: https://console.firebase.google.com/v1/r/project/studio-2124642360-17967/firestore/indexes?create_composite=Cllwcm9qZWN0cy9zdHVkaW8tMjEyNDY0MjM2MC0xNzk2Ny9kYXRhYmFzZXMvKGRlZmF1bHQpL2NvbGxlY3Rpb25Hcm91cHMvZG9jdW1lbnRzL2luZGV4ZXMvXxABGg0KCWNvbXBhbnlJZBABGg0KCXVwZGF0ZWRBdBACGgwKCF9fbmFtZV9fEAI
+    at callErrorFromStatus (/Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/call.js:32:19)
+    at Object.onReceiveStatus (/Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/client.js:359:73)
+    at Object.onReceiveStatus (/Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/client-interceptors.js:327:181)
+    at /Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/resolving-call.js:135:78
+    at process.processTicksAndRejections (node:internal/process/task_queues:84:11)
+for call at
+    at ServiceClientImpl.makeServerStreamRequest (/Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/client.js:342:32)
+    at ServiceClientImpl.<anonymous> (/Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/make-client.js:105:19)
+    at /Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/v1/firestore_client.js:242:33
+    at /Users/igor.custodio/development/studio/node_modules/google-gax/build/src/streamingCalls/streamingApiCaller.js:38:28
+    at /Users/igor.custodio/development/studio/node_modules/google-gax/build/src/normalCalls/timeout.js:44:16
+    at Object.request (/Users/igor.custodio/development/studio/node_modules/google-gax/build/src/streamingCalls/streaming.js:234:40)
+    at makeRequest (/Users/igor.custodio/development/studio/node_modules/retry-request/index.js:159:28)
+    at retryRequest (/Users/igor.custodio/development/studio/node_modules/retry-request/index.js:119:5)
+    at StreamProxy.setStream (/Users/igor.custodio/development/studio/node_modules/google-gax/build/src/streamingCalls/streaming.js:225:37)
+    at StreamingApiCaller.call (/Users/igor.custodio/development/studio/node_modules/google-gax/build/src/streamingCalls/streamingApiCaller.js:54:16)
+    at /Users/igor.custodio/development/studio/node_modules/google-gax/build/src/createApiCall.js:112:30
+Caused by: Error: 
+    at QueryUtil._getResponse (/Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/reference/query-util.js:44:23)
+    at Query._getResponse (/Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/reference/query.js:784:32)
+    at Query._get (/Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/reference/query.js:777:35)
+    at /Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/reference/query.js:745:43
+    at /Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:110:30
+    at NoopContextManager.with (/Users/igor.custodio/development/studio/node_modules/@opentelemetry/api/build/src/context/NoopContextManager.js:25:19)
+    at ContextAPI.with (/Users/igor.custodio/development/studio/node_modules/@opentelemetry/api/build/src/api/context.js:60:46)
+    at NoopTracer.startActiveSpan (/Users/igor.custodio/development/studio/node_modules/@opentelemetry/api/build/src/trace/NoopTracer.js:65:31)
+    at ProxyTracer.startActiveSpan (/Users/igor.custodio/development/studio/node_modules/@opentelemetry/api/build/src/trace/ProxyTracer.js:36:24)
+    at EnabledTraceUtil.startActiveSpan (/Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:102:28)
+    at Query.get (/Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/reference/query.js:744:43)
+    at Object.getByCompany (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/[root-of-the-server]__dfe5c1c9._.js:50:108)
+    at getDocuments (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/[root-of-the-server]__dfe5c1c9._.js:290:197)
+    at /Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:36:3895
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14)
+    at executeActionAndPrepareForRender (/Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:36:3867)
+    at /Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:36:1115
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async handleAction (/Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:34:23616)
+    at async renderToHTMLOrFlightImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:41:42130)
+    at async doRender (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/node_modules_next_dist_5fdd64e6._.js:2970:28)
+    at async AppPageRouteModule.handleResponse (/Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:43:64241)
+    at async handleResponse (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/node_modules_next_dist_5fdd64e6._.js:3176:32)
+    at async Module.handler (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/node_modules_next_dist_5fdd64e6._.js:3547:20)
+    at async DevServer.renderToResponseWithComponentsImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:1442:9)
+    at async DevServer.renderPageComponent (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:1494:24)
+    at async DevServer.renderToResponseImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:1544:32)
+    at async DevServer.pipeImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:1038:25)
+    at async NextNodeServer.handleCatchallRenderRequest (/Users/igor.custodio/development/studio/node_modules/next/dist/server/next-server.js:395:17)
+    at async DevServer.handleRequestImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:929:17)
+    at async /Users/igor.custodio/development/studio/node_modules/next/dist/server/dev/next-dev-server.js:387:20
+    at async Span.traceAsyncFn (/Users/igor.custodio/development/studio/node_modules/next/dist/trace/trace.js:157:20)
+    at async DevServer.handleRequest (/Users/igor.custodio/development/studio/node_modules/next/dist/server/dev/next-dev-server.js:383:24)
+    at async invokeRender (/Users/igor.custodio/development/studio/node_modules/next/dist/server/lib/router-server.js:248:21)
+    at async handleRequest (/Users/igor.custodio/development/studio/node_modules/next/dist/server/lib/router-server.js:447:24)
+    at async requestHandlerImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/lib/router-server.js:496:13)
+    at async Server.requestListener (/Users/igor.custodio/development/studio/node_modules/next/dist/server/lib/start-server.js:226:13)
+---
+[2026-02-09T10:23:45.184Z] ERROR in getDocuments: 9 FAILED_PRECONDITION: The query requires an index. You can create it here: https://console.firebase.google.com/v1/r/project/studio-2124642360-17967/firestore/indexes?create_composite=Cllwcm9qZWN0cy9zdHVkaW8tMjEyNDY0MjM2MC0xNzk2Ny9kYXRhYmFzZXMvKGRlZmF1bHQpL2NvbGxlY3Rpb25Hcm91cHMvZG9jdW1lbnRzL2luZGV4ZXMvXxABGg0KCWNvbXBhbnlJZBABGg0KCXVwZGF0ZWRBdBACGgwKCF9fbmFtZV9fEAI
+STACK: Error: 9 FAILED_PRECONDITION: The query requires an index. You can create it here: https://console.firebase.google.com/v1/r/project/studio-2124642360-17967/firestore/indexes?create_composite=Cllwcm9qZWN0cy9zdHVkaW8tMjEyNDY0MjM2MC0xNzk2Ny9kYXRhYmFzZXMvKGRlZmF1bHQpL2NvbGxlY3Rpb25Hcm91cHMvZG9jdW1lbnRzL2luZGV4ZXMvXxABGg0KCWNvbXBhbnlJZBABGg0KCXVwZGF0ZWRBdBACGgwKCF9fbmFtZV9fEAI
+    at callErrorFromStatus (/Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/call.js:32:19)
+    at Object.onReceiveStatus (/Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/client.js:359:73)
+    at Object.onReceiveStatus (/Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/client-interceptors.js:327:181)
+    at /Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/resolving-call.js:135:78
+    at process.processTicksAndRejections (node:internal/process/task_queues:84:11)
+for call at
+    at ServiceClientImpl.makeServerStreamRequest (/Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/client.js:342:32)
+    at ServiceClientImpl.<anonymous> (/Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/make-client.js:105:19)
+    at /Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/v1/firestore_client.js:242:33
+    at /Users/igor.custodio/development/studio/node_modules/google-gax/build/src/streamingCalls/streamingApiCaller.js:38:28
+    at /Users/igor.custodio/development/studio/node_modules/google-gax/build/src/normalCalls/timeout.js:44:16
+    at Object.request (/Users/igor.custodio/development/studio/node_modules/google-gax/build/src/streamingCalls/streaming.js:234:40)
+    at makeRequest (/Users/igor.custodio/development/studio/node_modules/retry-request/index.js:159:28)
+    at retryRequest (/Users/igor.custodio/development/studio/node_modules/retry-request/index.js:119:5)
+    at StreamProxy.setStream (/Users/igor.custodio/development/studio/node_modules/google-gax/build/src/streamingCalls/streaming.js:225:37)
+    at StreamingApiCaller.call (/Users/igor.custodio/development/studio/node_modules/google-gax/build/src/streamingCalls/streamingApiCaller.js:54:16)
+    at /Users/igor.custodio/development/studio/node_modules/google-gax/build/src/createApiCall.js:112:30
+Caused by: Error: 
+    at QueryUtil._getResponse (/Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/reference/query-util.js:44:23)
+    at Query._getResponse (/Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/reference/query.js:784:32)
+    at Query._get (/Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/reference/query.js:777:35)
+    at /Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/reference/query.js:745:43
+    at /Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:110:30
+    at NoopContextManager.with (/Users/igor.custodio/development/studio/node_modules/@opentelemetry/api/build/src/context/NoopContextManager.js:25:19)
+    at ContextAPI.with (/Users/igor.custodio/development/studio/node_modules/@opentelemetry/api/build/src/api/context.js:60:46)
+    at NoopTracer.startActiveSpan (/Users/igor.custodio/development/studio/node_modules/@opentelemetry/api/build/src/trace/NoopTracer.js:65:31)
+    at ProxyTracer.startActiveSpan (/Users/igor.custodio/development/studio/node_modules/@opentelemetry/api/build/src/trace/ProxyTracer.js:36:24)
+    at EnabledTraceUtil.startActiveSpan (/Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:102:28)
+    at Query.get (/Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/reference/query.js:744:43)
+    at Object.getByCompany (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/[root-of-the-server]__dfe5c1c9._.js:50:108)
+    at getDocuments (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/[root-of-the-server]__dfe5c1c9._.js:290:197)
+    at /Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:36:3895
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14)
+    at executeActionAndPrepareForRender (/Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:36:3867)
+    at /Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:36:1115
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async handleAction (/Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:34:23616)
+    at async renderToHTMLOrFlightImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:41:42130)
+    at async doRender (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/node_modules_next_dist_5fdd64e6._.js:2970:28)
+    at async AppPageRouteModule.handleResponse (/Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:43:64241)
+    at async handleResponse (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/node_modules_next_dist_5fdd64e6._.js:3176:32)
+    at async Module.handler (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/node_modules_next_dist_5fdd64e6._.js:3547:20)
+    at async DevServer.renderToResponseWithComponentsImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:1442:9)
+    at async DevServer.renderPageComponent (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:1494:24)
+    at async DevServer.renderToResponseImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:1544:32)
+    at async DevServer.pipeImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:1038:25)
+    at async NextNodeServer.handleCatchallRenderRequest (/Users/igor.custodio/development/studio/node_modules/next/dist/server/next-server.js:395:17)
+    at async DevServer.handleRequestImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:929:17)
+    at async /Users/igor.custodio/development/studio/node_modules/next/dist/server/dev/next-dev-server.js:387:20
+    at async Span.traceAsyncFn (/Users/igor.custodio/development/studio/node_modules/next/dist/trace/trace.js:157:20)
+    at async DevServer.handleRequest (/Users/igor.custodio/development/studio/node_modules/next/dist/server/dev/next-dev-server.js:383:24)
+    at async invokeRender (/Users/igor.custodio/development/studio/node_modules/next/dist/server/lib/router-server.js:248:21)
+    at async handleRequest (/Users/igor.custodio/development/studio/node_modules/next/dist/server/lib/router-server.js:447:24)
+    at async requestHandlerImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/lib/router-server.js:496:13)
+    at async Server.requestListener (/Users/igor.custodio/development/studio/node_modules/next/dist/server/lib/start-server.js:226:13)
+---
+[2026-02-09T10:25:29.249Z] ERROR in getDocuments: 9 FAILED_PRECONDITION: The query requires an index. You can create it here: https://console.firebase.google.com/v1/r/project/studio-2124642360-17967/firestore/indexes?create_composite=Cllwcm9qZWN0cy9zdHVkaW8tMjEyNDY0MjM2MC0xNzk2Ny9kYXRhYmFzZXMvKGRlZmF1bHQpL2NvbGxlY3Rpb25Hcm91cHMvZG9jdW1lbnRzL2luZGV4ZXMvXxABGg0KCWNvbXBhbnlJZBABGg0KCXVwZGF0ZWRBdBACGgwKCF9fbmFtZV9fEAI
+STACK: Error: 9 FAILED_PRECONDITION: The query requires an index. You can create it here: https://console.firebase.google.com/v1/r/project/studio-2124642360-17967/firestore/indexes?create_composite=Cllwcm9qZWN0cy9zdHVkaW8tMjEyNDY0MjM2MC0xNzk2Ny9kYXRhYmFzZXMvKGRlZmF1bHQpL2NvbGxlY3Rpb25Hcm91cHMvZG9jdW1lbnRzL2luZGV4ZXMvXxABGg0KCWNvbXBhbnlJZBABGg0KCXVwZGF0ZWRBdBACGgwKCF9fbmFtZV9fEAI
+    at callErrorFromStatus (/Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/call.js:32:19)
+    at Object.onReceiveStatus (/Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/client.js:359:73)
+    at Object.onReceiveStatus (/Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/client-interceptors.js:327:181)
+    at /Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/resolving-call.js:135:78
+    at process.processTicksAndRejections (node:internal/process/task_queues:84:11)
+for call at
+    at ServiceClientImpl.makeServerStreamRequest (/Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/client.js:342:32)
+    at ServiceClientImpl.<anonymous> (/Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/make-client.js:105:19)
+    at /Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/v1/firestore_client.js:242:33
+    at /Users/igor.custodio/development/studio/node_modules/google-gax/build/src/streamingCalls/streamingApiCaller.js:38:28
+    at /Users/igor.custodio/development/studio/node_modules/google-gax/build/src/normalCalls/timeout.js:44:16
+    at Object.request (/Users/igor.custodio/development/studio/node_modules/google-gax/build/src/streamingCalls/streaming.js:234:40)
+    at makeRequest (/Users/igor.custodio/development/studio/node_modules/retry-request/index.js:159:28)
+    at retryRequest (/Users/igor.custodio/development/studio/node_modules/retry-request/index.js:119:5)
+    at StreamProxy.setStream (/Users/igor.custodio/development/studio/node_modules/google-gax/build/src/streamingCalls/streaming.js:225:37)
+    at StreamingApiCaller.call (/Users/igor.custodio/development/studio/node_modules/google-gax/build/src/streamingCalls/streamingApiCaller.js:54:16)
+    at /Users/igor.custodio/development/studio/node_modules/google-gax/build/src/createApiCall.js:112:30
+Caused by: Error: 
+    at QueryUtil._getResponse (/Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/reference/query-util.js:44:23)
+    at Query._getResponse (/Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/reference/query.js:784:32)
+    at Query._get (/Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/reference/query.js:777:35)
+    at /Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/reference/query.js:745:43
+    at /Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:110:30
+    at NoopContextManager.with (/Users/igor.custodio/development/studio/node_modules/@opentelemetry/api/build/src/context/NoopContextManager.js:25:19)
+    at ContextAPI.with (/Users/igor.custodio/development/studio/node_modules/@opentelemetry/api/build/src/api/context.js:60:46)
+    at NoopTracer.startActiveSpan (/Users/igor.custodio/development/studio/node_modules/@opentelemetry/api/build/src/trace/NoopTracer.js:65:31)
+    at ProxyTracer.startActiveSpan (/Users/igor.custodio/development/studio/node_modules/@opentelemetry/api/build/src/trace/ProxyTracer.js:36:24)
+    at EnabledTraceUtil.startActiveSpan (/Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:102:28)
+    at Query.get (/Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/reference/query.js:744:43)
+    at Object.getByCompany (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/[root-of-the-server]__476236fc._.js:50:108)
+    at getDocuments (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/[root-of-the-server]__476236fc._.js:290:197)
+    at /Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:36:3895
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14)
+    at executeActionAndPrepareForRender (/Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:36:3867)
+    at /Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:36:1115
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async handleAction (/Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:34:23616)
+    at async renderToHTMLOrFlightImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:41:42130)
+    at async doRender (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/node_modules_next_dist_5fdd64e6._.js:2970:28)
+    at async AppPageRouteModule.handleResponse (/Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:43:64241)
+    at async handleResponse (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/node_modules_next_dist_5fdd64e6._.js:3176:32)
+    at async Module.handler (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/node_modules_next_dist_5fdd64e6._.js:3547:20)
+    at async DevServer.renderToResponseWithComponentsImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:1442:9)
+    at async DevServer.renderPageComponent (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:1494:24)
+    at async DevServer.renderToResponseImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:1544:32)
+    at async DevServer.pipeImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:1038:25)
+    at async NextNodeServer.handleCatchallRenderRequest (/Users/igor.custodio/development/studio/node_modules/next/dist/server/next-server.js:395:17)
+    at async DevServer.handleRequestImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:929:17)
+    at async /Users/igor.custodio/development/studio/node_modules/next/dist/server/dev/next-dev-server.js:387:20
+    at async Span.traceAsyncFn (/Users/igor.custodio/development/studio/node_modules/next/dist/trace/trace.js:157:20)
+    at async DevServer.handleRequest (/Users/igor.custodio/development/studio/node_modules/next/dist/server/dev/next-dev-server.js:383:24)
+    at async invokeRender (/Users/igor.custodio/development/studio/node_modules/next/dist/server/lib/router-server.js:248:21)
+    at async handleRequest (/Users/igor.custodio/development/studio/node_modules/next/dist/server/lib/router-server.js:447:24)
+    at async requestHandlerImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/lib/router-server.js:496:13)
+    at async Server.requestListener (/Users/igor.custodio/development/studio/node_modules/next/dist/server/lib/start-server.js:226:13)
+---
+[2026-02-09T10:25:35.064Z] ERROR in getDocuments: 9 FAILED_PRECONDITION: The query requires an index. You can create it here: https://console.firebase.google.com/v1/r/project/studio-2124642360-17967/firestore/indexes?create_composite=Cllwcm9qZWN0cy9zdHVkaW8tMjEyNDY0MjM2MC0xNzk2Ny9kYXRhYmFzZXMvKGRlZmF1bHQpL2NvbGxlY3Rpb25Hcm91cHMvZG9jdW1lbnRzL2luZGV4ZXMvXxABGg0KCWNvbXBhbnlJZBABGg0KCXVwZGF0ZWRBdBACGgwKCF9fbmFtZV9fEAI
+STACK: Error: 9 FAILED_PRECONDITION: The query requires an index. You can create it here: https://console.firebase.google.com/v1/r/project/studio-2124642360-17967/firestore/indexes?create_composite=Cllwcm9qZWN0cy9zdHVkaW8tMjEyNDY0MjM2MC0xNzk2Ny9kYXRhYmFzZXMvKGRlZmF1bHQpL2NvbGxlY3Rpb25Hcm91cHMvZG9jdW1lbnRzL2luZGV4ZXMvXxABGg0KCWNvbXBhbnlJZBABGg0KCXVwZGF0ZWRBdBACGgwKCF9fbmFtZV9fEAI
+    at callErrorFromStatus (/Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/call.js:32:19)
+    at Object.onReceiveStatus (/Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/client.js:359:73)
+    at Object.onReceiveStatus (/Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/client-interceptors.js:327:181)
+    at /Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/resolving-call.js:135:78
+    at process.processTicksAndRejections (node:internal/process/task_queues:84:11)
+for call at
+    at ServiceClientImpl.makeServerStreamRequest (/Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/client.js:342:32)
+    at ServiceClientImpl.<anonymous> (/Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/make-client.js:105:19)
+    at /Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/v1/firestore_client.js:242:33
+    at /Users/igor.custodio/development/studio/node_modules/google-gax/build/src/streamingCalls/streamingApiCaller.js:38:28
+    at /Users/igor.custodio/development/studio/node_modules/google-gax/build/src/normalCalls/timeout.js:44:16
+    at Object.request (/Users/igor.custodio/development/studio/node_modules/google-gax/build/src/streamingCalls/streaming.js:234:40)
+    at makeRequest (/Users/igor.custodio/development/studio/node_modules/retry-request/index.js:159:28)
+    at retryRequest (/Users/igor.custodio/development/studio/node_modules/retry-request/index.js:119:5)
+    at StreamProxy.setStream (/Users/igor.custodio/development/studio/node_modules/google-gax/build/src/streamingCalls/streaming.js:225:37)
+    at StreamingApiCaller.call (/Users/igor.custodio/development/studio/node_modules/google-gax/build/src/streamingCalls/streamingApiCaller.js:54:16)
+    at /Users/igor.custodio/development/studio/node_modules/google-gax/build/src/createApiCall.js:112:30
+Caused by: Error: 
+    at QueryUtil._getResponse (/Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/reference/query-util.js:44:23)
+    at Query._getResponse (/Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/reference/query.js:784:32)
+    at Query._get (/Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/reference/query.js:777:35)
+    at /Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/reference/query.js:745:43
+    at /Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:110:30
+    at NoopContextManager.with (/Users/igor.custodio/development/studio/node_modules/@opentelemetry/api/build/src/context/NoopContextManager.js:25:19)
+    at ContextAPI.with (/Users/igor.custodio/development/studio/node_modules/@opentelemetry/api/build/src/api/context.js:60:46)
+    at NoopTracer.startActiveSpan (/Users/igor.custodio/development/studio/node_modules/@opentelemetry/api/build/src/trace/NoopTracer.js:65:31)
+    at ProxyTracer.startActiveSpan (/Users/igor.custodio/development/studio/node_modules/@opentelemetry/api/build/src/trace/ProxyTracer.js:36:24)
+    at EnabledTraceUtil.startActiveSpan (/Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:102:28)
+    at Query.get (/Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/reference/query.js:744:43)
+    at Object.getByCompany (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/[root-of-the-server]__476236fc._.js:50:108)
+    at getDocuments (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/[root-of-the-server]__476236fc._.js:290:197)
+    at /Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:36:3895
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14)
+    at executeActionAndPrepareForRender (/Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:36:3867)
+    at /Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:36:1115
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async handleAction (/Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:34:23616)
+    at async renderToHTMLOrFlightImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:41:42130)
+    at async doRender (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/node_modules_next_dist_5fdd64e6._.js:2970:28)
+    at async AppPageRouteModule.handleResponse (/Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:43:64241)
+    at async handleResponse (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/node_modules_next_dist_5fdd64e6._.js:3176:32)
+    at async Module.handler (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/node_modules_next_dist_5fdd64e6._.js:3547:20)
+    at async DevServer.renderToResponseWithComponentsImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:1442:9)
+    at async DevServer.renderPageComponent (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:1494:24)
+    at async DevServer.renderToResponseImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:1544:32)
+    at async DevServer.pipeImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:1038:25)
+    at async NextNodeServer.handleCatchallRenderRequest (/Users/igor.custodio/development/studio/node_modules/next/dist/server/next-server.js:395:17)
+    at async DevServer.handleRequestImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:929:17)
+    at async /Users/igor.custodio/development/studio/node_modules/next/dist/server/dev/next-dev-server.js:387:20
+    at async Span.traceAsyncFn (/Users/igor.custodio/development/studio/node_modules/next/dist/trace/trace.js:157:20)
+    at async DevServer.handleRequest (/Users/igor.custodio/development/studio/node_modules/next/dist/server/dev/next-dev-server.js:383:24)
+    at async invokeRender (/Users/igor.custodio/development/studio/node_modules/next/dist/server/lib/router-server.js:248:21)
+    at async handleRequest (/Users/igor.custodio/development/studio/node_modules/next/dist/server/lib/router-server.js:447:24)
+    at async requestHandlerImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/lib/router-server.js:496:13)
+    at async Server.requestListener (/Users/igor.custodio/development/studio/node_modules/next/dist/server/lib/start-server.js:226:13)
+---
+[2026-02-09T10:25:35.752Z] ERROR in getDocuments: 9 FAILED_PRECONDITION: The query requires an index. You can create it here: https://console.firebase.google.com/v1/r/project/studio-2124642360-17967/firestore/indexes?create_composite=Cllwcm9qZWN0cy9zdHVkaW8tMjEyNDY0MjM2MC0xNzk2Ny9kYXRhYmFzZXMvKGRlZmF1bHQpL2NvbGxlY3Rpb25Hcm91cHMvZG9jdW1lbnRzL2luZGV4ZXMvXxABGg0KCWNvbXBhbnlJZBABGg0KCXVwZGF0ZWRBdBACGgwKCF9fbmFtZV9fEAI
+STACK: Error: 9 FAILED_PRECONDITION: The query requires an index. You can create it here: https://console.firebase.google.com/v1/r/project/studio-2124642360-17967/firestore/indexes?create_composite=Cllwcm9qZWN0cy9zdHVkaW8tMjEyNDY0MjM2MC0xNzk2Ny9kYXRhYmFzZXMvKGRlZmF1bHQpL2NvbGxlY3Rpb25Hcm91cHMvZG9jdW1lbnRzL2luZGV4ZXMvXxABGg0KCWNvbXBhbnlJZBABGg0KCXVwZGF0ZWRBdBACGgwKCF9fbmFtZV9fEAI
+    at callErrorFromStatus (/Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/call.js:32:19)
+    at Object.onReceiveStatus (/Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/client.js:359:73)
+    at Object.onReceiveStatus (/Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/client-interceptors.js:327:181)
+    at /Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/resolving-call.js:135:78
+    at process.processTicksAndRejections (node:internal/process/task_queues:84:11)
+for call at
+    at ServiceClientImpl.makeServerStreamRequest (/Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/client.js:342:32)
+    at ServiceClientImpl.<anonymous> (/Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/make-client.js:105:19)
+    at /Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/v1/firestore_client.js:242:33
+    at /Users/igor.custodio/development/studio/node_modules/google-gax/build/src/streamingCalls/streamingApiCaller.js:38:28
+    at /Users/igor.custodio/development/studio/node_modules/google-gax/build/src/normalCalls/timeout.js:44:16
+    at Object.request (/Users/igor.custodio/development/studio/node_modules/google-gax/build/src/streamingCalls/streaming.js:234:40)
+    at makeRequest (/Users/igor.custodio/development/studio/node_modules/retry-request/index.js:159:28)
+    at retryRequest (/Users/igor.custodio/development/studio/node_modules/retry-request/index.js:119:5)
+    at StreamProxy.setStream (/Users/igor.custodio/development/studio/node_modules/google-gax/build/src/streamingCalls/streaming.js:225:37)
+    at StreamingApiCaller.call (/Users/igor.custodio/development/studio/node_modules/google-gax/build/src/streamingCalls/streamingApiCaller.js:54:16)
+    at /Users/igor.custodio/development/studio/node_modules/google-gax/build/src/createApiCall.js:112:30
+Caused by: Error: 
+    at QueryUtil._getResponse (/Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/reference/query-util.js:44:23)
+    at Query._getResponse (/Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/reference/query.js:784:32)
+    at Query._get (/Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/reference/query.js:777:35)
+    at /Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/reference/query.js:745:43
+    at /Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:110:30
+    at NoopContextManager.with (/Users/igor.custodio/development/studio/node_modules/@opentelemetry/api/build/src/context/NoopContextManager.js:25:19)
+    at ContextAPI.with (/Users/igor.custodio/development/studio/node_modules/@opentelemetry/api/build/src/api/context.js:60:46)
+    at NoopTracer.startActiveSpan (/Users/igor.custodio/development/studio/node_modules/@opentelemetry/api/build/src/trace/NoopTracer.js:65:31)
+    at ProxyTracer.startActiveSpan (/Users/igor.custodio/development/studio/node_modules/@opentelemetry/api/build/src/trace/ProxyTracer.js:36:24)
+    at EnabledTraceUtil.startActiveSpan (/Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:102:28)
+    at Query.get (/Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/reference/query.js:744:43)
+    at Object.getByCompany (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/[root-of-the-server]__476236fc._.js:50:108)
+    at getDocuments (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/[root-of-the-server]__476236fc._.js:290:197)
+    at /Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:36:3895
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14)
+    at executeActionAndPrepareForRender (/Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:36:3867)
+    at /Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:36:1115
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async handleAction (/Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:34:23616)
+    at async renderToHTMLOrFlightImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:41:42130)
+    at async doRender (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/node_modules_next_dist_5fdd64e6._.js:2970:28)
+    at async AppPageRouteModule.handleResponse (/Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:43:64241)
+    at async handleResponse (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/node_modules_next_dist_5fdd64e6._.js:3176:32)
+    at async Module.handler (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/node_modules_next_dist_5fdd64e6._.js:3547:20)
+    at async DevServer.renderToResponseWithComponentsImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:1442:9)
+    at async DevServer.renderPageComponent (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:1494:24)
+    at async DevServer.renderToResponseImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:1544:32)
+    at async DevServer.pipeImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:1038:25)
+    at async NextNodeServer.handleCatchallRenderRequest (/Users/igor.custodio/development/studio/node_modules/next/dist/server/next-server.js:395:17)
+    at async DevServer.handleRequestImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:929:17)
+    at async /Users/igor.custodio/development/studio/node_modules/next/dist/server/dev/next-dev-server.js:387:20
+    at async Span.traceAsyncFn (/Users/igor.custodio/development/studio/node_modules/next/dist/trace/trace.js:157:20)
+    at async DevServer.handleRequest (/Users/igor.custodio/development/studio/node_modules/next/dist/server/dev/next-dev-server.js:383:24)
+    at async invokeRender (/Users/igor.custodio/development/studio/node_modules/next/dist/server/lib/router-server.js:248:21)
+    at async handleRequest (/Users/igor.custodio/development/studio/node_modules/next/dist/server/lib/router-server.js:447:24)
+    at async requestHandlerImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/lib/router-server.js:496:13)
+    at async Server.requestListener (/Users/igor.custodio/development/studio/node_modules/next/dist/server/lib/start-server.js:226:13)
+---
+[2026-02-09T10:25:49.651Z] ERROR in getDocuments: 9 FAILED_PRECONDITION: The query requires an index. You can create it here: https://console.firebase.google.com/v1/r/project/studio-2124642360-17967/firestore/indexes?create_composite=Cllwcm9qZWN0cy9zdHVkaW8tMjEyNDY0MjM2MC0xNzk2Ny9kYXRhYmFzZXMvKGRlZmF1bHQpL2NvbGxlY3Rpb25Hcm91cHMvZG9jdW1lbnRzL2luZGV4ZXMvXxABGg0KCWNvbXBhbnlJZBABGg0KCXVwZGF0ZWRBdBACGgwKCF9fbmFtZV9fEAI
+STACK: Error: 9 FAILED_PRECONDITION: The query requires an index. You can create it here: https://console.firebase.google.com/v1/r/project/studio-2124642360-17967/firestore/indexes?create_composite=Cllwcm9qZWN0cy9zdHVkaW8tMjEyNDY0MjM2MC0xNzk2Ny9kYXRhYmFzZXMvKGRlZmF1bHQpL2NvbGxlY3Rpb25Hcm91cHMvZG9jdW1lbnRzL2luZGV4ZXMvXxABGg0KCWNvbXBhbnlJZBABGg0KCXVwZGF0ZWRBdBACGgwKCF9fbmFtZV9fEAI
+    at callErrorFromStatus (/Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/call.js:32:19)
+    at Object.onReceiveStatus (/Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/client.js:359:73)
+    at Object.onReceiveStatus (/Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/client-interceptors.js:327:181)
+    at /Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/resolving-call.js:135:78
+    at process.processTicksAndRejections (node:internal/process/task_queues:84:11)
+for call at
+    at ServiceClientImpl.makeServerStreamRequest (/Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/client.js:342:32)
+    at ServiceClientImpl.<anonymous> (/Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/make-client.js:105:19)
+    at /Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/v1/firestore_client.js:242:33
+    at /Users/igor.custodio/development/studio/node_modules/google-gax/build/src/streamingCalls/streamingApiCaller.js:38:28
+    at /Users/igor.custodio/development/studio/node_modules/google-gax/build/src/normalCalls/timeout.js:44:16
+    at Object.request (/Users/igor.custodio/development/studio/node_modules/google-gax/build/src/streamingCalls/streaming.js:234:40)
+    at makeRequest (/Users/igor.custodio/development/studio/node_modules/retry-request/index.js:159:28)
+    at retryRequest (/Users/igor.custodio/development/studio/node_modules/retry-request/index.js:119:5)
+    at StreamProxy.setStream (/Users/igor.custodio/development/studio/node_modules/google-gax/build/src/streamingCalls/streaming.js:225:37)
+    at StreamingApiCaller.call (/Users/igor.custodio/development/studio/node_modules/google-gax/build/src/streamingCalls/streamingApiCaller.js:54:16)
+    at /Users/igor.custodio/development/studio/node_modules/google-gax/build/src/createApiCall.js:112:30
+Caused by: Error: 
+    at QueryUtil._getResponse (/Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/reference/query-util.js:44:23)
+    at Query._getResponse (/Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/reference/query.js:784:32)
+    at Query._get (/Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/reference/query.js:777:35)
+    at /Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/reference/query.js:745:43
+    at /Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:110:30
+    at NoopContextManager.with (/Users/igor.custodio/development/studio/node_modules/@opentelemetry/api/build/src/context/NoopContextManager.js:25:19)
+    at ContextAPI.with (/Users/igor.custodio/development/studio/node_modules/@opentelemetry/api/build/src/api/context.js:60:46)
+    at NoopTracer.startActiveSpan (/Users/igor.custodio/development/studio/node_modules/@opentelemetry/api/build/src/trace/NoopTracer.js:65:31)
+    at ProxyTracer.startActiveSpan (/Users/igor.custodio/development/studio/node_modules/@opentelemetry/api/build/src/trace/ProxyTracer.js:36:24)
+    at EnabledTraceUtil.startActiveSpan (/Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:102:28)
+    at Query.get (/Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/reference/query.js:744:43)
+    at Object.getByCompany (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/[root-of-the-server]__476236fc._.js:50:108)
+    at getDocuments (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/[root-of-the-server]__476236fc._.js:290:197)
+    at /Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:36:3895
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14)
+    at executeActionAndPrepareForRender (/Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:36:3867)
+    at /Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:36:1115
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async handleAction (/Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:34:23616)
+    at async renderToHTMLOrFlightImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:41:42130)
+    at async doRender (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/node_modules_next_dist_5fdd64e6._.js:2970:28)
+    at async AppPageRouteModule.handleResponse (/Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:43:64241)
+    at async handleResponse (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/node_modules_next_dist_5fdd64e6._.js:3176:32)
+    at async Module.handler (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/node_modules_next_dist_5fdd64e6._.js:3547:20)
+    at async DevServer.renderToResponseWithComponentsImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:1442:9)
+    at async DevServer.renderPageComponent (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:1494:24)
+    at async DevServer.renderToResponseImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:1544:32)
+    at async DevServer.pipeImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:1038:25)
+    at async NextNodeServer.handleCatchallRenderRequest (/Users/igor.custodio/development/studio/node_modules/next/dist/server/next-server.js:395:17)
+    at async DevServer.handleRequestImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:929:17)
+    at async /Users/igor.custodio/development/studio/node_modules/next/dist/server/dev/next-dev-server.js:387:20
+    at async Span.traceAsyncFn (/Users/igor.custodio/development/studio/node_modules/next/dist/trace/trace.js:157:20)
+    at async DevServer.handleRequest (/Users/igor.custodio/development/studio/node_modules/next/dist/server/dev/next-dev-server.js:383:24)
+    at async invokeRender (/Users/igor.custodio/development/studio/node_modules/next/dist/server/lib/router-server.js:248:21)
+    at async handleRequest (/Users/igor.custodio/development/studio/node_modules/next/dist/server/lib/router-server.js:447:24)
+    at async requestHandlerImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/lib/router-server.js:496:13)
+    at async Server.requestListener (/Users/igor.custodio/development/studio/node_modules/next/dist/server/lib/start-server.js:226:13)
+---
+[2026-02-09T10:25:50.333Z] ERROR in getDocuments: 9 FAILED_PRECONDITION: The query requires an index. You can create it here: https://console.firebase.google.com/v1/r/project/studio-2124642360-17967/firestore/indexes?create_composite=Cllwcm9qZWN0cy9zdHVkaW8tMjEyNDY0MjM2MC0xNzk2Ny9kYXRhYmFzZXMvKGRlZmF1bHQpL2NvbGxlY3Rpb25Hcm91cHMvZG9jdW1lbnRzL2luZGV4ZXMvXxABGg0KCWNvbXBhbnlJZBABGg0KCXVwZGF0ZWRBdBACGgwKCF9fbmFtZV9fEAI
+STACK: Error: 9 FAILED_PRECONDITION: The query requires an index. You can create it here: https://console.firebase.google.com/v1/r/project/studio-2124642360-17967/firestore/indexes?create_composite=Cllwcm9qZWN0cy9zdHVkaW8tMjEyNDY0MjM2MC0xNzk2Ny9kYXRhYmFzZXMvKGRlZmF1bHQpL2NvbGxlY3Rpb25Hcm91cHMvZG9jdW1lbnRzL2luZGV4ZXMvXxABGg0KCWNvbXBhbnlJZBABGg0KCXVwZGF0ZWRBdBACGgwKCF9fbmFtZV9fEAI
+    at callErrorFromStatus (/Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/call.js:32:19)
+    at Object.onReceiveStatus (/Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/client.js:359:73)
+    at Object.onReceiveStatus (/Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/client-interceptors.js:327:181)
+    at /Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/resolving-call.js:135:78
+    at process.processTicksAndRejections (node:internal/process/task_queues:84:11)
+for call at
+    at ServiceClientImpl.makeServerStreamRequest (/Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/client.js:342:32)
+    at ServiceClientImpl.<anonymous> (/Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/make-client.js:105:19)
+    at /Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/v1/firestore_client.js:242:33
+    at /Users/igor.custodio/development/studio/node_modules/google-gax/build/src/streamingCalls/streamingApiCaller.js:38:28
+    at /Users/igor.custodio/development/studio/node_modules/google-gax/build/src/normalCalls/timeout.js:44:16
+    at Object.request (/Users/igor.custodio/development/studio/node_modules/google-gax/build/src/streamingCalls/streaming.js:234:40)
+    at makeRequest (/Users/igor.custodio/development/studio/node_modules/retry-request/index.js:159:28)
+    at retryRequest (/Users/igor.custodio/development/studio/node_modules/retry-request/index.js:119:5)
+    at StreamProxy.setStream (/Users/igor.custodio/development/studio/node_modules/google-gax/build/src/streamingCalls/streaming.js:225:37)
+    at StreamingApiCaller.call (/Users/igor.custodio/development/studio/node_modules/google-gax/build/src/streamingCalls/streamingApiCaller.js:54:16)
+    at /Users/igor.custodio/development/studio/node_modules/google-gax/build/src/createApiCall.js:112:30
+Caused by: Error: 
+    at QueryUtil._getResponse (/Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/reference/query-util.js:44:23)
+    at Query._getResponse (/Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/reference/query.js:784:32)
+    at Query._get (/Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/reference/query.js:777:35)
+    at /Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/reference/query.js:745:43
+    at /Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:110:30
+    at NoopContextManager.with (/Users/igor.custodio/development/studio/node_modules/@opentelemetry/api/build/src/context/NoopContextManager.js:25:19)
+    at ContextAPI.with (/Users/igor.custodio/development/studio/node_modules/@opentelemetry/api/build/src/api/context.js:60:46)
+    at NoopTracer.startActiveSpan (/Users/igor.custodio/development/studio/node_modules/@opentelemetry/api/build/src/trace/NoopTracer.js:65:31)
+    at ProxyTracer.startActiveSpan (/Users/igor.custodio/development/studio/node_modules/@opentelemetry/api/build/src/trace/ProxyTracer.js:36:24)
+    at EnabledTraceUtil.startActiveSpan (/Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:102:28)
+    at Query.get (/Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/reference/query.js:744:43)
+    at Object.getByCompany (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/[root-of-the-server]__476236fc._.js:50:108)
+    at getDocuments (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/[root-of-the-server]__476236fc._.js:290:197)
+    at /Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:36:3895
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14)
+    at executeActionAndPrepareForRender (/Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:36:3867)
+    at /Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:36:1115
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async handleAction (/Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:34:23616)
+    at async renderToHTMLOrFlightImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:41:42130)
+    at async doRender (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/node_modules_next_dist_5fdd64e6._.js:2970:28)
+    at async AppPageRouteModule.handleResponse (/Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:43:64241)
+    at async handleResponse (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/node_modules_next_dist_5fdd64e6._.js:3176:32)
+    at async Module.handler (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/node_modules_next_dist_5fdd64e6._.js:3547:20)
+    at async DevServer.renderToResponseWithComponentsImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:1442:9)
+    at async DevServer.renderPageComponent (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:1494:24)
+    at async DevServer.renderToResponseImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:1544:32)
+    at async DevServer.pipeImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:1038:25)
+    at async NextNodeServer.handleCatchallRenderRequest (/Users/igor.custodio/development/studio/node_modules/next/dist/server/next-server.js:395:17)
+    at async DevServer.handleRequestImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:929:17)
+    at async /Users/igor.custodio/development/studio/node_modules/next/dist/server/dev/next-dev-server.js:387:20
+    at async Span.traceAsyncFn (/Users/igor.custodio/development/studio/node_modules/next/dist/trace/trace.js:157:20)
+    at async DevServer.handleRequest (/Users/igor.custodio/development/studio/node_modules/next/dist/server/dev/next-dev-server.js:383:24)
+    at async invokeRender (/Users/igor.custodio/development/studio/node_modules/next/dist/server/lib/router-server.js:248:21)
+    at async handleRequest (/Users/igor.custodio/development/studio/node_modules/next/dist/server/lib/router-server.js:447:24)
+    at async requestHandlerImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/lib/router-server.js:496:13)
+    at async Server.requestListener (/Users/igor.custodio/development/studio/node_modules/next/dist/server/lib/start-server.js:226:13)
+---
+[2026-02-09T10:26:14.947Z] ERROR in getDocuments: 9 FAILED_PRECONDITION: The query requires an index. You can create it here: https://console.firebase.google.com/v1/r/project/studio-2124642360-17967/firestore/indexes?create_composite=Cllwcm9qZWN0cy9zdHVkaW8tMjEyNDY0MjM2MC0xNzk2Ny9kYXRhYmFzZXMvKGRlZmF1bHQpL2NvbGxlY3Rpb25Hcm91cHMvZG9jdW1lbnRzL2luZGV4ZXMvXxABGg0KCWNvbXBhbnlJZBABGg0KCXVwZGF0ZWRBdBACGgwKCF9fbmFtZV9fEAI
+STACK: Error: 9 FAILED_PRECONDITION: The query requires an index. You can create it here: https://console.firebase.google.com/v1/r/project/studio-2124642360-17967/firestore/indexes?create_composite=Cllwcm9qZWN0cy9zdHVkaW8tMjEyNDY0MjM2MC0xNzk2Ny9kYXRhYmFzZXMvKGRlZmF1bHQpL2NvbGxlY3Rpb25Hcm91cHMvZG9jdW1lbnRzL2luZGV4ZXMvXxABGg0KCWNvbXBhbnlJZBABGg0KCXVwZGF0ZWRBdBACGgwKCF9fbmFtZV9fEAI
+    at callErrorFromStatus (/Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/call.js:32:19)
+    at Object.onReceiveStatus (/Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/client.js:359:73)
+    at Object.onReceiveStatus (/Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/client-interceptors.js:327:181)
+    at /Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/resolving-call.js:135:78
+    at process.processTicksAndRejections (node:internal/process/task_queues:84:11)
+for call at
+    at ServiceClientImpl.makeServerStreamRequest (/Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/client.js:342:32)
+    at ServiceClientImpl.<anonymous> (/Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/make-client.js:105:19)
+    at /Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/v1/firestore_client.js:242:33
+    at /Users/igor.custodio/development/studio/node_modules/google-gax/build/src/streamingCalls/streamingApiCaller.js:38:28
+    at /Users/igor.custodio/development/studio/node_modules/google-gax/build/src/normalCalls/timeout.js:44:16
+    at Object.request (/Users/igor.custodio/development/studio/node_modules/google-gax/build/src/streamingCalls/streaming.js:234:40)
+    at makeRequest (/Users/igor.custodio/development/studio/node_modules/retry-request/index.js:159:28)
+    at retryRequest (/Users/igor.custodio/development/studio/node_modules/retry-request/index.js:119:5)
+    at StreamProxy.setStream (/Users/igor.custodio/development/studio/node_modules/google-gax/build/src/streamingCalls/streaming.js:225:37)
+    at StreamingApiCaller.call (/Users/igor.custodio/development/studio/node_modules/google-gax/build/src/streamingCalls/streamingApiCaller.js:54:16)
+    at /Users/igor.custodio/development/studio/node_modules/google-gax/build/src/createApiCall.js:112:30
+Caused by: Error: 
+    at QueryUtil._getResponse (/Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/reference/query-util.js:44:23)
+    at Query._getResponse (/Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/reference/query.js:784:32)
+    at Query._get (/Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/reference/query.js:777:35)
+    at /Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/reference/query.js:745:43
+    at /Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:110:30
+    at NoopContextManager.with (/Users/igor.custodio/development/studio/node_modules/@opentelemetry/api/build/src/context/NoopContextManager.js:25:19)
+    at ContextAPI.with (/Users/igor.custodio/development/studio/node_modules/@opentelemetry/api/build/src/api/context.js:60:46)
+    at NoopTracer.startActiveSpan (/Users/igor.custodio/development/studio/node_modules/@opentelemetry/api/build/src/trace/NoopTracer.js:65:31)
+    at ProxyTracer.startActiveSpan (/Users/igor.custodio/development/studio/node_modules/@opentelemetry/api/build/src/trace/ProxyTracer.js:36:24)
+    at EnabledTraceUtil.startActiveSpan (/Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:102:28)
+    at Query.get (/Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/reference/query.js:744:43)
+    at Object.getByCompany (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/[root-of-the-server]__476236fc._.js:50:108)
+    at getDocuments (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/[root-of-the-server]__476236fc._.js:290:197)
+    at /Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:36:3895
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14)
+    at executeActionAndPrepareForRender (/Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:36:3867)
+    at /Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:36:1115
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async handleAction (/Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:34:23616)
+    at async renderToHTMLOrFlightImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:41:42130)
+    at async doRender (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/node_modules_next_dist_5fdd64e6._.js:2970:28)
+    at async AppPageRouteModule.handleResponse (/Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:43:64241)
+    at async handleResponse (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/node_modules_next_dist_5fdd64e6._.js:3176:32)
+    at async Module.handler (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/node_modules_next_dist_5fdd64e6._.js:3547:20)
+    at async DevServer.renderToResponseWithComponentsImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:1442:9)
+    at async DevServer.renderPageComponent (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:1494:24)
+    at async DevServer.renderToResponseImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:1544:32)
+    at async DevServer.pipeImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:1038:25)
+    at async NextNodeServer.handleCatchallRenderRequest (/Users/igor.custodio/development/studio/node_modules/next/dist/server/next-server.js:395:17)
+    at async DevServer.handleRequestImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:929:17)
+    at async /Users/igor.custodio/development/studio/node_modules/next/dist/server/dev/next-dev-server.js:387:20
+    at async Span.traceAsyncFn (/Users/igor.custodio/development/studio/node_modules/next/dist/trace/trace.js:157:20)
+    at async DevServer.handleRequest (/Users/igor.custodio/development/studio/node_modules/next/dist/server/dev/next-dev-server.js:383:24)
+    at async invokeRender (/Users/igor.custodio/development/studio/node_modules/next/dist/server/lib/router-server.js:248:21)
+    at async handleRequest (/Users/igor.custodio/development/studio/node_modules/next/dist/server/lib/router-server.js:447:24)
+    at async requestHandlerImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/lib/router-server.js:496:13)
+    at async Server.requestListener (/Users/igor.custodio/development/studio/node_modules/next/dist/server/lib/start-server.js:226:13)
+---
+[2026-02-09T10:26:15.574Z] ERROR in getDocuments: 9 FAILED_PRECONDITION: The query requires an index. You can create it here: https://console.firebase.google.com/v1/r/project/studio-2124642360-17967/firestore/indexes?create_composite=Cllwcm9qZWN0cy9zdHVkaW8tMjEyNDY0MjM2MC0xNzk2Ny9kYXRhYmFzZXMvKGRlZmF1bHQpL2NvbGxlY3Rpb25Hcm91cHMvZG9jdW1lbnRzL2luZGV4ZXMvXxABGg0KCWNvbXBhbnlJZBABGg0KCXVwZGF0ZWRBdBACGgwKCF9fbmFtZV9fEAI
+STACK: Error: 9 FAILED_PRECONDITION: The query requires an index. You can create it here: https://console.firebase.google.com/v1/r/project/studio-2124642360-17967/firestore/indexes?create_composite=Cllwcm9qZWN0cy9zdHVkaW8tMjEyNDY0MjM2MC0xNzk2Ny9kYXRhYmFzZXMvKGRlZmF1bHQpL2NvbGxlY3Rpb25Hcm91cHMvZG9jdW1lbnRzL2luZGV4ZXMvXxABGg0KCWNvbXBhbnlJZBABGg0KCXVwZGF0ZWRBdBACGgwKCF9fbmFtZV9fEAI
+    at callErrorFromStatus (/Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/call.js:32:19)
+    at Object.onReceiveStatus (/Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/client.js:359:73)
+    at Object.onReceiveStatus (/Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/client-interceptors.js:327:181)
+    at /Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/resolving-call.js:135:78
+    at process.processTicksAndRejections (node:internal/process/task_queues:84:11)
+for call at
+    at ServiceClientImpl.makeServerStreamRequest (/Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/client.js:342:32)
+    at ServiceClientImpl.<anonymous> (/Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/make-client.js:105:19)
+    at /Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/v1/firestore_client.js:242:33
+    at /Users/igor.custodio/development/studio/node_modules/google-gax/build/src/streamingCalls/streamingApiCaller.js:38:28
+    at /Users/igor.custodio/development/studio/node_modules/google-gax/build/src/normalCalls/timeout.js:44:16
+    at Object.request (/Users/igor.custodio/development/studio/node_modules/google-gax/build/src/streamingCalls/streaming.js:234:40)
+    at makeRequest (/Users/igor.custodio/development/studio/node_modules/retry-request/index.js:159:28)
+    at retryRequest (/Users/igor.custodio/development/studio/node_modules/retry-request/index.js:119:5)
+    at StreamProxy.setStream (/Users/igor.custodio/development/studio/node_modules/google-gax/build/src/streamingCalls/streaming.js:225:37)
+    at StreamingApiCaller.call (/Users/igor.custodio/development/studio/node_modules/google-gax/build/src/streamingCalls/streamingApiCaller.js:54:16)
+    at /Users/igor.custodio/development/studio/node_modules/google-gax/build/src/createApiCall.js:112:30
+Caused by: Error: 
+    at QueryUtil._getResponse (/Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/reference/query-util.js:44:23)
+    at Query._getResponse (/Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/reference/query.js:784:32)
+    at Query._get (/Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/reference/query.js:777:35)
+    at /Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/reference/query.js:745:43
+    at /Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:110:30
+    at NoopContextManager.with (/Users/igor.custodio/development/studio/node_modules/@opentelemetry/api/build/src/context/NoopContextManager.js:25:19)
+    at ContextAPI.with (/Users/igor.custodio/development/studio/node_modules/@opentelemetry/api/build/src/api/context.js:60:46)
+    at NoopTracer.startActiveSpan (/Users/igor.custodio/development/studio/node_modules/@opentelemetry/api/build/src/trace/NoopTracer.js:65:31)
+    at ProxyTracer.startActiveSpan (/Users/igor.custodio/development/studio/node_modules/@opentelemetry/api/build/src/trace/ProxyTracer.js:36:24)
+    at EnabledTraceUtil.startActiveSpan (/Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:102:28)
+    at Query.get (/Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/reference/query.js:744:43)
+    at Object.getByCompany (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/[root-of-the-server]__476236fc._.js:50:108)
+    at getDocuments (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/[root-of-the-server]__476236fc._.js:290:197)
+    at /Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:36:3895
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14)
+    at executeActionAndPrepareForRender (/Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:36:3867)
+    at /Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:36:1115
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async handleAction (/Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:34:23616)
+    at async renderToHTMLOrFlightImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:41:42130)
+    at async doRender (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/node_modules_next_dist_5fdd64e6._.js:2970:28)
+    at async AppPageRouteModule.handleResponse (/Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:43:64241)
+    at async handleResponse (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/node_modules_next_dist_5fdd64e6._.js:3176:32)
+    at async Module.handler (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/node_modules_next_dist_5fdd64e6._.js:3547:20)
+    at async DevServer.renderToResponseWithComponentsImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:1442:9)
+    at async DevServer.renderPageComponent (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:1494:24)
+    at async DevServer.renderToResponseImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:1544:32)
+    at async DevServer.pipeImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:1038:25)
+    at async NextNodeServer.handleCatchallRenderRequest (/Users/igor.custodio/development/studio/node_modules/next/dist/server/next-server.js:395:17)
+    at async DevServer.handleRequestImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:929:17)
+    at async /Users/igor.custodio/development/studio/node_modules/next/dist/server/dev/next-dev-server.js:387:20
+    at async Span.traceAsyncFn (/Users/igor.custodio/development/studio/node_modules/next/dist/trace/trace.js:157:20)
+    at async DevServer.handleRequest (/Users/igor.custodio/development/studio/node_modules/next/dist/server/dev/next-dev-server.js:383:24)
+    at async invokeRender (/Users/igor.custodio/development/studio/node_modules/next/dist/server/lib/router-server.js:248:21)
+    at async handleRequest (/Users/igor.custodio/development/studio/node_modules/next/dist/server/lib/router-server.js:447:24)
+    at async requestHandlerImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/lib/router-server.js:496:13)
+    at async Server.requestListener (/Users/igor.custodio/development/studio/node_modules/next/dist/server/lib/start-server.js:226:13)
+---
+[2026-02-09T10:28:21.212Z] ERROR in getDocuments: 9 FAILED_PRECONDITION: The query requires an index. That index is currently building and cannot be used yet. See its status here: https://console.firebase.google.com/v1/r/project/studio-2124642360-17967/firestore/indexes?create_composite=CmRwcm9qZWN0cy9zdHVkaW8tMjEyNDY0MjM2MC0xNzk2Ny9kYXRhYmFzZXMvKGRlZmF1bHQpL2NvbGxlY3Rpb25Hcm91cHMvZG9jdW1lbnRzL2luZGV4ZXMvQ0lDQWdKajd6NEVLEAEaDQoJY29tcGFueUlkEAEaDQoJdXBkYXRlZEF0EAIaDAoIX19uYW1lX18QAg
+STACK: Error: 9 FAILED_PRECONDITION: The query requires an index. That index is currently building and cannot be used yet. See its status here: https://console.firebase.google.com/v1/r/project/studio-2124642360-17967/firestore/indexes?create_composite=CmRwcm9qZWN0cy9zdHVkaW8tMjEyNDY0MjM2MC0xNzk2Ny9kYXRhYmFzZXMvKGRlZmF1bHQpL2NvbGxlY3Rpb25Hcm91cHMvZG9jdW1lbnRzL2luZGV4ZXMvQ0lDQWdKajd6NEVLEAEaDQoJY29tcGFueUlkEAEaDQoJdXBkYXRlZEF0EAIaDAoIX19uYW1lX18QAg
+    at callErrorFromStatus (/Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/call.js:32:19)
+    at Object.onReceiveStatus (/Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/client.js:359:73)
+    at Object.onReceiveStatus (/Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/client-interceptors.js:327:181)
+    at /Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/resolving-call.js:135:78
+    at process.processTicksAndRejections (node:internal/process/task_queues:84:11)
+for call at
+    at ServiceClientImpl.makeServerStreamRequest (/Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/client.js:342:32)
+    at ServiceClientImpl.<anonymous> (/Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/make-client.js:105:19)
+    at /Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/v1/firestore_client.js:242:33
+    at /Users/igor.custodio/development/studio/node_modules/google-gax/build/src/streamingCalls/streamingApiCaller.js:38:28
+    at /Users/igor.custodio/development/studio/node_modules/google-gax/build/src/normalCalls/timeout.js:44:16
+    at Object.request (/Users/igor.custodio/development/studio/node_modules/google-gax/build/src/streamingCalls/streaming.js:234:40)
+    at makeRequest (/Users/igor.custodio/development/studio/node_modules/retry-request/index.js:159:28)
+    at retryRequest (/Users/igor.custodio/development/studio/node_modules/retry-request/index.js:119:5)
+    at StreamProxy.setStream (/Users/igor.custodio/development/studio/node_modules/google-gax/build/src/streamingCalls/streaming.js:225:37)
+    at StreamingApiCaller.call (/Users/igor.custodio/development/studio/node_modules/google-gax/build/src/streamingCalls/streamingApiCaller.js:54:16)
+    at /Users/igor.custodio/development/studio/node_modules/google-gax/build/src/createApiCall.js:112:30
+Caused by: Error: 
+    at QueryUtil._getResponse (/Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/reference/query-util.js:44:23)
+    at Query._getResponse (/Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/reference/query.js:784:32)
+    at Query._get (/Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/reference/query.js:777:35)
+    at /Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/reference/query.js:745:43
+    at /Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:110:30
+    at NoopContextManager.with (/Users/igor.custodio/development/studio/node_modules/@opentelemetry/api/build/src/context/NoopContextManager.js:25:19)
+    at ContextAPI.with (/Users/igor.custodio/development/studio/node_modules/@opentelemetry/api/build/src/api/context.js:60:46)
+    at NoopTracer.startActiveSpan (/Users/igor.custodio/development/studio/node_modules/@opentelemetry/api/build/src/trace/NoopTracer.js:65:31)
+    at ProxyTracer.startActiveSpan (/Users/igor.custodio/development/studio/node_modules/@opentelemetry/api/build/src/trace/ProxyTracer.js:36:24)
+    at EnabledTraceUtil.startActiveSpan (/Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:102:28)
+    at Query.get (/Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/reference/query.js:744:43)
+    at Object.getByCompany (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/[root-of-the-server]__476236fc._.js:50:108)
+    at getDocuments (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/[root-of-the-server]__476236fc._.js:290:197)
+    at /Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:36:3895
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14)
+    at executeActionAndPrepareForRender (/Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:36:3867)
+    at /Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:36:1115
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async handleAction (/Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:34:23616)
+    at async renderToHTMLOrFlightImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:41:42130)
+    at async doRender (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/node_modules_next_dist_5fdd64e6._.js:2970:28)
+    at async AppPageRouteModule.handleResponse (/Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:43:64241)
+    at async handleResponse (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/node_modules_next_dist_5fdd64e6._.js:3176:32)
+    at async Module.handler (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/node_modules_next_dist_5fdd64e6._.js:3547:20)
+    at async DevServer.renderToResponseWithComponentsImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:1442:9)
+    at async DevServer.renderPageComponent (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:1494:24)
+    at async DevServer.renderToResponseImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:1544:32)
+    at async DevServer.pipeImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:1038:25)
+    at async NextNodeServer.handleCatchallRenderRequest (/Users/igor.custodio/development/studio/node_modules/next/dist/server/next-server.js:395:17)
+    at async DevServer.handleRequestImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:929:17)
+    at async /Users/igor.custodio/development/studio/node_modules/next/dist/server/dev/next-dev-server.js:387:20
+    at async Span.traceAsyncFn (/Users/igor.custodio/development/studio/node_modules/next/dist/trace/trace.js:157:20)
+    at async DevServer.handleRequest (/Users/igor.custodio/development/studio/node_modules/next/dist/server/dev/next-dev-server.js:383:24)
+    at async invokeRender (/Users/igor.custodio/development/studio/node_modules/next/dist/server/lib/router-server.js:248:21)
+    at async handleRequest (/Users/igor.custodio/development/studio/node_modules/next/dist/server/lib/router-server.js:447:24)
+    at async requestHandlerImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/lib/router-server.js:496:13)
+    at async Server.requestListener (/Users/igor.custodio/development/studio/node_modules/next/dist/server/lib/start-server.js:226:13)
+---
+[2026-02-09T10:28:21.890Z] ERROR in getDocuments: 9 FAILED_PRECONDITION: The query requires an index. That index is currently building and cannot be used yet. See its status here: https://console.firebase.google.com/v1/r/project/studio-2124642360-17967/firestore/indexes?create_composite=CmRwcm9qZWN0cy9zdHVkaW8tMjEyNDY0MjM2MC0xNzk2Ny9kYXRhYmFzZXMvKGRlZmF1bHQpL2NvbGxlY3Rpb25Hcm91cHMvZG9jdW1lbnRzL2luZGV4ZXMvQ0lDQWdKajd6NEVLEAEaDQoJY29tcGFueUlkEAEaDQoJdXBkYXRlZEF0EAIaDAoIX19uYW1lX18QAg
+STACK: Error: 9 FAILED_PRECONDITION: The query requires an index. That index is currently building and cannot be used yet. See its status here: https://console.firebase.google.com/v1/r/project/studio-2124642360-17967/firestore/indexes?create_composite=CmRwcm9qZWN0cy9zdHVkaW8tMjEyNDY0MjM2MC0xNzk2Ny9kYXRhYmFzZXMvKGRlZmF1bHQpL2NvbGxlY3Rpb25Hcm91cHMvZG9jdW1lbnRzL2luZGV4ZXMvQ0lDQWdKajd6NEVLEAEaDQoJY29tcGFueUlkEAEaDQoJdXBkYXRlZEF0EAIaDAoIX19uYW1lX18QAg
+    at callErrorFromStatus (/Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/call.js:32:19)
+    at Object.onReceiveStatus (/Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/client.js:359:73)
+    at Object.onReceiveStatus (/Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/client-interceptors.js:327:181)
+    at /Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/resolving-call.js:135:78
+    at process.processTicksAndRejections (node:internal/process/task_queues:84:11)
+for call at
+    at ServiceClientImpl.makeServerStreamRequest (/Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/client.js:342:32)
+    at ServiceClientImpl.<anonymous> (/Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/make-client.js:105:19)
+    at /Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/v1/firestore_client.js:242:33
+    at /Users/igor.custodio/development/studio/node_modules/google-gax/build/src/streamingCalls/streamingApiCaller.js:38:28
+    at /Users/igor.custodio/development/studio/node_modules/google-gax/build/src/normalCalls/timeout.js:44:16
+    at Object.request (/Users/igor.custodio/development/studio/node_modules/google-gax/build/src/streamingCalls/streaming.js:234:40)
+    at makeRequest (/Users/igor.custodio/development/studio/node_modules/retry-request/index.js:159:28)
+    at retryRequest (/Users/igor.custodio/development/studio/node_modules/retry-request/index.js:119:5)
+    at StreamProxy.setStream (/Users/igor.custodio/development/studio/node_modules/google-gax/build/src/streamingCalls/streaming.js:225:37)
+    at StreamingApiCaller.call (/Users/igor.custodio/development/studio/node_modules/google-gax/build/src/streamingCalls/streamingApiCaller.js:54:16)
+    at /Users/igor.custodio/development/studio/node_modules/google-gax/build/src/createApiCall.js:112:30
+Caused by: Error: 
+    at QueryUtil._getResponse (/Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/reference/query-util.js:44:23)
+    at Query._getResponse (/Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/reference/query.js:784:32)
+    at Query._get (/Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/reference/query.js:777:35)
+    at /Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/reference/query.js:745:43
+    at /Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:110:30
+    at NoopContextManager.with (/Users/igor.custodio/development/studio/node_modules/@opentelemetry/api/build/src/context/NoopContextManager.js:25:19)
+    at ContextAPI.with (/Users/igor.custodio/development/studio/node_modules/@opentelemetry/api/build/src/api/context.js:60:46)
+    at NoopTracer.startActiveSpan (/Users/igor.custodio/development/studio/node_modules/@opentelemetry/api/build/src/trace/NoopTracer.js:65:31)
+    at ProxyTracer.startActiveSpan (/Users/igor.custodio/development/studio/node_modules/@opentelemetry/api/build/src/trace/ProxyTracer.js:36:24)
+    at EnabledTraceUtil.startActiveSpan (/Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:102:28)
+    at Query.get (/Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/reference/query.js:744:43)
+    at Object.getByCompany (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/[root-of-the-server]__476236fc._.js:50:108)
+    at getDocuments (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/[root-of-the-server]__476236fc._.js:290:197)
+    at /Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:36:3895
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14)
+    at executeActionAndPrepareForRender (/Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:36:3867)
+    at /Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:36:1115
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async handleAction (/Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:34:23616)
+    at async renderToHTMLOrFlightImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:41:42130)
+    at async doRender (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/node_modules_next_dist_5fdd64e6._.js:2970:28)
+    at async AppPageRouteModule.handleResponse (/Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:43:64241)
+    at async handleResponse (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/node_modules_next_dist_5fdd64e6._.js:3176:32)
+    at async Module.handler (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/node_modules_next_dist_5fdd64e6._.js:3547:20)
+    at async DevServer.renderToResponseWithComponentsImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:1442:9)
+    at async DevServer.renderPageComponent (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:1494:24)
+    at async DevServer.renderToResponseImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:1544:32)
+    at async DevServer.pipeImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:1038:25)
+    at async NextNodeServer.handleCatchallRenderRequest (/Users/igor.custodio/development/studio/node_modules/next/dist/server/next-server.js:395:17)
+    at async DevServer.handleRequestImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:929:17)
+    at async /Users/igor.custodio/development/studio/node_modules/next/dist/server/dev/next-dev-server.js:387:20
+    at async Span.traceAsyncFn (/Users/igor.custodio/development/studio/node_modules/next/dist/trace/trace.js:157:20)
+    at async DevServer.handleRequest (/Users/igor.custodio/development/studio/node_modules/next/dist/server/dev/next-dev-server.js:383:24)
+    at async invokeRender (/Users/igor.custodio/development/studio/node_modules/next/dist/server/lib/router-server.js:248:21)
+    at async handleRequest (/Users/igor.custodio/development/studio/node_modules/next/dist/server/lib/router-server.js:447:24)
+    at async requestHandlerImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/lib/router-server.js:496:13)
+    at async Server.requestListener (/Users/igor.custodio/development/studio/node_modules/next/dist/server/lib/start-server.js:226:13)
+---
+[2026-02-09T10:29:45.659Z] ERROR in getDocuments: 9 FAILED_PRECONDITION: The query requires an index. That index is currently building and cannot be used yet. See its status here: https://console.firebase.google.com/v1/r/project/studio-2124642360-17967/firestore/indexes?create_composite=CmRwcm9qZWN0cy9zdHVkaW8tMjEyNDY0MjM2MC0xNzk2Ny9kYXRhYmFzZXMvKGRlZmF1bHQpL2NvbGxlY3Rpb25Hcm91cHMvZG9jdW1lbnRzL2luZGV4ZXMvQ0lDQWdKajd6NEVLEAEaDQoJY29tcGFueUlkEAEaDQoJdXBkYXRlZEF0EAIaDAoIX19uYW1lX18QAg
+STACK: Error: 9 FAILED_PRECONDITION: The query requires an index. That index is currently building and cannot be used yet. See its status here: https://console.firebase.google.com/v1/r/project/studio-2124642360-17967/firestore/indexes?create_composite=CmRwcm9qZWN0cy9zdHVkaW8tMjEyNDY0MjM2MC0xNzk2Ny9kYXRhYmFzZXMvKGRlZmF1bHQpL2NvbGxlY3Rpb25Hcm91cHMvZG9jdW1lbnRzL2luZGV4ZXMvQ0lDQWdKajd6NEVLEAEaDQoJY29tcGFueUlkEAEaDQoJdXBkYXRlZEF0EAIaDAoIX19uYW1lX18QAg
+    at callErrorFromStatus (/Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/call.js:32:19)
+    at Object.onReceiveStatus (/Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/client.js:359:73)
+    at Object.onReceiveStatus (/Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/client-interceptors.js:327:181)
+    at /Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/resolving-call.js:135:78
+    at process.processTicksAndRejections (node:internal/process/task_queues:84:11)
+for call at
+    at ServiceClientImpl.makeServerStreamRequest (/Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/client.js:342:32)
+    at ServiceClientImpl.<anonymous> (/Users/igor.custodio/development/studio/node_modules/@grpc/grpc-js/build/src/make-client.js:105:19)
+    at /Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/v1/firestore_client.js:242:33
+    at /Users/igor.custodio/development/studio/node_modules/google-gax/build/src/streamingCalls/streamingApiCaller.js:38:28
+    at /Users/igor.custodio/development/studio/node_modules/google-gax/build/src/normalCalls/timeout.js:44:16
+    at Object.request (/Users/igor.custodio/development/studio/node_modules/google-gax/build/src/streamingCalls/streaming.js:234:40)
+    at makeRequest (/Users/igor.custodio/development/studio/node_modules/retry-request/index.js:159:28)
+    at retryRequest (/Users/igor.custodio/development/studio/node_modules/retry-request/index.js:119:5)
+    at StreamProxy.setStream (/Users/igor.custodio/development/studio/node_modules/google-gax/build/src/streamingCalls/streaming.js:225:37)
+    at StreamingApiCaller.call (/Users/igor.custodio/development/studio/node_modules/google-gax/build/src/streamingCalls/streamingApiCaller.js:54:16)
+    at /Users/igor.custodio/development/studio/node_modules/google-gax/build/src/createApiCall.js:112:30
+Caused by: Error: 
+    at QueryUtil._getResponse (/Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/reference/query-util.js:44:23)
+    at Query._getResponse (/Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/reference/query.js:784:32)
+    at Query._get (/Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/reference/query.js:777:35)
+    at /Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/reference/query.js:745:43
+    at /Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:110:30
+    at NoopContextManager.with (/Users/igor.custodio/development/studio/node_modules/@opentelemetry/api/build/src/context/NoopContextManager.js:25:19)
+    at ContextAPI.with (/Users/igor.custodio/development/studio/node_modules/@opentelemetry/api/build/src/api/context.js:60:46)
+    at NoopTracer.startActiveSpan (/Users/igor.custodio/development/studio/node_modules/@opentelemetry/api/build/src/trace/NoopTracer.js:65:31)
+    at ProxyTracer.startActiveSpan (/Users/igor.custodio/development/studio/node_modules/@opentelemetry/api/build/src/trace/ProxyTracer.js:36:24)
+    at EnabledTraceUtil.startActiveSpan (/Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/telemetry/enabled-trace-util.js:102:28)
+    at Query.get (/Users/igor.custodio/development/studio/node_modules/@google-cloud/firestore/build/src/reference/query.js:744:43)
+    at Object.getByCompany (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/[root-of-the-server]__c82f21af._.js:3637:108)
+    at getDocuments (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/[root-of-the-server]__c82f21af._.js:3760:197)
+    at /Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:36:3895
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14)
+    at executeActionAndPrepareForRender (/Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:36:3867)
+    at /Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:36:1115
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async handleAction (/Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:34:23616)
+    at async renderToHTMLOrFlightImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:41:42130)
+    at async doRender (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/node_modules_next_dist_5fdd64e6._.js:2970:28)
+    at async AppPageRouteModule.handleResponse (/Users/igor.custodio/development/studio/node_modules/next/dist/compiled/next-server/app-page-turbo.runtime.dev.js:43:64241)
+    at async handleResponse (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/node_modules_next_dist_5fdd64e6._.js:3176:32)
+    at async Module.handler (/Users/igor.custodio/development/studio/.next/dev/server/chunks/ssr/node_modules_next_dist_5fdd64e6._.js:3547:20)
+    at async DevServer.renderToResponseWithComponentsImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:1442:9)
+    at async DevServer.renderPageComponent (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:1494:24)
+    at async DevServer.renderToResponseImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:1544:32)
+    at async DevServer.pipeImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:1038:25)
+    at async NextNodeServer.handleCatchallRenderRequest (/Users/igor.custodio/development/studio/node_modules/next/dist/server/next-server.js:395:17)
+    at async DevServer.handleRequestImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/base-server.js:929:17)
+    at async /Users/igor.custodio/development/studio/node_modules/next/dist/server/dev/next-dev-server.js:387:20
+    at async Span.traceAsyncFn (/Users/igor.custodio/development/studio/node_modules/next/dist/trace/trace.js:157:20)
+    at async DevServer.handleRequest (/Users/igor.custodio/development/studio/node_modules/next/dist/server/dev/next-dev-server.js:383:24)
+    at async invokeRender (/Users/igor.custodio/development/studio/node_modules/next/dist/server/lib/router-server.js:248:21)
+    at async handleRequest (/Users/igor.custodio/development/studio/node_modules/next/dist/server/lib/router-server.js:447:24)
+    at async requestHandlerImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/lib/router-server.js:496:13)
+    at async Server.requestListener (/Users/igor.custodio/development/studio/node_modules/next/dist/server/lib/start-server.js:226:13)
+---

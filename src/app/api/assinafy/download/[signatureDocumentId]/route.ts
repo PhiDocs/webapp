@@ -5,10 +5,10 @@ import { ErrorLogRepository } from '@/repositories/error-log.repository';
 
 export async function GET(
   _request: NextRequest,
-  { params }: { params: { signatureDocumentId: string } }
+  { params }: { params: Promise<{ signatureDocumentId: string }> }
 ) {
   try {
-    const signatureDocumentId = params.signatureDocumentId;
+    const { signatureDocumentId } = await params;
     const signatureDoc = await SignatureDocumentRepository.getById(signatureDocumentId);
 
     if (!signatureDoc) {

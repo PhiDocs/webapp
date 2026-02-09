@@ -3,7 +3,7 @@
 import { ErrorLogRepository } from '@/repositories/error-log.repository';
 import { SignatureDocumentRepository } from '@/repositories/signature-document.repository';
 import { generatePdfBuffer } from '@/server/pdf-generator';
-import { createAssignment, createOrGetSigner, downloadSignedDocument, getDocumentStatus, uploadDocumentToAssinafy, waitForDocumentReady } from '@/server/assinafy-actions';
+import { createAssignment, createOrGetSigner, downloadSignedDocument, getDocumentStatus, resendAssignmentNotification, uploadDocumentToAssinafy, waitForDocumentReady } from '@/server/assinafy-actions';
 import type { Company, SafetyFormValues, SignatureDocument, SignatureSigner } from '@/lib/types';
 import type { SafetyAnalysisOutput, ProtectiveEquipmentOutput } from '@/server/ai-actions';
 import { DOCUMENT_TYPES } from '@/lib/constants';
@@ -176,36 +176,95 @@ export async function getSignatureDocumentsByEmail(email: string) {
 
 export async function refreshSignatureDocument(signatureDocumentId: string) {
   if (!signatureDocumentId) {
-    return { success: false, error: 'ID do documento n\u00e3o fornecido.' };
+    return { success: false, error: 'ID do documento não fornecido.' };
   }
 
   try {
     const current = await SignatureDocumentRepository.getById(signatureDocumentId);
     if (!current) {
-      return { success: false, error: 'Documento de assinatura n\u00e3o encontrado.' };
+      return { success: false, error: 'Documento de assinatura não encontrado.' };
     }
 
-    const statusResult = await getDocumentStatus(current.assinafyDocumentId);
+    console.log(`[refreshSignature] Atualizando documento ${signatureDocumentId}`);
+    console.log(`[refreshSignature] assinafyDocumentId: ${current.assinafyDocumentId}`);
+
+    // Buscar status do documento (inclui signatários e artifacts)
+    const docStatus = await getDocumentStatus(current.assinafyDocumentId);
+    console.log(`[refreshSignature] Status do documento: ${docStatus.status}, isClosed: ${docStatus.isClosed}`);
+    console.log(`[refreshSignature] Signatários da API:`, JSON.stringify(docStatus.signers, null, 2));
+
+    // Mapear status: "certificated" e "signed" = documento completo
+    const isDocumentCompleted = docStatus.status === 'certificated' || docStatus.status === 'signed';
+    const isDocumentDeclined = docStatus.status === 'declined';
+
+    // Atualizar status individual dos signatários
+    const updatedSigners = current.signers.map(signer => {
+      // Encontrar o signatário correspondente na resposta da API (por signerId ou email)
+      const match = docStatus.signers.find(
+        as => as.signerId === signer.assinafySignerId || as.email.toLowerCase() === signer.email.toLowerCase()
+      );
+
+      if (match) {
+        const newStatus = match.completed ? 'signed' as const : 'pending' as const;
+        console.log(`[refreshSignature] Signatário ${signer.email}: ${signer.status} → ${newStatus} (completed: ${match.completed})`);
+        return { ...signer, status: newStatus };
+      }
+
+      // Fallback: se o documento inteiro está completo/recusado, aplicar a todos
+      if (isDocumentCompleted) {
+        console.log(`[refreshSignature] Signatário ${signer.email}: ${signer.status} → signed (documento certificated)`);
+        return { ...signer, status: 'signed' as const };
+      }
+      if (isDocumentDeclined) {
+        console.log(`[refreshSignature] Signatário ${signer.email}: ${signer.status} → declined (documento declined)`);
+        return { ...signer, status: 'declined' as const };
+      }
+
+      console.log(`[refreshSignature] Signatário ${signer.email}: sem match na API, mantendo ${signer.status}`);
+      return signer;
+    });
+
+    // Normalizar status para salvar: "certificated" → "signed" no nosso banco
+    const normalizedStatus = isDocumentCompleted ? 'signed' : docStatus.status;
+
     const now = new Date().toISOString();
-
-    let updatedSigners = current.signers;
-    if (statusResult.status === 'signed') {
-      updatedSigners = current.signers.map(s => ({ ...s, status: 'signed' }));
-    } else if (statusResult.status === 'declined') {
-      updatedSigners = current.signers.map(s => ({ ...s, status: 'declined' }));
-    }
-
     await SignatureDocumentRepository.update(signatureDocumentId, {
-      status: statusResult.status,
+      status: normalizedStatus as any,
       signers: updatedSigners,
       updatedAt: now,
       lastSyncedAt: now,
     });
 
+    console.log(`[refreshSignature] Documento ${signatureDocumentId} atualizado. Status API: ${docStatus.status} → Salvo: ${normalizedStatus}`);
     return { success: true };
   } catch (e: unknown) {
     const error = e instanceof Error ? e : new Error(String(e ?? 'Erro desconhecido ao atualizar status.'));
+    console.error('[refreshSignature] ERRO:', error.message);
     await ErrorLogRepository.log(error, 'refreshSignatureDocument');
+    return { success: false, error: error.message };
+  }
+}
+
+export async function resendSignatureNotification(signatureDocumentId: string) {
+  if (!signatureDocumentId) {
+    return { success: false, error: 'ID do documento não fornecido.' };
+  }
+
+  try {
+    const current = await SignatureDocumentRepository.getById(signatureDocumentId);
+    if (!current) {
+      return { success: false, error: 'Documento de assinatura não encontrado.' };
+    }
+
+    if (current.status === 'signed') {
+      return { success: false, error: 'Documento já foi assinado.' };
+    }
+
+    await resendAssignmentNotification(current.assinafyAssignmentId);
+    return { success: true };
+  } catch (e: unknown) {
+    const error = e instanceof Error ? e : new Error(String(e ?? 'Erro desconhecido ao reenviar convite.'));
+    await ErrorLogRepository.log(error, 'resendSignatureNotification');
     return { success: false, error: error.message };
   }
 }

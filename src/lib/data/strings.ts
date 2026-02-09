@@ -1,4 +1,4 @@
-﻿
+
 export const ptBr = {
   documentType: {
     apr: 'APR',
@@ -53,10 +53,11 @@ export const ptBr = {
     description: 'Acompanhe quantas assinaturas foram concluí­das e baixe o PDF quando finalizar.',
     empty: 'Nenhum documento enviado para assinatura ainda.',
     counts: '{{signed}} assinadas de {{total}} (faltam {{pending}}).',
-    lastSync: 'Ãšltima sincronizaÃ§Ã£o: {{date}}',
+    lastSync: 'Última sincronização: {{date}}',
     status: {
       pending: 'Pendente',
       signed: 'Assinado',
+      certificated: 'Certificado',
       declined: 'Recusado',
       expired: 'Expirado',
       uploaded: 'Enviado',
@@ -394,6 +395,7 @@ export const ptBr = {
   other: {
     imageTooLarge: 'Imagem muito grande (máx 1MB).',
     invalidDate: 'Data inválida',
+    notFilled: 'Não preenchido',
     signatureAlt: 'Assinatura',
     companyLogoAlt: 'Logo da Empresa',
   }

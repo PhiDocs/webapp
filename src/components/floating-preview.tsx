@@ -36,7 +36,7 @@ export function FloatingPreview({
 
     return (
         <div
-            className={`fixed top-0 right-0 h-screen bg-white shadow-2xl border-l border-gray-200 transition-all duration-300 ease-in-out z-50 ${isMinimized ? 'w-16' : 'w-[500px]'
+            className={`fixed top-16 right-0 h-[calc(100vh-4rem)] bg-white shadow-2xl border-l border-gray-200 transition-all duration-300 ease-in-out z-10 ${isMinimized ? 'w-16' : 'w-[500px]'
                 }`}
         >
             {/* Header */}
@@ -74,7 +74,7 @@ export function FloatingPreview({
 
             {/* Content */}
             {!isMinimized && (
-                <div className="h-[calc(100vh-57px)] overflow-y-auto bg-gray-100 p-4">
+                <div className="h-[calc(100vh-4rem-57px)] overflow-y-auto bg-gray-100 p-4">
                     <div className="transform scale-[0.6] origin-top-left w-[166.67%]">
                         <PrintPreview
                             formData={formData}
@@ -89,7 +89,7 @@ export function FloatingPreview({
 
             {/* Minimized state */}
             {isMinimized && (
-                <div className="flex flex-col items-center justify-center h-[calc(100vh-57px)] text-gray-500">
+                <div className="flex flex-col items-center justify-center h-[calc(100vh-4rem-57px)] text-gray-500">
                     <div className="transform -rotate-90 whitespace-nowrap text-xs font-medium">
                         Pré-visualização
                     </div>

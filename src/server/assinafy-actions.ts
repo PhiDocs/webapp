@@ -20,6 +20,7 @@ export type AssinafyDocumentStatus =
     | 'uploaded'
     | 'pending'
     | 'signed'
+    | 'certificated'
     | 'declined'
     | 'expired'
     | 'metadata_processing';
@@ -44,9 +45,19 @@ export type AssinafyAssignmentResult = {
     signingUrls: Array<{ signer_id: string; url: string }>;
 };
 
+export type AssinafySignerStatus = {
+    signerId: string;
+    email: string;
+    fullName: string;
+    completed: boolean;
+};
+
 export type AssinafyDocumentStatusResult = {
     status: AssinafyDocumentStatus;
     isClosed: boolean;
+    signers: AssinafySignerStatus[];
+    certificatedUrl: string | null;
+    rawResponse: any;
 };
 
 // ===== HELPER: FORMATAR TELEFONE =====
@@ -282,26 +293,54 @@ export async function getDocumentStatus(
 ): Promise<AssinafyDocumentStatusResult> {
     assertAssinafyConfig();
     try {
-        const response = await fetch(
-            `${API_URL}/documents/${documentId}`,
-            {
-                method: 'GET',
-                headers: { 'X-Api-Key': API_KEY },
-            }
-        );
+        const url = `${API_URL}/documents/${documentId}`;
+        console.log(`[Assinafy] GET ${url}`);
+
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: { 'X-Api-Key': API_KEY },
+        });
 
         if (!response.ok) {
             const errorText = await response.text();
+            console.error(`[Assinafy] getDocumentStatus ERRO ${response.status}:`, errorText);
             throw new Error(`Erro ao buscar status do documento: ${response.status} - ${errorText}`);
         }
 
         const data = await response.json();
-        return {
-            status: (data.status || data?.data?.status) as AssinafyDocumentStatus,
-            isClosed: data.is_closed || data?.data?.is_closed || false,
-        };
+        console.log(`[Assinafy] getDocumentStatus response body:`, JSON.stringify(data, null, 2));
+
+        // A resposta da API vem em { status: 200, data: { ... } }
+        const doc = data?.data || data;
+        const status = doc.status as AssinafyDocumentStatus;
+        const isClosed = doc.is_closed || false;
+
+        // Extrair status dos signatários do assignment.summary.signers
+        const summarySigners = doc?.assignment?.summary?.signers || [];
+        const itemsMap = new Map<string, boolean>();
+        for (const item of (doc?.assignment?.items || [])) {
+            const signerId = item?.signer?.id;
+            if (signerId) {
+                itemsMap.set(signerId, item.completed === true);
+            }
+        }
+
+        const signers: AssinafySignerStatus[] = summarySigners.map((s: any) => ({
+            signerId: s.id || '',
+            email: s.email || '',
+            fullName: s.full_name || '',
+            completed: s.completed === true || itemsMap.get(s.id) === true,
+        }));
+
+        // URL do PDF certificado (documento assinado)
+        const certificatedUrl = doc?.artifacts?.certificated || null;
+
+        console.log(`[Assinafy] Document ${documentId} → status: ${status}, isClosed: ${isClosed}, certificatedUrl: ${certificatedUrl ? 'sim' : 'não'}`);
+        console.log(`[Assinafy] Signers:`, JSON.stringify(signers, null, 2));
+
+        return { status, isClosed, signers, certificatedUrl, rawResponse: data };
     } catch (error) {
-        console.error('Erro em getDocumentStatus:', error);
+        console.error('[Assinafy] Erro em getDocumentStatus:', error);
         throw error;
     }
 }
@@ -327,28 +366,31 @@ export async function waitForDocumentReady(
     throw new Error('Timeout aguardando processamento do documento na Assinafy.');
 }
 
-// ===== BAIXAR DOCUMENTO ASSINADO =====
+// ===== BAIXAR DOCUMENTO ASSINADO (CERTIFICADO) =====
 export async function downloadSignedDocument(
     documentId: string
 ): Promise<Blob> {
     assertAssinafyConfig();
     try {
-        const response = await fetch(
-            `${API_URL}/documents/${documentId}/download/signed`,
-            {
-                method: 'GET',
-                headers: { 'X-Api-Key': API_KEY },
-            }
-        );
+        // Usar artifacts.certificated da resposta do documento
+        const url = `${API_URL}/documents/${documentId}/download/certificated`;
+        console.log(`[Assinafy] Baixando PDF certificado: GET ${url}`);
+
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: { 'X-Api-Key': API_KEY },
+        });
 
         if (!response.ok) {
             const errorText = await response.text();
+            console.error(`[Assinafy] downloadSignedDocument ERRO ${response.status}:`, errorText);
             throw new Error(`Erro ao baixar documento assinado: ${response.status} - ${errorText}`);
         }
 
+        console.log(`[Assinafy] PDF certificado baixado com sucesso (${response.headers.get('content-length') || '?'} bytes)`);
         return await response.blob();
     } catch (error) {
-        console.error('Erro em downloadSignedDocument:', error);
+        console.error('[Assinafy] Erro em downloadSignedDocument:', error);
         throw error;
     }
 }

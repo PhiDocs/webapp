@@ -231,31 +231,5 @@ export function generatePTPages(formData: PdfFormData): Content[] {
     }
 
 
-    // --- Signatures ---
-    content.push({
-        table: {
-            widths: ['*'],
-            body: [
-                [{text: 'ASSINATURAS', style: 'sectionTitle'}],
-                [{
-                    table: {
-                        widths: ['*', '*', '*'],
-                        body: [
-                            [
-                                {stack: [{text: '', margin: [0, 20, 0, 0]}, {text: ptData.ptGestorArea?.name || 'Gestor da Área', style: 'td', alignment: 'center', margin:[0,2,0,0] }], border: [false, false, false, false], margin: [5, 5]},
-                                {stack: [{text: '', margin: [0, 20, 0, 0]}, {text: ptData.ptResponsavelAtividade?.name || 'Responsável Atividade', style: 'td', alignment: 'center', margin:[0,2,0,0] }], border: [false, false, false, false], margin: [5, 5]},
-                                {stack: [{text: '', margin: [0, 20, 0, 0]}, {text: ptData.ptSesmt?.name || 'SESMT', style: 'td', alignment: 'center', margin:[0,2,0,0] }], border: [false, false, false, false], margin: [5, 5]},
-                            ]
-                        ]
-                    },
-                    layout: 'boxLayout'
-                }]
-            ]
-        },
-        layout: 'sectionLayout',
-        marginBottom: 10,
-    });
-
-
     return content;
 }

@@ -217,7 +217,7 @@ export type SignatureDocument = {
   documentName: string;
   assinafyDocumentId: string;
   assinafyAssignmentId: string;
-  status: 'pending' | 'signed' | 'declined' | 'uploaded' | 'expired';
+  status: 'pending' | 'signed' | 'certificated' | 'declined' | 'uploaded' | 'expired';
   signers: SignatureSigner[];
   /** Array plano de e-mails para consulta no Firestore (array-contains) */
   signerEmails: string[];
@@ -226,6 +226,21 @@ export type SignatureDocument = {
   lastSyncedAt?: string;
 };
 
+
+// --- Saved Documents (History) ---
+export type SavedDocument = {
+  id: string;
+  companyId: string;
+  documentType: DocumentType;
+  documentName: string;
+  status: 'draft' | 'sent';
+  formData: SafetyFormValues;
+  analysisData: any | null;
+  equipmentData: any | null;
+  signatureDocumentId?: string;
+  createdAt: string;
+  updatedAt: string;
+};
 
 // --- Auth Schemas ---
 export const loginSchema = z.object({

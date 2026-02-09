@@ -59,7 +59,7 @@ export default function CompanyPage() {
 
     return (
         <div className="min-h-screen bg-background flex flex-col">
-            <Header isAprReady={false} isPtReady={false}>
+            <Header>
                 <UserNav />
             </Header>
             <main className="flex-grow container mx-auto p-4 md:p-6">

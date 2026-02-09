@@ -132,13 +132,12 @@ export function generateAPRPages(formData: PdfFormData, analysisData: SafetyAnal
 
     // --- Responsibles Section ---
     const responsibleBody: TableCell[][] = [
-        [{ text: 'NOME', style: 'th' }, { text: 'FUNÇÃO', style: 'th' }, { text: 'ASSINATURA', style: 'th' }]
+        [{ text: 'NOME', style: 'th' }, { text: 'FUNÇÃO', style: 'th' }]
     ];
     formData.responsiblePersons.forEach(p => {
         responsibleBody.push([
-            { text: p.name || '...', style: 'td', alignment: 'left', margin: [5, 15] },
-            { text: p.role || '...', style: 'td', alignment: 'left', margin: [5, 15] },
-            { text: '', style: 'td', margin: [5, 15] },
+            { text: p.name || '...', style: 'td', alignment: 'left', margin: [5, 8] },
+            { text: p.role || '...', style: 'td', alignment: 'left', margin: [5, 8] },
         ]);
     });
 
@@ -149,7 +148,7 @@ export function generateAPRPages(formData: PdfFormData, analysisData: SafetyAnal
                 [{text: 'RESPONSÁVEL PELO ACOMPANHAMENTO DOS SERVIÇOS', style: 'sectionTitle'}],
                 [{
                     table: {
-                        widths: ['*', '*', '*'],
+                        widths: ['*', '*'],
                         body: responsibleBody,
                         dontBreakRows: true,
                     },

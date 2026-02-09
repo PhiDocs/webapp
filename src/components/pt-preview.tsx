@@ -1,5 +1,5 @@
 import React from 'react';
-import type { SafetyFormValues, PtTeamMember, PtSignerInput, Company } from '@/lib/types';
+import type { SafetyFormValues, PtTeamMember, Company } from '@/lib/types';
 import { ptChecklistItems } from '@/lib/data/pt-checklist';
 import { ptBr } from '@/lib/data/strings';
 import { PT_FIT_STATUS } from '@/lib/constants';
@@ -9,16 +9,6 @@ interface PTPreviewProps {
   company: Company | null;
 }
 
-const SignerPreview = ({ signer, label }: { signer?: PtSignerInput, label: string }) => {
-    if (!signer) return null;
-
-    return (
-        <div className='border-t border-black mx-4 pt-1'>
-            <div className="h-12 w-full"></div>
-            <p className='text-xs text-center'>{signer.name || label}</p>
-        </div>
-    );
-};
 
 const CheckboxDisplay = ({ checked }: { checked: boolean }) => (
     <div className="w-3 h-3 border border-black flex items-center justify-center">
@@ -26,10 +16,12 @@ const CheckboxDisplay = ({ checked }: { checked: boolean }) => (
     </div>
 );
 
+const Empty = () => <span className="italic text-gray-400">{ptBr.other.notFilled}</span>;
+
 const TextLine = ({ label, value, className = '' }: { label: string, value: string | undefined, className?: string}) => (
     <div className={`flex items-end border-b border-black ${className}`}>
         <span className="text-xxs font-bold uppercase mr-1">{label}:</span>
-        <span className="text-xs flex-1 text-left whitespace-pre-wrap break-words">{value || '...'}</span>
+        <span className="text-xs flex-1 text-left whitespace-pre-wrap break-words">{value || <Empty />}</span>
     </div>
 );
 
@@ -58,10 +50,10 @@ const TeamTable = ({ title, members, showEmpresa = false }: { title: string, mem
                 <tbody>
                     {members.map((m, i) => (
                         <tr key={i} className='h-6'>
-                            <td>{m.name}</td>
-                            <td>{m.rgCpf}</td>
-                            <td>{m.func}</td>
-                            {showEmpresa && <td>{m.empresa}</td>}
+                            <td>{m.name || <Empty />}</td>
+                            <td>{m.rgCpf || <Empty />}</td>
+                            <td>{m.func || <Empty />}</td>
+                            {showEmpresa && <td>{m.empresa || <Empty />}</td>}
                             <td className='text-center'>
                                 <div className='flex items-center justify-center gap-2'>
                                     <CheckboxDisplay checked={m.apto === PT_FIT_STATUS.YES} /> {ptBr.ptForm.yes}
@@ -105,7 +97,7 @@ export function PTPreview({ formData, company }: PTPreviewProps) {
                         <p className="text-xs font-bold text-red-600">{ptBr.printPreview.pt.subtitle}</p>
                     </td>
                     <td className="w-1/4 !p-1 text-center">
-                        <span className='font-bold'>{company?.name || ptBr.printPreview.pt.companyName}</span>
+                        <span className='font-bold'>{company?.name || <Empty />}</span>
                     </td>
                 </tr>
                  <tr>
@@ -168,17 +160,15 @@ export function PTPreview({ formData, company }: PTPreviewProps) {
                             <td>{ptBr.printPreview.pt.h2s}</td>
                             <td>{ptBr.printPreview.pt.co2}</td>
                             <td className='w-1/4'>{ptBr.printPreview.pt.observation}</td>
-                            <td className='w-1/6'>{ptBr.printPreview.pt.signature}</td>
                         </tr>
                     </thead>
                     <tbody className='text-center'>
                         <tr className='h-6'>
-                            <td>{ptData.ptOxigenio}</td>
-                            <td>{ptData.ptLE}</td>
-                            <td>{ptData.ptH2S}</td>
-                            <td>{ptData.ptCO2}</td>
-                            <td>{ptData.ptObservacao}</td>
-                            <td>{ptData.ptVisto}</td>
+                            <td>{ptData.ptOxigenio || <Empty />}</td>
+                            <td>{ptData.ptLE || <Empty />}</td>
+                            <td>{ptData.ptH2S || <Empty />}</td>
+                            <td>{ptData.ptCO2 || <Empty />}</td>
+                            <td>{ptData.ptObservacao || <Empty />}</td>
                         </tr>
                     </tbody>
                 </table>
@@ -193,13 +183,6 @@ export function PTPreview({ formData, company }: PTPreviewProps) {
             <TeamTable title={ptBr.printPreview.pt.rescuers} members={ptData.ptResgatistas || []} showEmpresa={true} />
         )}
 
-        <Section title={ptBr.printPreview.pt.signatures} className="!mt-4">
-             <div className="grid grid-cols-3 gap-2 pt-2 text-center border border-black border-t-0 text-xs">
-                <SignerPreview signer={ptData.ptGestorArea} label={ptBr.printPreview.pt.areaManager} />
-                <SignerPreview signer={ptData.ptResponsavelAtividade} label={ptBr.printPreview.pt.activityResponsible} />
-                <SignerPreview signer={ptData.ptSesmt} label={ptBr.printPreview.pt.sesmt} />
-             </div>
-        </Section>
       </main>
     </div>
   );

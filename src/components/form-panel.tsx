@@ -6,7 +6,7 @@ import { SafetyForm } from '@/components/safety-form';
 import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
-import { RefreshCcw, Eye, EyeOff } from 'lucide-react';
+import { RefreshCcw, Eye, EyeOff, Send, Loader2, Save } from 'lucide-react';
 import { cn } from "@/lib/utils";
 import {
   AlertDialog,
@@ -32,9 +32,14 @@ interface FormPanelProps {
   isDataLoading: boolean;
   showFloatingPreview?: boolean;
   onToggleFloatingPreview?: () => void;
+  isSendingSignature?: boolean;
+  onSendForSignature?: () => void;
+  canSendSignature?: boolean;
+  isSavingDraft?: boolean;
+  onSaveDraft?: () => void;
 }
 
-export function FormPanel({ form, onNewReport, onSubmit, isLoading, mobileView, works, employees, isDataLoading, showFloatingPreview, onToggleFloatingPreview }: FormPanelProps) {
+export function FormPanel({ form, onNewReport, onSubmit, isLoading, mobileView, works, employees, isDataLoading, showFloatingPreview, onToggleFloatingPreview, isSendingSignature, onSendForSignature, canSendSignature, isSavingDraft, onSaveDraft }: FormPanelProps) {
   return (
     <div className={cn("h-full", mobileView !== 'form' && "hidden")}>
       <ScrollArea className="h-full">
@@ -101,6 +106,50 @@ export function FormPanel({ form, onNewReport, onSubmit, isLoading, mobileView, 
             employees={employees}
             isDataLoading={isDataLoading}
           />
+
+          <div className="flex flex-col gap-2">
+            {onSaveDraft && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onSaveDraft}
+                disabled={isSavingDraft}
+                className="w-full"
+              >
+                {isSavingDraft ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Salvando...
+                  </>
+                ) : (
+                  <>
+                    <Save className="mr-2 h-4 w-4" />
+                    Salvar rascunho
+                  </>
+                )}
+              </Button>
+            )}
+            {onSendForSignature && (
+              <Button
+                type="button"
+                onClick={onSendForSignature}
+                disabled={isSendingSignature || !canSendSignature}
+                className="w-full"
+              >
+                {isSendingSignature ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    {ptBr.actions.sendingForSignature}
+                  </>
+                ) : (
+                  <>
+                    <Send className="mr-2 h-4 w-4" />
+                    {ptBr.actions.sendForSignature}
+                  </>
+                )}
+              </Button>
+            )}
+          </div>
         </div>
       </ScrollArea>
     </div>

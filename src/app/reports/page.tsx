@@ -1,11 +1,13 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import type { SafetyAnalysisOutput, ProtectiveEquipmentOutput } from '@/server/ai-actions';
 import type { SafetyFormValues, Work, Employee, Company } from '@/lib/types';
 import { getSafetyAnalysis, getProtectiveEquipment } from '@/server/ai-actions';
 import { notifyN8n } from '@/server/n8n-actions';
 import { sendDocumentForSignature } from '@/server/signature-actions';
+import { saveDocument, markDocumentAsSent, getDocument } from '@/server/document-actions';
 import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { formSchema } from '@/lib/types';
@@ -47,6 +49,8 @@ function normalizeAnalysisSteps(steps: any[] | undefined): SafetyAnalysisOutput 
 
 export default function ReportsPage() {
   const { user } = useSession();
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const [equipment, setEquipment] = useState<ProtectiveEquipmentOutput | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
@@ -58,6 +62,8 @@ export default function ReportsPage() {
   const [works, setWorks] = useState<Work[]>([]);
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [isDataLoading, setIsDataLoading] = useState(true);
+  const [isSavingDraft, setIsSavingDraft] = useState(false);
+  const [currentDocumentId, setCurrentDocumentId] = useState<string | null>(null);
   const { toast } = useToast();
   const [showFloatingPreview, setShowFloatingPreview] = useState(true);
   const [isPreviewMinimized, setIsPreviewMinimized] = useState(false);
@@ -165,6 +171,29 @@ export default function ReportsPage() {
     }
   }, [user, toast]);
 
+  // Carregar documento salvo via query param
+  useEffect(() => {
+    const documentId = searchParams.get('documentId');
+    if (!documentId) return;
+
+    (async () => {
+      const result = await getDocument(documentId);
+      if (result.success && result.data) {
+        const doc = result.data;
+        form.reset(doc.formData);
+        if (doc.analysisData?.proceduralSteps?.length) {
+          form.setValue('analysisSteps', doc.analysisData.proceduralSteps, { shouldDirty: true });
+        }
+        if (doc.equipmentData) {
+          setEquipment(doc.equipmentData);
+        }
+        setCurrentDocumentId(doc.id);
+        // Limpar query param da URL sem reload
+        router.replace('/reports', { scroll: false });
+        toast({ title: 'Documento carregado', description: `"${doc.documentName}" foi carregado.` });
+      }
+    })();
+  }, [searchParams]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleFormSubmit = async (data: SafetyFormValues) => {
     if (data.documentType !== DOCUMENT_TYPES.APR) return;
@@ -231,6 +260,7 @@ export default function ReportsPage() {
   const handleNewReport = () => {
     setEquipment(null);
     setError(null);
+    setCurrentDocumentId(null);
     form.reset();
   };
 
@@ -289,10 +319,66 @@ export default function ReportsPage() {
     }
   };
 
+  const handleSaveDraft = async () => {
+    if (!company?.id) {
+      toast({ variant: 'destructive', title: 'Erro', description: 'Empresa não identificada.' });
+      return;
+    }
+
+    setIsSavingDraft(true);
+    try {
+      const formData = form.getValues();
+      const result = await saveDocument({
+        companyId: company.id,
+        documentId: currentDocumentId || undefined,
+        formData,
+        analysisData: analysis,
+        equipmentData: equipment,
+      });
+
+      if (!result.success) {
+        throw new Error(result.error || 'Falha ao salvar rascunho.');
+      }
+
+      if (result.documentId && !currentDocumentId) {
+        setCurrentDocumentId(result.documentId);
+      }
+
+      toast({
+        title: 'Rascunho salvo',
+        description: 'O documento foi salvo com sucesso.',
+      });
+    } catch (error: any) {
+      toast({
+        variant: 'destructive',
+        title: 'Erro ao salvar',
+        description: error.message,
+      });
+    } finally {
+      setIsSavingDraft(false);
+    }
+  };
+
   const handleSendForSignature = async () => {
     setIsSendingSignature(true);
     try {
       const formData = form.getValues();
+
+      // 1. Salvar o documento no banco antes de enviar
+      if (company?.id) {
+        const saveResult = await saveDocument({
+          companyId: company.id,
+          documentId: currentDocumentId || undefined,
+          formData,
+          analysisData: analysis,
+          equipmentData: equipment,
+        });
+        if (saveResult.success && saveResult.documentId) {
+          setCurrentDocumentId(saveResult.documentId);
+        }
+      }
+
+      // 2. Enviar para assinatura
       const result = await sendDocumentForSignature({
         formData,
         analysisData: analysis,
@@ -302,6 +388,11 @@ export default function ReportsPage() {
 
       if (!result.success) {
         throw new Error(result.error || 'Falha ao enviar para assinatura.');
+      }
+
+      // 3. Marcar documento como enviado
+      if (currentDocumentId && result.signatureDocumentId) {
+        await markDocumentAsSent(currentDocumentId, result.signatureDocumentId);
       }
 
       toast({
@@ -322,10 +413,7 @@ export default function ReportsPage() {
   return (
     <>
       <div className="min-h-screen bg-background flex flex-col no-print">
-        <Header
-          mobileView={mobileView}
-          setMobileView={setMobileView}
-        >
+        <Header>
           <UserNav />
         </Header>
 
@@ -342,6 +430,11 @@ export default function ReportsPage() {
             isDataLoading={isDataLoading}
             showFloatingPreview={showFloatingPreview}
             onToggleFloatingPreview={() => setShowFloatingPreview(!showFloatingPreview)}
+            isSendingSignature={isSendingSignature}
+            onSendForSignature={handleSendForSignature}
+            canSendSignature={liveFormData.documentType === DOCUMENT_TYPES.APR || liveFormData.documentType === DOCUMENT_TYPES.PT}
+            isSavingDraft={isSavingDraft}
+            onSaveDraft={handleSaveDraft}
           />
           <PreviewPanel
             isLoading={isLoading}
@@ -353,10 +446,6 @@ export default function ReportsPage() {
             mobileView={mobileView}
             isDownloading={isDownloading}
             onGeneratePdf={handleDownloadPdf}
-            isSendingSignature={isSendingSignature}
-            onSendForSignature={handleSendForSignature}
-            isAprReady={!!(liveFormData.documentType === DOCUMENT_TYPES.APR && analysis?.proceduralSteps?.length)}
-            isPtReady={liveFormData.documentType === DOCUMENT_TYPES.PT}
           />
         </main>
       </div>
