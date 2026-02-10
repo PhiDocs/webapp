@@ -29,6 +29,9 @@ export default function RootLayout({
           {children}
         </SessionProvider>
         <Toaster />
+        <footer className="fixed bottom-0 right-0 p-2 text-[10px] text-muted-foreground/50 pointer-events-none select-none z-50">
+          {process.env.NEXT_PUBLIC_APP_VERSION || 'dev'}
+        </footer>
       </body>
     </html>
   );

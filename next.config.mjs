@@ -1,5 +1,17 @@
+import { execSync } from 'child_process';
+
 /** @type {import('next').NextConfig} */
 const isDev = process.env.NODE_ENV !== 'production';
+
+// Captura a tag mais recente + hash do commit atual no momento do build
+let appVersion = 'dev';
+try {
+  const tag = execSync('git tag --sort=-v:refname 2>/dev/null').toString().trim().split('\n')[0] || '';
+  const hash = execSync('git rev-parse --short HEAD 2>/dev/null').toString().trim();
+  appVersion = tag ? `${tag} (${hash})` : hash || 'dev';
+} catch {
+  appVersion = 'dev';
+}
 const scriptSrc = [
   "'self'",
   "'unsafe-inline'",
@@ -16,6 +28,9 @@ const csp = [
 const nextConfig = {
   // Use Turbopack (default in Next.js 16)
   turbopack: {},
+  env: {
+    NEXT_PUBLIC_APP_VERSION: appVersion,
+  },
   typescript: {
     ignoreBuildErrors: false,
   },
