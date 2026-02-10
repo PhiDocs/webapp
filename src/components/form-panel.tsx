@@ -7,7 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { RefreshCcw, Eye, EyeOff, Send, Loader2, Save } from 'lucide-react';
-import { cn } from "@/lib/utils";
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -26,7 +26,6 @@ interface FormPanelProps {
   onNewReport: () => void;
   onSubmit: (data: SafetyFormValues) => void;
   isLoading: boolean;
-  mobileView: 'form' | 'preview';
   works: Work[];
   employees: Employee[];
   isDataLoading: boolean;
@@ -39,9 +38,9 @@ interface FormPanelProps {
   onSaveDraft?: () => void;
 }
 
-export function FormPanel({ form, onNewReport, onSubmit, isLoading, mobileView, works, employees, isDataLoading, showFloatingPreview, onToggleFloatingPreview, isSendingSignature, onSendForSignature, canSendSignature, isSavingDraft, onSaveDraft }: FormPanelProps) {
+export function FormPanel({ form, onNewReport, onSubmit, isLoading, works, employees, isDataLoading, showFloatingPreview, onToggleFloatingPreview, isSendingSignature, onSendForSignature, canSendSignature, isSavingDraft, onSaveDraft }: FormPanelProps) {
   return (
-    <div className={cn("h-full", mobileView !== 'form' && "hidden")}>
+    <div className="h-full">
       <ScrollArea className="h-full">
         <div className="p-4 md:p-6 space-y-6">
           <div className="flex justify-between items-start">

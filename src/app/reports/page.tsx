@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import type { SafetyAnalysisOutput, ProtectiveEquipmentOutput } from '@/server/ai-actions';
 import type { SafetyFormValues, Work, Employee, Company } from '@/lib/types';
 import { getSafetyAnalysis, getProtectiveEquipment } from '@/server/ai-actions';
-import { notifyN8n } from '@/server/n8n-actions';
+
 import { sendDocumentForSignature } from '@/server/signature-actions';
 import { saveDocument, markDocumentAsSent, getDocument } from '@/server/document-actions';
 import { useForm, useWatch } from 'react-hook-form';
@@ -14,9 +14,8 @@ import { formSchema } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { Header } from '@/components/header';
 import { FormPanel } from '@/components/form-panel';
-import { PreviewPanel } from '@/components/preview-panel';
 import { ptBr } from '@/lib/data/strings';
-import { DOCUMENT_TYPES, N8N_EVENTS, PT_FIT_STATUS } from '@/lib/constants';
+import { DOCUMENT_TYPES, PT_FIT_STATUS } from '@/lib/constants';
 import { PrintPreview } from '@/components/print-preview';
 import { UserNav } from '@/components/auth/user-nav';
 import { useSession } from '@/components/auth/session-provider';
@@ -53,10 +52,8 @@ export default function ReportsPage() {
   const router = useRouter();
   const [equipment, setEquipment] = useState<ProtectiveEquipmentOutput | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [isDownloading, setIsDownloading] = useState(false);
   const [isSendingSignature, setIsSendingSignature] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [mobileView, setMobileView] = useState<'form' | 'preview'>('form');
 
   const [company, setCompany] = useState<Company | null>(null);
   const [works, setWorks] = useState<Work[]>([]);
@@ -172,25 +169,49 @@ export default function ReportsPage() {
   }, [user, toast]);
 
   // Carregar documento salvo via query param
+  const draftLoadedRef = useRef<string | null>(null);
   useEffect(() => {
     const documentId = searchParams.get('documentId');
-    if (!documentId) return;
+    if (!documentId || draftLoadedRef.current === documentId) return;
+    draftLoadedRef.current = documentId;
 
     (async () => {
-      const result = await getDocument(documentId);
-      if (result.success && result.data) {
-        const doc = result.data;
-        form.reset(doc.formData);
-        if (doc.analysisData?.proceduralSteps?.length) {
-          form.setValue('analysisSteps', doc.analysisData.proceduralSteps, { shouldDirty: true });
+      try {
+        console.log('[loadDraft] Loading document:', documentId);
+        const result = await getDocument(documentId);
+        console.log('[loadDraft] Result:', result.success, result.data ? 'has data' : 'no data');
+        if (result.success && result.data) {
+          const doc = result.data;
+          setCurrentDocumentId(doc.id);
+
+          // Converter null → undefined para compatibilidade com React Hook Form
+          const cleanFormData = JSON.parse(
+            JSON.stringify(doc.formData, (_, v) => (v === null ? undefined : v))
+          );
+
+          console.log('[loadDraft] Restoring formData:', JSON.stringify(cleanFormData).substring(0, 200));
+
+          // Restaurar formulário completo
+          form.reset(cleanFormData);
+
+          // Restaurar análise (sobrescreve analysisSteps do formData com os da análise salva)
+          if (doc.analysisData?.proceduralSteps?.length) {
+            form.setValue('analysisSteps', doc.analysisData.proceduralSteps, { shouldDirty: true });
+          }
+
+          // Restaurar equipamentos
+          if (doc.equipmentData) {
+            setEquipment(doc.equipmentData);
+          }
+
+          toast({ title: 'Documento carregado', description: `"${doc.documentName}" foi carregado.` });
+        } else {
+          console.error('[loadDraft] Failed:', result.error);
+          toast({ variant: 'destructive', title: 'Erro ao carregar documento', description: result.error || 'Documento não encontrado.' });
         }
-        if (doc.equipmentData) {
-          setEquipment(doc.equipmentData);
-        }
-        setCurrentDocumentId(doc.id);
-        // Limpar query param da URL sem reload
-        router.replace('/reports', { scroll: false });
-        toast({ title: 'Documento carregado', description: `"${doc.documentName}" foi carregado.` });
+      } catch (e) {
+        console.error('[loadDraft] Exception:', e);
+        toast({ variant: 'destructive', title: 'Erro ao carregar documento', description: 'Erro inesperado ao carregar o documento.' });
       }
     })();
   }, [searchParams]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -254,70 +275,17 @@ export default function ReportsPage() {
     }
 
     setIsLoading(false);
-    setMobileView('preview');
   };
 
   const handleNewReport = () => {
     setEquipment(null);
     setError(null);
     setCurrentDocumentId(null);
+    draftLoadedRef.current = null;
     form.reset();
+    router.replace('/reports', { scroll: false });
   };
 
-  const handleDownloadPdf = async () => {
-    setIsDownloading(true);
-    toast({ title: ptBr.actions.generatingPdf });
-
-    try {
-      const formData = form.getValues();
-      const payload = {
-        event: N8N_EVENTS.PDF_GENERATED,
-        documentType: formData.documentType,
-        company,
-        formData,
-        analysisData: analysis,
-        equipmentData: equipment,
-      };
-
-      // Notify n8n in parallel
-      if (company?.n8nProductionUrl) {
-        notifyN8n(payload, company.n8nProductionUrl).catch(err => console.error("N8N notification failed:", err));
-      }
-
-      const response = await fetch('/api/generate-pdf', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: 'Falha ao decodificar a resposta de erro do servidor.' }));
-        throw new Error(errorData.error || 'Falha ao gerar o PDF no servidor.');
-      }
-
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      const filename = `documento_seguranca_${new Date().toISOString().split('T')[0]}.pdf`;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      a.remove();
-      toast({ title: ptBr.toasts.success.pdfDownloaded });
-
-    } catch (error: any) {
-      console.error("Failed to generate or download PDF:", error);
-      toast({
-        variant: 'destructive',
-        title: ptBr.toasts.errors.pdfError,
-        description: error.message,
-      });
-    } finally {
-      setIsDownloading(false);
-    }
-  };
 
   const handleSaveDraft = async () => {
     if (!company?.id) {
@@ -328,6 +296,7 @@ export default function ReportsPage() {
     setIsSavingDraft(true);
     try {
       const formData = form.getValues();
+      console.log('[saveDraft] Saving with companyId:', company.id, 'documentId:', currentDocumentId, 'formData keys:', Object.keys(formData));
       const result = await saveDocument({
         companyId: company.id,
         documentId: currentDocumentId || undefined,
@@ -336,11 +305,13 @@ export default function ReportsPage() {
         equipmentData: equipment,
       });
 
+      console.log('[saveDraft] Result:', result);
+
       if (!result.success) {
         throw new Error(result.error || 'Falha ao salvar rascunho.');
       }
 
-      if (result.documentId && !currentDocumentId) {
+      if (result.documentId) {
         setCurrentDocumentId(result.documentId);
       }
 
@@ -349,6 +320,7 @@ export default function ReportsPage() {
         description: 'O documento foi salvo com sucesso.',
       });
     } catch (error: any) {
+      console.error('[saveDraft] Error:', error);
       toast({
         variant: 'destructive',
         title: 'Erro ao salvar',
@@ -395,6 +367,11 @@ export default function ReportsPage() {
         await markDocumentAsSent(currentDocumentId, result.signatureDocumentId);
       }
 
+      // Limpar estado após envio bem-sucedido
+      setCurrentDocumentId(null);
+      draftLoadedRef.current = null;
+      router.replace('/reports', { scroll: false });
+
       toast({
         title: ptBr.toasts.success.signatureSent,
         description: ptBr.toasts.success.signatureSentDescription,
@@ -424,7 +401,6 @@ export default function ReportsPage() {
             onNewReport={handleNewReport}
             onSubmit={handleFormSubmit}
             isLoading={isLoading}
-            mobileView={mobileView}
             works={works}
             employees={employees}
             isDataLoading={isDataLoading}
@@ -435,17 +411,6 @@ export default function ReportsPage() {
             canSendSignature={liveFormData.documentType === DOCUMENT_TYPES.APR || liveFormData.documentType === DOCUMENT_TYPES.PT}
             isSavingDraft={isSavingDraft}
             onSaveDraft={handleSaveDraft}
-          />
-          <PreviewPanel
-            isLoading={isLoading}
-            error={analysis?.proceduralSteps?.length ? null : error}
-            liveFormData={liveFormData}
-            analysisData={analysis}
-            equipmentData={equipment}
-            company={company}
-            mobileView={mobileView}
-            isDownloading={isDownloading}
-            onGeneratePdf={handleDownloadPdf}
           />
         </main>
       </div>

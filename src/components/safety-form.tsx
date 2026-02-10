@@ -185,7 +185,7 @@ export function SafetyForm({
                             form.setValue('endDate', work.endDate.split('T')[0]);
                             form.setValue('workLocationDetails', work.workLocationDetails);
                           }
-                        }} defaultValue={field.value}>
+                        }} value={field.value}>
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder={ptBr.safetyForm.selectWorkPlaceholder} />
@@ -442,7 +442,7 @@ export function SafetyForm({
                                     form.setValue(`teamMembers.${index}.email`, employee.email || '');
                                     form.setValue(`teamMembers.${index}.phone`, employee.phone || '');
                                   }
-                                }} defaultValue={field.value}>
+                                }} value={field.value}>
                                   <FormControl>
                                     <SelectTrigger>
                                       <SelectValue placeholder={ptBr.safetyForm.selectEmployeePlaceholder} />
@@ -570,7 +570,7 @@ export function SafetyForm({
                                     form.setValue(`responsiblePersons.${index}.email`, employee.email || '');
                                     form.setValue(`responsiblePersons.${index}.phone`, employee.phone || '');
                                   }
-                                }} defaultValue={field.value}>
+                                }} value={field.value}>
                                   <FormControl>
                                     <SelectTrigger>
                                       <SelectValue placeholder={ptBr.safetyForm.selectEmployeePlaceholder} />

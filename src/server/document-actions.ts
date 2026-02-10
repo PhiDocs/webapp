@@ -14,6 +14,19 @@ function buildDocumentName(formData: SafetyFormValues) {
   return `${base}${workName}_${date}`;
 }
 
+// Firestore rejects `undefined` values at any nesting level.
+// This recursively converts undefined → null so the data can be saved.
+function sanitizeForFirestore(obj: any): any {
+  if (obj === undefined) return null;
+  if (obj === null || typeof obj !== 'object') return obj;
+  if (Array.isArray(obj)) return obj.map(sanitizeForFirestore);
+  const result: Record<string, any> = {};
+  for (const [key, value] of Object.entries(obj)) {
+    result[key] = sanitizeForFirestore(value);
+  }
+  return result;
+}
+
 export async function saveDocument({
   companyId,
   documentId,
@@ -28,23 +41,29 @@ export async function saveDocument({
   equipmentData: ProtectiveEquipmentOutput | null;
 }): Promise<{ success: boolean; documentId?: string; error?: string }> {
   try {
+    console.log('[saveDocument] Called with companyId:', companyId, 'documentId:', documentId);
     if (!companyId) {
+      console.log('[saveDocument] No companyId, aborting.');
       return { success: false, error: 'Empresa não identificada.' };
     }
 
     const now = new Date().toISOString();
     const documentName = buildDocumentName(formData);
+    const safeFormData = sanitizeForFirestore(formData);
+    const safeAnalysisData = sanitizeForFirestore(analysisData);
+    const safeEquipmentData = sanitizeForFirestore(equipmentData);
 
     if (documentId) {
       // Atualizar documento existente
       await DocumentRepository.update(documentId, {
-        formData,
-        analysisData,
-        equipmentData,
+        formData: safeFormData,
+        analysisData: safeAnalysisData,
+        equipmentData: safeEquipmentData,
         documentName,
         documentType: formData.documentType as DocumentType,
         updatedAt: now,
       });
+      console.log('[saveDocument] Updated document:', documentId);
       return { success: true, documentId };
     }
 
@@ -54,15 +73,17 @@ export async function saveDocument({
       documentType: formData.documentType as DocumentType,
       documentName,
       status: 'draft',
-      formData,
-      analysisData,
-      equipmentData,
+      formData: safeFormData,
+      analysisData: safeAnalysisData,
+      equipmentData: safeEquipmentData,
       createdAt: now,
       updatedAt: now,
     });
 
+    console.log('[saveDocument] Created new document with id:', newId);
     return { success: true, documentId: newId };
   } catch (e: unknown) {
+    console.error('[saveDocument] Error:', e);
     const error = e instanceof Error ? e : new Error(String(e ?? 'Erro desconhecido ao salvar documento.'));
     await ErrorLogRepository.log(error, 'saveDocument');
     return { success: false, error: error.message };

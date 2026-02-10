@@ -97,7 +97,7 @@ const CheckboxField = ({ form, name, label }: { form: UseFormReturn<SafetyFormVa
                     render={({ field }) => (
                       <FormItem className="space-y-2"><FormLabel className={index !== 0 ? 'sr-only' : ''}>{ptBr.ptForm.isFit}</FormLabel>
                         <FormControl>
-                          <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex items-center space-x-4">
+                          <RadioGroup onValueChange={field.onChange} value={field.value} className="flex items-center space-x-4">
                             <FormItem className="flex items-center space-x-2 space-y-0"><FormControl><RadioGroupItem value={PT_FIT_STATUS.YES} /></FormControl><FormLabel className="font-normal">{ptBr.ptForm.yes}</FormLabel></FormItem>
                             <FormItem className="flex items-center space-x-2 space-y-0"><FormControl><RadioGroupItem value={PT_FIT_STATUS.NO} /></FormControl><FormLabel className="font-normal">{ptBr.ptForm.no}</FormLabel></FormItem>
                           </RadioGroup>

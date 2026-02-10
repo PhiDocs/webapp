@@ -1,12 +1,23 @@
-import puppeteer, { Browser } from 'puppeteer';
+import puppeteerCore, { Browser } from 'puppeteer-core';
 import React from 'react';
 import { PrintPreview } from '@/components/print-preview';
 import type { SafetyFormValues, Company } from '@/lib/types';
 import type { SafetyAnalysisOutput, ProtectiveEquipmentOutput } from '@/server/ai-actions';
 
-const puppeteerOptions = process.env.NODE_ENV === 'production'
-  ? { args: ['--no-sandbox', '--disable-setuid-sandbox'] }
-  : {};
+async function getBrowser(): Promise<Browser> {
+  if (process.env.NODE_ENV === 'production') {
+    const chromium = (await import('@sparticuz/chromium')).default;
+    return puppeteerCore.launch({
+      args: chromium.args,
+      executablePath: await chromium.executablePath(),
+      headless: true,
+    }) as Promise<Browser>;
+  }
+
+  // Local: usa o puppeteer completo que inclui o Chromium
+  const puppeteer = await import('puppeteer');
+  return puppeteer.default.launch() as unknown as Promise<Browser>;
+}
 
 const pdfStyles = `
   /* Reset and base styles */
@@ -210,7 +221,7 @@ export async function generatePdfBuffer({
       </html>
     `;
 
-    browser = await puppeteer.launch(puppeteerOptions);
+    browser = await getBrowser();
     const page = await browser.newPage();
 
     await page.setContent(fullHtml, { waitUntil: 'domcontentloaded' });
