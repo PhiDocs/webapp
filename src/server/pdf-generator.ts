@@ -1,23 +1,10 @@
-import puppeteerCore, { Browser } from 'puppeteer-core';
 import React from 'react';
 import { PrintPreview } from '@/components/print-preview';
 import type { SafetyFormValues, Company } from '@/lib/types';
 import type { SafetyAnalysisOutput, ProtectiveEquipmentOutput } from '@/server/ai-actions';
 
-async function getBrowser(): Promise<Browser> {
-  if (process.env.NODE_ENV === 'production') {
-    const chromium = (await import('@sparticuz/chromium')).default;
-    return puppeteerCore.launch({
-      args: chromium.args,
-      executablePath: await chromium.executablePath(),
-      headless: true,
-    }) as Promise<Browser>;
-  }
-
-  // Local: usa o puppeteer completo que inclui o Chromium
-  const puppeteer = await import('puppeteer');
-  return puppeteer.default.launch() as unknown as Promise<Browser>;
-}
+const PDF_FUNCTION_URL = process.env.PDF_FUNCTION_URL || '';
+const PDF_FUNCTION_SECRET = process.env.PDF_FUNCTION_SECRET || '';
 
 const pdfStyles = `
   /* Reset and base styles */
@@ -183,6 +170,64 @@ const pdfStyles = `
   .pt-checkbox.checked { background-color: #333; }
 `;
 
+function buildHtml(componentHtml: string): string {
+  return `<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>${pdfStyles}</style>
+  </head>
+  <body>
+    ${componentHtml}
+  </body>
+</html>`;
+}
+
+async function generatePdfViaCloudFunction(html: string): Promise<Buffer> {
+  if (!PDF_FUNCTION_URL) {
+    throw new Error('PDF_FUNCTION_URL não configurada. Verifique as variáveis de ambiente.');
+  }
+
+  const response = await fetch(PDF_FUNCTION_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-PDF-Secret': PDF_FUNCTION_SECRET,
+    },
+    body: JSON.stringify({ html }),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Cloud Function retornou erro ${response.status}: ${errorText}`);
+  }
+
+  const data = await response.json();
+  if (!data.pdf) {
+    throw new Error('Cloud Function não retornou o PDF.');
+  }
+
+  return Buffer.from(data.pdf, 'base64');
+}
+
+async function generatePdfLocally(html: string): Promise<Buffer> {
+  const puppeteer = await import('puppeteer');
+  const browser = await puppeteer.default.launch();
+  try {
+    const page = await browser.newPage();
+    await page.setContent(html, { waitUntil: 'domcontentloaded' });
+    const pdfBuffer = await page.pdf({
+      format: 'A4',
+      printBackground: true,
+      margin: { top: '10mm', right: '10mm', bottom: '10mm', left: '10mm' },
+    });
+    return Buffer.from(pdfBuffer);
+  } finally {
+    await browser.close().catch(console.error);
+  }
+}
+
 export async function generatePdfBuffer({
   formData,
   analysisData,
@@ -194,53 +239,22 @@ export async function generatePdfBuffer({
   equipmentData: ProtectiveEquipmentOutput | null;
   company: Company | null;
 }): Promise<Buffer> {
-  let browser: Browser | null = null;
+  const { renderToString } = await import('react-dom/server');
+  const componentHtml = renderToString(
+    React.createElement(PrintPreview, {
+      formData,
+      analysisData,
+      equipmentData,
+      company,
+    })
+  );
 
-  try {
-    const { renderToString } = await import('react-dom/server');
-    const componentHtml = renderToString(
-      React.createElement(PrintPreview, {
-        formData,
-        analysisData,
-        equipmentData,
-        company,
-      })
-    );
+  const fullHtml = buildHtml(componentHtml);
 
-    const fullHtml = `
-      <!DOCTYPE html>
-      <html lang="pt-BR">
-        <head>
-          <meta charset="UTF-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <style>${pdfStyles}</style>
-        </head>
-        <body>
-          ${componentHtml}
-        </body>
-      </html>
-    `;
-
-    browser = await getBrowser();
-    const page = await browser.newPage();
-
-    await page.setContent(fullHtml, { waitUntil: 'domcontentloaded' });
-
-    const pdfBuffer = await page.pdf({
-      format: 'A4',
-      printBackground: true,
-      margin: {
-        top: '10mm',
-        right: '10mm',
-        bottom: '10mm',
-        left: '10mm',
-      },
-    });
-
-    return Buffer.from(pdfBuffer);
-  } finally {
-    if (browser) {
-      await browser.close().catch(console.error);
-    }
+  // Em produção, usa a Cloud Function; localmente, usa Puppeteer direto
+  if (process.env.NODE_ENV === 'production') {
+    return generatePdfViaCloudFunction(fullHtml);
   }
+
+  return generatePdfLocally(fullHtml);
 }

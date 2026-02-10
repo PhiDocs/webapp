@@ -19,12 +19,6 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: false,
   },
-  // Include @sparticuz/chromium binary files in standalone output (needed for PDF generation)
-  outputFileTracingIncludes: {
-    '/api/generate-pdf': ['./node_modules/@sparticuz/chromium/bin/**'],
-    '/reports': ['./node_modules/@sparticuz/chromium/bin/**'],
-  },
-  serverExternalPackages: ['@sparticuz/chromium'],
   images: {
     remotePatterns: [
       {

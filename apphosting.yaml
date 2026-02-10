@@ -59,6 +59,16 @@ env:
       - BUILD
       - RUNTIME
 
+  # PDF Cloud Function
+  - variable: PDF_FUNCTION_URL
+    value: https://generatepdf-dgh3pzxkta-uc.a.run.app
+    availability:
+      - RUNTIME
+  - variable: PDF_FUNCTION_SECRET
+    secret: PDF_FUNCTION_SECRET
+    availability:
+      - RUNTIME
+
   # n8n Webhook (opcional)
   - variable: N8N_PRODUCTION_URL
     value: https://seu.n8n.url/webhook/production

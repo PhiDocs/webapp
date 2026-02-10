@@ -1,0 +1,68 @@
+import { onRequest } from "firebase-functions/v2/https";
+import { defineSecret } from "firebase-functions/params";
+import puppeteer from "puppeteer";
+
+const pdfFunctionSecret = defineSecret("PDF_FUNCTION_SECRET");
+
+export const generatePdf = onRequest(
+  {
+    memory: "1GiB",
+    timeoutSeconds: 120,
+    region: "us-central1",
+    maxInstances: 10,
+    secrets: [pdfFunctionSecret],
+  },
+  async (req, res) => {
+    // Only allow POST
+    if (req.method !== "POST") {
+      res.status(405).send("Method Not Allowed");
+      return;
+    }
+
+    // Validate secret token
+    const secret = pdfFunctionSecret.value();
+    const authHeader = req.headers["x-pdf-secret"];
+    if (!secret || authHeader !== secret) {
+      res.status(401).send("Unauthorized");
+      return;
+    }
+
+    const { html } = req.body;
+    if (!html || typeof html !== "string") {
+      res.status(400).send("Missing or invalid 'html' field in request body.");
+      return;
+    }
+
+    let browser = null;
+    try {
+      browser = await puppeteer.launch({
+        headless: true,
+        args: ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage"],
+      });
+
+      const page = await browser.newPage();
+      await page.setContent(html, { waitUntil: "domcontentloaded" });
+
+      const pdfBuffer = await page.pdf({
+        format: "A4",
+        printBackground: true,
+        margin: {
+          top: "10mm",
+          right: "10mm",
+          bottom: "10mm",
+          left: "10mm",
+        },
+      });
+
+      const base64 = Buffer.from(pdfBuffer).toString("base64");
+      res.status(200).json({ pdf: base64 });
+    } catch (error: any) {
+      console.error("PDF generation error:", error);
+      res.status(500).json({ error: error.message || "Failed to generate PDF" });
+    } finally {
+      if (browser) {
+        await browser.close().catch(console.error);
+      }
+    }
+  }
+);
