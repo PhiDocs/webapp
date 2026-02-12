@@ -53,6 +53,7 @@ export default function ReportsPage() {
   const [equipment, setEquipment] = useState<ProtectiveEquipmentOutput | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isSendingSignature, setIsSendingSignature] = useState(false);
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const [company, setCompany] = useState<Company | null>(null);
@@ -85,6 +86,7 @@ export default function ReportsPage() {
           email: '',
           phone: '',
           useAssinafy: true,
+          signatureData: '',
         }
       ],
       teamMembers: [],
@@ -387,6 +389,58 @@ export default function ReportsPage() {
     }
   };
 
+  const handleGeneratePdf = async () => {
+    setIsGeneratingPdf(true);
+    try {
+      const formData = form.getValues();
+
+      const response = await fetch('/api/generate-pdf', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          formData,
+          analysisData: analysis,
+          equipmentData: equipment,
+          company,
+        }),
+      });
+
+      if (!response.ok) {
+        let details = '';
+        try {
+          const data = await response.json();
+          details = data?.details ? ` ${data.details}` : '';
+        } catch {
+          // ignore json parse error
+        }
+        throw new Error(`${ptBr.errors.pdfGenerationFailed}${details}`);
+      }
+
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'documento_seguranca.pdf';
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+
+      toast({
+        title: ptBr.toasts.success.pdfDownloaded,
+        description: ptBr.toasts.success.pdfDownloadedDescription,
+      });
+    } catch (error: any) {
+      toast({
+        variant: 'destructive',
+        title: ptBr.toasts.errors.pdfError,
+        description: error?.message || ptBr.toasts.errors.pdfErrorDescription,
+      });
+    } finally {
+      setIsGeneratingPdf(false);
+    }
+  };
+
   return (
     <>
       <div className="min-h-screen bg-background flex flex-col no-print">
@@ -409,6 +463,8 @@ export default function ReportsPage() {
             isSendingSignature={isSendingSignature}
             onSendForSignature={handleSendForSignature}
             canSendSignature={liveFormData.documentType === DOCUMENT_TYPES.APR || liveFormData.documentType === DOCUMENT_TYPES.PT}
+            isGeneratingPdf={isGeneratingPdf}
+            onGeneratePdf={handleGeneratePdf}
             isSavingDraft={isSavingDraft}
             onSaveDraft={handleSaveDraft}
           />

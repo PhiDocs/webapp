@@ -83,8 +83,9 @@ function ResponsiblesSection({ data }: { data: SafetyFormValues }) {
       <table className="w-full border-collapse border mt-0 analysis-table">
         <thead>
           <tr>
-            <th className="text-left w-[50%]">{ptBr.printPreview.apr.name}</th>
-            <th className="text-left w-[50%]">{ptBr.printPreview.apr.role}</th>
+            <th className="text-left w-[40%]">{ptBr.printPreview.apr.name}</th>
+            <th className="text-left w-[30%]">{ptBr.printPreview.apr.role}</th>
+            <th className="text-left w-[30%]">{ptBr.printPreview.apr.signature}</th>
           </tr>
         </thead>
         <tbody>
@@ -92,6 +93,11 @@ function ResponsiblesSection({ data }: { data: SafetyFormValues }) {
             <tr key={`resp-${index}`} className="avoid-break">
               <td className="h-10">{person.name || <Empty />}</td>
               <td>{person.role || <Empty />}</td>
+              <td>
+                {person.signatureData ? (
+                  <img src={person.signatureData} alt={ptBr.other.signatureAlt} className="max-h-10" />
+                ) : null}
+              </td>
             </tr>
           ))}
         </tbody>
@@ -109,9 +115,10 @@ function TeamSection({ data }: { data: SafetyFormValues }) {
       <table className="w-full border-collapse border mt-0 analysis-table">
         <thead>
           <tr>
-            <th className="text-left w-[30%]">{ptBr.printPreview.apr.date}</th>
-            <th className="text-left w-[40%]">{ptBr.printPreview.apr.name}</th>
-            <th className="text-left w-[30%]">{ptBr.printPreview.apr.role}</th>
+            <th className="text-left w-[20%]">{ptBr.printPreview.apr.date}</th>
+            <th className="text-left w-[35%]">{ptBr.printPreview.apr.name}</th>
+            <th className="text-left w-[20%]">{ptBr.printPreview.apr.role}</th>
+            <th className="text-left w-[25%]">{ptBr.printPreview.apr.signature}</th>
           </tr>
         </thead>
         <tbody>
@@ -120,6 +127,11 @@ function TeamSection({ data }: { data: SafetyFormValues }) {
               <td className="h-10">{getShortDate(member.date) || <Empty />}</td>
               <td>{member.name || <Empty />}</td>
               <td>{member.role || <Empty />}</td>
+              <td>
+                {member.signatureData ? (
+                  <img src={member.signatureData} alt={ptBr.other.signatureAlt} className="max-h-10" />
+                ) : null}
+              </td>
             </tr>
           ))}
         </tbody>

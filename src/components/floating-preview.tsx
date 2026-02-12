@@ -1,11 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { X, Maximize2, Minimize2 } from 'lucide-react';
+import { X, Maximize2, Minimize2, ZoomIn } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PrintPreview } from '@/components/print-preview';
 import type { SafetyFormValues, Company } from '@/lib/types';
 import type { SafetyAnalysisOutput, ProtectiveEquipmentOutput } from '@/server/ai-actions';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 interface FloatingPreviewProps {
     formData: SafetyFormValues;
@@ -27,6 +28,7 @@ export function FloatingPreview({
     onMinimizedChange,
 }: FloatingPreviewProps) {
     const [isMinimized, setIsMinimized] = useState(false);
+    const [isZoomOpen, setIsZoomOpen] = useState(false);
 
     const handleMinimizeToggle = () => {
         const newMinimized = !isMinimized;
@@ -45,6 +47,17 @@ export function FloatingPreview({
                     <h3 className="text-sm font-semibold text-gray-700">Pré-visualização</h3>
                 )}
                 <div className="flex items-center gap-1 ml-auto">
+                    {!isMinimized && (
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 w-8 p-0"
+                            onClick={() => setIsZoomOpen(true)}
+                            title="Ver em tela cheia"
+                        >
+                            <ZoomIn className="h-4 w-4" />
+                        </Button>
+                    )}
                     <Button
                         variant="ghost"
                         size="sm"
@@ -95,6 +108,27 @@ export function FloatingPreview({
                     </div>
                 </div>
             )}
+
+            <Dialog open={isZoomOpen} onOpenChange={setIsZoomOpen}>
+                <DialogContent className="max-w-[95vw] w-[95vw] h-[90vh] p-0">
+                    <DialogHeader className="px-4 py-3 border-b">
+                        <DialogTitle>Pré-visualização</DialogTitle>
+                    </DialogHeader>
+                    <div className="h-[calc(90vh-60px)] overflow-auto bg-gray-100 p-6">
+                        <div className="mx-auto w-fit">
+                            <div className="transform scale-[0.9] origin-top">
+                                <PrintPreview
+                                    formData={formData}
+                                    analysisData={analysisData}
+                                    equipmentData={equipmentData}
+                                    company={company}
+                                    error={error}
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }

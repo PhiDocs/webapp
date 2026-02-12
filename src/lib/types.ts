@@ -38,6 +38,7 @@ export const responsiblePersonSchema = z.object({
   email: z.string().email().optional(),
   phone: z.string().optional(),
   useAssinafy: z.boolean().default(true),
+  signatureData: z.string().optional(),
   assinafySignerId: z.string().optional(),
   assinafySigningUrl: z.string().optional(),
   assinafyStatus: z.enum(['pending', 'signed', 'declined']).optional(),
@@ -50,7 +51,7 @@ export const responsiblePersonSchema = z.object({
     if (!data.role) {
       ctx.addIssue({ code: z.ZodIssueCode.custom, message: validationMessages.responsibleRole, path: ['role'] });
     }
-    if (!data.email) {
+    if (data.useAssinafy && !data.email) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: validationMessages.emailRequired,
@@ -63,10 +64,20 @@ export const teamMemberSchema = z.object({
   employeeId: z.string().optional(),
   date: z.string().min(1, validationMessages.teamDate),
   name: z.string().min(1, validationMessages.teamName),
-  role: z.string().min(1, validationMessages.teamRole),
+  role: z.string().optional(),
   email: z.string().email().optional(),
   phone: z.string().optional(),
   useAssinafy: z.boolean().default(true),
+  isManual: z.boolean().optional(),
+  signatureData: z.string().optional(),
+}).superRefine((data, ctx) => {
+  if (data.useAssinafy && !data.email) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: validationMessages.emailRequired,
+      path: ['email'],
+    });
+  }
 });
 
 export const analysisStepSchema = z.object({

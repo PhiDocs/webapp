@@ -6,8 +6,14 @@ const isDev = process.env.NODE_ENV !== 'production';
 // Captura a tag mais recente + hash do commit atual no momento do build
 let appVersion = 'dev';
 try {
-  const tag = execSync('git tag --sort=-v:refname 2>/dev/null').toString().trim().split('\n')[0] || '';
-  const hash = execSync('git rev-parse --short HEAD 2>/dev/null').toString().trim();
+  // Use cross-platform stderr suppression (works on Windows and *nix)
+  const tag = execSync('git tag --sort=-v:refname', { stdio: ['ignore', 'pipe', 'ignore'] })
+    .toString()
+    .trim()
+    .split('\n')[0] || '';
+  const hash = execSync('git rev-parse --short HEAD', { stdio: ['ignore', 'pipe', 'ignore'] })
+    .toString()
+    .trim();
   appVersion = tag ? `${tag} (${hash})` : hash || 'dev';
 } catch {
   appVersion = 'dev';

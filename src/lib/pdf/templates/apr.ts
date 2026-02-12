@@ -132,12 +132,16 @@ export function generateAPRPages(formData: PdfFormData, analysisData: SafetyAnal
 
     // --- Responsibles Section ---
     const responsibleBody: TableCell[][] = [
-        [{ text: 'NOME', style: 'th' }, { text: 'FUNÇÃO', style: 'th' }]
+        [{ text: 'NOME', style: 'th' }, { text: 'FUNÇÃO', style: 'th' }, { text: 'ASSINATURA', style: 'th' }]
     ];
     formData.responsiblePersons.forEach(p => {
+        const signatureCell = p.signatureData && isValidBase64(p.signatureData)
+            ? { image: p.signatureData, fit: [100, 30], margin: [5, 4, 5, 4] }
+            : { text: '', style: 'td', alignment: 'center', margin: [5, 8] };
         responsibleBody.push([
             { text: p.name || '...', style: 'td', alignment: 'left', margin: [5, 8] },
             { text: p.role || '...', style: 'td', alignment: 'left', margin: [5, 8] },
+            signatureCell,
         ]);
     });
 
@@ -148,7 +152,7 @@ export function generateAPRPages(formData: PdfFormData, analysisData: SafetyAnal
                 [{text: 'RESPONSÁVEL PELO ACOMPANHAMENTO DOS SERVIÇOS', style: 'sectionTitle'}],
                 [{
                     table: {
-                        widths: ['*', '*'],
+                        widths: ['*', '*', '*'],
                         body: responsibleBody,
                         dontBreakRows: true,
                     },
@@ -259,13 +263,17 @@ export function generateAPRPages(formData: PdfFormData, analysisData: SafetyAnal
     // --- Team Section ---
     if (formData.teamMembers && formData.teamMembers.length > 0) {
         const teamBody: TableCell[][] = [
-            [{ text: 'DATA', style: 'th' }, { text: 'NOME', style: 'th' }, { text: 'FUNÇÃO / EMPRESA', style: 'th' }]
+            [{ text: 'DATA', style: 'th' }, { text: 'NOME', style: 'th' }, { text: 'FUNÇÃO / EMPRESA', style: 'th' }, { text: 'ASSINATURA', style: 'th' }]
         ];
         formData.teamMembers.forEach(m => {
+            const signatureCell = m.signatureData && isValidBase64(m.signatureData)
+                ? { image: m.signatureData, fit: [100, 30], margin: [5, 4, 5, 4] }
+                : { text: '', style: 'td', alignment: 'center', margin: [5, 8] };
             teamBody.push([
                 { text: getShortDate(m.date), style: 'td' },
                 { text: m.name, style: 'td' },
-                { text: m.role, style: 'td' },
+                { text: m.role || '...', style: 'td' },
+                signatureCell,
             ]);
         });
         content.push({
@@ -275,7 +283,7 @@ export function generateAPRPages(formData: PdfFormData, analysisData: SafetyAnal
                     [{text: 'EQUIPE DE TRABALHO', style: 'sectionTitle'}],
                     [{
                         table: {
-                            widths: ['auto', '*', '*'],
+                            widths: ['auto', '*', '*', '*'],
                             body: teamBody,
                             dontBreakRows: true,
                         },

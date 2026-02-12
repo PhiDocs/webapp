@@ -6,7 +6,7 @@ import { SafetyForm } from '@/components/safety-form';
 import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
-import { RefreshCcw, Eye, EyeOff, Send, Loader2, Save } from 'lucide-react';
+import { RefreshCcw, Eye, EyeOff, Send, Loader2, Save, FileDown } from 'lucide-react';
 
 import {
   AlertDialog,
@@ -34,11 +34,13 @@ interface FormPanelProps {
   isSendingSignature?: boolean;
   onSendForSignature?: () => void;
   canSendSignature?: boolean;
+  isGeneratingPdf?: boolean;
+  onGeneratePdf?: () => void;
   isSavingDraft?: boolean;
   onSaveDraft?: () => void;
 }
 
-export function FormPanel({ form, onNewReport, onSubmit, isLoading, works, employees, isDataLoading, showFloatingPreview, onToggleFloatingPreview, isSendingSignature, onSendForSignature, canSendSignature, isSavingDraft, onSaveDraft }: FormPanelProps) {
+export function FormPanel({ form, onNewReport, onSubmit, isLoading, works, employees, isDataLoading, showFloatingPreview, onToggleFloatingPreview, isSendingSignature, onSendForSignature, canSendSignature, isGeneratingPdf, onGeneratePdf, isSavingDraft, onSaveDraft }: FormPanelProps) {
   return (
     <div className="h-full">
       <ScrollArea className="h-full">
@@ -106,14 +108,14 @@ export function FormPanel({ form, onNewReport, onSubmit, isLoading, works, emplo
             isDataLoading={isDataLoading}
           />
 
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-wrap items-center justify-end gap-2">
             {onSaveDraft && (
               <Button
                 type="button"
                 variant="outline"
                 onClick={onSaveDraft}
                 disabled={isSavingDraft}
-                className="w-full"
+                className="min-w-[180px]"
               >
                 {isSavingDraft ? (
                   <>
@@ -128,12 +130,33 @@ export function FormPanel({ form, onNewReport, onSubmit, isLoading, works, emplo
                 )}
               </Button>
             )}
+            {onGeneratePdf && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onGeneratePdf}
+                disabled={isGeneratingPdf}
+                className="min-w-[180px]"
+              >
+                {isGeneratingPdf ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    {ptBr.actions.generatingPdf}
+                  </>
+                ) : (
+                  <>
+                    <FileDown className="mr-2 h-4 w-4" />
+                    {ptBr.actions.generatePdf}
+                  </>
+                )}
+              </Button>
+            )}
             {onSendForSignature && (
               <Button
                 type="button"
                 onClick={onSendForSignature}
                 disabled={isSendingSignature || !canSendSignature}
-                className="w-full"
+                className="min-w-[180px]"
               >
                 {isSendingSignature ? (
                   <>
