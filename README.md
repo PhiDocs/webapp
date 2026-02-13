@@ -18,7 +18,7 @@ O sistema usa **Firebase Custom Claims** para diferenciar os papéis dos usuári
 -   **Admin:** Um usuário com as claims `{ role: 'admin', companyId: '...' }`. Apenas administradores podem acessar a rota `/company/[companyId]` para gerenciar sua empresa.
 -   **Usuário:** Um usuário sem a claim de `admin`. Eles são redirecionados para a página principal (`/`) para gerar documentos.
 
-A verificação é feita no `src/server/proxy.ts`, que lê os claims do cookie de sessão em cada requisição e aplica os redirecionamentos necessários.
+A verificação roda no middleware (`middleware.ts` → `src/proxy.ts`), que lê os claims do cookie de sessão em cada requisição e aplica os redirecionamentos necessários. As server actions validam novamente o cookie e conferem `role/companyId` antes de acessar dados ou integrações.
 
 ## Como se Tornar um Admin
 
@@ -47,7 +47,8 @@ Se você já tem um usuário criado e deseja torná-lo um administrador de uma e
     ```
     Este script encontrará o usuário pelo e-mail e definirá (ou atualizará) suas *custom claims* para `{ role: 'admin', companyId: '...' }`.
 
-> **Importante:** Após executar qualquer um desses scripts e alterar os papéis, o usuário precisa **fazer logout e login novamente** para que seu token de sessão seja atualizado com os novos *custom claims*.
+> **Importante:** Após executar qualquer um desses scripts e alterar os papéis, o usuário precisa **fazer logout e login novamente** para que seu token de sessão seja atualizado com os novos *custom claims*.  
+> **Segurança:** as server actions agora exigem sessão e checam o `companyId`/`role` do usuário. Para rodar o script `registerCompany` sem sessão, defina `ALLOW_REGISTER_COMPANY_SCRIPT=true` no `.env` (não usar em produção).
 
 ## Rodando Localmente: Configurando a Autenticação
 

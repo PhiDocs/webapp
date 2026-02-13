@@ -5,6 +5,7 @@ import type { SafetyAnalysisOutput, ProtectiveEquipmentOutput } from '@/server/a
 
 const PDF_FUNCTION_URL = process.env.PDF_FUNCTION_URL || '';
 const PDF_FUNCTION_SECRET = process.env.PDF_FUNCTION_SECRET || '';
+const isProd = process.env.NODE_ENV === 'production';
 
 const pdfStyles = `
   /* Reset and base styles */
@@ -213,7 +214,12 @@ async function generatePdfViaCloudFunction(html: string): Promise<Buffer> {
 
 async function generatePdfLocally(html: string): Promise<Buffer> {
   const puppeteer = await import('puppeteer');
-  const browser = await puppeteer.default.launch();
+  // Reutiliza uma instância de browser em dev para evitar custo por requisição
+  const g: any = globalThis as any;
+  if (!g.__pdfBrowserPromise) {
+    g.__pdfBrowserPromise = puppeteer.default.launch();
+  }
+  const browser = await g.__pdfBrowserPromise;
   try {
     const page = await browser.newPage();
     await page.setContent(html, { waitUntil: 'domcontentloaded' });
@@ -224,7 +230,7 @@ async function generatePdfLocally(html: string): Promise<Buffer> {
     });
     return Buffer.from(pdfBuffer);
   } finally {
-    await browser.close().catch(console.error);
+    // Não fechar o browser em dev para reaproveitar; o processo encerra automaticamente
   }
 }
 
@@ -252,7 +258,7 @@ export async function generatePdfBuffer({
   const fullHtml = buildHtml(componentHtml);
 
   // Em produção, usa a Cloud Function; localmente, usa Puppeteer direto
-  if (process.env.NODE_ENV === 'production') {
+  if (isProd) {
     return generatePdfViaCloudFunction(fullHtml);
   }
 

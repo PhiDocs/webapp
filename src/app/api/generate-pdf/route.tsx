@@ -3,9 +3,27 @@ import { ErrorLogRepository } from '@/repositories/error-log.repository';
 import type { SafetyFormValues, Company } from '@/lib/types';
 import type { SafetyAnalysisOutput, ProtectiveEquipmentOutput } from '@/server/ai-actions';
 import { generatePdfBuffer } from '@/server/pdf-generator';
+import { requireAuth } from '@/server/auth-guard';
 
 export async function POST(request: NextRequest) {
   try {
+    const contentLength = Number(request.headers.get('content-length') || '0');
+    if (contentLength > 1_000_000) {
+      return NextResponse.json(
+        { error: 'Payload muito grande. Limite de 1MB.' },
+        { status: 413 }
+      );
+    }
+
+    try {
+      await requireAuth();
+    } catch (error: any) {
+      return NextResponse.json(
+        { error: error.message || 'Acesso negado.' },
+        { status: 401 }
+      );
+    }
+
     const { formData, analysisData, equipmentData, company } = (await request.json()) as {
         formData: SafetyFormValues;
         analysisData: SafetyAnalysisOutput | null;
