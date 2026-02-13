@@ -6,6 +6,7 @@ import { JobRoleRepository } from '@/repositories/job-role.repository';
 import { ErrorLogRepository } from '@/repositories/error-log.repository';
 import { z } from 'zod';
 import { ptBr } from '@/lib/data/strings';
+import { requireAuth } from '@/server/auth-guard';
 
 // Server-side schema validation. Includes companyId.
 const employeeServerSchema = z.object({
@@ -32,6 +33,7 @@ export async function getEmployees(companyId: string) {
         return { success: false, error: 'ID da empresa não fornecido.' };
     }
     try {
+        await requireAuth({ matchCompanyId: companyId, requireCompany: true });
         const employees = await EmployeeRepository.getAllByCompany(companyId);
         return { success: true, data: employees };
     } catch (e: unknown) {
@@ -45,6 +47,12 @@ export async function getEmployees(companyId: string) {
  * Create a new employee.
  */
 export async function createEmployee(data: EmployeeServerValues) {
+    try {
+        await requireAuth({ role: 'admin', matchCompanyId: data.companyId, requireCompany: true });
+    } catch (error: any) {
+        return { success: false, error: error.message || 'Acesso negado.' };
+    }
+
     const validation = employeeServerSchema.safeParse(data);
     if (!validation.success) {
         const errors = validation.error.flatten().fieldErrors;
@@ -92,6 +100,12 @@ export async function createEmployee(data: EmployeeServerValues) {
  * Update an existing employee.
  */
 export async function updateEmployee(id: string, data: EmployeeServerValues) {
+    try {
+        await requireAuth({ role: 'admin', matchCompanyId: data.companyId, requireCompany: true });
+    } catch (error: any) {
+        return { success: false, error: error.message || 'Acesso negado.' };
+    }
+
     const validation = employeeServerSchema.safeParse(data);
     if (!validation.success) {
         const errors = validation.error.flatten().fieldErrors;
@@ -141,6 +155,7 @@ export async function deleteEmployee(id: string, companyId: string) {
     }
 
     try {
+        await requireAuth({ role: 'admin', matchCompanyId: companyId, requireCompany: true });
         await EmployeeRepository.delete(id, companyId);
         revalidatePath(`/company/${companyId}`);
         return { success: true };

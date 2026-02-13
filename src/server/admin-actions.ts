@@ -4,6 +4,7 @@ import { z } from 'zod';
 import admin from '@/firebase/admin-config';
 import { CompanyRepository } from '@/repositories/company.repository';
 import { UserRepository } from '@/repositories/user.repository';
+import { requireAuth } from '@/server/auth-guard';
 
 
 const registerCompanySchema = z.object({
@@ -21,6 +22,15 @@ const registerCompanySchema = z.object({
  * @returns An object indicating success or error.
  */
 export async function registerCompany(data: unknown) {
+  const allowScriptBypass = process.env.ALLOW_REGISTER_COMPANY_SCRIPT === 'true';
+  if (!allowScriptBypass) {
+    try {
+      await requireAuth({ role: 'admin' });
+    } catch (error: any) {
+      return { success: false, error: error.message || 'Acesso negado.' };
+    }
+  }
+
   const validation = registerCompanySchema.safeParse(data);
   if (!validation.success) {
     return { success: false, error: validation.error.flatten().fieldErrors };

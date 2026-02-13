@@ -6,6 +6,7 @@ import { googleAI } from '@genkit-ai/googleai';
 import { z } from 'zod';
 import { ptBr } from '@/lib/data/strings';
 import { ErrorLogRepository } from '@/repositories/error-log.repository';
+import { requireAuth } from '@/server/auth-guard';
 
 // Create Genkit instance with Google AI plugin
 const ai = genkit({
@@ -38,6 +39,12 @@ const ProtectiveEquipmentOutputSchema = z.object({
 export type ProtectiveEquipmentOutput = z.infer<typeof ProtectiveEquipmentOutputSchema>;
 
 export async function getSafetyAnalysis(data: { activityDescription: string }): Promise<{ data: SafetyAnalysisOutput | null; error: string | null }> {
+  try {
+    await requireAuth();
+  } catch (e: any) {
+    return { data: null, error: e.message || ptBr.validations.invalidInput };
+  }
+
   const parsed = activitySchema.safeParse(data);
   
   if (!parsed.success) {
@@ -94,6 +101,12 @@ export async function getSafetyAnalysis(data: { activityDescription: string }): 
 }
 
 export async function getProtectiveEquipment(data: { activityDescription: string }): Promise<{ data: ProtectiveEquipmentOutput | null; error: string | null }> {
+  try {
+    await requireAuth();
+  } catch (e: any) {
+    return { data: null, error: e.message || ptBr.validations.invalidInput };
+  }
+
   const parsed = activitySchema.safeParse(data);
 
   if (!parsed.success) {

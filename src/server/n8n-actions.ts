@@ -2,6 +2,7 @@
 
 import { N8nService } from '@/services/n8n.service';
 import { ptBr } from '@/lib/data/strings';
+import { requireAuth } from '@/server/auth-guard';
 
 const N8N_ERROR_MESSAGES = {
   WEBHOOK_NOT_CONFIGURED: ptBr.validations.n8nWebhookNotConfigured,
@@ -34,6 +35,17 @@ type N8nError = {
 };
 
 export async function notifyN8n(payload: any, webhookUrl?: string): Promise<N8nSuccess | N8nError> {
+  try {
+    await requireAuth();
+  } catch (error: any) {
+    return {
+      success: false,
+      data: {
+        error: error.message || 'Acesso negado.',
+      },
+    };
+  }
+
   if (!webhookUrl) {
     const errorMsg = "URL do Webhook não fornecida para a notificação.";
     console.error(errorMsg);

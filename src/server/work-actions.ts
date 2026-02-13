@@ -5,6 +5,7 @@ import { WorkRepository } from '@/repositories/work.repository';
 import { ErrorLogRepository } from '@/repositories/error-log.repository';
 import { z } from 'zod';
 import type { WorkClientFormValues } from '@/lib/types';
+import { requireAuth } from '@/server/auth-guard';
 
 
 // Server-side schema validation. Includes companyId.
@@ -34,6 +35,7 @@ export async function getWorks(companyId: string) {
         return { success: false, error: 'ID da empresa não fornecido.' };
     }
     try {
+        await requireAuth({ matchCompanyId: companyId, requireCompany: true });
         const works = await WorkRepository.getAllByCompany(companyId);
         return { success: true, data: works };
     } catch (e: unknown) {
@@ -47,6 +49,12 @@ export async function getWorks(companyId: string) {
  * Create a new work.
  */
 export async function createWork(data: WorkClientFormValues & { companyId: string }) {
+    try {
+        await requireAuth({ role: 'admin', matchCompanyId: data.companyId, requireCompany: true });
+    } catch (error: any) {
+        return { success: false, error: error.message || 'Acesso negado.' };
+    }
+
     const validation = workServerSchema.safeParse(data);
     if (!validation.success) {
         const errors = validation.error.flatten().fieldErrors;
@@ -69,6 +77,12 @@ export async function createWork(data: WorkClientFormValues & { companyId: strin
  * Update an existing work.
  */
 export async function updateWork(id: string, data: WorkClientFormValues & { companyId: string }) {
+    try {
+        await requireAuth({ role: 'admin', matchCompanyId: data.companyId, requireCompany: true });
+    } catch (error: any) {
+        return { success: false, error: error.message || 'Acesso negado.' };
+    }
+
     const validation = workServerSchema.safeParse(data);
     if (!validation.success) {
         const errors = validation.error.flatten().fieldErrors;
@@ -96,6 +110,7 @@ export async function deleteWork(id: string, companyId: string) {
     }
     
     try {
+        await requireAuth({ role: 'admin', matchCompanyId: companyId, requireCompany: true });
         await WorkRepository.delete(id);
         revalidatePath(`/company/${companyId}`);
         return { success: true };

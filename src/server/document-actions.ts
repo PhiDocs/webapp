@@ -6,6 +6,7 @@ import type { SafetyFormValues, SavedDocument } from '@/lib/types';
 import type { SafetyAnalysisOutput, ProtectiveEquipmentOutput } from '@/server/ai-actions';
 import { DOCUMENT_TYPES } from '@/lib/constants';
 import type { DocumentType } from '@/lib/constants';
+import { requireAuth } from '@/server/auth-guard';
 
 function buildDocumentName(formData: SafetyFormValues) {
   const base = formData.documentType === DOCUMENT_TYPES.APR ? 'APR' : 'PT';
@@ -41,6 +42,7 @@ export async function saveDocument({
   equipmentData: ProtectiveEquipmentOutput | null;
 }): Promise<{ success: boolean; documentId?: string; error?: string }> {
   try {
+    await requireAuth({ matchCompanyId: companyId, requireCompany: true });
     console.log('[saveDocument] Called with companyId:', companyId, 'documentId:', documentId);
     if (!companyId) {
       console.log('[saveDocument] No companyId, aborting.');
@@ -92,6 +94,11 @@ export async function saveDocument({
 
 export async function markDocumentAsSent(documentId: string, signatureDocumentId: string) {
   try {
+    const document = await DocumentRepository.getById(documentId);
+    if (!document) {
+      throw new Error('Documento não encontrado.');
+    }
+    await requireAuth({ matchCompanyId: document.companyId, requireCompany: true });
     await DocumentRepository.update(documentId, {
       status: 'sent',
       signatureDocumentId,
@@ -108,6 +115,7 @@ export async function getDocuments(companyId: string): Promise<{ success: boolea
     if (!companyId) {
       return { success: false, error: 'ID da empresa não fornecido.' };
     }
+    await requireAuth({ matchCompanyId: companyId, requireCompany: true });
     const documents = await DocumentRepository.getByCompany(companyId);
     return { success: true, data: documents };
   } catch (e: unknown) {
@@ -126,6 +134,7 @@ export async function getDocument(documentId: string): Promise<{ success: boolea
     if (!document) {
       return { success: false, error: 'Documento não encontrado.' };
     }
+    await requireAuth({ matchCompanyId: document.companyId, requireCompany: true });
     return { success: true, data: document };
   } catch (e: unknown) {
     const error = e instanceof Error ? e : new Error(String(e ?? 'Erro ao buscar documento.'));
@@ -139,6 +148,11 @@ export async function deleteDocument(documentId: string): Promise<{ success: boo
     if (!documentId) {
       return { success: false, error: 'ID do documento não fornecido.' };
     }
+    const document = await DocumentRepository.getById(documentId);
+    if (!document) {
+      return { success: false, error: 'Documento não encontrado.' };
+    }
+    await requireAuth({ matchCompanyId: document.companyId, requireCompany: true });
     await DocumentRepository.delete(documentId);
     return { success: true };
   } catch (e: unknown) {

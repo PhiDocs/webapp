@@ -7,6 +7,7 @@ import { createAssignment, createOrGetSigner, downloadSignedDocument, getDocumen
 import type { Company, SafetyFormValues, SignatureDocument, SignatureSigner } from '@/lib/types';
 import type { SafetyAnalysisOutput, ProtectiveEquipmentOutput } from '@/server/ai-actions';
 import { DOCUMENT_TYPES } from '@/lib/constants';
+import { requireAuth } from '@/server/auth-guard';
 
 function buildDocumentName(formData: SafetyFormValues) {
   const base = formData.documentType === DOCUMENT_TYPES.APR ? 'APR' : 'PT';
@@ -74,6 +75,7 @@ export async function sendDocumentForSignature({
     if (!company?.id) {
       return { success: false, error: 'Empresa n\u00e3o identificada.' };
     }
+    await requireAuth({ matchCompanyId: company.id, requireCompany: true });
 
     const signersInput = getSignersFromForm(formData);
     if (signersInput.length === 0) {
@@ -150,6 +152,7 @@ export async function getSignatureDocuments(companyId: string) {
   }
 
   try {
+    await requireAuth({ matchCompanyId: companyId, requireCompany: true });
     const documents = await SignatureDocumentRepository.getByCompany(companyId);
     return { success: true, data: documents };
   } catch (e: unknown) {
@@ -165,6 +168,13 @@ export async function getSignatureDocumentsByEmail(email: string) {
   }
 
   try {
+    const auth = await requireAuth();
+    const normalizedEmail = email.toLowerCase();
+    const authEmail = auth.email?.toLowerCase();
+    if (auth.role !== 'admin' && (!authEmail || authEmail !== normalizedEmail)) {
+      return { success: false, error: 'Acesso negado.' };
+    }
+
     const documents = await SignatureDocumentRepository.getBySignerEmail(email);
     return { success: true, data: documents };
   } catch (e: unknown) {
@@ -184,6 +194,7 @@ export async function refreshSignatureDocument(signatureDocumentId: string) {
     if (!current) {
       return { success: false, error: 'Documento de assinatura não encontrado.' };
     }
+    await requireAuth({ matchCompanyId: current.companyId, requireCompany: true });
 
     console.log(`[refreshSignature] Atualizando documento ${signatureDocumentId}`);
     console.log(`[refreshSignature] assinafyDocumentId: ${current.assinafyDocumentId}`);
@@ -255,6 +266,7 @@ export async function resendSignatureNotification(signatureDocumentId: string) {
     if (!current) {
       return { success: false, error: 'Documento de assinatura não encontrado.' };
     }
+    await requireAuth({ matchCompanyId: current.companyId, requireCompany: true });
 
     if (current.status === 'signed') {
       return { success: false, error: 'Documento já foi assinado.' };
@@ -279,6 +291,7 @@ export async function downloadSignedPdf(signatureDocumentId: string) {
     if (!current) {
       return { success: false, error: 'Documento de assinatura n\u00e3o encontrado.' };
     }
+    await requireAuth({ matchCompanyId: current.companyId, requireCompany: true });
 
     const pdfBlob = await downloadSignedDocument(current.assinafyDocumentId);
     const arrayBuffer = await pdfBlob.arrayBuffer();
