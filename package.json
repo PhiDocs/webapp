@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev -p 9002",
-    "build": "NODE_ENV=production next build",
+    "build": "NODE_ENV=production next build --webpack",
     "start": "next start",
     "lint": "npm run typecheck",
     "typecheck": "tsc --noEmit",
