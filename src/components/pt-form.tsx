@@ -34,6 +34,59 @@ const SectionTitle = ({ children }: { children: React.ReactNode }) => (
     </h3>
   );
 
+const AssinafyBadge = () => (
+  <div className="flex items-center gap-2 rounded-md border px-3 py-2 text-sm text-muted-foreground">
+    <Badge variant="secondary" className="flex items-center gap-1">
+      <Mail className="h-3 w-3" />
+      Assinatura por e-mail
+    </Badge>
+    A assinatura será enviada por e-mail via Assinafy.
+  </div>
+);
+
+const AssinafyContactFields = ({
+  form,
+  fieldPrefix,
+}: {
+  form: UseFormReturn<SafetyFormValues>;
+  fieldPrefix: string;
+}) => (
+  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+    <FormField
+      control={form.control}
+      name={`${fieldPrefix}.email` as any}
+      render={({ field }) => (
+        <FormItem>
+          <FormLabel className="flex items-center gap-2 text-xs font-normal">
+            <Mail className="h-3 w-3" />
+            {ptBr.auth.email}
+          </FormLabel>
+          <FormControl>
+            <Input placeholder={ptBr.auth.emailPlaceholder} {...field} />
+          </FormControl>
+          <FormMessage />
+        </FormItem>
+      )}
+    />
+    <FormField
+      control={form.control}
+      name={`${fieldPrefix}.phone` as any}
+      render={({ field }) => (
+        <FormItem>
+          <FormLabel className="flex items-center gap-2 text-xs font-normal">
+            <MessageCircle className="h-3 w-3" />
+            Telefone (opcional)
+          </FormLabel>
+          <FormControl>
+            <PhoneInput value={field.value} onChange={field.onChange} onBlur={field.onBlur} />
+          </FormControl>
+          <FormMessage />
+        </FormItem>
+      )}
+    />
+  </div>
+);
+
 const CheckboxField = ({ form, name, label }: { form: UseFormReturn<SafetyFormValues>, name: string, label: string }) => (
     <FormField
       control={form.control}
@@ -110,47 +163,8 @@ const CheckboxField = ({ form, name, label }: { form: UseFormReturn<SafetyFormVa
                   <Trash2 className="h-4 w-4 text-destructive" />
                 </Button>
               </div>
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <FormField
-                  control={control}
-                  name={`${name}.${index}.email`}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="flex items-center gap-2 text-xs font-normal">
-                        <Mail className="h-3 w-3" />
-                        {ptBr.auth.email}
-                      </FormLabel>
-                      <FormControl>
-                        <Input placeholder={ptBr.auth.emailPlaceholder} {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={control}
-                  name={`${name}.${index}.phone`}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="flex items-center gap-2 text-xs font-normal">
-                        <MessageCircle className="h-3 w-3" />
-                        Telefone (opcional)
-                      </FormLabel>
-                      <FormControl>
-                        <PhoneInput value={field.value} onChange={field.onChange} onBlur={field.onBlur} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              <div className="flex items-center gap-2 rounded-md border px-3 py-2 text-sm text-muted-foreground">
-                <Badge variant="secondary" className="flex items-center gap-1">
-                  <Mail className="h-3 w-3" />
-                  Assinatura por e-mail
-                </Badge>
-                A assinatura será enviada por e-mail via Assinafy.
-              </div>
+              <AssinafyContactFields form={form} fieldPrefix={`${name}.${index}`} />
+              <AssinafyBadge />
             </div>
           ))}
         </div>
@@ -173,47 +187,8 @@ const CheckboxField = ({ form, name, label }: { form: UseFormReturn<SafetyFormVa
                     </FormItem>
                 )}
             />
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <FormField
-                    control={form.control}
-                    name={`${fieldPrefix}.email` as any}
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel className="flex items-center gap-2 text-xs font-normal">
-                                <Mail className="h-3 w-3" />
-                                {ptBr.auth.email}
-                            </FormLabel>
-                            <FormControl>
-                                <Input placeholder={ptBr.auth.emailPlaceholder} {...field} />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
-                <FormField
-                    control={form.control}
-                    name={`${fieldPrefix}.phone` as any}
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel className="flex items-center gap-2 text-xs font-normal">
-                                <MessageCircle className="h-3 w-3" />
-                                Telefone (opcional)
-                            </FormLabel>
-                            <FormControl>
-                                <PhoneInput value={field.value} onChange={field.onChange} onBlur={field.onBlur} />
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
-            </div>
-            <div className="flex items-center gap-2 rounded-md border px-3 py-2 text-sm text-muted-foreground">
-                <Badge variant="secondary" className="flex items-center gap-1">
-                    <Mail className="h-3 w-3" />
-                    Assinatura por e-mail
-                </Badge>
-                A assinatura será enviada por e-mail via Assinafy.
-            </div>
+            <AssinafyContactFields form={form} fieldPrefix={fieldPrefix} />
+            <AssinafyBadge />
         </div>
     );
   };
