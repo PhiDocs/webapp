@@ -45,9 +45,18 @@ export async function createJobRole(data: JobRoleFormValues & { companyId: strin
         const { companyId, name, responsibilities, requiredCertificates } = validation.data;
         const certificates = requiredCertificates?.map(c => c.value).filter(Boolean) || [];
 
-        await JobRoleRepository.create({ companyId, name, responsibilities, requiredCertificates: certificates });
+        const jobRoleId = await JobRoleRepository.create({ companyId, name, responsibilities, requiredCertificates: certificates });
         revalidatePath(`/company/${companyId}`);
-        return { success: true };
+        return {
+            success: true,
+            data: {
+                id: jobRoleId,
+                name,
+                responsibilities,
+                requiredCertificates: certificates,
+                companyId,
+            },
+        };
     } catch (e: unknown) {
         const error = e instanceof Error ? e : new Error(String(e ?? 'Erro desconhecido ao criar cargo.'));
         await ErrorLogRepository.log(error, 'createJobRole');

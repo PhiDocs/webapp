@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -21,10 +21,14 @@ import {
 import { Input } from '@/components/ui/input';
 import { PhoneInput } from '@/components/ui/phone-input';
 import { Button } from '@/components/ui/button';
-import { DialogFooter } from '@/components/ui/dialog';
-import { Loader2, Plus, List } from 'lucide-react';
-import type { Employee, EmployeeFormValues, JobRole, Subcontractor } from '@/lib/types';
+import { DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Loader2 } from 'lucide-react';
+import type { Employee, EmployeeFormValues, JobRole, JobRoleFormValues, Subcontractor } from '@/lib/types';
 import { employeeFormSchema } from '@/lib/types';
+import { JobRoleForm } from '@/components/admin/job-role-form';
+import { createJobRole } from '@/server/job-role-actions';
+import { useToast } from '@/hooks/use-toast';
+import { Dialog } from '@/components/ui/dialog';
 
 interface EmployeeFormProps {
   onSubmit: (values: EmployeeFormValues) => void;
@@ -32,6 +36,7 @@ interface EmployeeFormProps {
   isPending: boolean;
   jobRoles: JobRole[];
   subcontractors: Subcontractor[];
+  companyId?: string;
 }
 
 export function EmployeeForm({
@@ -40,8 +45,16 @@ export function EmployeeForm({
   isPending,
   jobRoles,
   subcontractors,
+  companyId,
 }: EmployeeFormProps) {
-  const [isCreatingRole, setIsCreatingRole] = useState(!defaultValues?.roleId);
+  const { toast } = useToast();
+  const [roleOptions, setRoleOptions] = useState<JobRole[]>(jobRoles);
+  const [isRoleDialogOpen, setIsRoleDialogOpen] = useState(false);
+  const [isRolePending, startRoleTransition] = useTransition();
+
+  useEffect(() => {
+    setRoleOptions(jobRoles);
+  }, [jobRoles]);
 
   const form = useForm<EmployeeFormValues>({
     resolver: zodResolver(employeeFormSchema),
@@ -55,6 +68,44 @@ export function EmployeeForm({
       roleName: defaultValues?.roleName || '',
     },
   });
+
+  const handleCreateRole = (values: JobRoleFormValues) => {
+    if (!companyId) {
+      toast({
+        variant: 'destructive',
+        title: 'Empresa não identificada',
+        description: 'Não foi possível criar o cargo.',
+      });
+      return;
+    }
+
+    startRoleTransition(async () => {
+      const result = await createJobRole({ ...values, companyId });
+      if (!result.success || !result.data?.id) {
+        toast({
+          variant: 'destructive',
+          title: 'Erro ao criar cargo',
+          description: result.error || 'Falha ao criar cargo.',
+        });
+        return;
+      }
+
+      const createdRole: JobRole = {
+        id: result.data.id,
+        companyId: result.data.companyId,
+        name: result.data.name,
+        responsibilities: result.data.responsibilities,
+        requiredCertificates: result.data.requiredCertificates,
+        createdAt: new Date().toISOString(),
+      };
+
+      setRoleOptions((current) => [createdRole, ...current]);
+      form.setValue('roleId', createdRole.id, { shouldValidate: true });
+      form.setValue('roleName', createdRole.name, { shouldValidate: true });
+      setIsRoleDialogOpen(false);
+      toast({ title: 'Cargo criado com sucesso!' });
+    });
+  };
 
   return (
     <Form {...form}>
@@ -127,77 +178,43 @@ export function EmployeeForm({
           )}
         />
         <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <FormLabel>Função</FormLabel>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className="h-6 text-xs text-muted-foreground hover:text-primary"
-              onClick={() => {
-                setIsCreatingRole(!isCreatingRole);
-                // Reset values when switching
-                if (!isCreatingRole) {
-                  form.setValue('roleId', 'new');
-                  form.setValue('roleName', '');
-                } else {
-                  form.setValue('roleId', '');
-                  form.setValue('roleName', undefined);
-                }
-              }}
-            >
-              {isCreatingRole ? (
-                <>
-                  <List className="mr-1 h-3 w-3" />
-                  Selecionar Existente
-                </>
-              ) : (
-                <>
-                  <Plus className="mr-1 h-3 w-3" />
-                  Criar Nova Função
-                </>
-              )}
-            </Button>
-          </div>
-
-          {isCreatingRole ? (
-            <FormField
-              control={form.control}
-              name="roleName"
-              render={({ field }) => (
-                <FormItem>
+          <FormLabel>Função</FormLabel>
+          <FormField
+            control={form.control}
+            name="roleId"
+            render={({ field }) => (
+              <FormItem>
+                <Select
+                  onValueChange={(value) => {
+                    if (value === '__new__') {
+                      setIsRoleDialogOpen(true);
+                      return;
+                    }
+                    field.onChange(value);
+                    const selectedRole = roleOptions.find((role) => role.id === value);
+                    form.setValue('roleName', selectedRole?.name || '', { shouldValidate: true });
+                  }}
+                  defaultValue={field.value}
+                  value={field.value}
+                >
                   <FormControl>
-                    <Input placeholder="Digite o nome do novo cargo" {...field} />
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione um cargo" />
+                    </SelectTrigger>
                   </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          ) : (
-            <FormField
-              control={form.control}
-              name="roleId"
-              render={({ field }) => (
-                <FormItem>
-                  <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecione um cargo" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {jobRoles.map((role) => (
-                        <SelectItem key={role.id} value={role.id}>
-                          {role.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          )}
+                  <SelectContent>
+                    <SelectItem value="__new__">+ Novo cargo</SelectItem>
+                    {roleOptions.map((role) => (
+                      <SelectItem key={role.id} value={role.id}>
+                        {role.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         </div>
         <DialogFooter>
           <Button type="submit" disabled={isPending}>
@@ -206,6 +223,17 @@ export function EmployeeForm({
           </Button>
         </DialogFooter>
       </form>
+      <Dialog open={isRoleDialogOpen} onOpenChange={setIsRoleDialogOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Novo Cargo</DialogTitle>
+          </DialogHeader>
+          <JobRoleForm
+            onSubmit={handleCreateRole}
+            isPending={isRolePending}
+          />
+        </DialogContent>
+      </Dialog>
     </Form>
   );
 }

@@ -28,6 +28,7 @@ interface FormPanelProps {
   isLoading: boolean;
   works: Work[];
   employees: Employee[];
+  companyId?: string;
   isDataLoading: boolean;
   showFloatingPreview?: boolean;
   onToggleFloatingPreview?: () => void;
@@ -40,7 +41,7 @@ interface FormPanelProps {
   onSaveDraft?: () => void;
 }
 
-export function FormPanel({ form, onNewReport, onSubmit, isLoading, works, employees, isDataLoading, showFloatingPreview, onToggleFloatingPreview, isSendingSignature, onSendForSignature, canSendSignature, isGeneratingPdf, onGeneratePdf, isSavingDraft, onSaveDraft }: FormPanelProps) {
+export function FormPanel({ form, onNewReport, onSubmit, isLoading, works, employees, companyId, isDataLoading, showFloatingPreview, onToggleFloatingPreview, isSendingSignature, onSendForSignature, canSendSignature, isGeneratingPdf, onGeneratePdf, isSavingDraft, onSaveDraft }: FormPanelProps) {
   return (
     <div className="h-full">
       <ScrollArea className="h-full">
@@ -105,6 +106,7 @@ export function FormPanel({ form, onNewReport, onSubmit, isLoading, works, emplo
             isLoading={isLoading}
             works={works}
             employees={employees}
+            companyId={companyId}
             isDataLoading={isDataLoading}
           />
 

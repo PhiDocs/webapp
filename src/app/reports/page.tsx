@@ -457,6 +457,7 @@ export default function ReportsPage() {
             isLoading={isLoading}
             works={works}
             employees={employees}
+            companyId={user?.companyId}
             isDataLoading={isDataLoading}
             showFloatingPreview={showFloatingPreview}
             onToggleFloatingPreview={() => setShowFloatingPreview(!showFloatingPreview)}

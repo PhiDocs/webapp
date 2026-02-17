@@ -106,7 +106,7 @@ export function EmployeesTable({ companyId }: EmployeesTableProps) {
             const fullData = {
                 ...values,
                 companyId,
-                roleName: role?.name || '',
+                roleName: role?.name || values.roleName || '',
                 subcontractorName: values.subcontractorId === 'N/A' ? 'Não aplicável' : subcontractor?.name || ''
             };
 
@@ -262,6 +262,7 @@ export function EmployeesTable({ companyId }: EmployeesTableProps) {
                     isPending={isPending}
                     jobRoles={jobRoles}
                     subcontractors={subcontractors}
+                    companyId={companyId}
                 />
             </DialogContent>
         </Dialog>

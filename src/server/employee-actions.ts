@@ -24,6 +24,46 @@ const employeeServerSchema = z.object({
 
 type EmployeeServerValues = z.infer<typeof employeeServerSchema>;
 
+function normalizeEmail(email: string): string {
+    return email.trim().toLowerCase();
+}
+
+function normalizeCpf(cpf: string): string {
+    return cpf.replace(/\D/g, '');
+}
+
+async function validateUniqueEmployee({
+    companyId,
+    email,
+    cpf,
+    excludeEmployeeId,
+}: {
+    companyId: string;
+    email: string;
+    cpf: string;
+    excludeEmployeeId?: string;
+}) {
+    const employees = await EmployeeRepository.getAllByCompany(companyId);
+    const emailNormalized = normalizeEmail(email);
+    const cpfNormalized = normalizeCpf(cpf);
+
+    const duplicatedEmail = employees.find((employee) =>
+        employee.id !== excludeEmployeeId &&
+        normalizeEmail(employee.email) === emailNormalized
+    );
+    if (duplicatedEmail) {
+        throw new Error('Já existe um funcionário com este e-mail.');
+    }
+
+    const duplicatedCpf = employees.find((employee) =>
+        employee.id !== excludeEmployeeId &&
+        normalizeCpf(employee.cpf) === cpfNormalized
+    );
+    if (duplicatedCpf) {
+        throw new Error('Já existe um funcionário com este CPF.');
+    }
+}
+
 
 /**
  * Fetch all employees for a company.
@@ -62,6 +102,14 @@ export async function createEmployee(data: EmployeeServerValues) {
 
     try {
         let finalRoleId = validation.data.roleId;
+        const normalizedEmail = normalizeEmail(validation.data.email);
+        const normalizedCpf = normalizeCpf(validation.data.cpf);
+
+        await validateUniqueEmployee({
+            companyId: validation.data.companyId,
+            email: normalizedEmail,
+            cpf: normalizedCpf,
+        });
 
         // If roleId is missing or "new", creates the role
         if ((!finalRoleId || finalRoleId === 'new') && validation.data.roleName) {
@@ -82,13 +130,15 @@ export async function createEmployee(data: EmployeeServerValues) {
         const hasSubcontractor = validation.data.subcontractorId && validation.data.subcontractorId !== 'N/A';
         const dataToSave = {
             ...validation.data,
+            email: normalizedEmail,
+            cpf: normalizedCpf,
             roleId: finalRoleId,
             subcontractorId: hasSubcontractor ? validation.data.subcontractorId : null,
             subcontractorName: hasSubcontractor ? (validation.data.subcontractorName ?? null) : null,
         };
-        await EmployeeRepository.create(dataToSave);
+        const employeeId = await EmployeeRepository.create(dataToSave);
         revalidatePath(`/company/${validation.data.companyId}`);
-        return { success: true };
+        return { success: true, data: { id: employeeId } };
     } catch (e: unknown) {
         const error = e instanceof Error ? e : new Error(String(e ?? 'Erro desconhecido ao criar funcionário.'));
         await ErrorLogRepository.log(error, 'createEmployee', data.email);
@@ -115,6 +165,15 @@ export async function updateEmployee(id: string, data: EmployeeServerValues) {
 
     try {
         let finalRoleId = validation.data.roleId;
+        const normalizedEmail = normalizeEmail(validation.data.email);
+        const normalizedCpf = normalizeCpf(validation.data.cpf);
+
+        await validateUniqueEmployee({
+            companyId: validation.data.companyId,
+            email: normalizedEmail,
+            cpf: normalizedCpf,
+            excludeEmployeeId: id,
+        });
 
         if ((!finalRoleId || finalRoleId === 'new') && validation.data.roleName) {
             finalRoleId = await JobRoleRepository.create({
@@ -132,6 +191,8 @@ export async function updateEmployee(id: string, data: EmployeeServerValues) {
         const hasSubcontractor = validation.data.subcontractorId && validation.data.subcontractorId !== 'N/A';
         const dataToSave = {
             ...validation.data,
+            email: normalizedEmail,
+            cpf: normalizedCpf,
             roleId: finalRoleId,
             subcontractorId: hasSubcontractor ? validation.data.subcontractorId : null,
             subcontractorName: hasSubcontractor ? (validation.data.subcontractorName ?? null) : null,

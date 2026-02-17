@@ -45,6 +45,18 @@ import { Badge } from './ui/badge';
 import { PhoneInput } from './ui/phone-input';
 import { Mail, MessageCircle } from 'lucide-react';
 import { SignaturePad } from './signature-pad';
+import { useToast } from '@/hooks/use-toast';
+import { EmployeeForm } from '@/components/admin/employee-form';
+import { createEmployee } from '@/server/employee-actions';
+import { getJobRoles } from '@/server/job-role-actions';
+import { getSubcontractors } from '@/server/subcontractor-actions';
+import type { EmployeeFormValues, JobRole, Subcontractor } from '@/lib/types';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
 interface SafetyFormProps {
   form: ReturnType<typeof useForm<SafetyFormValues>>;
@@ -52,6 +64,7 @@ interface SafetyFormProps {
   isLoading: boolean;
   works: Work[];
   employees: Employee[];
+  companyId?: string;
   isDataLoading: boolean;
 }
 
@@ -178,8 +191,112 @@ export function SafetyForm({
   isLoading,
   works,
   employees,
+  companyId,
   isDataLoading,
 }: SafetyFormProps) {
+  const { toast } = useToast();
+  const [employeeOptions, setEmployeeOptions] = useState<Employee[]>(employees);
+  const [isEmployeeDialogOpen, setIsEmployeeDialogOpen] = useState(false);
+  const [jobRoles, setJobRoles] = useState<JobRole[]>([]);
+  const [subcontractors, setSubcontractors] = useState<Subcontractor[]>([]);
+  const [isEmployeeFormPending, startEmployeeTransition] = React.useTransition();
+  const [employeeTarget, setEmployeeTarget] = useState<{ type: 'team' | 'responsible'; index: number } | null>(null);
+
+  React.useEffect(() => {
+    setEmployeeOptions(employees);
+  }, [employees]);
+
+  const loadEmployeeDialogData = async () => {
+    if (!companyId) return;
+    try {
+      const [jobRolesResult, subcontractorsResult] = await Promise.all([
+        getJobRoles(companyId),
+        getSubcontractors(companyId),
+      ]);
+      if (jobRolesResult.success && jobRolesResult.data) {
+        setJobRoles(jobRolesResult.data);
+      }
+      if (subcontractorsResult.success && subcontractorsResult.data) {
+        setSubcontractors(subcontractorsResult.data);
+      }
+    } catch {
+      // silêncio; tratamento na submissão e UX já cobre casos de erro
+    }
+  };
+
+  const openNewEmployeeDialog = async (type: 'team' | 'responsible', index: number) => {
+    if (!companyId) {
+      toast({
+        variant: 'destructive',
+        title: 'Empresa não identificada',
+        description: 'Não foi possível abrir o cadastro de funcionário.',
+      });
+      return;
+    }
+    setEmployeeTarget({ type, index });
+    setIsEmployeeDialogOpen(true);
+    await loadEmployeeDialogData();
+  };
+
+  const handleCreateEmployeeFromForm = (values: EmployeeFormValues) => {
+    if (!companyId || !employeeTarget) return;
+
+    startEmployeeTransition(async () => {
+      const role = jobRoles.find(r => r.id === values.roleId);
+      const subcontractor = subcontractors.find(s => s.id === values.subcontractorId);
+      const fullData = {
+        ...values,
+        companyId,
+        roleName: role?.name || values.roleName || '',
+        subcontractorName: values.subcontractorId === 'N/A' ? 'Não aplicável' : subcontractor?.name || '',
+      };
+
+      const result = await createEmployee(fullData as any);
+      if (!result.success || !result.data?.id) {
+        toast({
+          variant: 'destructive',
+          title: 'Erro ao criar funcionário',
+          description: result.error || 'Falha ao criar funcionário.',
+        });
+        return;
+      }
+
+      const createdEmployee: Employee = {
+        id: result.data.id,
+        companyId,
+        firstName: values.firstName,
+        lastName: values.lastName,
+        email: values.email.trim().toLowerCase(),
+        cpf: values.cpf.replace(/\D/g, ''),
+        phone: values.phone || '',
+        roleId: values.roleId || 'new',
+        roleName: role?.name || values.roleName || '',
+        subcontractorId: values.subcontractorId || null,
+        subcontractorName: values.subcontractorId === 'N/A' ? 'Não aplicável' : subcontractor?.name || null,
+        createdAt: new Date().toISOString(),
+      };
+
+      setEmployeeOptions((current) => [createdEmployee, ...current]);
+
+      if (employeeTarget.type === 'team') {
+        form.setValue(`teamMembers.${employeeTarget.index}.employeeId`, createdEmployee.id);
+        form.setValue(`teamMembers.${employeeTarget.index}.name`, `${createdEmployee.firstName} ${createdEmployee.lastName}`);
+        form.setValue(`teamMembers.${employeeTarget.index}.role`, createdEmployee.roleName || '');
+        form.setValue(`teamMembers.${employeeTarget.index}.email`, createdEmployee.email || '');
+        form.setValue(`teamMembers.${employeeTarget.index}.phone`, createdEmployee.phone || '');
+      } else {
+        form.setValue(`responsiblePersons.${employeeTarget.index}.employeeId`, createdEmployee.id);
+        form.setValue(`responsiblePersons.${employeeTarget.index}.name`, `${createdEmployee.firstName} ${createdEmployee.lastName}`);
+        form.setValue(`responsiblePersons.${employeeTarget.index}.role`, createdEmployee.roleName || '');
+        form.setValue(`responsiblePersons.${employeeTarget.index}.email`, createdEmployee.email || '');
+        form.setValue(`responsiblePersons.${employeeTarget.index}.phone`, createdEmployee.phone || '');
+      }
+
+      setIsEmployeeDialogOpen(false);
+      setEmployeeTarget(null);
+      toast({ title: 'Funcionário criado com sucesso!' });
+    });
+  };
 
   const {
     fields: responsibleFields,
@@ -582,8 +699,12 @@ export function SafetyForm({
                                 <FormItem className="flex-grow">
                                   <FormLabel>{ptBr.safetyForm.teamName}</FormLabel>
                                   <Select onValueChange={(employeeId) => {
+                                    if (employeeId === '__new__') {
+                                      openNewEmployeeDialog('team', index);
+                                      return;
+                                    }
                                     field.onChange(employeeId);
-                                    const employee = employees.find(e => e.id === employeeId);
+                                    const employee = employeeOptions.find(e => e.id === employeeId);
                                     if (employee) {
                                       form.setValue(`teamMembers.${index}.name`, `${employee.firstName} ${employee.lastName}`);
                                       form.setValue(`teamMembers.${index}.role`, employee.roleName || '');
@@ -597,7 +718,8 @@ export function SafetyForm({
                                       </SelectTrigger>
                                     </FormControl>
                                     <SelectContent>
-                                      {employees.map((emp) => (
+                                      <SelectItem value="__new__">+ Novo funcionário</SelectItem>
+                                      {employeeOptions.map((emp) => (
                                         <SelectItem key={emp.id} value={emp.id}>
                                           {emp.firstName} {emp.lastName} ({emp.roleName})
                                         </SelectItem>
@@ -695,8 +817,12 @@ export function SafetyForm({
                               <FormItem className='flex-grow'>
                                 <FormLabel>{ptBr.safetyForm.responsibleName}</FormLabel>
                                 <Select onValueChange={(employeeId) => {
+                                  if (employeeId === '__new__') {
+                                    openNewEmployeeDialog('responsible', index);
+                                    return;
+                                  }
                                   field.onChange(employeeId);
-                                  const employee = employees.find(e => e.id === employeeId);
+                                  const employee = employeeOptions.find(e => e.id === employeeId);
                                   if (employee) {
                                     form.setValue(`responsiblePersons.${index}.name`, `${employee.firstName} ${employee.lastName}`);
                                     form.setValue(`responsiblePersons.${index}.role`, employee.roleName || '');
@@ -710,7 +836,8 @@ export function SafetyForm({
                                     </SelectTrigger>
                                   </FormControl>
                                   <SelectContent>
-                                    {employees.map((emp) => (
+                                    <SelectItem value="__new__">+ Novo funcionário</SelectItem>
+                                    {employeeOptions.map((emp) => (
                                       <SelectItem key={emp.id} value={emp.id}>
                                         {emp.firstName} {emp.lastName} ({emp.roleName})
                                       </SelectItem>
@@ -747,6 +874,20 @@ export function SafetyForm({
           </form>
         </Form>
       </CardContent>
+      <Dialog open={isEmployeeDialogOpen} onOpenChange={setIsEmployeeDialogOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Novo Funcionário</DialogTitle>
+          </DialogHeader>
+          <EmployeeForm
+            onSubmit={handleCreateEmployeeFromForm}
+            isPending={isEmployeeFormPending}
+            jobRoles={jobRoles}
+            subcontractors={subcontractors}
+            companyId={companyId}
+          />
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }
