@@ -1,7 +1,7 @@
 // To run this script, use: npm run remove-activity-description
-// Or: tsx scripts/remove-activity-description.ts
+// Or: tsx scripts/migrations/remove-activity-description.ts
 import 'dotenv/config';
-import admin from '../src/firebase/admin-config';
+import admin from '../../src/firebase/admin-config';
 
 const db = admin.firestore();
 

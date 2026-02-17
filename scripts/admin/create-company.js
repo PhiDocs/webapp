@@ -9,11 +9,11 @@ require('dotenv').config({ path: path.resolve(process.cwd(), '.env') });
 // Import the server action function.
 // NOTE: The path depends on the Next.js build output structure.
 // This path is a guess and may need adjustments.
-const { registerCompany } = require('../src/server/admin-actions.ts');
+const { registerCompany } = require('../../src/server/admin-actions.ts');
 
 async function main() {
   if (process.argv.length < 6) {
-    console.error('Uso: node scripts/create-company.js "Nome da Empresa" "email@admin.com" "Nome do Admin" "senhaForte"');
+    console.error('Uso: node scripts/admin/create-company.js "Nome da Empresa" "email@admin.com" "Nome do Admin" "senhaForte"');
     process.exit(1);
   }
 
@@ -45,6 +45,6 @@ async function main() {
 //
 // To run this script, you may need a tool like `tsx` to transpile TypeScript at runtime:
 // npm install -g tsx
-// tsx scripts/create-company.js "My Company" "admin@mycompany.com" "Admin" "securePassword123"
+// tsx scripts/admin/create-company.js "My Company" "admin@mycompany.com" "Admin" "securePassword123"
 
 main();

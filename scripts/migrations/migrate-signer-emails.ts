@@ -1,6 +1,6 @@
-// To run this script, use: npx tsx scripts/migrate-signer-emails.ts
+// To run this script, use: npx tsx scripts/migrations/migrate-signer-emails.ts
 import 'dotenv/config';
-import admin from '../src/firebase/admin-config';
+import admin from '../../src/firebase/admin-config';
 
 const db = admin.firestore();
 

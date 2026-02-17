@@ -23,7 +23,7 @@ if (!admin.apps.length) {
 
 async function setAdminRole(email, companyId) {
   if (!email) {
-    console.error('Uso: node scripts/set-admin.js "email.do.usuario@example.com" "[ID_DA_EMPRESA_OPCIONAL]"');
+    console.error('Uso: node scripts/admin/set-admin.js "email.do.usuario@example.com" "[ID_DA_EMPRESA_OPCIONAL]"');
     return;
   }
 

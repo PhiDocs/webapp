@@ -48,13 +48,13 @@ await requireAuth({ matchCompanyId: companyId, requireCompany: true });
 Criar empresa + admin:
 
 ```bash
-node scripts/create-company.js "Nome Empresa" "admin@email.com" "Nome Admin" "senhaForte123"
+node scripts/admin/create-company.js "Nome Empresa" "admin@email.com" "Nome Admin" "senhaForte123"
 ```
 
 Promover usuário existente:
 
 ```bash
-node scripts/set-admin.js "usuario@email.com" "ID_DA_EMPRESA"
+node scripts/admin/set-admin.js "usuario@email.com" "ID_DA_EMPRESA"
 ```
 
 Após alterar claims, o usuário precisa sair e entrar novamente.

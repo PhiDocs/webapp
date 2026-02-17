@@ -1,7 +1,7 @@
-// To run: npx tsx scripts/create-company.ts "Nome da Empresa" "email@admin.com" "Nome do Admin" "senhaForte"
+// To run: npx tsx scripts/admin/create-company.ts "Nome da Empresa" "email@admin.com" "Nome do Admin" "senhaForte"
 import 'dotenv/config';
 import { z } from 'zod';
-import admin from '../src/firebase/admin-config';
+import admin from '../../src/firebase/admin-config';
 
 const db = admin.firestore();
 
@@ -14,7 +14,7 @@ const registerCompanySchema = z.object({
 
 async function main() {
   if (process.argv.length < 6) {
-    console.error('Uso: npx tsx scripts/create-company.ts "Nome da Empresa" "email@admin.com" "Nome do Admin" "senhaForte"');
+    console.error('Uso: npx tsx scripts/admin/create-company.ts "Nome da Empresa" "email@admin.com" "Nome do Admin" "senhaForte"');
     process.exit(1);
   }
 
