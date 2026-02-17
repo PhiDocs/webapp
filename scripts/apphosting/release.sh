@@ -87,7 +87,7 @@ for arg in "$@"; do
 done
 
 if [ "$HAS_PROJECT_FLAG" = "true" ]; then
-  firebase apphosting:rollouts:create --config apphosting.yaml --backend "$BACKEND_ID" "$@"
+  firebase apphosting:rollouts:create "$BACKEND_ID" "$@"
 else
-  firebase apphosting:rollouts:create --config apphosting.yaml --backend "$BACKEND_ID" --project "$PROJECT_ID" "$@"
+  firebase apphosting:rollouts:create "$BACKEND_ID" --project "$PROJECT_ID" "$@"
 fi

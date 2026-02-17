@@ -49,11 +49,38 @@ fi
 infisical "${EXPORT_ARGS[@]}" > "$TMP_JSON"
 jq empty "$TMP_JSON" >/dev/null
 
+get_secret_value() {
+  local secret_name="$1"
+  jq -r --arg k "$secret_name" '
+    if type == "object" then
+      .[$k] // empty
+    elif type == "array" then
+      (
+        map(
+          if type == "object" then
+            if (.key? == $k) then (.value // .secretValue // .secret_value // empty)
+            elif (.name? == $k) then (.value // .secretValue // .secret_value // empty)
+            elif (.secretName? == $k) then (.value // .secretValue // .secret_value // empty)
+            else empty end
+          else empty end
+        )
+        | map(select(. != null and . != ""))
+        | .[0]
+      ) // empty
+    else
+      empty
+    end
+  ' "$TMP_JSON"
+}
+
 if [ -n "${SYNC_KEYS:-}" ]; then
   # Exemplo: SYNC_KEYS="FIREBASE_PRIVATE_KEY,ASSINAFY_API_KEY"
   IFS=',' read -r -a SECRET_KEYS <<< "$SYNC_KEYS"
 else
-  mapfile -t SECRET_KEYS < <(awk '/secret:/{print $2}' apphosting.yaml | sort -u)
+  SECRET_KEYS=()
+  while IFS= read -r secret_key; do
+    SECRET_KEYS+=("$secret_key")
+  done < <(awk '/secret:/{print $2}' apphosting.yaml | sort -u)
 fi
 
 if [ "${#SECRET_KEYS[@]}" -eq 0 ]; then
@@ -67,7 +94,7 @@ for secret_name in "${SECRET_KEYS[@]}"; do
   secret_name="$(echo "$secret_name" | xargs)"
   [ -z "$secret_name" ] && continue
 
-  secret_value="$(jq -r --arg k "$secret_name" '.[$k] // empty' "$TMP_JSON")"
+  secret_value="$(get_secret_value "$secret_name")"
   if [ -z "$secret_value" ] || [ "$secret_value" = "null" ]; then
     echo "Secret '$secret_name' não encontrado no Infisical (env '$INF_ENV', path '$INF_PATH')." >&2
     exit 1

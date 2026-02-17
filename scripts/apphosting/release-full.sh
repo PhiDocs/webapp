@@ -46,11 +46,18 @@ echo "[2/4] Sincronizando secrets Infisical -> Google Secret Manager..."
 INFISICAL_ENV="$INF_ENV" INFISICAL_SECRET_PATH="$INF_PATH" npm run secrets:sync
 
 echo "[3/4] Garantindo grant de acesso dos secrets para o backend '$BACKEND_ID'..."
-mapfile -t SECRET_KEYS < <(awk '/secret:/{print $2}' apphosting.yaml | sort -u)
+SECRET_KEYS=()
+while IFS= read -r secret_key; do
+  SECRET_KEYS+=("$secret_key")
+done < <(awk '/secret:/{print $2}' apphosting.yaml | sort -u)
 for secret_name in "${SECRET_KEYS[@]}"; do
   [ -z "$secret_name" ] && continue
-  firebase apphosting:secrets:grantaccess "$secret_name" "$BACKEND_ID" --project "$PROJECT_ID" >/dev/null
-  echo "Grant OK: $secret_name"
+  if firebase apphosting:secrets:grantaccess "$secret_name" --backend "$BACKEND_ID" --project "$PROJECT_ID"; then
+    echo "Grant OK: $secret_name"
+  else
+    echo "Falha no grantaccess para secret '$secret_name' (backend: '$BACKEND_ID', project: '$PROJECT_ID')." >&2
+    exit 1
+  fi
 done
 
 echo "[4/4] Publicando release no App Hosting..."
