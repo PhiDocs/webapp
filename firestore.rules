@@ -1,0 +1,109 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // More specific rules must come first.
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function tokenRole() {
+      return request.auth.token.role;
+    }
+
+    function tokenCompanyId() {
+      return request.auth.token.companyId;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && tokenRole() == 'admin' && tokenCompanyId() != null;
+    }
+
+    function isOwnUser(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isCompanyAdmin(companyId) {
+      return isAdmin() && tokenCompanyId() == companyId;
+    }
+
+    // Users collection (users)
+    // Allows a user to read and update their own data.
+    match /users/{userId} {
+      allow read, delete: if isOwnUser(userId);
+      allow create: if isOwnUser(userId)
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.role == 'user'
+        && (!request.resource.data.keys().hasAny(['companyId']) || request.resource.data.companyId == null);
+      allow update: if isOwnUser(userId)
+        && request.resource.data.role == resource.data.role
+        && request.resource.data.companyId == resource.data.companyId;
+    }
+
+    // Rules for companies and subcollections
+    match /companies/{companyId} {
+      // Company admins can read and update the company
+      allow read, update: if isCompanyAdmin(companyId);
+      allow create, delete: if false;
+      
+      // Company admins can manage works, employees, job roles, and subcontractors
+      match /works/{workId} {
+        allow read, write, delete: if isCompanyAdmin(companyId);
+      }
+      
+      match /employees/{employeeId} {
+        allow read, write, delete: if isCompanyAdmin(companyId);
+      }
+
+      match /jobRoles/{jobRoleId} {
+        allow read, write, delete: if isCompanyAdmin(companyId);
+      }
+
+      match /subcontractors/{subcontractorId} {
+        allow read, write, delete: if isCompanyAdmin(companyId);
+      }
+    }
+
+    // Root works collection (used by the app)
+    match /works/{workId} {
+      allow read: if isAdmin() && resource.data.companyId == tokenCompanyId();
+      allow create: if isAdmin() && request.resource.data.companyId == tokenCompanyId();
+      allow update: if isAdmin()
+        && resource.data.companyId == tokenCompanyId()
+        && request.resource.data.companyId == resource.data.companyId;
+      allow delete: if isAdmin() && resource.data.companyId == tokenCompanyId();
+    }
+
+    // Signature documents (Assinafy)
+    match /signatureDocuments/{docId} {
+      allow read: if isAdmin() && resource.data.companyId == tokenCompanyId();
+      allow create: if isAdmin() && request.resource.data.companyId == tokenCompanyId();
+      allow update: if isAdmin()
+        && resource.data.companyId == tokenCompanyId()
+        && request.resource.data.companyId == resource.data.companyId;
+      allow delete: if false;
+    }
+
+    // Saved documents (drafts and history)
+    match /documents/{docId} {
+      allow read: if isAdmin() && resource.data.companyId == tokenCompanyId();
+      allow create: if isAdmin() && request.resource.data.companyId == tokenCompanyId();
+      allow update: if isAdmin()
+        && resource.data.companyId == tokenCompanyId()
+        && request.resource.data.companyId == resource.data.companyId;
+      allow delete: if isAdmin() && resource.data.companyId == tokenCompanyId();
+    }
+
+    // Error logs (server-side only, deny client access)
+    match /errorLogs/{logId} {
+      allow read, write: if false;
+    }
+
+    // Default rule for other collections.
+    // Deny access by default.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
