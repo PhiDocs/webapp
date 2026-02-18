@@ -299,6 +299,20 @@ export async function createAssignment(
     assertAssinafyConfig();
     await ensureAssinafyAccess(context);
     try {
+        const uniqueSigners: AssinafySignerInfo[] = [];
+        const seenSignerIds = new Set<string>();
+        for (const signer of signers) {
+            const signerId = signer.id?.trim();
+            if (!signerId) continue;
+            if (seenSignerIds.has(signerId)) continue;
+            seenSignerIds.add(signerId);
+            uniqueSigners.push({ ...signer, id: signerId });
+        }
+
+        if (uniqueSigners.length === 0) {
+            throw new Error('Nenhum signatário válido para criar assignment.');
+        }
+
         const endpoint = `${API_URL}/documents/${documentId}/assignments`;
 
         let lastErrorText = '';
@@ -314,7 +328,7 @@ export async function createAssignment(
                 },
                 body: JSON.stringify({
                     method: 'virtual',
-                    signerIds: signers.map(s => s.id),
+                    signerIds: uniqueSigners.map(s => s.id),
                 }),
             });
 

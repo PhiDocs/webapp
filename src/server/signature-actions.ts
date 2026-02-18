@@ -18,6 +18,22 @@ function buildDocumentName(formData: SafetyFormValues) {
 
 type SignerInput = { name: string; email: string; phone?: string };
 
+function dedupeSignatureSigners(signers: SignatureSigner[]): SignatureSigner[] {
+  const uniqueSigners: SignatureSigner[] = [];
+  const seenKeys = new Set<string>();
+
+  for (const signer of signers) {
+    const signerIdKey = signer.assinafySignerId?.trim();
+    const emailKey = signer.email.trim().toLowerCase();
+    const dedupeKey = signerIdKey ? `id:${signerIdKey}` : `email:${emailKey}`;
+    if (seenKeys.has(dedupeKey)) continue;
+    seenKeys.add(dedupeKey);
+    uniqueSigners.push(signer);
+  }
+
+  return uniqueSigners;
+}
+
 function getSignersFromForm(formData: SafetyFormValues): SignerInput[] {
   if (formData.documentType === DOCUMENT_TYPES.PT) {
     const ptSigners: SignerInput[] = [];
@@ -106,22 +122,24 @@ export async function sendDocumentForSignature({
       });
     }
 
+    const uniqueSigners = dedupeSignatureSigners(signers);
+
     const assignmentResult = await createAssignment(
       assinafyDocumentId,
-      signers.map(s => ({ id: s.assinafySignerId!, email: s.email })),
+      uniqueSigners.map(s => ({ id: s.assinafySignerId!, email: s.email })),
       { companyId: company.id }
     );
 
     // Associar signing URLs a cada signatário
     const signingUrls = assignmentResult.signingUrls || [];
-    for (const signer of signers) {
+    for (const signer of uniqueSigners) {
       const match = signingUrls.find(u => u.signer_id === signer.assinafySignerId);
       if (match) {
         signer.signingUrl = match.url;
       }
     }
 
-    const signerEmails = signers.map(s => s.email.toLowerCase());
+    const signerEmails = Array.from(new Set(uniqueSigners.map(s => s.email.toLowerCase())));
 
     const now = new Date().toISOString();
     const signatureDocument: Omit<SignatureDocument, 'id'> = {
@@ -131,7 +149,7 @@ export async function sendDocumentForSignature({
       assinafyDocumentId,
       assinafyAssignmentId: assignmentResult.assignmentId,
       status: 'pending',
-      signers,
+      signers: uniqueSigners,
       signerEmails,
       createdAt: now,
       updatedAt: now,
