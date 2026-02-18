@@ -267,6 +267,7 @@ const FILTERS: { value: FilterType; label: string }[] = [
 // ===== Página principal =====
 export default function DocumentsPage() {
   const { user } = useSession();
+  const activeCompanyId = user?.activeCompanyId ?? user?.companyId;
   const router = useRouter();
   const { toast } = useToast();
 
@@ -281,18 +282,18 @@ export default function DocumentsPage() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const loadData = async () => {
-    if (!user?.companyId) return;
+    if (!activeCompanyId) return;
     setLoading(true);
     const [docsResult, sigsResult] = await Promise.all([
-      getDocuments(user.companyId!),
-      getSignatureDocuments(user.companyId!),
+      getDocuments(activeCompanyId),
+      getSignatureDocuments(activeCompanyId),
     ]);
     if (docsResult.success && docsResult.data) setDrafts(docsResult.data);
     if (sigsResult.success && sigsResult.data) setSignatures(sigsResult.data);
     setLoading(false);
   };
 
-  useEffect(() => { loadData(); }, [user?.companyId]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { loadData(); }, [activeCompanyId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Unificar e ordenar por data
   const items: UnifiedItem[] = (() => {

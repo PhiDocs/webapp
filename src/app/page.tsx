@@ -22,8 +22,13 @@ export default function RootPage() {
         }
 
         if (user) {
-            if (user.role === 'admin' && user.companyId) {
-                router.replace(`/company/${user.companyId}`);
+            const activeCompanyId = user.activeCompanyId ?? user.companyId;
+            const activeMembership = user.memberships.find(
+                (membership) => membership.companyId === activeCompanyId && membership.status === 'active'
+            );
+
+            if (activeCompanyId && activeMembership?.role === 'admin') {
+                router.replace(`/company/${activeCompanyId}`);
             } else {
                 router.replace('/reports');
             }

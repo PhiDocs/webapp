@@ -48,6 +48,7 @@ function normalizeAnalysisSteps(steps: any[] | undefined): SafetyAnalysisOutput 
 
 export default function ReportsPage() {
   const { user } = useSession();
+  const activeCompanyId = user?.activeCompanyId ?? user?.companyId;
   const searchParams = useSearchParams();
   const router = useRouter();
   const [equipment, setEquipment] = useState<ProtectiveEquipmentOutput | null>(null);
@@ -133,14 +134,14 @@ export default function ReportsPage() {
 
 
   useEffect(() => {
-    if (user?.companyId) {
+    if (activeCompanyId) {
       const fetchData = async () => {
         setIsDataLoading(true);
         try {
           const [companyResult, worksResult, employeesResult] = await Promise.all([
-            getCompanyById(user.companyId!),
-            getWorks(user.companyId!),
-            getEmployees(user.companyId!)
+            getCompanyById(activeCompanyId),
+            getWorks(activeCompanyId),
+            getEmployees(activeCompanyId)
           ]);
           if (companyResult.success && companyResult.data) {
             setCompany(companyResult.data);
@@ -164,11 +165,11 @@ export default function ReportsPage() {
         }
       };
       fetchData();
-    } else if (user && !user.companyId) {
+    } else if (user && !activeCompanyId) {
       toast({ variant: 'destructive', title: "Usuário sem empresa", description: "Sua conta não está associada a uma empresa." });
       setIsDataLoading(false);
     }
-  }, [user, toast]);
+  }, [activeCompanyId, user, toast]);
 
   // Carregar documento salvo via query param
   const draftLoadedRef = useRef<string | null>(null);
@@ -457,7 +458,7 @@ export default function ReportsPage() {
             isLoading={isLoading}
             works={works}
             employees={employees}
-            companyId={user?.companyId}
+            companyId={activeCompanyId}
             isDataLoading={isDataLoading}
             showFloatingPreview={showFloatingPreview}
             onToggleFloatingPreview={() => setShowFloatingPreview(!showFloatingPreview)}

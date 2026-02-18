@@ -3,7 +3,7 @@
 import { cookies } from 'next/headers';
 import admin from '@/firebase/admin-config';
 import { ErrorLogRepository } from '@/repositories/error-log.repository';
-import { UserRepository } from '@/repositories/user.repository';
+import { UserRepository, type CompanyMembership } from '@/repositories/user.repository';
 import type { DecodedIdToken } from 'firebase-admin/auth';
 
 /**
@@ -26,23 +26,58 @@ async function ensureAndSyncUserDocument(decodedToken: DecodedIdToken) {
     if (roleFromClaims !== existingUser.role) {
       updates.role = roleFromClaims;
     }
-    // Ensure comparison works even if existingUser.companyId is undefined
-    if (companyIdFromClaims !== existingUser.companyId) {
-      // Use null to remove the field if it's no longer in the claims
-      updates.companyId = companyIdFromClaims || null; 
+
+    let memberships = [...(existingUser.memberships ?? [])] as CompanyMembership[];
+
+    // Compatibilidade: mantém o vínculo legado de companyId como membership.
+    if (companyIdFromClaims && !memberships.some((membership) => membership.companyId === companyIdFromClaims)) {
+      memberships.push({
+        companyId: companyIdFromClaims,
+        role: roleFromClaims,
+        status: 'active',
+        joinedAt: new Date().toISOString(),
+      });
+      updates.memberships = memberships;
+    }
+
+    const activeMembership = memberships.find((membership) => membership.status === 'active');
+    const currentActiveExists = existingUser.activeCompanyId
+      ? memberships.some((membership) => membership.status === 'active' && membership.companyId === existingUser.activeCompanyId)
+      : false;
+
+    if (!currentActiveExists) {
+      updates.activeCompanyId = activeMembership?.companyId ?? null;
+    }
+
+    // Mantém companyId legado espelhado para não quebrar fluxos durante migração.
+    const nextLegacyCompanyId = updates.activeCompanyId ?? existingUser.activeCompanyId ?? existingUser.companyId ?? companyIdFromClaims ?? null;
+    if (nextLegacyCompanyId !== existingUser.companyId) {
+      updates.companyId = nextLegacyCompanyId;
     }
 
     if (Object.keys(updates).length > 0) {
       await UserRepository.update(uid, updates);
     }
   } else {
+    const memberships: CompanyMembership[] = companyIdFromClaims
+      ? [{
+          companyId: companyIdFromClaims,
+          role: roleFromClaims,
+          status: 'active',
+          joinedAt: new Date().toISOString(),
+        }]
+      : [];
+    const activeCompanyId = memberships[0]?.companyId ?? null;
+
     // If the user doesn't exist in Firestore, create the document with token data
     await UserRepository.create(uid, {
       uid,
       name: name || email!,
       email: email!,
       role: roleFromClaims,
-      companyId: companyIdFromClaims,
+      companyId: activeCompanyId,
+      activeCompanyId,
+      memberships,
     });
   }
 }

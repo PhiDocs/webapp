@@ -4,6 +4,7 @@ import { cookies } from 'next/headers';
 import admin from '@/firebase/admin-config';
 import { UserRepository } from '@/repositories/user.repository';
 import type { UserProfile } from '@/components/auth/session-provider';
+import { requireAuth } from '@/server/auth-guard';
 
 /**
  * THIS FUNCTION IS KEPT FOR POSSIBLE FUTURE SERVER USE,
@@ -32,8 +33,10 @@ export async function getUserProfile(): Promise<{ success: boolean; data?: UserP
         uid: user.uid,
         name: user.name,
         email: user.email,
-        role: user.role,
-        companyId: user.companyId
+        role: user.role ?? 'user',
+        companyId: user.companyId ?? undefined,
+        activeCompanyId: user.activeCompanyId ?? undefined,
+        memberships: user.memberships ?? [],
     };
 
     return { success: true, data: userProfile };
@@ -41,5 +44,22 @@ export async function getUserProfile(): Promise<{ success: boolean; data?: UserP
   } catch (error: any) {
     console.error("Erro ao buscar perfil do usuário:", error);
     return { success: false, error: error.message || 'Falha ao buscar perfil do usuário.' };
+  }
+}
+
+/**
+ * Update active company context for the logged-in user.
+ */
+export async function setActiveCompany(companyId: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    if (!companyId) {
+      return { success: false, error: 'ID da empresa é obrigatório.' };
+    }
+
+    const session = await requireAuth({ requireCompany: true });
+    await UserRepository.setActiveCompany(session.uid, companyId);
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message || 'Falha ao trocar empresa ativa.' };
   }
 }
