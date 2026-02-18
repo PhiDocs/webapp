@@ -56,13 +56,21 @@ async function main() {
     console.log(`✅ Custom claims definidas: role=admin, companyId=${companyId}`);
 
     // 4. Salvar o usuário no Firestore
+    const joinedAt = new Date().toISOString();
     await db.collection('users').doc(userId).set({
       uid: userId,
       email: adminEmail,
       name: adminName,
       role: 'admin',
       companyId,
-      createdAt: new Date().toISOString(),
+      activeCompanyId: companyId,
+      memberships: [{
+        companyId,
+        role: 'admin',
+        status: 'active',
+        joinedAt,
+      }],
+      createdAt: joinedAt,
     });
     console.log(`✅ Usuário salvo no Firestore`);
 

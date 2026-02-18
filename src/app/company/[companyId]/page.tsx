@@ -6,7 +6,7 @@ import { Header } from "@/components/header";
 import { UserNav } from "@/components/auth/user-nav";
 import { WorksTable } from "@/components/admin/works-table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { HardHat, Users, Briefcase, Building, Settings } from "lucide-react";
+import { HardHat, Users, Briefcase, Building, Settings, ShieldCheck } from "lucide-react";
 import { useSession } from "@/components/auth/session-provider";
 import { getCompanyById } from "@/server/company-actions";
 import type { Company } from "@/lib/types";
@@ -17,6 +17,7 @@ import { SubcontractorsTable } from '@/components/admin/subcontractors-table';
 import { CompanySettings } from '@/components/admin/company-settings';
 import { Card, CardContent } from '@/components/ui/card';
 import { N8nSettings } from '@/components/admin/n8n-settings';
+import { CompanyMemberships } from '@/components/admin/company-memberships';
 
 export default function CompanyPage() {
     const params = useParams();
@@ -45,8 +46,12 @@ export default function CompanyPage() {
         }
     }, [companyId]);
 
+    const companyMembership = user?.memberships.find(
+        (membership) => membership.companyId === companyId && membership.status === 'active'
+    );
+
     // Permission validation
-    if (!isSessionLoading && user && (user.role !== 'admin' || user.companyId !== companyId)) {
+    if (!isSessionLoading && user && companyMembership?.role !== 'admin') {
         return (
             <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
                 <h1 className="text-xl font-bold text-destructive">Acesso Negado</h1>
@@ -80,11 +85,12 @@ export default function CompanyPage() {
                 </div>
 
                 <Tabs defaultValue="works">
-                    <TabsList className="grid w-full grid-cols-2 md:grid-cols-5">
+                    <TabsList className="grid w-full grid-cols-2 md:grid-cols-6">
                         <TabsTrigger value="works"><HardHat className="mr-2 h-4 w-4" />Obras</TabsTrigger>
                         <TabsTrigger value="employees"><Users className="mr-2 h-4 w-4" />Funcionários</TabsTrigger>
                         <TabsTrigger value="jobRoles"><Briefcase className="mr-2 h-4 w-4" />Cargos</TabsTrigger>
                         <TabsTrigger value="subcontractors"><Building className="mr-2 h-4 w-4" />Terceirizadas</TabsTrigger>
+                        <TabsTrigger value="access"><ShieldCheck className="mr-2 h-4 w-4" />Acessos</TabsTrigger>
                         <TabsTrigger value="settings"><Settings className="mr-2 h-4 w-4" />Configurações</TabsTrigger>
                     </TabsList>
                     <TabsContent value="works" className="mt-6">
@@ -98,6 +104,9 @@ export default function CompanyPage() {
                     </TabsContent>
                     <TabsContent value="subcontractors" className="mt-6">
                         <SubcontractorsTable companyId={companyId} />
+                    </TabsContent>
+                    <TabsContent value="access" className="mt-6">
+                        <CompanyMemberships companyId={companyId} />
                     </TabsContent>
                     <TabsContent value="settings" className="mt-6">
                         {company ? (

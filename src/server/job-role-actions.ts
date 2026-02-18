@@ -5,6 +5,7 @@ import { JobRoleRepository } from '@/repositories/job-role.repository';
 import { ErrorLogRepository } from '@/repositories/error-log.repository';
 import { z } from 'zod';
 import type { JobRoleFormValues } from '@/lib/types';
+import { requireAuth } from '@/server/auth-guard';
 
 const jobRoleServerSchema = z.object({
   name: z.string().min(2, "O nome do cargo é obrigatório."),
@@ -21,6 +22,7 @@ export async function getJobRoles(companyId: string) {
         return { success: false, error: 'ID da empresa não fornecido.' };
     }
     try {
+        await requireAuth({ matchCompanyId: companyId, requireCompany: true });
         const jobRoles = await JobRoleRepository.getAllByCompany(companyId);
         return { success: true, data: jobRoles };
     } catch (e: unknown) {
@@ -42,6 +44,7 @@ export async function createJobRole(data: JobRoleFormValues & { companyId: strin
     }
 
     try {
+        await requireAuth({ role: 'admin', matchCompanyId: validation.data.companyId, requireCompany: true });
         const { companyId, name, responsibilities, requiredCertificates } = validation.data;
         const certificates = requiredCertificates?.map(c => c.value).filter(Boolean) || [];
 
@@ -76,6 +79,7 @@ export async function updateJobRole(id: string, data: JobRoleFormValues & { comp
     }
 
     try {
+        await requireAuth({ role: 'admin', matchCompanyId: validation.data.companyId, requireCompany: true });
         const { companyId, name, responsibilities, requiredCertificates } = validation.data;
         const certificates = requiredCertificates?.map(c => c.value).filter(Boolean) || [];
 
@@ -98,6 +102,7 @@ export async function deleteJobRole(id: string, companyId: string) {
     }
     
     try {
+        await requireAuth({ role: 'admin', matchCompanyId: companyId, requireCompany: true });
         await JobRoleRepository.delete(id, companyId);
         revalidatePath(`/company/${companyId}`);
         return { success: true };

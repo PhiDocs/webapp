@@ -59,12 +59,20 @@ export async function registerCompany(data: unknown) {
     });
 
     // Step 4: Create the Firestore user document, linked to the company
+    const joinedAt = new Date().toISOString();
     await UserRepository.create(userId, {
       uid: userId,
       name: adminName,
       email: adminEmail,
       role: 'admin',
       companyId: companyId,
+      activeCompanyId: companyId,
+      memberships: [{
+        companyId,
+        role: 'admin',
+        status: 'active',
+        joinedAt,
+      }],
     });
 
     // Step 5: Update the company document with the owner ID

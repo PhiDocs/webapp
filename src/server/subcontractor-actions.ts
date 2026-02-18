@@ -5,6 +5,7 @@ import { SubcontractorRepository } from '@/repositories/subcontractor.repository
 import { ErrorLogRepository } from '@/repositories/error-log.repository';
 import { z } from 'zod';
 import type { SubcontractorFormValues } from '@/lib/types';
+import { requireAuth } from '@/server/auth-guard';
 
 const subcontractorServerSchema = z.object({
   name: z.string().min(2, "O nome da empresa é obrigatório."),
@@ -21,6 +22,7 @@ export async function getSubcontractors(companyId: string) {
         return { success: false, error: 'ID da empresa não fornecido.' };
     }
     try {
+        await requireAuth({ matchCompanyId: companyId, requireCompany: true });
         const subcontractors = await SubcontractorRepository.getAllByCompany(companyId);
         return { success: true, data: subcontractors };
     } catch (e: unknown) {
@@ -42,6 +44,7 @@ export async function createSubcontractor(data: SubcontractorFormValues & { comp
     }
 
     try {
+        await requireAuth({ role: 'admin', matchCompanyId: validation.data.companyId, requireCompany: true });
         await SubcontractorRepository.create(validation.data);
         revalidatePath(`/company/${validation.data.companyId}`);
         return { success: true };
@@ -64,6 +67,7 @@ export async function updateSubcontractor(id: string, data: SubcontractorFormVal
     }
 
     try {
+        await requireAuth({ role: 'admin', matchCompanyId: validation.data.companyId, requireCompany: true });
         await SubcontractorRepository.update(id, validation.data);
         revalidatePath(`/company/${validation.data.companyId}`);
         return { success: true };
@@ -83,6 +87,7 @@ export async function deleteSubcontractor(id: string, companyId: string) {
     }
     
     try {
+        await requireAuth({ role: 'admin', matchCompanyId: companyId, requireCompany: true });
         await SubcontractorRepository.delete(id, companyId);
         revalidatePath(`/company/${companyId}`);
         return { success: true };
