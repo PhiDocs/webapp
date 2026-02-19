@@ -8,6 +8,7 @@ import { Loader2 } from 'lucide-react';
 /**
  * This is the root page. It acts as a dispatcher.
  * It redirects users to their appropriate dashboard based on their role.
+ * - Super admins are sent to /admin.
  * - Admins are sent to their company page.
  * - Regular users are sent to the reports page.
  * - Logged-out users are handled by the proxy.
@@ -22,6 +23,12 @@ export default function RootPage() {
         }
 
         if (user) {
+            const isSuperAdmin = user.isSuperAdmin || user.role === 'super-admin';
+            if (isSuperAdmin) {
+                router.replace('/admin');
+                return;
+            }
+
             const activeCompanyId = user.activeCompanyId ?? user.companyId;
             const activeMembership = user.memberships.find(
                 (membership) => membership.companyId === activeCompanyId && membership.status === 'active'

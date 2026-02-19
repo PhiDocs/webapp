@@ -11,6 +11,7 @@ const JWKS = createRemoteJWKSet(
 interface VerifiedToken {
   uid: string;
   email?: string;
+  role?: 'super-admin' | 'admin' | 'user';
 }
 
 function isExpectedTokenError(error: unknown): boolean {
@@ -43,6 +44,7 @@ async function verifyIdToken(token: string): Promise<VerifiedToken | null> {
     return {
       uid: payload.sub as string,
       email: payload.email as string | undefined,
+      role: (payload.role as VerifiedToken['role'] | undefined) ?? 'user',
     };
   } catch (error) {
     // Sessões antigas/inválidas são esperadas e serão limpas no proxy.
@@ -89,6 +91,10 @@ export async function proxy(request: NextRequest) {
     // 2a. If trying to access a public route (like /login), redirect to the appropriate dashboard
     if (isPublicRoute) {
         return NextResponse.redirect(new URL('/', request.url));
+    }
+
+    if (pathname.startsWith('/admin') && session.role !== 'super-admin') {
+      return NextResponse.redirect(new URL('/', request.url));
     }
   }
 

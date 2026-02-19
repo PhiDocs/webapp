@@ -53,6 +53,7 @@ export function UserNav() {
   );
   const activeCompanyId = user?.activeCompanyId ?? user?.companyId;
   const activeMembership = activeMemberships.find((membership) => membership.companyId === activeCompanyId);
+  const isSuperAdmin = Boolean(user?.isSuperAdmin || user?.role === 'super-admin');
   const canAccessAdminPanel = activeMembership?.role === 'admin';
   const activeCompanyName = activeCompanyId
     ? (companyNames[activeCompanyId] ?? (isLoadingCompanies ? ptBr.actions.loading : activeCompanyId))
@@ -120,6 +121,12 @@ export function UserNav() {
     }
   };
 
+  const handleSuperAdminPanelClick = () => {
+    if (isSuperAdmin) {
+      router.push('/admin');
+    }
+  };
+
   return (
     <DropdownMenu>
         <DropdownMenuTrigger asChild>
@@ -167,6 +174,15 @@ export function UserNav() {
                             )}
                         </DropdownMenuItem>
                     ))}
+                </>
+            )}
+            {isSuperAdmin && (
+                <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleSuperAdminPanelClick} className="cursor-pointer">
+                    <LayoutDashboard className="mr-2 h-4 w-4" />
+                    <span>Painel Super Admin</span>
+                </DropdownMenuItem>
                 </>
             )}
             {canAccessAdminPanel && activeCompanyId && (
