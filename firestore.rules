@@ -16,6 +16,10 @@ service cloud.firestore {
       return request.auth.token.companyId;
     }
 
+    function isSuperAdmin() {
+      return isSignedIn() && tokenRole() == 'super-admin';
+    }
+
     function isAdmin() {
       return isSignedIn() && tokenRole() == 'admin' && tokenCompanyId() != null;
     }
@@ -31,68 +35,83 @@ service cloud.firestore {
     // Users collection (users)
     // Allows a user to read and update their own data.
     match /users/{userId} {
-      allow read, delete: if isOwnUser(userId);
-      allow create: if isOwnUser(userId)
+      allow read: if isOwnUser(userId) || isSuperAdmin();
+      allow delete: if isOwnUser(userId);
+      allow create: if isSuperAdmin() || (
+        isOwnUser(userId)
         && request.resource.data.uid == request.auth.uid
         && request.resource.data.role == 'user'
-        && (!request.resource.data.keys().hasAny(['companyId']) || request.resource.data.companyId == null);
-      allow update: if isOwnUser(userId)
+        && (!request.resource.data.keys().hasAny(['companyId']) || request.resource.data.companyId == null)
+        && (!request.resource.data.keys().hasAny(['permissions']) || request.resource.data.permissions.size() == 0)
+        && (!request.resource.data.keys().hasAny(['scopedPermissions']) || request.resource.data.scopedPermissions.size() == 0)
+      );
+      allow update: if isSuperAdmin() || (
+        isOwnUser(userId)
         && request.resource.data.role == resource.data.role
-        && request.resource.data.companyId == resource.data.companyId;
+        && request.resource.data.companyId == resource.data.companyId
+        && request.resource.data.permissions == resource.data.permissions
+        && request.resource.data.scopedPermissions == resource.data.scopedPermissions
+      );
     }
 
     // Rules for companies and subcollections
     match /companies/{companyId} {
       // Company admins can read and update the company
-      allow read, update: if isCompanyAdmin(companyId);
-      allow create, delete: if false;
+      allow read, update: if isSuperAdmin() || isCompanyAdmin(companyId);
+      allow create, delete: if isSuperAdmin();
       
       // Company admins can manage works, employees, job roles, and subcontractors
       match /works/{workId} {
-        allow read, write, delete: if isCompanyAdmin(companyId);
+        allow read, write, delete: if isSuperAdmin() || isCompanyAdmin(companyId);
       }
       
       match /employees/{employeeId} {
-        allow read, write, delete: if isCompanyAdmin(companyId);
+        allow read, write, delete: if isSuperAdmin() || isCompanyAdmin(companyId);
       }
 
       match /jobRoles/{jobRoleId} {
-        allow read, write, delete: if isCompanyAdmin(companyId);
+        allow read, write, delete: if isSuperAdmin() || isCompanyAdmin(companyId);
       }
 
       match /subcontractors/{subcontractorId} {
-        allow read, write, delete: if isCompanyAdmin(companyId);
+        allow read, write, delete: if isSuperAdmin() || isCompanyAdmin(companyId);
       }
     }
 
     // Root works collection (used by the app)
     match /works/{workId} {
-      allow read: if isAdmin() && resource.data.companyId == tokenCompanyId();
-      allow create: if isAdmin() && request.resource.data.companyId == tokenCompanyId();
-      allow update: if isAdmin()
+      allow read: if isSuperAdmin() || (isAdmin() && resource.data.companyId == tokenCompanyId());
+      allow create: if isSuperAdmin() || (isAdmin() && request.resource.data.companyId == tokenCompanyId());
+      allow update: if isSuperAdmin() || (
+        isAdmin()
         && resource.data.companyId == tokenCompanyId()
-        && request.resource.data.companyId == resource.data.companyId;
-      allow delete: if isAdmin() && resource.data.companyId == tokenCompanyId();
+        && request.resource.data.companyId == resource.data.companyId
+      );
+      allow delete: if isSuperAdmin() || (isAdmin() && resource.data.companyId == tokenCompanyId());
     }
 
     // Signature documents (Assinafy)
     match /signatureDocuments/{docId} {
-      allow read: if isAdmin() && resource.data.companyId == tokenCompanyId();
-      allow create: if isAdmin() && request.resource.data.companyId == tokenCompanyId();
-      allow update: if isAdmin()
+      allow read: if isSuperAdmin() || (isAdmin() && resource.data.companyId == tokenCompanyId());
+      allow create: if isSuperAdmin() || (isAdmin() && request.resource.data.companyId == tokenCompanyId());
+      allow update: if isSuperAdmin() || (
+        isAdmin()
         && resource.data.companyId == tokenCompanyId()
-        && request.resource.data.companyId == resource.data.companyId;
+        && request.resource.data.companyId == resource.data.companyId
+      );
       allow delete: if false;
     }
 
     // Saved documents (drafts and history)
     match /documents/{docId} {
-      allow read: if isAdmin() && resource.data.companyId == tokenCompanyId();
-      allow create: if isAdmin() && request.resource.data.companyId == tokenCompanyId();
-      allow update: if isAdmin()
+      allow read: if isSuperAdmin() || (isAdmin() && resource.data.companyId == tokenCompanyId());
+      allow create: if isSuperAdmin() || (isAdmin() && request.resource.data.companyId == tokenCompanyId());
+      allow update: if isSuperAdmin() || (
+        isAdmin()
         && resource.data.companyId == tokenCompanyId()
-        && request.resource.data.companyId == resource.data.companyId;
-      allow delete: if isAdmin() && resource.data.companyId == tokenCompanyId();
+        && request.resource.data.companyId == resource.data.companyId
+      );
+      allow delete: if isSuperAdmin() || (isAdmin() && resource.data.companyId == tokenCompanyId());
     }
 
     // Error logs (server-side only, deny client access)

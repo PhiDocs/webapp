@@ -17,14 +17,25 @@ async function ensureAndSyncUserDocument(decodedToken: DecodedIdToken) {
   const existingUser = await UserRepository.get(uid);
 
   // Use a safe type for claims
-  const customClaims = (decodedToken || {}) as { role?: 'admin' | 'user', companyId?: string };
+  const customClaims = (decodedToken || {}) as { role?: 'super-admin' | 'admin' | 'user', companyId?: string };
   const roleFromClaims = customClaims.role || 'user';
+  const membershipRoleFromClaims: 'admin' | 'user' = roleFromClaims === 'admin' ? 'admin' : 'user';
   const companyIdFromClaims = customClaims.companyId;
+  const isSuperAdminFromClaims = roleFromClaims === 'super-admin';
 
   if (existingUser) {
     const updates: { [key: string]: any } = {};
     if (roleFromClaims !== existingUser.role) {
       updates.role = roleFromClaims;
+    }
+    if (existingUser.isSuperAdmin !== isSuperAdminFromClaims) {
+      updates.isSuperAdmin = isSuperAdminFromClaims;
+    }
+    if (!Array.isArray(existingUser.permissions)) {
+      updates.permissions = [];
+    }
+    if (!Array.isArray(existingUser.scopedPermissions)) {
+      updates.scopedPermissions = [];
     }
 
     let memberships = [...(existingUser.memberships ?? [])] as CompanyMembership[];
@@ -33,7 +44,7 @@ async function ensureAndSyncUserDocument(decodedToken: DecodedIdToken) {
     if (companyIdFromClaims && !memberships.some((membership) => membership.companyId === companyIdFromClaims)) {
       memberships.push({
         companyId: companyIdFromClaims,
-        role: roleFromClaims,
+        role: membershipRoleFromClaims,
         status: 'active',
         joinedAt: new Date().toISOString(),
       });
@@ -62,7 +73,7 @@ async function ensureAndSyncUserDocument(decodedToken: DecodedIdToken) {
     const memberships: CompanyMembership[] = companyIdFromClaims
       ? [{
           companyId: companyIdFromClaims,
-          role: roleFromClaims,
+          role: membershipRoleFromClaims,
           status: 'active',
           joinedAt: new Date().toISOString(),
         }]
@@ -75,9 +86,12 @@ async function ensureAndSyncUserDocument(decodedToken: DecodedIdToken) {
       name: name || email!,
       email: email!,
       role: roleFromClaims,
+      isSuperAdmin: isSuperAdminFromClaims,
       companyId: activeCompanyId,
       activeCompanyId,
       memberships,
+      permissions: [],
+      scopedPermissions: [],
     });
   }
 }

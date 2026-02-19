@@ -1,4 +1,5 @@
 import admin from '@/firebase/admin-config';
+import type { AclPermission, ScopedPermission } from '@/lib/acl';
 
 export type CompanyMembership = {
     companyId: string;
@@ -12,7 +13,10 @@ export type UserData = {
     uid: string;
     name: string;
     email: string;
-    role?: 'admin' | 'user'; // legado/global
+    role?: 'super-admin' | 'admin' | 'user'; // legado/global
+    isSuperAdmin?: boolean;
+    permissions?: AclPermission[];
+    scopedPermissions?: ScopedPermission[];
     companyId?: string | null; // legado 1:1
     activeCompanyId?: string | null;
     memberships?: CompanyMembership[];
@@ -34,9 +38,10 @@ function normalizeMemberships(user: Pick<UserData, 'companyId' | 'role' | 'membe
 
     // Compatibilidade com o modelo legado (companyId único).
     if (user.companyId && !membershipMap.has(user.companyId)) {
+        const legacyRole: 'admin' | 'user' = user.role === 'admin' ? 'admin' : 'user';
         membershipMap.set(user.companyId, {
             companyId: user.companyId,
-            role: user.role ?? 'user',
+            role: legacyRole,
             status: 'active',
             joinedAt: new Date().toISOString(),
         });
@@ -54,6 +59,23 @@ function resolveActiveCompanyId(user: Pick<UserData, 'activeCompanyId'>, members
     }
 
     return activeMemberships[0].companyId;
+}
+
+function normalizePermissions(user: Pick<UserData, 'permissions' | 'scopedPermissions'>): Pick<UserData, 'permissions' | 'scopedPermissions'> {
+    const permissions = Array.isArray(user.permissions)
+        ? Array.from(new Set(user.permissions))
+        : [];
+
+    const scopedPermissions = Array.isArray(user.scopedPermissions)
+        ? user.scopedPermissions
+            .filter((item): item is ScopedPermission => Boolean(item?.companyId))
+            .map((item) => ({
+                companyId: item.companyId,
+                permissions: Array.from(new Set(item.permissions ?? [])),
+            }))
+        : [];
+
+    return { permissions, scopedPermissions };
 }
 
 export const UserRepository = {
@@ -91,11 +113,14 @@ export const UserRepository = {
         const user = doc.data() as UserData;
         const memberships = normalizeMemberships(user);
         const activeCompanyId = resolveActiveCompanyId(user, memberships);
+        const { permissions, scopedPermissions } = normalizePermissions(user);
 
         return {
             ...user,
             memberships,
             activeCompanyId,
+            permissions,
+            scopedPermissions,
         };
     },
 
@@ -109,11 +134,14 @@ export const UserRepository = {
             const user = doc.data() as UserData;
             const memberships = normalizeMemberships(user);
             const activeCompanyId = resolveActiveCompanyId(user, memberships);
+            const { permissions, scopedPermissions } = normalizePermissions(user);
 
             return {
                 ...user,
                 memberships,
                 activeCompanyId,
+                permissions,
+                scopedPermissions,
             };
         });
     },

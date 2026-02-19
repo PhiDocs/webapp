@@ -34,6 +34,8 @@ export async function getUserProfile(): Promise<{ success: boolean; data?: UserP
         name: user.name,
         email: user.email,
         role: user.role ?? 'user',
+        permissions: user.permissions ?? [],
+        scopedPermissions: user.scopedPermissions ?? [],
         companyId: user.companyId ?? undefined,
         activeCompanyId: user.activeCompanyId ?? undefined,
         memberships: user.memberships ?? [],

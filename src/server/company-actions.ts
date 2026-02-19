@@ -5,7 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { CompanyRepository } from '@/repositories/company.repository';
 import { companySettingsFormSchema } from '@/lib/types';
 import { ErrorLogRepository } from '@/repositories/error-log.repository';
-import { requireAuth } from '@/server/auth-guard';
+import { requireAuth, requirePermission } from '@/server/auth-guard';
 
 
 /**
@@ -79,7 +79,7 @@ export async function getMyCompanies() {
  */
 export async function createCompany(data: unknown) {
     try {
-        await requireAuth({ role: 'admin' });
+        await requirePermission('company.create');
     } catch (error: any) {
         return { success: false, error: error.message || 'Acesso negado.' };
     }

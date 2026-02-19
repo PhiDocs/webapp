@@ -5,6 +5,7 @@ import { onAuthStateChanged, type User as FirebaseUser } from 'firebase/auth';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { auth, db } from '@/firebase/config';
 import { Loader2 } from 'lucide-react';
+import type { AclPermission, ScopedPermission } from '@/lib/acl';
 
 export type CompanyMembership = {
   companyId: string;
@@ -18,7 +19,10 @@ export interface UserProfile {
   uid: string;
   name: string;
   email: string;
-  role: 'admin' | 'user';
+  role: 'super-admin' | 'admin' | 'user';
+  isSuperAdmin?: boolean;
+  permissions: AclPermission[];
+  scopedPermissions: ScopedPermission[];
   companyId?: string; // legado
   activeCompanyId?: string;
   memberships: CompanyMembership[];
@@ -60,6 +64,9 @@ function mapFirestoreUserProfile(data: any): Omit<UserProfile, 'uid' | 'email'> 
   return {
     name: data.name,
     role: data.role ?? 'user',
+    isSuperAdmin: Boolean(data.isSuperAdmin || data.role === 'super-admin'),
+    permissions: Array.isArray(data.permissions) ? data.permissions : [],
+    scopedPermissions: Array.isArray(data.scopedPermissions) ? data.scopedPermissions : [],
     companyId: data.companyId,
     activeCompanyId,
     memberships,
