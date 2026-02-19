@@ -10,6 +10,7 @@
     "typecheck": "tsc --noEmit",
     "deploy:apphosting": "bash scripts/apphosting/deploy.sh",
     "release:apphosting": "bash scripts/apphosting/release.sh",
+    "release:apphosting:patch": "BUMP=patch bash scripts/apphosting/release.sh",
     "release:apphosting:minor": "BUMP=minor bash scripts/apphosting/release.sh",
     "release:apphosting:major": "BUMP=major bash scripts/apphosting/release.sh",
     "migrate-deleted-at": "tsx scripts/migrations/migrate-deleted-at.ts",
@@ -30,6 +31,7 @@
     "secrets:sync:dev": "INFISICAL_ENV=dev bash scripts/apphosting/sync-infisical-to-gsm.sh",
     "secrets:sync:staging": "INFISICAL_ENV=staging bash scripts/apphosting/sync-infisical-to-gsm.sh",
     "release:full": "bash scripts/apphosting/release-full.sh",
+    "release:full:patch": "BUMP=patch bash scripts/apphosting/release-full.sh",
     "release:full:minor": "BUMP=minor bash scripts/apphosting/release-full.sh",
     "release:full:major": "BUMP=major bash scripts/apphosting/release-full.sh"
   },
