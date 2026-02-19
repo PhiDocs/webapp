@@ -25,7 +25,7 @@ env:
 
   # Firebase Client (public)
   - variable: NEXT_PUBLIC_FIREBASE_API_KEY
-    value: "YOUR_FIREBASE_WEB_API_KEY"
+    value: "AIzaSyDYj4WCoDv7DnFMVdeF0zVXlk7KpPJvTxI"
     availability:
       - BUILD
       - RUNTIME
@@ -40,7 +40,7 @@ env:
       - BUILD
       - RUNTIME
   - variable: NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
-    value: studio-2124642360-17967.appspot.com
+    value: studio-2124642360-17967.firebasestorage.app
     availability:
       - BUILD
       - RUNTIME
