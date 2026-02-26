@@ -167,3 +167,77 @@ export async function removeCompanyMembership(params: {
     return { success: false, error: error.message || 'Falha ao remover acesso do usuário.' };
   }
 }
+
+type AvailableUser = {
+  uid: string;
+  name: string;
+  email: string;
+};
+
+export async function getAvailableUsersForCompany(companyId: string): Promise<{ success: boolean; data?: AvailableUser[]; error?: string }> {
+  try {
+    if (!companyId) {
+      return { success: false, error: 'ID da empresa é obrigatório.' };
+    }
+
+    await ensureAdminForCompany(companyId);
+    const users = await UserRepository.list();
+
+    const data = users
+      .filter((user) => {
+        const hasMembership = user.memberships?.some((item) => item.companyId === companyId);
+        return !hasMembership;
+      })
+      .map((user) => ({
+        uid: user.uid,
+        name: user.name,
+        email: user.email,
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
+
+    return { success: true, data };
+  } catch (error: any) {
+    return { success: false, error: error.message || 'Falha ao buscar usuários disponíveis.' };
+  }
+}
+
+export async function addCompanyMembershipByUserId(params: {
+  companyId: string;
+  userId: string;
+  role: MembershipRole;
+}): Promise<{ success: boolean; error?: string }> {
+  try {
+    const companyId = params.companyId?.trim();
+    const userId = params.userId?.trim();
+    const role = params.role;
+
+    if (!companyId || !userId || !role) {
+      return { success: false, error: 'companyId, userId e role são obrigatórios.' };
+    }
+
+    await ensureAdminForCompany(companyId);
+
+    const company = await CompanyRepository.getById(companyId);
+    if (!company) {
+      return { success: false, error: 'Empresa não encontrada.' };
+    }
+
+    const user = await UserRepository.get(userId);
+    if (!user) {
+      return { success: false, error: 'Usuário não encontrado.' };
+    }
+
+    await UserRepository.upsertMembership(userId, {
+      companyId,
+      role,
+      status: 'active',
+    });
+
+    const updatedUser = await UserRepository.get(userId);
+    await syncLegacyClaimCompanyId(userId, updatedUser?.activeCompanyId ?? null);
+
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message || 'Falha ao adicionar acesso do usuário.' };
+  }
+}

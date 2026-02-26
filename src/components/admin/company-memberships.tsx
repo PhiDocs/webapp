@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useTransition } from 'react';
+import { useEffect, useMemo, useState, useTransition } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -21,10 +21,13 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Loader2, Trash2, UserPlus } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { ChevronsUpDown, Check, Loader2, Search, Trash2, UserPlus } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import {
-  addCompanyMembershipByEmail,
+  addCompanyMembershipByUserId,
+  getAvailableUsersForCompany,
   getCompanyMembershipUsers,
   removeCompanyMembership,
   updateCompanyMembershipRole,
@@ -42,6 +45,12 @@ type MembershipUser = {
   isActiveCompany: boolean;
 };
 
+type AvailableUser = {
+  uid: string;
+  name: string;
+  email: string;
+};
+
 interface CompanyMembershipsProps {
   companyId: string;
 }
@@ -50,36 +59,58 @@ export function CompanyMemberships({ companyId }: CompanyMembershipsProps) {
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
   const [users, setUsers] = useState<MembershipUser[]>([]);
+  const [availableUsers, setAvailableUsers] = useState<AvailableUser[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [email, setEmail] = useState('');
   const [newRole, setNewRole] = useState<MembershipRole>('user');
+  const [selectedUser, setSelectedUser] = useState<AvailableUser | null>(null);
+  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+  const [search, setSearch] = useState('');
 
-  const fetchUsers = async () => {
+  const filteredAvailableUsers = useMemo(() => {
+    if (!search.trim()) return availableUsers;
+    const term = search.toLowerCase();
+    return availableUsers.filter(
+      (user) => user.name.toLowerCase().includes(term) || user.email.toLowerCase().includes(term)
+    );
+  }, [availableUsers, search]);
+
+  const fetchData = async () => {
     setIsLoading(true);
-    const result = await getCompanyMembershipUsers(companyId);
-    if (result.success && result.data) {
-      setUsers(result.data);
+    const [membersResult, availableResult] = await Promise.all([
+      getCompanyMembershipUsers(companyId),
+      getAvailableUsersForCompany(companyId),
+    ]);
+
+    if (membersResult.success && membersResult.data) {
+      setUsers(membersResult.data);
     } else {
       toast({
         variant: 'destructive',
         title: 'Erro ao carregar acessos',
-        description: result.error,
+        description: membersResult.error,
       });
     }
+
+    if (availableResult.success && availableResult.data) {
+      setAvailableUsers(availableResult.data);
+    }
+
     setIsLoading(false);
   };
 
   useEffect(() => {
     if (companyId) {
-      fetchUsers();
+      fetchData();
     }
   }, [companyId]);
 
   const handleAddMembership = () => {
+    if (!selectedUser) return;
+
     startTransition(async () => {
-      const result = await addCompanyMembershipByEmail({
+      const result = await addCompanyMembershipByUserId({
         companyId,
-        email,
+        userId: selectedUser.uid,
         role: newRole,
       });
 
@@ -93,8 +124,9 @@ export function CompanyMemberships({ companyId }: CompanyMembershipsProps) {
       }
 
       toast({ title: 'Acesso adicionado com sucesso.' });
-      setEmail('');
-      await fetchUsers();
+      setSelectedUser(null);
+      setSearch('');
+      await fetchData();
     });
   };
 
@@ -134,6 +166,7 @@ export function CompanyMemberships({ companyId }: CompanyMembershipsProps) {
 
       setUsers((current) => current.filter((user) => user.uid !== userId));
       toast({ title: 'Acesso removido com sucesso.' });
+      await fetchData();
     });
   };
 
@@ -142,21 +175,76 @@ export function CompanyMemberships({ companyId }: CompanyMembershipsProps) {
       <CardHeader>
         <CardTitle>Acessos de Usuários</CardTitle>
         <CardDescription>
-          Gerencie memberships desta empresa. Você pode adicionar por e-mail, ajustar role e remover acesso.
+          Gerencie memberships desta empresa. Selecione um usuário, ajuste a role e adicione.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-[1fr_180px_auto] gap-3">
           <div className="space-y-2">
-            <Label htmlFor="membership-email">E-mail do usuário</Label>
-            <Input
-              id="membership-email"
-              type="email"
-              placeholder="usuario@empresa.com"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              disabled={isPending}
-            />
+            <Label>Usuário</Label>
+            <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  aria-expanded={isPopoverOpen}
+                  className="w-full justify-between font-normal"
+                  disabled={isPending}
+                >
+                  {selectedUser ? (
+                    <span className="truncate">{selectedUser.name} ({selectedUser.email})</span>
+                  ) : (
+                    <span className="text-muted-foreground">Selecione um usuário...</span>
+                  )}
+                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                <div className="flex items-center border-b px-3">
+                  <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
+                  <Input
+                    placeholder="Buscar por nome ou e-mail..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="border-0 shadow-none focus-visible:ring-0 h-10"
+                  />
+                </div>
+                <div className="max-h-60 overflow-y-auto p-1">
+                  {filteredAvailableUsers.length === 0 ? (
+                    <p className="py-6 text-center text-sm text-muted-foreground">
+                      Nenhum usuário disponível.
+                    </p>
+                  ) : (
+                    filteredAvailableUsers.map((user) => (
+                      <button
+                        key={user.uid}
+                        type="button"
+                        className={cn(
+                          'relative flex w-full cursor-pointer select-none items-center rounded-sm px-2 py-2 text-sm outline-none hover:bg-accent hover:text-accent-foreground',
+                          selectedUser?.uid === user.uid && 'bg-accent'
+                        )}
+                        onClick={() => {
+                          setSelectedUser(user);
+                          setIsPopoverOpen(false);
+                          setSearch('');
+                        }}
+                      >
+                        <Check
+                          className={cn(
+                            'mr-2 h-4 w-4',
+                            selectedUser?.uid === user.uid ? 'opacity-100' : 'opacity-0'
+                          )}
+                        />
+                        <div className="flex flex-col items-start">
+                          <span className="font-medium">{user.name}</span>
+                          <span className="text-xs text-muted-foreground">{user.email}</span>
+                        </div>
+                      </button>
+                    ))
+                  )}
+                </div>
+              </PopoverContent>
+            </Popover>
           </div>
 
           <div className="space-y-2">
@@ -175,7 +263,7 @@ export function CompanyMemberships({ companyId }: CompanyMembershipsProps) {
           <div className="md:self-end">
             <Button
               onClick={handleAddMembership}
-              disabled={isPending || !email.trim()}
+              disabled={isPending || !selectedUser}
               className="w-full md:w-auto"
             >
               {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <UserPlus className="mr-2 h-4 w-4" />}
