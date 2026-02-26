@@ -34,7 +34,13 @@ export default function RootPage() {
                 (membership) => membership.companyId === activeCompanyId && membership.status === 'active'
             );
 
-            if (activeCompanyId && activeMembership?.role === 'admin') {
+            if (!activeCompanyId) {
+                const canCreateCompany = user.permissions?.includes('company.create');
+                router.replace(canCreateCompany ? '/setup' : '/reports');
+                return;
+            }
+
+            if (activeMembership?.role === 'admin') {
                 router.replace(`/company/${activeCompanyId}`);
             } else {
                 router.replace('/reports');

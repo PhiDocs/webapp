@@ -2,7 +2,9 @@
 
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
+import admin from '@/firebase/admin-config';
 import { CompanyRepository } from '@/repositories/company.repository';
+import { UserRepository } from '@/repositories/user.repository';
 import { companySettingsFormSchema } from '@/lib/types';
 import { ErrorLogRepository } from '@/repositories/error-log.repository';
 import { requireAuth, requirePermission } from '@/server/auth-guard';
@@ -143,5 +145,51 @@ export async function deleteCompany(id: string) {
     } catch (error: any) {
         await ErrorLogRepository.log(error, 'deleteCompany');
         return { success: false, error: error.message || 'Falha ao deletar empresa.' };
+    }
+}
+
+/**
+ * Create a company and join the current user as admin/owner.
+ * Requires the `company.create` permission (does NOT require super admin).
+ */
+export async function createCompanyAndJoin(data: unknown): Promise<{ success: boolean; error?: string; companyId?: string }> {
+    let session;
+    try {
+        session = await requirePermission('company.create');
+    } catch (error: any) {
+        return { success: false, error: error.message || 'Acesso negado.' };
+    }
+
+    const validation = companySettingsFormSchema.safeParse(data);
+    if (!validation.success) {
+        const errors = validation.error.flatten().fieldErrors;
+        return { success: false, error: Object.values(errors).flat().join(', ') };
+    }
+
+    try {
+        const companyId = await CompanyRepository.create(validation.data);
+        await CompanyRepository.update(companyId, { ownerUid: session.uid });
+
+        await UserRepository.upsertMembership(session.uid, {
+            companyId,
+            role: 'admin',
+            status: 'active',
+        });
+
+        await UserRepository.update(session.uid, {
+            activeCompanyId: companyId,
+            companyId: companyId,
+        });
+
+        const auth = admin.auth();
+        const userRecord = await auth.getUser(session.uid);
+        const claims = { ...(userRecord.customClaims ?? {}), companyId };
+        await auth.setCustomUserClaims(session.uid, claims);
+
+        revalidatePath('/');
+        return { success: true, companyId };
+    } catch (error: any) {
+        await ErrorLogRepository.log(error, 'createCompanyAndJoin');
+        return { success: false, error: error.message || 'Falha ao criar empresa.' };
     }
 }
