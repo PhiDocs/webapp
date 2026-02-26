@@ -85,7 +85,7 @@ export function LoginForm() {
       });
 
       // 4. Hard redirect to ensure the new session cookie is picked up by the proxy
-      window.location.href = '/reports';
+      window.location.href = '/';
 
 
     } catch (error: any) {
