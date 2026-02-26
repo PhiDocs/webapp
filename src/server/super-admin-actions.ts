@@ -1,7 +1,8 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { companySettingsFormSchema } from '@/lib/types';
+import admin from '@/firebase/admin-config';
+import { companySettingsFormSchema, createUserFormSchema } from '@/lib/types';
 import { CompanyRepository } from '@/repositories/company.repository';
 import { UserRepository } from '@/repositories/user.repository';
 import { requirePermission, requireSuperAdmin } from '@/server/auth-guard';
@@ -152,5 +153,71 @@ export async function setUserPermissions(params: {
     return { success: true };
   } catch (error: any) {
     return { success: false, error: error.message || 'Falha ao salvar permissões do usuário.' };
+  }
+}
+
+export async function createUserAsSuperAdmin(data: unknown): Promise<{ success: boolean; error?: string; userId?: string }> {
+  try {
+    await requireSuperAdmin();
+  } catch (error: any) {
+    return { success: false, error: error.message || 'Acesso negado.' };
+  }
+
+  const validation = createUserFormSchema.safeParse(data);
+  if (!validation.success) {
+    const errors = validation.error.flatten().fieldErrors;
+    return { success: false, error: Object.values(errors).flat().join(', ') };
+  }
+
+  const { name, email, password, companyId, companyRole, grantCompanyCreate } = validation.data;
+  const auth = admin.auth();
+
+  try {
+    if (companyId) {
+      const company = await CompanyRepository.getById(companyId);
+      if (!company) {
+        return { success: false, error: 'Empresa não encontrada.' };
+      }
+    }
+
+    const userRecord = await auth.createUser({
+      email,
+      emailVerified: true,
+      password,
+      displayName: name,
+    });
+    const userId = userRecord.uid;
+
+    const claims: Record<string, unknown> = { role: 'user' };
+    if (companyId) {
+      claims.companyId = companyId;
+    }
+    await auth.setCustomUserClaims(userId, claims);
+
+    const joinedAt = new Date().toISOString();
+    const memberships = companyId
+      ? [{ companyId, role: companyRole, status: 'active' as const, joinedAt }]
+      : [];
+
+    const permissions = grantCompanyCreate ? ['company.create' as const] : [];
+
+    await UserRepository.create(userId, {
+      uid: userId,
+      name,
+      email,
+      role: 'user',
+      companyId: companyId ?? null,
+      activeCompanyId: companyId ?? null,
+      memberships,
+      permissions,
+    });
+
+    revalidatePath('/admin');
+    return { success: true, userId };
+  } catch (error: any) {
+    if (error?.code === 'auth/email-already-exists') {
+      return { success: false, error: 'Já existe um usuário com este e-mail.' };
+    }
+    return { success: false, error: error.message || 'Falha ao criar usuário.' };
   }
 }

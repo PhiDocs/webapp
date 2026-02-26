@@ -5,7 +5,7 @@ import { Header } from '@/components/header';
 import { UserNav } from '@/components/auth/user-nav';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Building2, Shield, Users, UserCog, Loader2 } from 'lucide-react';
+import { Building2, Shield, Users, UserCog, UserPlus, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -19,16 +19,19 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import type { Company } from '@/lib/types';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import type { Company, CreateUserFormValues } from '@/lib/types';
 import type { AclPermission } from '@/lib/acl';
 import {
   createCompanyAsSuperAdmin,
+  createUserAsSuperAdmin,
   getGlobalCompanies,
   getGlobalUsers,
   setUserPermissions,
   getSuperAdminOverview,
 } from '@/server/super-admin-actions';
 import { CompanyMemberships } from '@/components/admin/company-memberships';
+import { CreateUserForm } from '@/components/admin/create-user-form';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useSession } from '@/components/auth/session-provider';
 
@@ -62,6 +65,7 @@ export default function AdminPage() {
   const [users, setUsers] = useState<GlobalUser[]>([]);
   const [companyName, setCompanyName] = useState('');
   const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(null);
+  const [isCreateUserOpen, setIsCreateUserOpen] = useState(false);
 
   const selectedCompany = useMemo(
     () => companies.find((company) => company.id === selectedCompanyId) ?? null,
@@ -187,6 +191,28 @@ export default function AdminPage() {
         title: 'Permissões atualizadas',
         description: `Permissão company.create ${checked ? 'concedida' : 'removida'} para ${targetUser.email}.`,
       });
+    });
+  };
+
+  const handleCreateUser = (values: CreateUserFormValues) => {
+    startTransition(async () => {
+      const result = await createUserAsSuperAdmin(values);
+
+      if (!result.success) {
+        toast({
+          variant: 'destructive',
+          title: 'Falha ao criar usuário',
+          description: result.error,
+        });
+        return;
+      }
+
+      toast({
+        title: 'Usuário criado',
+        description: 'O usuário foi criado com sucesso.',
+      });
+      setIsCreateUserOpen(false);
+      await reloadData();
     });
   };
 
@@ -319,9 +345,15 @@ export default function AdminPage() {
 
                     <TabsContent value="users" className="mt-6">
                         <Card>
-                            <CardHeader>
-                                <CardTitle>Usuários Globais</CardTitle>
-                                <CardDescription>Visão global dos usuários e seus níveis de acesso.</CardDescription>
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0">
+                                <div className="space-y-1.5">
+                                    <CardTitle>Usuários Globais</CardTitle>
+                                    <CardDescription>Visão global dos usuários e seus níveis de acesso.</CardDescription>
+                                </div>
+                                <Button onClick={() => setIsCreateUserOpen(true)}>
+                                    <UserPlus className="mr-2 h-4 w-4" />
+                                    Novo Usuário
+                                </Button>
                             </CardHeader>
                             <CardContent>
                                 <Table>
@@ -383,6 +415,18 @@ export default function AdminPage() {
                                 </Table>
                             </CardContent>
                         </Card>
+                        <Dialog open={isCreateUserOpen} onOpenChange={setIsCreateUserOpen}>
+                            <DialogContent className="sm:max-w-lg">
+                                <DialogHeader>
+                                    <DialogTitle>Novo Usuário</DialogTitle>
+                                </DialogHeader>
+                                <CreateUserForm
+                                    onSubmit={handleCreateUser}
+                                    isPending={isPending}
+                                    companies={companies}
+                                />
+                            </DialogContent>
+                        </Dialog>
                     </TabsContent>
 
                     <TabsContent value="access" className="mt-6 space-y-4">

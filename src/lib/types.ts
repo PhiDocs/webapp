@@ -253,6 +253,17 @@ export type SavedDocument = {
   updatedAt: string;
 };
 
+// --- Create User Schema (Super Admin) ---
+export const createUserFormSchema = z.object({
+  name: z.string().min(1, "Nome é obrigatório."),
+  email: z.string().email("E-mail inválido."),
+  password: z.string().min(6, "A senha deve ter pelo menos 6 caracteres."),
+  companyId: z.string().optional(),
+  companyRole: z.enum(['admin', 'user']).default('user'),
+  grantCompanyCreate: z.boolean().default(false),
+});
+export type CreateUserFormValues = z.infer<typeof createUserFormSchema>;
+
 // --- Auth Schemas ---
 export const loginSchema = z.object({
   email: z.string().min(1, validationMessages.emailRequired).email(validationMessages.invalidEmail),
