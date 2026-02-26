@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
@@ -33,7 +34,9 @@ interface CreateUserFormProps {
 }
 
 export function CreateUserForm({ onSubmit, isPending, companies }: CreateUserFormProps) {
-  const form = useForm<CreateUserFormValues>({
+  type CreateUserFormInput = z.input<typeof createUserFormSchema>;
+
+  const form = useForm<CreateUserFormInput, unknown, CreateUserFormValues>({
     resolver: zodResolver(createUserFormSchema),
     defaultValues: {
       name: '',
