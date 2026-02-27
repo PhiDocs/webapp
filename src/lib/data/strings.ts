@@ -13,7 +13,7 @@ export const ptBr = {
     refresh: 'Atualizar Status',
     refreshing: 'Atualizando...',
     loading: 'Carregando...',
-    generateAnalysis: 'Gerar Análise de Segurança',
+    generateAnalysis: 'Gerar Análise de Segurança com Inteligência Artificial',
     generatingAnalysis: 'Gerando Análise...',
     startNewReport: 'Começar Novo Relatório',
     continue: 'Continuar',
