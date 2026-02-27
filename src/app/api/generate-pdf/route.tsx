@@ -4,6 +4,20 @@ import type { SafetyFormValues, Company } from '@/lib/types';
 import type { SafetyAnalysisOutput, ProtectiveEquipmentOutput } from '@/server/ai-actions';
 import { generatePdfBuffer } from '@/server/pdf-generator';
 import { requireAuth } from '@/server/auth-guard';
+import { DOCUMENT_TYPES } from '@/lib/constants';
+
+function buildPdfFileName(formData: SafetyFormValues) {
+  const date = new Date().toISOString().split('T')[0];
+  const sanitizedWorkName = formData.workName ? formData.workName.replace(/\s+/g, '_') : '';
+  if (formData.documentType === DOCUMENT_TYPES.APR && formData.documentNumber) {
+    const revision = String(formData.revisionNumber || 1).padStart(2, '0');
+    const workPart = sanitizedWorkName ? `_${sanitizedWorkName}` : '';
+    return `${formData.documentNumber}_rev${revision}${workPart}_${date}.pdf`;
+  }
+  const base = formData.documentType === DOCUMENT_TYPES.APR ? 'APR' : 'PT';
+  const workPart = sanitizedWorkName ? `_${sanitizedWorkName}` : '';
+  return `documento_${base}${workPart}_${date}.pdf`;
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -37,13 +51,14 @@ export async function POST(request: NextRequest) {
       equipmentData,
       company,
     });
+    const fileName = buildPdfFileName(formData);
 
     // 4. Return the PDF as a response
     return new NextResponse(pdfBuffer, {
       status: 200,
       headers: {
         'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename="documento_seguranca.pdf"`,
+        'Content-Disposition': `attachment; filename="${fileName}"`,
       },
     });
 

@@ -155,6 +155,8 @@ export const ptFormSchema = z.object({
 
 export const formSchema = z.object({
   documentType: z.enum([DOCUMENT_TYPES.APR, DOCUMENT_TYPES.PT]),
+  documentNumber: z.string().optional(),
+  revisionNumber: z.number().int().min(1).optional(),
 
   // Work Data (APR) - Populated by selecting a work
   workId: z.string().optional(),
@@ -244,7 +246,12 @@ export type SavedDocument = {
   companyId: string;
   documentType: DocumentType;
   documentName: string;
-  status: 'draft' | 'sent';
+  status: 'draft' | 'completed' | 'pending' | 'signed' | 'certificated' | 'declined' | 'uploaded' | 'expired' | 'sent';
+  documentNumber?: string;
+  revisionNumber?: number;
+  documentSequence?: number;
+  revisionGroupId?: string;
+  sourceDocumentId?: string;
   formData: SafetyFormValues;
   analysisData: any | null;
   equipmentData: any | null;
@@ -399,6 +406,3 @@ export type Subcontractor = {
   createdAt: string;
   deletedAt?: string | null;
 }
-
-
-

@@ -2,6 +2,7 @@
 
 import { ErrorLogRepository } from '@/repositories/error-log.repository';
 import { SignatureDocumentRepository } from '@/repositories/signature-document.repository';
+import { DocumentRepository } from '@/repositories/document.repository';
 import { generatePdfBuffer } from '@/server/pdf-generator';
 import { createAssignment, createOrGetSigner, downloadSignedDocument, getDocumentStatus, resendAssignmentNotification, uploadDocumentToAssinafy, waitForDocumentReady } from '@/server/assinafy-actions';
 import type { Company, SafetyFormValues, SignatureDocument, SignatureSigner } from '@/lib/types';
@@ -12,8 +13,14 @@ import { requireAuth } from '@/server/auth-guard';
 function buildDocumentName(formData: SafetyFormValues) {
   const base = formData.documentType === DOCUMENT_TYPES.APR ? 'APR' : 'PT';
   const date = new Date().toISOString().split('T')[0];
-  const workName = formData.workName ? `_${formData.workName.replace(/\s+/g, '_')}` : '';
-  return `documento_${base}${workName}_${date}.pdf`;
+  const sanitizedWorkName = formData.workName ? formData.workName.replace(/\s+/g, '_') : '';
+  if (formData.documentType === DOCUMENT_TYPES.APR && formData.documentNumber) {
+    const revision = String(formData.revisionNumber || 1).padStart(2, '0');
+    const workPart = sanitizedWorkName ? `_${sanitizedWorkName}` : '';
+    return `${formData.documentNumber}_rev${revision}${workPart}_${date}.pdf`;
+  }
+  const workPart = sanitizedWorkName ? `_${sanitizedWorkName}` : '';
+  return `documento_${base}${workPart}_${date}.pdf`;
 }
 
 type SignerInput = { name: string; email: string; phone?: string };
@@ -254,8 +261,7 @@ export async function refreshSignatureDocument(signatureDocumentId: string) {
       return signer;
     });
 
-    // Normalizar status para salvar: "certificated" → "signed" no nosso banco
-    const normalizedStatus = isDocumentCompleted ? 'signed' : docStatus.status;
+    const normalizedStatus = docStatus.status;
 
     const now = new Date().toISOString();
     await SignatureDocumentRepository.update(signatureDocumentId, {
@@ -264,6 +270,14 @@ export async function refreshSignatureDocument(signatureDocumentId: string) {
       updatedAt: now,
       lastSyncedAt: now,
     });
+
+    const linkedDocument = await DocumentRepository.getBySignatureDocumentId(signatureDocumentId);
+    if (linkedDocument) {
+      await DocumentRepository.update(linkedDocument.id, {
+        status: normalizedStatus as any,
+        updatedAt: now,
+      });
+    }
 
     console.log(`[refreshSignature] Documento ${signatureDocumentId} atualizado. Status API: ${docStatus.status} → Salvo: ${normalizedStatus}`);
     return { success: true };
