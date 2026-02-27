@@ -1,8 +1,6 @@
 // To run this script, use: npx tsx scripts/migrations/migrate-signer-emails.ts
 import 'dotenv/config';
-import admin from '../../src/firebase/admin-config';
-
-const db = admin.firestore();
+import { adminDb as db } from '../../src/firebase/admin-firestore';
 
 /**
  * Migra a coleção signatureDocuments para adicionar o campo signerEmails

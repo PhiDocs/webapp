@@ -2,8 +2,7 @@
 // Or: tsx scripts/migrations/remove-activity-description.ts
 import 'dotenv/config';
 import admin from '../../src/firebase/admin-config';
-
-const db = admin.firestore();
+import { adminDb as db } from '../../src/firebase/admin-firestore';
 
 /**
  * Removes the `activityDescription` field from all documents in the 'works' collection.

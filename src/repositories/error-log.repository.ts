@@ -1,4 +1,4 @@
-import admin from '@/firebase/admin-config';
+import { adminDb } from '@/firebase/admin-firestore';
 import { LogService } from '@/services/log.service';
 
 export const ErrorLogRepository = {
@@ -22,7 +22,7 @@ export const ErrorLogRepository = {
     await LogService.writeToFile(`[${logData.timestamp}] ERROR in ${functionName}: ${logData.errorMessage}\nSTACK: ${logData.stackTrace}\n---`);
 
     try {
-        const logCollection = admin.firestore().collection('errorLogs');
+        const logCollection = adminDb.collection('errorLogs');
         await logCollection.add(logData);
     } catch (logError: any) {
         // If logging to Firestore fails, log to console and the text file.

@@ -27,7 +27,8 @@ const firebaseConfig = {
 
 // --- Client-side Initialization ---
 const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
-const db = getFirestore(app);
+const firestoreDatabaseId = process.env.NEXT_PUBLIC_FIRESTORE_DATABASE_ID || "(default)";
+const db = getFirestore(app, firestoreDatabaseId);
 const auth = getAuth(app);
 const storage = getStorage(app);
 

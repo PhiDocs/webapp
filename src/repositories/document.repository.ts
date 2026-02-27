@@ -1,9 +1,9 @@
-import admin from '@/firebase/admin-config';
+import { adminDb } from '@/firebase/admin-firestore';
 import type { SavedDocument } from '@/lib/types';
 import { DOCUMENT_TYPES } from '@/lib/constants';
 
-const collection = admin.firestore().collection('documents');
-const companiesCollection = admin.firestore().collection('companies');
+const collection = adminDb.collection('documents');
+const companiesCollection = adminDb.collection('companies');
 
 export type SavedDocumentCreate = Omit<SavedDocument, 'id'>;
 
@@ -45,7 +45,7 @@ export const DocumentRepository = {
 
   async reserveNextAprSequence(companyId: string): Promise<number> {
     const companyRef = companiesCollection.doc(companyId);
-    const next = await admin.firestore().runTransaction(async (tx) => {
+    const next = await adminDb.runTransaction(async (tx) => {
       const snap = await tx.get(companyRef);
       const current = Number(snap.data()?.aprSequence || 0);
       const reserved = current + 1;

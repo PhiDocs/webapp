@@ -1,4 +1,4 @@
-import admin from '@/firebase/admin-config';
+import { adminDb } from '@/firebase/admin-firestore';
 import type { AclPermission, ScopedPermission } from '@/lib/acl';
 
 export type CompanyMembership = {
@@ -22,7 +22,7 @@ export type UserData = {
     memberships?: CompanyMembership[];
 }
 
-const userCollection = admin.firestore().collection('users');
+const userCollection = adminDb.collection('users');
 
 function toActiveMemberships(memberships?: CompanyMembership[]): CompanyMembership[] {
     return (memberships ?? []).filter((membership) => membership.status === 'active');

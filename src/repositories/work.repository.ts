@@ -1,7 +1,7 @@
-import admin from '@/firebase/admin-config';
+import { adminDb } from '@/firebase/admin-firestore';
 import type { Work, WorkFormValues } from '@/lib/types';
 
-const workCollection = admin.firestore().collection('works');
+const workCollection = adminDb.collection('works');
 
 export const WorkRepository = {
   /**

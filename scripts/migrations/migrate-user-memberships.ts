@@ -4,7 +4,7 @@
 // Execução:
 //   npx tsx scripts/migrations/migrate-user-memberships.ts --execute
 import 'dotenv/config';
-import admin from '../../src/firebase/admin-config';
+import { adminDb as db } from '../../src/firebase/admin-firestore';
 
 type MembershipRole = 'admin' | 'user';
 
@@ -26,7 +26,6 @@ type UserDoc = {
 };
 
 const isExecute = process.argv.includes('--execute');
-const db = admin.firestore();
 const usersRef = db.collection('users');
 
 function normalizeMemberships(data: UserDoc): Membership[] {

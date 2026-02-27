@@ -2,8 +2,7 @@
 import 'dotenv/config';
 import { z } from 'zod';
 import admin from '../../src/firebase/admin-config';
-
-const db = admin.firestore();
+import { adminDb as db } from '../../src/firebase/admin-firestore';
 
 const registerCompanySchema = z.object({
   companyName: z.string().min(1, 'O nome da empresa é obrigatório.'),

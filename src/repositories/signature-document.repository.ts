@@ -1,7 +1,7 @@
-import admin from '@/firebase/admin-config';
+import { adminDb } from '@/firebase/admin-firestore';
 import type { SignatureDocument } from '@/lib/types';
 
-const signatureCollection = admin.firestore().collection('signatureDocuments');
+const signatureCollection = adminDb.collection('signatureDocuments');
 
 export type SignatureDocumentCreate = Omit<SignatureDocument, 'id'>;
 

@@ -1,10 +1,10 @@
-import admin from '@/firebase/admin-config';
+import { adminDb } from '@/firebase/admin-firestore';
 import type { Subcontractor } from '@/lib/types';
 
 type SubcontractorData = Omit<Subcontractor, 'id' | 'createdAt'>;
 
 const getCollection = (companyId: string) => 
-    admin.firestore().collection('companies').doc(companyId).collection('subcontractors');
+    adminDb.collection('companies').doc(companyId).collection('subcontractors');
 
 export const SubcontractorRepository = {
   /**

@@ -1,8 +1,6 @@
 // To run this script, use: tsx scripts/migrations/migrate-deleted-at.ts
 import 'dotenv/config';
-import admin from '../../src/firebase/admin-config';
-
-const db = admin.firestore();
+import { adminDb as db } from '../../src/firebase/admin-firestore';
 
 /**
  * Migrates a top-level collection by adding `deletedAt: null` to documents
