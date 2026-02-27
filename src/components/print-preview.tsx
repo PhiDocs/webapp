@@ -19,6 +19,9 @@ interface PrintPreviewProps {
 const Empty = () => <span className="italic text-gray-400">{ptBr.other.notFilled}</span>;
 
 function APRHeader({ data, company }: { data: SafetyFormValues; company: Company | null }) {
+  const documentNumber = data.documentNumber || '----';
+  const revisionNumber = String(data.revisionNumber || 1).padStart(2, '0');
+
   return (
     <header className="print-header avoid-break">
       <div className="flex items-start justify-between gap-4 border-b pb-2">
@@ -37,10 +40,10 @@ function APRHeader({ data, company }: { data: SafetyFormValues; company: Company
         </div>
         <div className="flex flex-col gap-1 items-end text-xs text-gray-600 shrink-0">
           <div className="px-3 py-1 border rounded-md bg-gray-50">
-            <span className="font-semibold">{ptBr.printPreview.apr.aprNumber}</span> {data.documentType === DOCUMENT_TYPES.APR ? 'APR' : 'PT'} Nº {'01'}
+            <span className="font-semibold">{ptBr.printPreview.apr.aprNumber}</span> {data.documentType === DOCUMENT_TYPES.APR ? 'APR' : 'PT'} Nº {documentNumber}
           </div>
           <div className="px-3 py-1 border rounded-md bg-gray-50">
-            <span className="font-semibold">{ptBr.printPreview.apr.review}</span> {'01'}
+            <span className="font-semibold">{ptBr.printPreview.apr.review}</span> {revisionNumber}
           </div>
         </div>
       </div>

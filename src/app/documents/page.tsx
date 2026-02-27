@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from '@/components/auth/session-provider';
-import { getDocuments, deleteDocument } from '@/server/document-actions';
+import { getDocuments, deleteDocument, createDocumentRevision, createDocumentRevisionFromSignature } from '@/server/document-actions';
 import { getSignatureDocuments, refreshSignatureDocument, resendSignatureNotification } from '@/server/signature-actions';
 import type { SavedDocument, SignatureDocument, SignatureSigner } from '@/lib/types';
 import { Card, CardContent } from '@/components/ui/card';
@@ -30,12 +30,8 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 
-// ===== Tipos unificados =====
+// ===== Tipos =====
 type FilterType = 'all' | 'draft' | 'signature';
-
-type UnifiedItem =
-  | { kind: 'draft'; data: SavedDocument }
-  | { kind: 'signature'; data: SignatureDocument };
 
 // ===== Helpers =====
 function formatDate(dateString: string) {
@@ -62,6 +58,28 @@ function signatureStatusVariant(status: SignatureDocument['status'] | SignatureS
   if (status === 'declined') return 'destructive';
   if (status === 'expired') return 'secondary';
   return 'outline';
+}
+
+function savedStatusLabel(status: SavedDocument['status']) {
+  if (status === 'draft') return 'Rascunho';
+  if (status === 'completed') return 'Concluído';
+  if (status === 'declined') return 'Recusado';
+  if (status === 'expired') return 'Expirado';
+  if (status === 'signed' || status === 'certificated') return 'Assinado';
+  if (status === 'pending' || status === 'uploaded' || status === 'sent') return 'Em assinatura';
+  return status;
+}
+
+function savedStatusVariant(status: SavedDocument['status']): 'default' | 'destructive' | 'secondary' | 'outline' {
+  if (status === 'completed' || status === 'signed' || status === 'certificated') return 'default';
+  if (status === 'declined') return 'destructive';
+  if (status === 'expired') return 'secondary';
+  if (status === 'draft') return 'secondary';
+  return 'outline';
+}
+
+function isReadyForRevision(status: SavedDocument['status']) {
+  return status === 'completed' || status === 'signed' || status === 'certificated';
 }
 
 // ===== Sub-componentes =====
@@ -111,14 +129,20 @@ function SignersList({ signers }: { signers: SignatureSigner[] }) {
 function DraftCard({
   item,
   onOpen,
+  onEdit,
   onDelete,
   deletingId,
+  revisingId,
 }: {
   item: SavedDocument;
   onOpen: (doc: SavedDocument) => void;
+  onEdit: (doc: SavedDocument) => void;
   onDelete: (id: string) => void;
   deletingId: string | null;
+  revisingId: string | null;
 }) {
+  const canEdit = item.documentType === 'APR' && isReadyForRevision(item.status);
+
   return (
     <Card>
       <CardContent className="p-6">
@@ -127,7 +151,13 @@ function DraftCard({
             <div className="flex flex-wrap items-center gap-2">
               <FileText className="h-4 w-4 text-muted-foreground" />
               <h3 className="text-lg font-semibold">{item.documentName}</h3>
-              <Badge variant="secondary">Rascunho</Badge>
+              <Badge variant={savedStatusVariant(item.status)}>{savedStatusLabel(item.status)}</Badge>
+              {item.documentNumber && (
+                <Badge variant="outline">{item.documentNumber}</Badge>
+              )}
+              {typeof item.revisionNumber === 'number' && (
+                <Badge variant="outline">Rev {String(item.revisionNumber).padStart(2, '0')}</Badge>
+              )}
               <Badge variant="outline">{String(item.documentType)}</Badge>
             </div>
             <div className="text-sm text-muted-foreground">
@@ -147,6 +177,32 @@ function DraftCard({
               <ExternalLink className="mr-2 h-4 w-4" />
               Abrir
             </Button>
+            {canEdit && (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="outline" size="sm" disabled={revisingId === item.id}>
+                    {revisingId === item.id ? (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                      <FileText className="mr-2 h-4 w-4" />
+                    )}
+                    Editar
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Criar nova revisão?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      O número da APR será mantido e a revisão será incrementada em +1. Um novo documento será criado para manter o histórico.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => onEdit(item)}>Continuar</AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button variant="outline" size="sm" disabled={deletingId === item.id}>
@@ -161,7 +217,7 @@ function DraftCard({
                 <AlertDialogHeader>
                   <AlertDialogTitle>Excluir documento?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Esta ação não pode ser desfeita. O rascunho será excluído permanentemente.
+                    Esta ação não pode ser desfeita. O documento será excluído permanentemente.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
@@ -177,8 +233,68 @@ function DraftCard({
   );
 }
 
+function RevisionGroupCard({
+  latest,
+  revisions,
+  isExpanded,
+  onToggleExpand,
+  onOpen,
+  onEdit,
+  onDelete,
+  deletingId,
+  revisingId,
+}: {
+  latest: SavedDocument;
+  revisions: SavedDocument[];
+  isExpanded: boolean;
+  onToggleExpand: () => void;
+  onOpen: (doc: SavedDocument) => void;
+  onEdit: (doc: SavedDocument) => void;
+  onDelete: (id: string) => void;
+  deletingId: string | null;
+  revisingId: string | null;
+}) {
+  return (
+    <Card>
+      <CardContent className="p-6 space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <h3 className="text-lg font-semibold">{latest.documentName}</h3>
+              {latest.documentNumber && <Badge variant="outline">{latest.documentNumber}</Badge>}
+              <Badge variant="secondary">{revisions.length} revisões</Badge>
+            </div>
+            <p className="text-sm text-muted-foreground">Mais recente: Rev {String(latest.revisionNumber || 1).padStart(2, '0')}</p>
+          </div>
+          <Button variant="ghost" size="sm" onClick={onToggleExpand}>
+            {isExpanded ? <ChevronUp className="mr-1 h-4 w-4" /> : <ChevronDown className="mr-1 h-4 w-4" />}
+            {isExpanded ? 'Ocultar' : 'Ver revisões'}
+          </Button>
+        </div>
+
+        {isExpanded && (
+          <div className="space-y-3 border-l pl-4">
+            {revisions.map((revision) => (
+              <DraftCard
+                key={revision.id}
+                item={revision}
+                onOpen={onOpen}
+                onEdit={onEdit}
+                onDelete={onDelete}
+                deletingId={deletingId}
+                revisingId={revisingId}
+              />
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 function SignatureCard({
   item,
+  linkedDocument,
   expandedId,
   onToggleExpand,
   onRefresh,
@@ -186,8 +302,12 @@ function SignatureCard({
   onResend,
   resendingId,
   onDownload,
+  onEdit,
+  onEditFromSignature,
+  revisingId,
 }: {
   item: SignatureDocument;
+  linkedDocument: SavedDocument | null;
   expandedId: string | null;
   onToggleExpand: (id: string) => void;
   onRefresh: (id: string) => void;
@@ -195,6 +315,9 @@ function SignatureCard({
   onResend: (id: string) => void;
   resendingId: string | null;
   onDownload: (id: string, fileName: string) => void;
+  onEdit: (doc: SavedDocument) => void;
+  onEditFromSignature: (signatureDocumentId: string) => void;
+  revisingId: string | null;
 }) {
   const total = item.signers.length;
   const signed = item.signers.filter(s => s.status === 'signed').length;
@@ -249,6 +372,34 @@ function SignatureCard({
               <Download className="mr-2 h-4 w-4" />
               {ptBr.actions.downloadSignedPdf}
             </Button>
+            {(item.status === 'signed' || item.status === 'certificated') && (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="outline" disabled={revisingId === (linkedDocument?.id || item.id)}>
+                    {revisingId === (linkedDocument?.id || item.id) ? (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                      <FileText className="mr-2 h-4 w-4" />
+                    )}
+                    Editar
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Criar nova revisão?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      O número da APR será mantido e a revisão será incrementada em +1. Um novo documento será criado para manter o histórico.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => (linkedDocument ? onEdit(linkedDocument) : onEditFromSignature(item.id))}>
+                      Continuar
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
           </div>
         </div>
         {isExpanded && <SignersList signers={item.signers} />}
@@ -277,9 +428,11 @@ export default function DocumentsPage() {
   const [filter, setFilter] = useState<FilterType>('all');
 
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [revisingId, setRevisingId] = useState<string | null>(null);
   const [refreshingId, setRefreshingId] = useState<string | null>(null);
   const [resendingId, setResendingId] = useState<string | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [expandedRevisionGroupId, setExpandedRevisionGroupId] = useState<string | null>(null);
 
   const loadData = async () => {
     if (!activeCompanyId) return;
@@ -295,37 +448,71 @@ export default function DocumentsPage() {
 
   useEffect(() => { loadData(); }, [activeCompanyId]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Unificar e ordenar por data
-  const items: UnifiedItem[] = (() => {
-    const all: UnifiedItem[] = [];
+  const draftItems = drafts
+    .filter((d) => d.status === 'draft' || d.status === 'completed' || d.status === 'signed' || d.status === 'certificated')
+    .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
 
-    if (filter === 'all' || filter === 'draft') {
-      // Só mostrar rascunhos que não foram enviados (para não duplicar com assinaturas)
-      drafts
-        .filter(d => d.status === 'draft')
-        .forEach(d => all.push({ kind: 'draft', data: d }));
+  const draftGroups = (() => {
+    const groups = new Map<string, SavedDocument[]>();
+    for (const doc of draftItems) {
+      const key = doc.revisionGroupId || doc.id;
+      const arr = groups.get(key) || [];
+      arr.push(doc);
+      groups.set(key, arr);
     }
-
-    if (filter === 'all' || filter === 'signature') {
-      signatures.forEach(s => all.push({ kind: 'signature', data: s }));
-    }
-
-    // Ordenar por data mais recente
-    all.sort((a, b) => {
-      const dateA = a.kind === 'draft' ? a.data.updatedAt : a.data.createdAt;
-      const dateB = b.kind === 'draft' ? b.data.updatedAt : b.data.createdAt;
-      return new Date(dateB).getTime() - new Date(dateA).getTime();
-    });
-
-    return all;
+    return Array.from(groups.entries())
+      .map(([key, docs]) => ({
+        key,
+        docs: docs.sort((a, b) => (b.revisionNumber || 1) - (a.revisionNumber || 1)),
+      }))
+      .sort((a, b) => new Date(b.docs[0].updatedAt).getTime() - new Date(a.docs[0].updatedAt).getTime());
   })();
 
+  const signatureItems = signatures
+    .slice()
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
   // Contadores para os filtros
-  const draftCount = drafts.filter(d => d.status === 'draft').length;
-  const signatureCount = signatures.length;
+  const draftCount = draftItems.length;
+  const signatureCount = signatureItems.length;
 
   const handleOpenDraft = (doc: SavedDocument) => {
     router.push(`/reports?documentId=${doc.id}`);
+  };
+
+  const handleCreateRevision = async (doc: SavedDocument) => {
+    setRevisingId(doc.id);
+    try {
+      const result = await createDocumentRevision(doc.id);
+      if (!result.success || !result.documentId) {
+        toast({ variant: 'destructive', title: 'Erro ao criar revisão', description: result.error });
+        return;
+      }
+
+      toast({ title: 'Nova revisão criada', description: 'A revisão foi criada e carregada para edição.' });
+      router.push(`/reports?documentId=${result.documentId}`);
+    } catch (error: any) {
+      toast({ variant: 'destructive', title: 'Erro ao criar revisão', description: error.message });
+    } finally {
+      setRevisingId(null);
+    }
+  };
+
+  const handleCreateRevisionFromSignature = async (signatureDocumentId: string) => {
+    setRevisingId(signatureDocumentId);
+    try {
+      const result = await createDocumentRevisionFromSignature(signatureDocumentId);
+      if (!result.success || !result.documentId) {
+        toast({ variant: 'destructive', title: 'Erro ao criar revisão', description: result.error });
+        return;
+      }
+      toast({ title: 'Nova revisão criada', description: 'A revisão foi criada e carregada para edição.' });
+      router.push(`/reports?documentId=${result.documentId}`);
+    } catch (error: any) {
+      toast({ variant: 'destructive', title: 'Erro ao criar revisão', description: error.message });
+    } finally {
+      setRevisingId(null);
+    }
   };
 
   const handleDeleteDraft = async (id: string) => {
@@ -424,7 +611,7 @@ export default function DocumentsPage() {
           <div className="flex items-center justify-center py-12">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
-        ) : items.length === 0 ? (
+        ) : (filter === 'all' ? draftGroups.length + signatureItems.length : filter === 'draft' ? draftGroups.length : signatureItems.length) === 0 ? (
           <Card>
             <CardContent className="py-10 text-center text-muted-foreground">
               {filter === 'draft' ? 'Nenhum rascunho salvo.' :
@@ -434,32 +621,59 @@ export default function DocumentsPage() {
           </Card>
         ) : (
           <div className="grid gap-4">
-            {items.map((item) => {
-              if (item.kind === 'draft') {
+            {(filter === 'all' || filter === 'draft') &&
+              draftGroups.map((group) => {
+                if (group.docs.length === 1) {
+                  return (
+                    <DraftCard
+                      key={`draft-${group.docs[0].id}`}
+                      item={group.docs[0]}
+                      onOpen={handleOpenDraft}
+                      onEdit={handleCreateRevision}
+                      onDelete={handleDeleteDraft}
+                      deletingId={deletingId}
+                      revisingId={revisingId}
+                    />
+                  );
+                }
+
                 return (
-                  <DraftCard
-                    key={`draft-${item.data.id}`}
-                    item={item.data}
+                  <RevisionGroupCard
+                    key={`group-${group.key}`}
+                    latest={group.docs[0]}
+                    revisions={group.docs}
+                    isExpanded={expandedRevisionGroupId === group.key}
+                    onToggleExpand={() => setExpandedRevisionGroupId(expandedRevisionGroupId === group.key ? null : group.key)}
                     onOpen={handleOpenDraft}
+                    onEdit={handleCreateRevision}
                     onDelete={handleDeleteDraft}
                     deletingId={deletingId}
+                    revisingId={revisingId}
                   />
                 );
-              }
-              return (
-                <SignatureCard
-                  key={`sig-${item.data.id}`}
-                  item={item.data}
-                  expandedId={expandedId}
-                  onToggleExpand={(id) => setExpandedId(expandedId === id ? null : id)}
-                  onRefresh={handleRefresh}
-                  refreshingId={refreshingId}
-                  onResend={handleResend}
-                  resendingId={resendingId}
-                  onDownload={handleDownload}
-                />
-              );
-            })}
+              })}
+
+            {(filter === 'all' || filter === 'signature') &&
+              signatureItems.map((item) => {
+                const linkedDocument = drafts.find((d) => d.signatureDocumentId === item.id) || null;
+                return (
+                  <SignatureCard
+                    key={`sig-${item.id}`}
+                    item={item}
+                    linkedDocument={linkedDocument}
+                    expandedId={expandedId}
+                    onToggleExpand={(id) => setExpandedId(expandedId === id ? null : id)}
+                    onRefresh={handleRefresh}
+                    refreshingId={refreshingId}
+                    onResend={handleResend}
+                    resendingId={resendingId}
+                    onDownload={handleDownload}
+                    onEdit={handleCreateRevision}
+                    onEditFromSignature={handleCreateRevisionFromSignature}
+                    revisingId={revisingId}
+                  />
+                );
+              })}
           </div>
         )}
       </main>

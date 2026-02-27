@@ -7,7 +7,7 @@ import type { SafetyFormValues, Work, Employee, Company } from '@/lib/types';
 import { getSafetyAnalysis, getProtectiveEquipment } from '@/server/ai-actions';
 
 import { sendDocumentForSignature } from '@/server/signature-actions';
-import { saveDocument, markDocumentAsSent, getDocument } from '@/server/document-actions';
+import { saveDocument, markDocumentAsSent, markDocumentAsCompleted, getDocument } from '@/server/document-actions';
 import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { formSchema } from '@/lib/types';
@@ -71,6 +71,8 @@ export default function ReportsPage() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       documentType: DOCUMENT_TYPES.APR,
+      documentNumber: '',
+      revisionNumber: 1,
       workId: '',
       workName: '',
       workAddress: '',
@@ -289,34 +291,41 @@ export default function ReportsPage() {
     router.replace('/reports', { scroll: false });
   };
 
-
-  const handleSaveDraft = async () => {
+  const saveCurrentFormOrThrow = useCallback(async () => {
     if (!company?.id) {
-      toast({ variant: 'destructive', title: 'Erro', description: 'Empresa não identificada.' });
-      return;
+      throw new Error('Empresa não identificada.');
     }
 
+    const formData = form.getValues();
+    const result = await saveDocument({
+      companyId: company.id,
+      documentId: currentDocumentId || undefined,
+      formData,
+      analysisData: analysis,
+      equipmentData: equipment,
+    });
+
+    if (!result.success || !result.documentId) {
+      throw new Error(result.error || 'Falha ao salvar documento.');
+    }
+
+    setCurrentDocumentId(result.documentId);
+
+    const persisted = await getDocument(result.documentId);
+    if (persisted.success && persisted.data) {
+      const persistedFormData = persisted.data.formData;
+      form.reset(persistedFormData);
+      return { formData: persistedFormData, documentId: result.documentId };
+    }
+
+    return { formData, documentId: result.documentId };
+  }, [analysis, company?.id, currentDocumentId, equipment, form]);
+
+
+  const handleSaveDraft = async () => {
     setIsSavingDraft(true);
     try {
-      const formData = form.getValues();
-      console.log('[saveDraft] Saving with companyId:', company.id, 'documentId:', currentDocumentId, 'formData keys:', Object.keys(formData));
-      const result = await saveDocument({
-        companyId: company.id,
-        documentId: currentDocumentId || undefined,
-        formData,
-        analysisData: analysis,
-        equipmentData: equipment,
-      });
-
-      console.log('[saveDraft] Result:', result);
-
-      if (!result.success) {
-        throw new Error(result.error || 'Falha ao salvar rascunho.');
-      }
-
-      if (result.documentId) {
-        setCurrentDocumentId(result.documentId);
-      }
+      await saveCurrentFormOrThrow();
 
       toast({
         title: 'Rascunho salvo',
@@ -337,21 +346,8 @@ export default function ReportsPage() {
   const handleSendForSignature = async () => {
     setIsSendingSignature(true);
     try {
-      const formData = form.getValues();
-
-      // 1. Salvar o documento no banco antes de enviar
-      if (company?.id) {
-        const saveResult = await saveDocument({
-          companyId: company.id,
-          documentId: currentDocumentId || undefined,
-          formData,
-          analysisData: analysis,
-          equipmentData: equipment,
-        });
-        if (saveResult.success && saveResult.documentId) {
-          setCurrentDocumentId(saveResult.documentId);
-        }
-      }
+      // 1. Salvar o documento no banco antes de enviar (obrigatório)
+      const { formData, documentId } = await saveCurrentFormOrThrow();
 
       // 2. Enviar para assinatura
       const result = await sendDocumentForSignature({
@@ -366,8 +362,8 @@ export default function ReportsPage() {
       }
 
       // 3. Marcar documento como enviado
-      if (currentDocumentId && result.signatureDocumentId) {
-        await markDocumentAsSent(currentDocumentId, result.signatureDocumentId);
+      if (result.signatureDocumentId) {
+        await markDocumentAsSent(documentId, result.signatureDocumentId);
       }
 
       // Limpar estado após envio bem-sucedido
@@ -393,7 +389,8 @@ export default function ReportsPage() {
   const handleGeneratePdf = async () => {
     setIsGeneratingPdf(true);
     try {
-      const formData = form.getValues();
+      // Sempre persistir antes de gerar PDF para manter histórico
+      const { formData, documentId } = await saveCurrentFormOrThrow();
 
       const response = await fetch('/api/generate-pdf', {
         method: 'POST',
@@ -421,7 +418,9 @@ export default function ReportsPage() {
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = 'documento_seguranca.pdf';
+      const disposition = response.headers.get('content-disposition') || '';
+      const fileNameMatch = disposition.match(/filename="([^"]+)"/i);
+      link.download = fileNameMatch?.[1] || 'documento_seguranca.pdf';
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -431,6 +430,11 @@ export default function ReportsPage() {
         title: ptBr.toasts.success.pdfDownloaded,
         description: ptBr.toasts.success.pdfDownloadedDescription,
       });
+
+      await markDocumentAsCompleted(documentId);
+
+      // Após download bem-sucedido, limpar formulário para novo preenchimento
+      handleNewReport();
     } catch (error: any) {
       toast({
         variant: 'destructive',
