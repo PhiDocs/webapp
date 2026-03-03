@@ -8,6 +8,15 @@ INF_ENV="${INFISICAL_ENV:-prod}"
 INF_PATH="${INFISICAL_SECRET_PATH:-/}"
 BUMP="${BUMP:-patch}"
 TAG="${TAG:-}"
+SKIP_SECRETS_SYNC="false"
+
+for arg in "$@"; do
+  case "$arg" in
+    --skip-sync-keys|--skip-secrets-sync)
+      SKIP_SECRETS_SYNC="true"
+      ;;
+  esac
+done
 
 if ! command -v npm >/dev/null 2>&1; then
   echo "npm não encontrado no PATH." >&2
@@ -42,8 +51,12 @@ if [ -z "$BACKEND_ID" ]; then
   exit 1
 fi
 
-echo "[2/4] Sincronizando secrets Infisical -> Google Secret Manager..."
-INFISICAL_ENV="$INF_ENV" INFISICAL_SECRET_PATH="$INF_PATH" npm run secrets:sync
+if [ "$SKIP_SECRETS_SYNC" = "true" ]; then
+  echo "[2/4] Pulando sincronização de secrets (--skip-sync-keys)."
+else
+  echo "[2/4] Sincronizando secrets Infisical -> Google Secret Manager..."
+  INFISICAL_ENV="$INF_ENV" INFISICAL_SECRET_PATH="$INF_PATH" npm run secrets:sync
+fi
 
 echo "[3/4] Garantindo grant de acesso dos secrets para o backend '$BACKEND_ID'..."
 SECRET_KEYS=()
