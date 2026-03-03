@@ -105,6 +105,12 @@ for secret_name in "${SECRET_KEYS[@]}"; do
     echo "Criado secret no GCP: $secret_name"
   fi
 
+  current_value="$(gcloud secrets versions access latest --secret="$secret_name" --project "$PROJECT_ID" 2>/dev/null || true)"
+  if [ "$current_value" = "$secret_value" ]; then
+    echo "Sem alteração no secret '$secret_name'. Mantendo versão atual."
+    continue
+  fi
+
   printf '%s' "$secret_value" | gcloud secrets versions add "$secret_name" --data-file=- --project "$PROJECT_ID" >/dev/null
   echo "Atualizado secret no GCP: $secret_name"
 done
