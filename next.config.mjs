@@ -1,4 +1,5 @@
 import { execSync } from 'child_process';
+import { withSentryConfig } from '@sentry/nextjs';
 
 /** @type {import('next').NextConfig} */
 const isDev = process.env.NODE_ENV !== 'production';
@@ -77,4 +78,6 @@ const nextConfig = {
   },
 };
 
-export default nextConfig;
+export default withSentryConfig(nextConfig, {
+  silent: true,
+});

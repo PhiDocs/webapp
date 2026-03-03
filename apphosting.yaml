@@ -59,6 +59,16 @@ env:
     availability:
       - BUILD
       - RUNTIME
+  - variable: NEXT_PUBLIC_SENTRY_DSN
+    value: "https://f74cb737cd05eafcfc61bff31b83d517@o4510978732589056.ingest.us.sentry.io/4510978733506560"
+    availability:
+      - BUILD
+      - RUNTIME
+  - variable: SENTRY_DSN
+    value: "https://f74cb737cd05eafcfc61bff31b83d517@o4510978732589056.ingest.us.sentry.io/4510978733506560"
+    availability:
+      - BUILD
+      - RUNTIME
 
   # Assinafy API
   - variable: ASSINAFY_API_URL
