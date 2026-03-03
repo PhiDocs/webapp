@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
+import * as Sentry from '@sentry/nextjs';
 import { Header } from "@/components/header";
 import { UserNav } from "@/components/auth/user-nav";
 import { WorksTable } from "@/components/admin/works-table";
@@ -49,9 +50,41 @@ export default function CompanyPage() {
     const companyMembership = user?.memberships.find(
         (membership) => membership.companyId === companyId && membership.status === 'active'
     );
+    const isAccessDenied = !isSessionLoading && Boolean(user) && companyMembership?.role !== 'admin';
+
+    useEffect(() => {
+        if (!isAccessDenied || !user) return;
+
+        Sentry.addBreadcrumb({
+            category: 'authz',
+            level: 'warning',
+            message: 'Company page access denied',
+            data: {
+                routeCompanyId: companyId,
+                activeCompanyId: user.activeCompanyId ?? user.companyId ?? null,
+                userRole: user.role,
+                activeMembershipRole: companyMembership?.role ?? null,
+                membershipCount: user.memberships.length,
+            },
+        });
+
+        Sentry.withScope((scope) => {
+            scope.setLevel('warning');
+            scope.setTag('reason', 'company_access_denied');
+            scope.setTag('route', '/company/[companyId]');
+            scope.setUser({ id: user.uid, email: user.email });
+            scope.setContext('authorization', {
+                routeCompanyId: companyId,
+                activeCompanyId: user.activeCompanyId ?? user.companyId ?? null,
+                userRole: user.role,
+                memberships: user.memberships,
+            });
+            Sentry.captureMessage('Access denied on company page');
+        });
+    }, [isAccessDenied, user, companyId, companyMembership?.role]);
 
     // Permission validation
-    if (!isSessionLoading && user && companyMembership?.role !== 'admin') {
+    if (isAccessDenied) {
         return (
             <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
                 <h1 className="text-xl font-bold text-destructive">Acesso Negado</h1>
