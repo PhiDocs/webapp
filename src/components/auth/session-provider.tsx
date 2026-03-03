@@ -73,6 +73,34 @@ function mapFirestoreUserProfile(data: any): Omit<UserProfile, 'uid' | 'email'> 
   };
 }
 
+async function mapFallbackUserProfile(fbUser: FirebaseUser): Promise<UserProfile> {
+  const tokenResult = await fbUser.getIdTokenResult();
+  const roleFromClaims = String(tokenResult.claims.role ?? 'user') as UserProfile['role'];
+  const claimCompanyId = typeof tokenResult.claims.companyId === 'string'
+    ? tokenResult.claims.companyId
+    : undefined;
+
+  return {
+    uid: fbUser.uid,
+    email: fbUser.email ?? '',
+    name: fbUser.displayName ?? fbUser.email ?? 'Usuário',
+    role: roleFromClaims,
+    isSuperAdmin: roleFromClaims === 'super-admin',
+    permissions: [],
+    scopedPermissions: [],
+    companyId: claimCompanyId,
+    activeCompanyId: claimCompanyId,
+    memberships: claimCompanyId
+      ? [{
+          companyId: claimCompanyId,
+          role: roleFromClaims === 'admin' ? 'admin' : 'user',
+          status: 'active',
+          joinedAt: new Date().toISOString(),
+        }]
+      : [],
+  };
+}
+
 export function SessionProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
@@ -103,14 +131,30 @@ export function SessionProvider({ children }: { children: ReactNode }) {
               });
             } else {
               console.warn(`Firestore profile for user ${fbUser.uid} not found. Session will be incomplete until doc is created.`);
-              setUser(null);
+              void mapFallbackUserProfile(fbUser)
+                .then((fallbackProfile) => {
+                  setUser(fallbackProfile);
+                })
+                .catch((error) => {
+                  console.error('Error building fallback profile from token claims:', error);
+                  setUser(null);
+                });
             }
             setIsLoading(false);
           },
           (error) => {
             console.error('Error subscribing user profile from Firestore:', error);
-            setUser(null);
-            setIsLoading(false);
+            void mapFallbackUserProfile(fbUser)
+              .then((fallbackProfile) => {
+                setUser(fallbackProfile);
+              })
+              .catch((fallbackError) => {
+                console.error('Error building fallback profile after Firestore subscribe failure:', fallbackError);
+                setUser(null);
+              })
+              .finally(() => {
+                setIsLoading(false);
+              });
           }
         );
       } else {
