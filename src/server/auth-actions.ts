@@ -4,7 +4,9 @@ import { cookies } from 'next/headers';
 import admin from '@/firebase/admin-config';
 import { ErrorLogRepository } from '@/repositories/error-log.repository';
 import { UserRepository, type CompanyMembership } from '@/repositories/user.repository';
+import { CompanyRepository } from '@/repositories/company.repository';
 import type { DecodedIdToken } from 'firebase-admin/auth';
+import { sanitizeAndRepairUserCompanyContext } from '@/server/user-company-context';
 
 /**
  * Ensure a user document exists in Firestore and is synced
@@ -21,6 +23,9 @@ async function ensureAndSyncUserDocument(decodedToken: DecodedIdToken) {
   const roleFromClaims = customClaims.role || 'user';
   const membershipRoleFromClaims: 'admin' | 'user' = roleFromClaims === 'admin' ? 'admin' : 'user';
   const companyIdFromClaims = customClaims.companyId;
+  const validatedCompanyIdFromClaims = companyIdFromClaims
+    ? ((await CompanyRepository.getById(companyIdFromClaims)) ? companyIdFromClaims : undefined)
+    : undefined;
   const isSuperAdminFromClaims = roleFromClaims === 'super-admin';
 
   if (existingUser) {
@@ -41,9 +46,9 @@ async function ensureAndSyncUserDocument(decodedToken: DecodedIdToken) {
     let memberships = [...(existingUser.memberships ?? [])] as CompanyMembership[];
 
     // Compatibilidade: mantém o vínculo legado de companyId como membership.
-    if (companyIdFromClaims && !memberships.some((membership) => membership.companyId === companyIdFromClaims)) {
+    if (validatedCompanyIdFromClaims && !memberships.some((membership) => membership.companyId === validatedCompanyIdFromClaims)) {
       memberships.push({
-        companyId: companyIdFromClaims,
+        companyId: validatedCompanyIdFromClaims,
         role: membershipRoleFromClaims,
         status: 'active',
         joinedAt: new Date().toISOString(),
@@ -61,7 +66,7 @@ async function ensureAndSyncUserDocument(decodedToken: DecodedIdToken) {
     }
 
     // Mantém companyId legado espelhado para não quebrar fluxos durante migração.
-    const nextLegacyCompanyId = updates.activeCompanyId ?? existingUser.activeCompanyId ?? existingUser.companyId ?? companyIdFromClaims ?? null;
+    const nextLegacyCompanyId = updates.activeCompanyId ?? existingUser.activeCompanyId ?? existingUser.companyId ?? validatedCompanyIdFromClaims ?? null;
     if (nextLegacyCompanyId !== existingUser.companyId) {
       updates.companyId = nextLegacyCompanyId;
     }
@@ -69,10 +74,12 @@ async function ensureAndSyncUserDocument(decodedToken: DecodedIdToken) {
     if (Object.keys(updates).length > 0) {
       await UserRepository.update(uid, updates);
     }
+    const updatedUser = await UserRepository.get(uid);
+    await sanitizeAndRepairUserCompanyContext(uid, updatedUser);
   } else {
-    const memberships: CompanyMembership[] = companyIdFromClaims
+    const memberships: CompanyMembership[] = validatedCompanyIdFromClaims
       ? [{
-          companyId: companyIdFromClaims,
+          companyId: validatedCompanyIdFromClaims,
           role: membershipRoleFromClaims,
           status: 'active',
           joinedAt: new Date().toISOString(),
@@ -93,6 +100,8 @@ async function ensureAndSyncUserDocument(decodedToken: DecodedIdToken) {
       permissions: [],
       scopedPermissions: [],
     });
+    const createdUser = await UserRepository.get(uid);
+    await sanitizeAndRepairUserCompanyContext(uid, createdUser);
   }
 }
 

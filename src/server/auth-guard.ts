@@ -2,6 +2,7 @@ import { cookies } from 'next/headers';
 import admin from '@/firebase/admin-config';
 import { UserRepository, type CompanyMembership } from '@/repositories/user.repository';
 import type { AclPermission, ScopedPermission } from '@/lib/acl';
+import { sanitizeAndRepairUserCompanyContext } from '@/server/user-company-context';
 
 type UserRole = 'super-admin' | 'admin' | 'user';
 
@@ -24,7 +25,8 @@ async function decodeSessionToken(token: string): Promise<AuthContext | null> {
     const membershipRole: 'admin' | 'user' = role === 'admin' ? 'admin' : 'user';
     const isSuperAdminFromClaims = role === 'super-admin';
     const legacyCompanyId = decoded.companyId as string | undefined;
-    const user = await UserRepository.get(decoded.uid);
+    const rawUser = await UserRepository.get(decoded.uid);
+    const user = await sanitizeAndRepairUserCompanyContext(decoded.uid, rawUser);
 
     const memberships = user?.memberships ?? (legacyCompanyId
       ? [{
