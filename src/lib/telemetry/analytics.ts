@@ -1,0 +1,61 @@
+'use client';
+
+import { app } from '@/firebase/config';
+
+type EventParams = Record<string, string | number | boolean | null | undefined>;
+
+let initialized = false;
+
+async function getAnalyticsModule() {
+  const analyticsLib = await import('firebase/analytics');
+  const supported = await analyticsLib.isSupported();
+  if (!supported) return null;
+  const analytics = analyticsLib.getAnalytics(app);
+  return { analyticsLib, analytics };
+}
+
+export async function initAnalytics(): Promise<void> {
+  if (initialized) return;
+  try {
+    const moduleRef = await getAnalyticsModule();
+    if (!moduleRef) return;
+    initialized = true;
+  } catch (error) {
+    console.warn('[telemetry] analytics init failed:', error);
+  }
+}
+
+export async function trackEvent(name: string, params?: EventParams): Promise<void> {
+  try {
+    const moduleRef = await getAnalyticsModule();
+    if (!moduleRef) return;
+    moduleRef.analyticsLib.logEvent(moduleRef.analytics, name, params);
+  } catch (error) {
+    console.warn(`[telemetry] trackEvent failed (${name}):`, error);
+  }
+}
+
+export async function setAnalyticsUser(user: { uid: string; role?: string; activeCompanyId?: string | null }): Promise<void> {
+  try {
+    const moduleRef = await getAnalyticsModule();
+    if (!moduleRef) return;
+    moduleRef.analyticsLib.setUserId(moduleRef.analytics, user.uid);
+    moduleRef.analyticsLib.setUserProperties(moduleRef.analytics, {
+      role: user.role ?? 'unknown',
+      active_company_id: user.activeCompanyId ?? 'none',
+    });
+  } catch (error) {
+    console.warn('[telemetry] setAnalyticsUser failed:', error);
+  }
+}
+
+export async function clearAnalyticsUser(): Promise<void> {
+  try {
+    const moduleRef = await getAnalyticsModule();
+    if (!moduleRef) return;
+    moduleRef.analyticsLib.setUserId(moduleRef.analytics, null);
+  } catch (error) {
+    console.warn('[telemetry] clearAnalyticsUser failed:', error);
+  }
+}
+

@@ -23,6 +23,13 @@ import { getWorks } from '@/server/work-actions';
 import { getEmployees } from '@/server/employee-actions';
 import { getCompanyById } from '@/server/company-actions';
 import { FloatingPreview } from '@/components/floating-preview';
+import {
+  trackApiError,
+  trackFormClearedAfterDownload,
+  trackPdfDownloaded,
+  trackSignatureSent,
+} from '@/lib/telemetry/events';
+import { reportClientError } from '@/lib/telemetry/crash-reporter';
 
 function normalizeAnalysisSteps(steps: any[] | undefined): SafetyAnalysisOutput | null {
   if (!steps || steps.length === 0) return null;
@@ -161,6 +168,14 @@ export default function ReportsPage() {
             toast({ variant: 'destructive', title: "Erro ao buscar funcionários", description: employeesResult.error });
           }
         } catch (error: any) {
+          const message = error?.message || 'Erro ao carregar dados da empresa';
+          trackApiError({ context: 'reports_fetch_company_data', message });
+          reportClientError({
+            source: 'manual',
+            context: 'reports_fetch_company_data',
+            message,
+            stack: error?.stack,
+          });
           toast({ variant: 'destructive', title: "Erro ao carregar dados da empresa", description: error.message });
         } finally {
           setIsDataLoading(false);
@@ -216,6 +231,14 @@ export default function ReportsPage() {
         }
       } catch (e) {
         console.error('[loadDraft] Exception:', e);
+        const message = e instanceof Error ? e.message : 'Erro inesperado ao carregar documento';
+        trackApiError({ context: 'reports_load_draft', message });
+        reportClientError({
+          source: 'manual',
+          context: 'reports_load_draft',
+          message,
+          stack: e instanceof Error ? e.stack : undefined,
+        });
         toast({ variant: 'destructive', title: 'Erro ao carregar documento', description: 'Erro inesperado ao carregar o documento.' });
       }
     })();
@@ -332,6 +355,14 @@ export default function ReportsPage() {
         description: 'O documento foi salvo com sucesso.',
       });
     } catch (error: any) {
+      const message = error?.message || 'Falha ao salvar rascunho';
+      trackApiError({ context: 'reports_save_draft', message });
+      reportClientError({
+        source: 'manual',
+        context: 'reports_save_draft',
+        message,
+        stack: error?.stack,
+      });
       console.error('[saveDraft] Error:', error);
       toast({
         variant: 'destructive',
@@ -366,6 +397,13 @@ export default function ReportsPage() {
         await markDocumentAsSent(documentId, result.signatureDocumentId);
       }
 
+      trackSignatureSent({
+        documentType: formData.documentType,
+        documentId,
+        companyId: company?.id,
+        signerCount: (formData.responsiblePersons?.length ?? 0) + (formData.teamMembers?.length ?? 0),
+      });
+
       // Limpar estado após envio bem-sucedido
       setCurrentDocumentId(null);
       draftLoadedRef.current = null;
@@ -376,6 +414,14 @@ export default function ReportsPage() {
         description: ptBr.toasts.success.signatureSentDescription,
       });
     } catch (error: any) {
+      const message = error?.message || 'Falha ao enviar para assinatura';
+      trackApiError({ context: 'reports_send_for_signature', message });
+      reportClientError({
+        source: 'manual',
+        context: 'reports_send_for_signature',
+        message,
+        stack: error?.stack,
+      });
       toast({
         variant: 'destructive',
         title: ptBr.toasts.errors.signatureSendFailed,
@@ -433,9 +479,27 @@ export default function ReportsPage() {
 
       await markDocumentAsCompleted(documentId);
 
+      trackPdfDownloaded({
+        documentType: formData.documentType,
+        documentId,
+        companyId: company?.id,
+      });
+
       // Após download bem-sucedido, limpar formulário para novo preenchimento
       handleNewReport();
+      trackFormClearedAfterDownload({
+        documentId,
+        companyId: company?.id,
+      });
     } catch (error: any) {
+      const message = error?.message || 'Falha ao gerar PDF';
+      trackApiError({ context: 'reports_generate_pdf', message });
+      reportClientError({
+        source: 'manual',
+        context: 'reports_generate_pdf',
+        message,
+        stack: error?.stack,
+      });
       toast({
         variant: 'destructive',
         title: ptBr.toasts.errors.pdfError,

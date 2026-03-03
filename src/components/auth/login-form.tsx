@@ -30,6 +30,8 @@ import { createSession } from '@/server/auth-actions';
 import { Logo } from '../icons/logo';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '@/firebase/config';
+import { trackApiError, trackLoginSuccess } from '@/lib/telemetry/events';
+import { reportClientError } from '@/lib/telemetry/crash-reporter';
 
 // Moved here to avoid exporting from a 'use server' file
 const getFirebaseAuthErrorMessage = (errorCode: string): string => {
@@ -83,6 +85,7 @@ export function LoginForm() {
         title: ptBr.toasts.success.loginSuccess,
         description: ptBr.toasts.success.loginSuccessDescription,
       });
+      trackLoginSuccess('email_password');
 
       // 4. Hard redirect to ensure the new session cookie is picked up by the proxy
       window.location.href = '/';
@@ -90,6 +93,15 @@ export function LoginForm() {
 
     } catch (error: any) {
       console.error('Login failed:', error);
+      const message = error?.message || 'Falha no login';
+      trackApiError({ context: 'login_form_submit', message });
+      reportClientError({
+        source: 'manual',
+        context: 'login_form_submit',
+        message,
+        stack: error?.stack,
+        metadata: { code: error?.code ?? 'unknown' },
+      });
       const friendlyMessage = getFirebaseAuthErrorMessage(error.code);
       toast({
         variant: 'destructive',

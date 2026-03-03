@@ -29,6 +29,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import { trackApiError, trackPdfDownloaded, trackRevisionCreated } from '@/lib/telemetry/events';
+import { reportClientError } from '@/lib/telemetry/crash-reporter';
 
 // ===== Tipos =====
 type FilterType = 'all' | 'draft' | 'signature';
@@ -490,8 +492,21 @@ export default function DocumentsPage() {
       }
 
       toast({ title: 'Nova revisão criada', description: 'A revisão foi criada e carregada para edição.' });
+      trackRevisionCreated({
+        source: 'document',
+        documentId: result.documentId,
+        companyId: activeCompanyId,
+      });
       router.push(`/reports?documentId=${result.documentId}`);
     } catch (error: any) {
+      const message = error?.message || 'Erro ao criar revisão';
+      trackApiError({ context: 'documents_create_revision', message });
+      reportClientError({
+        source: 'manual',
+        context: 'documents_create_revision',
+        message,
+        stack: error?.stack,
+      });
       toast({ variant: 'destructive', title: 'Erro ao criar revisão', description: error.message });
     } finally {
       setRevisingId(null);
@@ -507,8 +522,21 @@ export default function DocumentsPage() {
         return;
       }
       toast({ title: 'Nova revisão criada', description: 'A revisão foi criada e carregada para edição.' });
+      trackRevisionCreated({
+        source: 'signature',
+        documentId: result.documentId,
+        companyId: activeCompanyId,
+      });
       router.push(`/reports?documentId=${result.documentId}`);
     } catch (error: any) {
+      const message = error?.message || 'Erro ao criar revisão por assinatura';
+      trackApiError({ context: 'documents_create_revision_from_signature', message });
+      reportClientError({
+        source: 'manual',
+        context: 'documents_create_revision_from_signature',
+        message,
+        stack: error?.stack,
+      });
       toast({ variant: 'destructive', title: 'Erro ao criar revisão', description: error.message });
     } finally {
       setRevisingId(null);
@@ -552,7 +580,16 @@ export default function DocumentsPage() {
 
   const handleDownload = async (id: string, fileName: string) => {
     const response = await fetch(`/api/assinafy/download/${id}`);
-    if (!response.ok) return;
+    if (!response.ok) {
+      const message = `Falha ao baixar PDF assinado (status ${response.status})`;
+      trackApiError({ context: 'documents_download_signed_pdf', message });
+      reportClientError({
+        source: 'manual',
+        context: 'documents_download_signed_pdf',
+        message,
+      });
+      return;
+    }
     const blob = await response.blob();
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -562,6 +599,11 @@ export default function DocumentsPage() {
     a.click();
     window.URL.revokeObjectURL(url);
     a.remove();
+    trackPdfDownloaded({
+      documentType: 'ASSINADO',
+      documentId: id,
+      companyId: activeCompanyId,
+    });
   };
 
   return (
