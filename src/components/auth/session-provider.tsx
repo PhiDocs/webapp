@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
-import { onAuthStateChanged, type User as FirebaseUser } from 'firebase/auth';
+import { onAuthStateChanged, signOut as firebaseSignOut, type User as FirebaseUser } from 'firebase/auth';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { auth, db } from '@/firebase/config';
 import { Loader2 } from 'lucide-react';
@@ -35,6 +35,14 @@ interface SessionContextType {
 }
 
 const SessionContext = createContext<SessionContextType | undefined>(undefined);
+
+function shouldRedirectToLogin(error: unknown): boolean {
+  const code = typeof error === 'object' && error !== null && 'code' in error
+    ? String((error as { code?: unknown }).code ?? '')
+    : '';
+
+  return code === 'permission-denied' || code === 'unauthenticated';
+}
 
 export function useSession() {
   const context = useContext(SessionContext);
@@ -144,6 +152,13 @@ export function SessionProvider({ children }: { children: ReactNode }) {
           },
           (error) => {
             console.error('Error subscribing user profile from Firestore:', error);
+            if (shouldRedirectToLogin(error)) {
+              void firebaseSignOut(auth).finally(() => {
+                window.location.href = '/login';
+              });
+              return;
+            }
+
             void mapFallbackUserProfile(fbUser)
               .then((fallbackProfile) => {
                 setUser(fallbackProfile);
