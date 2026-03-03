@@ -1,5 +1,7 @@
 'use client';
 
+import * as Sentry from '@sentry/nextjs';
+
 type CrashPayload = {
   source: 'window.onerror' | 'unhandledrejection' | 'manual';
   message: string;
@@ -24,6 +26,19 @@ function postClientError(payload: CrashPayload) {
     keepalive: true,
   }).catch((error) => {
     console.warn('[telemetry] failed to send client error:', error);
+  });
+
+  Sentry.withScope((scope) => {
+    scope.setTag('source', payload.source);
+    scope.setTag('context', payload.context || 'none');
+    if (payload.metadata) {
+      scope.setContext('metadata', payload.metadata);
+    }
+    const error = new Error(payload.message);
+    if (payload.stack) {
+      error.stack = payload.stack;
+    }
+    Sentry.captureException(error);
   });
 }
 
@@ -72,4 +87,3 @@ export function installGlobalCrashHandlers(): () => void {
     window.removeEventListener('unhandledrejection', onUnhandledRejection);
   };
 }
-
