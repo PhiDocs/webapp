@@ -23,11 +23,29 @@ const scriptSrc = [
   "'self'",
   "'unsafe-inline'",
   isDev ? "'unsafe-eval'" : null,
+  'https://www.googletagmanager.com',
 ].filter(Boolean).join(' ');
+const connectSrc = [
+  "'self'",
+  'https://firestore.googleapis.com',
+  'https://www.googleapis.com',
+  'https://securetoken.googleapis.com',
+  'https://identitytoolkit.googleapis.com',
+  'https://firebaseinstallations.googleapis.com',
+  'https://firebase.googleapis.com',
+  'https://www.google-analytics.com',
+  'https://region1.google-analytics.com',
+  'https://www.googletagmanager.com',
+  'https://*.ingest.us.sentry.io',
+  'https://*.ingest.sentry.io',
+  'wss://firestore.googleapis.com',
+].join(' ');
 const csp = [
   "base-uri 'self'",
   "object-src 'none'",
   `script-src ${scriptSrc}`,
+  `connect-src ${connectSrc}`,
+  "img-src 'self' data: https://www.google-analytics.com",
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "font-src 'self' https://fonts.gstatic.com data:",
 ].join('; ');
