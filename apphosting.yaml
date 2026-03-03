@@ -54,6 +54,11 @@ env:
     availability:
       - BUILD
       - RUNTIME
+  - variable: NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
+    value: "G-LR6DD0XB11"
+    availability:
+      - BUILD
+      - RUNTIME
 
   # Assinafy API
   - variable: ASSINAFY_API_URL

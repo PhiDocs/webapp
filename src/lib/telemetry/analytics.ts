@@ -5,8 +5,17 @@ import { app } from '@/firebase/config';
 type EventParams = Record<string, string | number | boolean | null | undefined>;
 
 let initialized = false;
+let warnedMissingMeasurementId = false;
 
 async function getAnalyticsModule() {
+  if (!app.options.measurementId) {
+    if (!warnedMissingMeasurementId) {
+      warnedMissingMeasurementId = true;
+      console.warn('[telemetry] analytics disabled: missing NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID');
+    }
+    return null;
+  }
+
   const analyticsLib = await import('firebase/analytics');
   const supported = await analyticsLib.isSupported();
   if (!supported) return null;
@@ -58,4 +67,3 @@ export async function clearAnalyticsUser(): Promise<void> {
     console.warn('[telemetry] clearAnalyticsUser failed:', error);
   }
 }
-
