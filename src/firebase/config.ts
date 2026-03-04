@@ -11,6 +11,16 @@ function requiredEnv(value: string | undefined, name: string): string {
   return value;
 }
 
+function normalizeMeasurementId(value: string | undefined): string | undefined {
+  if (!value) return undefined;
+  const normalized = value.trim();
+  if (!normalized) return undefined;
+  if (normalized === 'undefined' || normalized === 'null') return undefined;
+  return /^G-[A-Z0-9]+$/i.test(normalized) ? normalized : undefined;
+}
+
+const firebaseMeasurementId = normalizeMeasurementId(process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID);
+
 // Public Firebase Web config is read from NEXT_PUBLIC_* env vars.
 const firebaseConfig = {
   apiKey: requiredEnv(process.env.NEXT_PUBLIC_FIREBASE_API_KEY, "NEXT_PUBLIC_FIREBASE_API_KEY"),
@@ -22,7 +32,6 @@ const firebaseConfig = {
     "NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID"
   ),
   appId: requiredEnv(process.env.NEXT_PUBLIC_FIREBASE_APP_ID, "NEXT_PUBLIC_FIREBASE_APP_ID"),
-  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
 
 
@@ -38,4 +47,5 @@ export {
   db, 
   auth, 
   storage,
+  firebaseMeasurementId,
 };
