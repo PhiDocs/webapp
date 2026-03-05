@@ -97,5 +97,8 @@ const nextConfig = {
 };
 
 export default withSentryConfig(nextConfig, {
+  org: "cstdco",
+  project: "safety-docs",
   silent: true,
+  widenClientFileUpload: true,
 });
