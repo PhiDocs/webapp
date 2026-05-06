@@ -1,5 +1,6 @@
 import { cookies } from 'next/headers';
-import admin from '@/firebase/admin-config';
+import { UserRepository } from '@/repositories/user.repository';
+import { createSupabaseAdminClient } from '@/supabase/server';
 
 type UserRole = 'admin' | 'user';
 
@@ -12,13 +13,17 @@ export type AuthContext = {
 
 async function decodeSessionToken(token: string): Promise<AuthContext | null> {
   try {
-    const decoded = await admin.auth().verifyIdToken(token, true);
-    const role = (decoded.role as UserRole | undefined) ?? 'user';
+    const { data, error } = await createSupabaseAdminClient().auth.getUser(token);
+    if (error || !data.user) return null;
+
+    const profile = await UserRepository.get(data.user.id);
+    const role = profile?.role ?? 'user';
+
     return {
-      uid: decoded.uid,
-      email: decoded.email ?? undefined,
+      uid: data.user.id,
+      email: data.user.email ?? undefined,
       role,
-      companyId: decoded.companyId as string | undefined,
+      companyId: profile?.companyId ?? undefined,
     };
   } catch (error) {
     console.warn('[auth-guard] Token inválido ou expirado:', error);

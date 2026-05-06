@@ -45,41 +45,17 @@ export function FormPanel({ form, onNewReport, onSubmit, isLoading, works, emplo
     <div className="h-full">
       <ScrollArea className="h-full">
         <div className="p-4 md:p-6 space-y-6">
-          <div className="flex justify-between items-start">
-            <div className="space-y-2">
+          <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+            <div className="space-y-3">
               <h2 className="text-2xl font-bold tracking-tight text-foreground font-headline">
                 {ptBr.formPanel.title}
               </h2>
               <p className="text-muted-foreground">
                 {ptBr.formPanel.description}
               </p>
-            </div>
-            <div className="flex gap-2">
-              {onToggleFloatingPreview && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={onToggleFloatingPreview}
-                  title={showFloatingPreview ? "Ocultar pré-visualização" : "Mostrar pré-visualização"}
-                >
-                  {showFloatingPreview ? (
-                    <>
-                      <EyeOff className="mr-2 h-4 w-4" />
-                      Ocultar Preview
-                    </>
-                  ) : (
-                    <>
-                      <Eye className="mr-2 h-4 w-4" />
-                      Mostrar Preview
-                    </>
-                  )}
-                </Button>
-              )}
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button
-                    variant="outline"
-                  >
+                  <Button>
                     <RefreshCcw className="mr-2 h-4 w-4" />
                     {ptBr.actions.startNewReport}
                   </Button>
@@ -97,6 +73,23 @@ export function FormPanel({ form, onNewReport, onSubmit, isLoading, works, emplo
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>
+            </div>
+            <div className="flex gap-2">
+              {onToggleFloatingPreview && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={onToggleFloatingPreview}
+                  title={showFloatingPreview ? "Ocultar pré-visualização" : "Mostrar pré-visualização"}
+                  className="h-11 w-11 rounded-2xl bg-primary text-primary-foreground shadow-sm ring-1 ring-primary/20 transition-colors hover:bg-primary/90"
+                >
+                  {showFloatingPreview ? (
+                    <EyeOff className="h-5 w-5" />
+                  ) : (
+                    <Eye className="h-5 w-5" />
+                  )}
+                </Button>
+              )}
             </div>
           </div>
           <SafetyForm

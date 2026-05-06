@@ -1,41 +1,57 @@
-import admin from '@/firebase/admin-config';
 import type { SavedDocument } from '@/lib/types';
-
-const collection = admin.firestore().collection('documents');
+import { createSupabaseAdminClient } from '@/supabase/server';
 
 export type SavedDocumentCreate = Omit<SavedDocument, 'id'>;
 
 export const DocumentRepository = {
   async create(data: SavedDocumentCreate): Promise<string> {
-    const ref = await collection.add(data);
-    return ref.id;
+    const { data: created, error } = await createSupabaseAdminClient()
+      .from('documents')
+      .insert(data)
+      .select('id')
+      .single();
+
+    if (error) throw error;
+    return created.id;
   },
 
   async getByCompany(companyId: string): Promise<SavedDocument[]> {
-    const snapshot = await collection
-      .where('companyId', '==', companyId)
-      .orderBy('updatedAt', 'desc')
-      .get();
+    const { data, error } = await createSupabaseAdminClient()
+      .from('documents')
+      .select('*')
+      .eq('companyId', companyId)
+      .order('updatedAt', { ascending: false });
 
-    if (snapshot.empty) return [];
-
-    return snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data(),
-    })) as SavedDocument[];
+    if (error) throw error;
+    return (data ?? []) as SavedDocument[];
   },
 
   async getById(id: string): Promise<SavedDocument | null> {
-    const doc = await collection.doc(id).get();
-    if (!doc.exists) return null;
-    return { id: doc.id, ...doc.data() } as SavedDocument;
+    const { data, error } = await createSupabaseAdminClient()
+      .from('documents')
+      .select('*')
+      .eq('id', id)
+      .maybeSingle();
+
+    if (error) throw error;
+    return data as SavedDocument | null;
   },
 
   async update(id: string, data: Partial<SavedDocument>): Promise<void> {
-    await collection.doc(id).update(data);
+    const { error } = await createSupabaseAdminClient()
+      .from('documents')
+      .update(data)
+      .eq('id', id);
+
+    if (error) throw error;
   },
 
   async delete(id: string): Promise<void> {
-    await collection.doc(id).delete();
+    const { error } = await createSupabaseAdminClient()
+      .from('documents')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
   },
 };

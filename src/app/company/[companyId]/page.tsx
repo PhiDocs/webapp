@@ -79,36 +79,83 @@ export default function CompanyPage() {
                     </div>
                 </div>
 
-                <Tabs defaultValue="works">
-                    <TabsList className="grid w-full grid-cols-2 md:grid-cols-5">
-                        <TabsTrigger value="works"><HardHat className="mr-2 h-4 w-4" />Obras</TabsTrigger>
-                        <TabsTrigger value="employees"><Users className="mr-2 h-4 w-4" />Funcionários</TabsTrigger>
-                        <TabsTrigger value="jobRoles"><Briefcase className="mr-2 h-4 w-4" />Cargos</TabsTrigger>
-                        <TabsTrigger value="subcontractors"><Building className="mr-2 h-4 w-4" />Terceirizadas</TabsTrigger>
-                        <TabsTrigger value="settings"><Settings className="mr-2 h-4 w-4" />Configurações</TabsTrigger>
+                <Tabs defaultValue="works" className="flex flex-col items-start gap-6 md:flex-row">
+                    <TabsList className="h-fit w-full flex flex-col items-stretch justify-start rounded-2xl bg-card p-3 shadow-sm md:w-64 md:self-start md:shrink-0">
+                        <TabsTrigger
+                            value="works"
+                            className="group w-full justify-start gap-3 px-3 py-2.5 text-sm font-semibold text-muted-foreground data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-none hover:bg-background hover:text-foreground"
+                        >
+                            <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-background text-primary ring-1 ring-border transition-colors group-data-[state=active]:bg-primary group-data-[state=active]:text-primary-foreground group-data-[state=active]:ring-primary/20 group-hover:bg-primary group-hover:text-primary-foreground group-hover:ring-primary/20">
+                                <HardHat className="h-4 w-4" />
+                            </span>
+                            Obras
+                        </TabsTrigger>
+                        <TabsTrigger
+                            value="employees"
+                            className="group w-full justify-start gap-3 px-3 py-2.5 text-sm font-semibold text-muted-foreground data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-none hover:bg-background hover:text-foreground"
+                        >
+                            <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-background text-primary ring-1 ring-border transition-colors group-data-[state=active]:bg-primary group-data-[state=active]:text-primary-foreground group-data-[state=active]:ring-primary/20 group-hover:bg-primary group-hover:text-primary-foreground group-hover:ring-primary/20">
+                                <Users className="h-4 w-4" />
+                            </span>
+                            Funcionários
+                        </TabsTrigger>
+                        <TabsTrigger
+                            value="jobRoles"
+                            className="group w-full justify-start gap-3 px-3 py-2.5 text-sm font-semibold text-muted-foreground data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-none hover:bg-background hover:text-foreground"
+                        >
+                            <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-background text-primary ring-1 ring-border transition-colors group-data-[state=active]:bg-primary group-data-[state=active]:text-primary-foreground group-data-[state=active]:ring-primary/20 group-hover:bg-primary group-hover:text-primary-foreground group-hover:ring-primary/20">
+                                <Briefcase className="h-4 w-4" />
+                            </span>
+                            Cargos
+                        </TabsTrigger>
+                        <TabsTrigger
+                            value="subcontractors"
+                            className="group w-full justify-start gap-3 px-3 py-2.5 text-sm font-semibold text-muted-foreground data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-none hover:bg-background hover:text-foreground"
+                        >
+                            <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-background text-primary ring-1 ring-border transition-colors group-data-[state=active]:bg-primary group-data-[state=active]:text-primary-foreground group-data-[state=active]:ring-primary/20 group-hover:bg-primary group-hover:text-primary-foreground group-hover:ring-primary/20">
+                                <Building className="h-4 w-4" />
+                            </span>
+                            Terceirizadas
+                        </TabsTrigger>
+                        <TabsTrigger
+                            value="settings"
+                            className="group w-full justify-start gap-3 px-3 py-2.5 text-sm font-semibold text-muted-foreground data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-none hover:bg-background hover:text-foreground"
+                        >
+                            <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-background text-primary ring-1 ring-border transition-colors group-data-[state=active]:bg-primary group-data-[state=active]:text-primary-foreground group-data-[state=active]:ring-primary/20 group-hover:bg-primary group-hover:text-primary-foreground group-hover:ring-primary/20">
+                                <Settings className="h-4 w-4" />
+                            </span>
+                            Configurações
+                        </TabsTrigger>
                     </TabsList>
-                    <TabsContent value="works" className="mt-6">
-                        <WorksTable companyId={companyId} />
-                    </TabsContent>
-                    <TabsContent value="employees" className="mt-6">
-                        <EmployeesTable companyId={companyId} />
-                    </TabsContent>
-                    <TabsContent value="jobRoles" className="mt-6">
-                        <JobRolesTable companyId={companyId} />
-                    </TabsContent>
-                    <TabsContent value="subcontractors" className="mt-6">
-                        <SubcontractorsTable companyId={companyId} />
-                    </TabsContent>
-                    <TabsContent value="settings" className="mt-6">
-                        {company ? (
-                            <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
-                                <CompanySettings company={company} onCompanyUpdate={fetchCompany} />
-                                <N8nSettings company={company} />
-                            </div>
-                        ) : (
-                           <Card><CardContent className='pt-6'><Skeleton className="h-40 w-full" /></CardContent></Card>
-                        )}
-                    </TabsContent>
+
+                    <div className="flex-1">
+                        <TabsContent value="works" className="mt-0">
+                            <WorksTable companyId={companyId} />
+                        </TabsContent>
+                        <TabsContent value="employees" className="mt-0">
+                            <EmployeesTable companyId={companyId} />
+                        </TabsContent>
+                        <TabsContent value="jobRoles" className="mt-0">
+                            <JobRolesTable companyId={companyId} />
+                        </TabsContent>
+                        <TabsContent value="subcontractors" className="mt-0">
+                            <SubcontractorsTable companyId={companyId} />
+                        </TabsContent>
+                        <TabsContent value="settings" className="mt-0">
+                            {company ? (
+                                <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                                    <CompanySettings company={company} onCompanyUpdate={fetchCompany} />
+                                    <N8nSettings company={company} />
+                                </div>
+                            ) : (
+                                <Card>
+                                    <CardContent className="pt-6">
+                                        <Skeleton className="h-40 w-full" />
+                                    </CardContent>
+                                </Card>
+                            )}
+                        </TabsContent>
+                    </div>
                 </Tabs>
             </main>
         </div>

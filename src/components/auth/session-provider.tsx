@@ -1,10 +1,11 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
-import { onAuthStateChanged, type User as FirebaseUser } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore';
-import { auth, db } from '@/firebase/config';
 import { Loader2 } from 'lucide-react';
+import type { User as SupabaseUser } from '@supabase/supabase-js';
+import { createSession } from '@/server/auth-actions';
+import { getUserProfile } from '@/server/user-actions';
+import { createSupabaseBrowserClient } from '@/supabase/browser';
 
 export interface UserProfile {
   uid: string;
@@ -16,7 +17,7 @@ export interface UserProfile {
 
 interface SessionContextType {
   user: UserProfile | null;
-  firebaseUser: FirebaseUser | null;
+  supabaseUser: SupabaseUser | null;
   isLoading: boolean;
 }
 
@@ -30,59 +31,57 @@ export function useSession() {
   return context;
 }
 
-async function getFirestoreUserProfile(uid: string): Promise<Omit<UserProfile, 'uid' | 'email'> | null> {
-  try {
-    const userDocRef = doc(db, 'users', uid);
-    const userDoc = await getDoc(userDocRef);
-    if (userDoc.exists()) {
-      const data = userDoc.data();
-      return {
-        name: data.name,
-        role: data.role,
-        companyId: data.companyId,
-      };
-    }
-    return null;
-  } catch (error) {
-    console.error("Error fetching user profile from Firestore:", error);
-    return null;
-  }
-}
-
 export function SessionProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<UserProfile | null>(null);
-  const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
+  const [supabaseUser, setSupabaseUser] = useState<SupabaseUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
+    const supabase = createSupabaseBrowserClient();
+
+    const loadSession = async (authUser: SupabaseUser | null) => {
       setIsLoading(true);
 
-      if (fbUser) {
-        setFirebaseUser(fbUser);
-        const firestoreProfile = await getFirestoreUserProfile(fbUser.uid);
-        
-        if (firestoreProfile) {
-          setUser({
-            uid: fbUser.uid,
-            email: fbUser.email!,
-            ...firestoreProfile,
-          });
+      if (authUser) {
+        setSupabaseUser(authUser);
+        const result = await getUserProfile();
+
+        if (result.success && result.data) {
+          setUser(result.data);
         } else {
-          // If no profile, it might be a new user whose doc hasn't been created yet.
-          // Middleware will handle redirection if needed. For now, clear the user.
-          console.warn(`Firestore profile for user ${fbUser.uid} not found. Session will be incomplete until doc is created.`);
+          console.warn(`Perfil Supabase do usuário ${authUser.id} não encontrado.`);
           setUser(null);
         }
       } else {
-        // No Firebase user, clear everything.
-        setFirebaseUser(null);
+        setSupabaseUser(null);
         setUser(null);
       }
       setIsLoading(false);
+    };
+
+    supabase.auth.getSession().then(async ({ data }) => {
+      if (data.session) {
+        await createSession({
+          accessToken: data.session.access_token,
+          refreshToken: data.session.refresh_token,
+          expiresIn: data.session.expires_in,
+        });
+      }
+      await loadSession(data.session?.user ?? null);
     });
 
-    return () => unsubscribe();
+    const { data: listener } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      if (session) {
+        await createSession({
+          accessToken: session.access_token,
+          refreshToken: session.refresh_token,
+          expiresIn: session.expires_in,
+        });
+      }
+      await loadSession(session?.user ?? null);
+    });
+
+    return () => listener.subscription.unsubscribe();
   }, []);
 
   if (isLoading) {
@@ -94,7 +93,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <SessionContext.Provider value={{ user, firebaseUser, isLoading }}>
+    <SessionContext.Provider value={{ user, supabaseUser, isLoading }}>
       {children}
     </SessionContext.Provider>
   );

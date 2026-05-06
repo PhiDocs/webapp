@@ -1,9 +1,9 @@
-// To run: npx tsx scripts/create-company.ts "Nome da Empresa" "email@admin.com" "Nome do Admin" "senhaForte"
-import 'dotenv/config';
+import { config as loadEnv } from 'dotenv';
+import { createClient } from '@supabase/supabase-js';
 import { z } from 'zod';
-import admin from '../src/firebase/admin-config';
 
-const db = admin.firestore();
+loadEnv({ path: '.env' });
+loadEnv({ path: '.env.local', override: true });
 
 const registerCompanySchema = z.object({
   companyName: z.string().min(1, 'O nome da empresa é obrigatório.'),
@@ -12,9 +12,25 @@ const registerCompanySchema = z.object({
   adminPassword: z.string().min(6, 'A senha deve ter pelo menos 6 caracteres.'),
 });
 
+function getSupabaseAdminClient() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!supabaseUrl || !serviceRoleKey) {
+    throw new Error('Configure NEXT_PUBLIC_SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY no .env.');
+  }
+
+  return createClient(supabaseUrl, serviceRoleKey, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    },
+  });
+}
+
 async function main() {
   if (process.argv.length < 6) {
-    console.error('Uso: npx tsx scripts/create-company.ts "Nome da Empresa" "email@admin.com" "Nome do Admin" "senhaForte"');
+    console.error('Uso: npm run create-company -- "Nome da Empresa" "email@admin.com" "Nome do Admin" "senhaForte"');
     process.exit(1);
   }
 
@@ -22,58 +38,64 @@ async function main() {
 
   const validation = registerCompanySchema.safeParse({ companyName, adminEmail, adminName, adminPassword });
   if (!validation.success) {
-    console.error('❌ Dados inválidos:', validation.error.flatten().fieldErrors);
+    console.error('Dados inválidos:', validation.error.flatten().fieldErrors);
     process.exit(1);
   }
 
-  console.log(`\nRegistrando nova empresa: "${companyName}" com o administrador "${adminName}" (${adminEmail})\n`);
+  const supabase = getSupabaseAdminClient();
+  const now = new Date().toISOString();
 
-  try {
-    // 1. Criar a empresa
-    const companyRef = await db.collection('companies').add({
+  const { data: company, error: companyError } = await supabase
+    .from('companies')
+    .insert({
       name: companyName,
-      createdAt: new Date().toISOString(),
-    });
-    const companyId = companyRef.id;
-    console.log(`✅ Empresa criada: ${companyId}`);
+      n8nProductionUrl: '',
+      n8nTestUrl: '',
+      createdAt: now,
+    })
+    .select('id')
+    .single();
 
-    // 2. Criar o usuário no Firebase Auth
-    const adminAuth = admin.auth();
-    const userRecord = await adminAuth.createUser({
-      email: adminEmail,
-      emailVerified: true,
-      password: adminPassword,
-      displayName: adminName,
-    });
-    const userId = userRecord.uid;
-    console.log(`✅ Usuário criado no Auth: ${userId}`);
+  if (companyError) throw companyError;
 
-    // 3. Definir custom claims (role + companyId)
-    await adminAuth.setCustomUserClaims(userId, {
-      role: 'admin',
-      companyId,
-    });
-    console.log(`✅ Custom claims definidas: role=admin, companyId=${companyId}`);
-
-    // 4. Salvar o usuário no Firestore
-    await db.collection('users').doc(userId).set({
-      uid: userId,
-      email: adminEmail,
+  const { data: authUser, error: authError } = await supabase.auth.admin.createUser({
+    email: adminEmail,
+    password: adminPassword,
+    email_confirm: true,
+    user_metadata: {
       name: adminName,
-      role: 'admin',
-      companyId,
-      createdAt: new Date().toISOString(),
-    });
-    console.log(`✅ Usuário salvo no Firestore`);
+    },
+  });
 
-    console.log('\n🎉 Empresa e administrador criados com sucesso!');
-    console.log(`   Empresa: ${companyName} (${companyId})`);
-    console.log(`   Admin: ${adminName} (${adminEmail})`);
-    console.log(`   UID: ${userId}`);
-  } catch (error) {
-    console.error('\n❌ Erro:', error);
-    process.exit(1);
+  if (authError || !authUser.user) {
+    throw authError ?? new Error('Falha ao criar usuário no Supabase Auth.');
   }
+
+  const { error: userError } = await supabase.from('users').insert({
+    uid: authUser.user.id,
+    name: adminName,
+    email: adminEmail,
+    role: 'admin',
+    companyId: company.id,
+    createdAt: now,
+  });
+
+  if (userError) throw userError;
+
+  const { error: updateCompanyError } = await supabase
+    .from('companies')
+    .update({ ownerUid: authUser.user.id })
+    .eq('id', company.id);
+
+  if (updateCompanyError) throw updateCompanyError;
+
+  console.log('Empresa e administrador criados com sucesso.');
+  console.log(`Empresa: ${companyName} (${company.id})`);
+  console.log(`Admin: ${adminName} (${adminEmail})`);
+  console.log(`UID: ${authUser.user.id}`);
 }
 
-main();
+main().catch((error) => {
+  console.error('Erro ao criar empresa:', error);
+  process.exit(1);
+});

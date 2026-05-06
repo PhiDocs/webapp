@@ -1,53 +1,59 @@
-import admin from '@/firebase/admin-config';
 import type { SignatureDocument } from '@/lib/types';
-
-const signatureCollection = admin.firestore().collection('signatureDocuments');
+import { createSupabaseAdminClient } from '@/supabase/server';
 
 export type SignatureDocumentCreate = Omit<SignatureDocument, 'id'>;
 
 export const SignatureDocumentRepository = {
   async create(data: SignatureDocumentCreate): Promise<string> {
-    const ref = await signatureCollection.add(data);
-    return ref.id;
+    const { data: created, error } = await createSupabaseAdminClient()
+      .from('signatureDocuments')
+      .insert(data)
+      .select('id')
+      .single();
+
+    if (error) throw error;
+    return created.id;
   },
 
   async getByCompany(companyId: string): Promise<SignatureDocument[]> {
-    const snapshot = await signatureCollection
-      .where('companyId', '==', companyId)
-      .orderBy('createdAt', 'desc')
-      .get();
+    const { data, error } = await createSupabaseAdminClient()
+      .from('signatureDocuments')
+      .select('*')
+      .eq('companyId', companyId)
+      .order('createdAt', { ascending: false });
 
-    if (snapshot.empty) {
-      return [];
-    }
-
-    return snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data(),
-    })) as SignatureDocument[];
+    if (error) throw error;
+    return (data ?? []) as SignatureDocument[];
   },
 
   async getById(id: string): Promise<SignatureDocument | null> {
-    const doc = await signatureCollection.doc(id).get();
-    if (!doc.exists) return null;
-    return { id: doc.id, ...doc.data() } as SignatureDocument;
+    const { data, error } = await createSupabaseAdminClient()
+      .from('signatureDocuments')
+      .select('*')
+      .eq('id', id)
+      .maybeSingle();
+
+    if (error) throw error;
+    return data as SignatureDocument | null;
   },
 
   async getBySignerEmail(email: string): Promise<SignatureDocument[]> {
-    const snapshot = await signatureCollection
-      .where('signerEmails', 'array-contains', email.toLowerCase())
-      .orderBy('createdAt', 'desc')
-      .get();
+    const { data, error } = await createSupabaseAdminClient()
+      .from('signatureDocuments')
+      .select('*')
+      .contains('signerEmails', [email.toLowerCase()])
+      .order('createdAt', { ascending: false });
 
-    if (snapshot.empty) return [];
-
-    return snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data(),
-    })) as SignatureDocument[];
+    if (error) throw error;
+    return (data ?? []) as SignatureDocument[];
   },
 
   async update(id: string, data: Partial<SignatureDocument>): Promise<void> {
-    await signatureCollection.doc(id).update(data);
+    const { error } = await createSupabaseAdminClient()
+      .from('signatureDocuments')
+      .update(data)
+      .eq('id', id);
+
+    if (error) throw error;
   },
 };

@@ -1,71 +1,49 @@
 'use server';
 
 import { cookies } from 'next/headers';
-import admin from '@/firebase/admin-config';
 import { ErrorLogRepository } from '@/repositories/error-log.repository';
 import { UserRepository } from '@/repositories/user.repository';
-import type { DecodedIdToken } from 'firebase-admin/auth';
+import { createSupabaseAdminClient } from '@/supabase/server';
 
-/**
- * Ensure a user document exists in Firestore and is synced
- * with the token custom claims.
- * If it doesn't exist, create it.
- * If it exists and role or companyId differ, update it.
- */
-async function ensureAndSyncUserDocument(decodedToken: DecodedIdToken) {
-  const { uid, email, name } = decodedToken;
+async function ensureUserDocument(authUser: { id: string; email?: string; user_metadata?: Record<string, any> }) {
+  const uid = authUser.id;
+  const email = authUser.email;
   const existingUser = await UserRepository.get(uid);
 
-  // Use a safe type for claims
-  const customClaims = (decodedToken || {}) as { role?: 'admin' | 'user', companyId?: string };
-  const roleFromClaims = customClaims.role || 'user';
-  const companyIdFromClaims = customClaims.companyId;
-
-  if (existingUser) {
-    const updates: { [key: string]: any } = {};
-    if (roleFromClaims !== existingUser.role) {
-      updates.role = roleFromClaims;
-    }
-    // Ensure comparison works even if existingUser.companyId is undefined
-    if (companyIdFromClaims !== existingUser.companyId) {
-      // Use null to remove the field if it's no longer in the claims
-      updates.companyId = companyIdFromClaims || null; 
-    }
-
-    if (Object.keys(updates).length > 0) {
-      await UserRepository.update(uid, updates);
-    }
-  } else {
-    // If the user doesn't exist in Firestore, create the document with token data
+  if (!existingUser && email) {
     await UserRepository.create(uid, {
       uid,
-      name: name || email!,
-      email: email!,
-      role: roleFromClaims,
-      companyId: companyIdFromClaims,
+      name: authUser.user_metadata?.name || email,
+      email,
+      role: 'user',
+      companyId: null,
     });
   }
 }
 
-/**
- * Create a session cookie from a Firebase ID token
- * and ensure the user has a Firestore record.
- */
-export async function createSession(idToken: string): Promise<{ error: string | null }> {
+export async function createSession(session: { accessToken: string; refreshToken: string; expiresIn?: number }): Promise<{ error: string | null }> {
   try {
-    const adminAuth = admin.auth();
-    const decodedToken = await adminAuth.verifyIdToken(idToken, true);
+    const { data, error } = await createSupabaseAdminClient().auth.getUser(session.accessToken);
+    if (error || !data.user) {
+      throw error ?? new Error('Sessão inválida.');
+    }
 
-    // Ensure the Firestore document is synced with token claims.
-    // This is the key step that updates Firestore.
-    await ensureAndSyncUserDocument(decodedToken);
+    await ensureUserDocument(data.user);
 
-    const expiresIn = 60 * 60 * 24 * 5 * 1000; // 5 dias
+    const maxAge = session.expiresIn ?? 60 * 60;
     const cookieStore = await cookies();
-    cookieStore.set('session', idToken, {
+    cookieStore.set('session', session.accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      maxAge: expiresIn,
+      sameSite: 'lax',
+      maxAge,
+      path: '/',
+    });
+    cookieStore.set('refreshToken', session.refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 24 * 30,
       path: '/',
     });
 
@@ -77,17 +55,15 @@ export async function createSession(idToken: string): Promise<{ error: string | 
   }
 }
 
-/**
- * Sign out the current user and remove the session cookie.
- */
 export async function signOut(): Promise<{ error: string | null }> {
   try {
     const cookieStore = await cookies();
     cookieStore.delete('session');
+    cookieStore.delete('refreshToken');
     return { error: null };
   } catch (error: any)
  {
-    console.error('Firebase SignOut Error:', error);
+    console.error('Supabase SignOut Error:', error);
     await ErrorLogRepository.log(error, 'signOut');
     return { error: 'Falha ao fazer logout.' };
   }

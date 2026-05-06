@@ -1,47 +1,43 @@
-import admin from '@/firebase/admin-config';
+import { createSupabaseAdminClient } from '@/supabase/server';
 
-type UserData = {
+export type UserData = {
     uid: string;
     name: string;
     email: string;
     role: 'admin' | 'user';
-    companyId?: string; // Tornar opcional
+    companyId?: string | null;
 }
 
-const userCollection = admin.firestore().collection('users');
-
 export const UserRepository = {
-    /**
-     * Create a new user document in Firestore.
-     * @param userId - The Firebase Auth user UID.
-     * @param data - The user data.
-     */
     async create(userId: string, data: UserData): Promise<void> {
-        await userCollection.doc(userId).set({
+        const { error } = await createSupabaseAdminClient()
+          .from('users')
+          .upsert({
             ...data,
+            uid: userId,
             createdAt: new Date().toISOString(),
-        });
+          }, { onConflict: 'uid' });
+
+        if (error) throw error;
     },
 
-    /**
-     * Update a user document in Firestore.
-     * @param userId - The user UID.
-     * @param data - Fields to update.
-     */
     async update(userId: string, data: { [key: string]: any }): Promise<void> {
-        await userCollection.doc(userId).update(data);
+        const { error } = await createSupabaseAdminClient()
+          .from('users')
+          .update(data)
+          .eq('uid', userId);
+
+        if (error) throw error;
     },
 
-    /**
-     * Fetch a user by UID.
-     * @param userId - The user UID.
-     * @returns The user data or null if not found.
-     */
     async get(userId: string): Promise<UserData | null> {
-        const doc = await userCollection.doc(userId).get();
-        if (!doc.exists) {
-            return null;
-        }
-        return doc.data() as UserData;
+        const { data, error } = await createSupabaseAdminClient()
+          .from('users')
+          .select('uid,name,email,role,companyId')
+          .eq('uid', userId)
+          .maybeSingle();
+
+        if (error) throw error;
+        return data as UserData | null;
     }
 };

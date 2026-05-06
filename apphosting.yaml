@@ -6,28 +6,20 @@ runConfig:
   timeoutSeconds: 120
 
 env:
-  # Firebase Admin SDK
-  - variable: FIREBASE_PROJECT_ID
-    value: studio-2124642360-17967
+  # Supabase
+  - variable: NEXT_PUBLIC_SUPABASE_URL
+    value: https://seu-projeto.supabase.co
     availability:
       - BUILD
       - RUNTIME
-  - variable: FIREBASE_CLIENT_EMAIL
-    value: firebase-adminsdk-fbsvc@studio-2124642360-17967.iam.gserviceaccount.com
+  - variable: NEXT_PUBLIC_SUPABASE_ANON_KEY
+    secret: NEXT_PUBLIC_SUPABASE_ANON_KEY
     availability:
       - BUILD
       - RUNTIME
-  - variable: FIREBASE_PRIVATE_KEY
-    secret: FIREBASE_PRIVATE_KEY
+  - variable: SUPABASE_SERVICE_ROLE_KEY
+    secret: SUPABASE_SERVICE_ROLE_KEY
     availability:
-      - BUILD
-      - RUNTIME
-
-  # Firebase Client (public)
-  - variable: NEXT_PUBLIC_FIREBASE_PROJECT_ID
-    value: studio-2124642360-17967
-    availability:
-      - BUILD
       - RUNTIME
 
   # Assinafy API

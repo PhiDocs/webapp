@@ -230,7 +230,7 @@ export type SignatureDocument = {
   assinafyAssignmentId: string;
   status: 'pending' | 'signed' | 'certificated' | 'declined' | 'uploaded' | 'expired';
   signers: SignatureSigner[];
-  /** Array plano de e-mails para consulta no Firestore (array-contains) */
+  /** Array plano de e-mails para consulta no Supabase. */
   signerEmails: string[];
   createdAt: string;
   updatedAt?: string;

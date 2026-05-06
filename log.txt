@@ -2216,3 +2216,95 @@ Caused by: Error:
     at async requestHandlerImpl (/Users/igor.custodio/development/studio/node_modules/next/dist/server/lib/router-server.js:496:13)
     at async Server.requestListener (/Users/igor.custodio/development/studio/node_modules/next/dist/server/lib/start-server.js:226:13)
 ---
+[2026-05-06T14:42:51.265Z] ERROR in getSafetyAnalysis: FAILED_PRECONDITION: Please pass in the API key or set the GEMINI_API_KEY or GOOGLE_API_KEY environment variable.
+For more details see https://genkit.dev/docs/plugins/google-genai
+STACK: GenkitError: FAILED_PRECONDITION: Please pass in the API key or set the GEMINI_API_KEY or GOOGLE_API_KEY environment variable.
+For more details see https://genkit.dev/docs/plugins/google-genai
+    at defineGoogleAIModel (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\node_modules_78865c1d._.js:26297:19)
+    at C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\node_modules_78865c1d._.js:27185:404
+    at Array.forEach (<anonymous>)
+    at initializer (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\node_modules_78865c1d._.js:27185:205)
+    at C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\node_modules_78865c1d._.js:27311:216
+    at Object.initializer (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\node_modules_78865c1d._.js:24513:23)
+    at Object.initializer (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\node_modules_78865c1d._.js:24351:44)
+    at Object.initializer (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\node_modules_@genkit-ai_core_lib_ad0577af._.js:3465:39)
+    at C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\node_modules_@genkit-ai_core_lib_ad0577af._.js:3523:105
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14)
+    at NodeAsyncContext.run (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\node_modules_@genkit-ai_core_lib_ad0577af._.js:3613:31)
+    at runOutsideActionRuntimeContext (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\node_modules_@genkit-ai_core_lib_ad0577af._.js:1988:56)
+    at Registry.initializePlugin (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\node_modules_@genkit-ai_core_lib_ad0577af._.js:3523:75)
+    at Registry.lookupAction (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\node_modules_@genkit-ai_core_lib_ad0577af._.js:3319:24)
+    at lookupModel (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\node_modules_@genkit-ai_ai_lib_e75b55fa._.js:2456:27)
+    at resolveModel (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\node_modules_@genkit-ai_ai_lib_e75b55fa._.js:2426:32)
+    at toGenerateActionOptions (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\node_modules_@genkit-ai_ai_lib_e75b55fa._.js:5110:61)
+    at generate (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\node_modules_@genkit-ai_ai_lib_e75b55fa._.js:5042:26)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async getSafetyAnalysis (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\[root-of-the-server]__f698bbac._.js:596:28)
+    at async executeActionAndPrepareForRender (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:36:3803)
+    at async C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:36:1109
+    at async handleAction (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:34:23616)
+    at async renderToHTMLOrFlightImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:41:42130)
+    at async doRender (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\node_modules_next_dist_d008d524._.js:2970:28)
+    at async AppPageRouteModule.handleResponse (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:43:64241)
+    at async handleResponse (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\node_modules_next_dist_d008d524._.js:3176:32)
+    at async Module.handler (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\node_modules_next_dist_d008d524._.js:3547:20)
+    at async DevServer.renderToResponseWithComponentsImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:1442:9)
+    at async DevServer.renderPageComponent (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:1494:24)
+    at async DevServer.renderToResponseImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:1544:32)
+    at async DevServer.pipeImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:1038:25)
+    at async NextNodeServer.handleCatchallRenderRequest (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\next-server.js:395:17)
+    at async DevServer.handleRequestImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:929:17)
+    at async C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\dev\next-dev-server.js:387:20
+    at async Span.traceAsyncFn (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\trace\trace.js:157:20)
+    at async DevServer.handleRequest (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\dev\next-dev-server.js:383:24)
+    at async invokeRender (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\lib\router-server.js:248:21)
+    at async handleRequest (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\lib\router-server.js:447:24)
+    at async requestHandlerImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\lib\router-server.js:496:13)
+    at async Server.requestListener (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\lib\start-server.js:226:13)
+---
+[2026-05-06T14:42:52.732Z] ERROR in getProtectiveEquipment: FAILED_PRECONDITION: Please pass in the API key or set the GEMINI_API_KEY or GOOGLE_API_KEY environment variable.
+For more details see https://genkit.dev/docs/plugins/google-genai
+STACK: GenkitError: FAILED_PRECONDITION: Please pass in the API key or set the GEMINI_API_KEY or GOOGLE_API_KEY environment variable.
+For more details see https://genkit.dev/docs/plugins/google-genai
+    at defineGoogleAIModel (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\node_modules_78865c1d._.js:26297:19)
+    at C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\node_modules_78865c1d._.js:27185:404
+    at Array.forEach (<anonymous>)
+    at initializer (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\node_modules_78865c1d._.js:27185:205)
+    at C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\node_modules_78865c1d._.js:27311:216
+    at Object.initializer (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\node_modules_78865c1d._.js:24513:23)
+    at Object.initializer (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\node_modules_78865c1d._.js:24351:44)
+    at Object.initializer (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\node_modules_@genkit-ai_core_lib_ad0577af._.js:3465:39)
+    at C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\node_modules_@genkit-ai_core_lib_ad0577af._.js:3523:105
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14)
+    at NodeAsyncContext.run (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\node_modules_@genkit-ai_core_lib_ad0577af._.js:3613:31)
+    at runOutsideActionRuntimeContext (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\node_modules_@genkit-ai_core_lib_ad0577af._.js:1988:56)
+    at Registry.initializePlugin (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\node_modules_@genkit-ai_core_lib_ad0577af._.js:3523:75)
+    at Registry.lookupAction (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\node_modules_@genkit-ai_core_lib_ad0577af._.js:3319:24)
+    at lookupModel (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\node_modules_@genkit-ai_ai_lib_e75b55fa._.js:2456:27)
+    at resolveModel (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\node_modules_@genkit-ai_ai_lib_e75b55fa._.js:2426:32)
+    at toGenerateActionOptions (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\node_modules_@genkit-ai_ai_lib_e75b55fa._.js:5110:61)
+    at generate (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\node_modules_@genkit-ai_ai_lib_e75b55fa._.js:5042:26)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async getSafetyAnalysis (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\[root-of-the-server]__f698bbac._.js:596:28)
+    at async executeActionAndPrepareForRender (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:36:3803)
+    at async C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:36:1109
+    at async handleAction (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:34:23616)
+    at async renderToHTMLOrFlightImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:41:42130)
+    at async doRender (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\node_modules_next_dist_d008d524._.js:2970:28)
+    at async AppPageRouteModule.handleResponse (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.dev.js:43:64241)
+    at async handleResponse (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\node_modules_next_dist_d008d524._.js:3176:32)
+    at async Module.handler (C:\Users\kally\Desktop\Projetos\studio\.next\dev\server\chunks\ssr\node_modules_next_dist_d008d524._.js:3547:20)
+    at async DevServer.renderToResponseWithComponentsImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:1442:9)
+    at async DevServer.renderPageComponent (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:1494:24)
+    at async DevServer.renderToResponseImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:1544:32)
+    at async DevServer.pipeImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:1038:25)
+    at async NextNodeServer.handleCatchallRenderRequest (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\next-server.js:395:17)
+    at async DevServer.handleRequestImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\base-server.js:929:17)
+    at async C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\dev\next-dev-server.js:387:20
+    at async Span.traceAsyncFn (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\trace\trace.js:157:20)
+    at async DevServer.handleRequest (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\dev\next-dev-server.js:383:24)
+    at async invokeRender (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\lib\router-server.js:248:21)
+    at async handleRequest (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\lib\router-server.js:447:24)
+    at async requestHandlerImpl (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\lib\router-server.js:496:13)
+    at async Server.requestListener (C:\Users\kally\Desktop\Projetos\studio\node_modules\next\dist\server\lib\start-server.js:226:13)
+---

@@ -1,166 +1,78 @@
 # Safety Docs AI
 
-Este é um projeto Next.js para gerar documentos de segurança do trabalho, como Análise Preliminar de Risco (APR) e Permissão de Trabalho (PT), com o auxílio de Inteligência Artificial.
+Projeto Next.js para gerar documentos de segurança do trabalho, como APR e PT, com IA, PDF e assinatura por e-mail.
 
-## Funcionalidades Principais
+## Stack
 
--   **Geração de Documentos:** Crie documentos APR e PT preenchendo um formulário dinâmico.
--   **Análise com IA:** Utilize o poder da IA generativa (através do Genkit e Google Gemini) para criar uma análise de risco detalhada com base na descrição da atividade de trabalho, recomendando procedimentos, riscos e medidas preventivas.
--   **Recomendação de Equipamentos:** A IA também sugere os Equipamentos de Proteção Individual (EPI) e Coletiva (EPC) necessários para a atividade descrita.
--   **Pré-visualização em Tempo Real:** Veja como seu documento ficará enquanto você preenche o formulário.
--   **Exportação para PDF:** Baixe o documento final em formato PDF, gerado de forma consistente no lado do servidor.
--   **Integração com n8n:** Envie os dados do formulário e o PDF gerado para um webhook do n8n para automatizar fluxos de trabalho posteriores.
+- Next.js
+- React
+- Supabase Auth
+- Supabase Postgres
+- Genkit/Gemini
+- Assinafy
 
-## Como as Permissões Funcionam (Admin vs. Usuário)
+## Banco e Autenticação
 
-O sistema usa **Firebase Custom Claims** para diferenciar os papéis dos usuários. Um *custom claim* é um metadado seguro anexado ao token de um usuário que só pode ser definido pelo servidor.
+O sistema usa Supabase:
 
--   **Admin:** Um usuário com as claims `{ role: 'admin', companyId: '...' }`. Apenas administradores podem acessar a rota `/company/[companyId]` para gerenciar sua empresa.
--   **Usuário:** Um usuário sem a claim de `admin`. Eles são redirecionados para a página principal (`/`) para gerar documentos.
+- Supabase Auth para login por e-mail e senha.
+- Tabela `users` para perfil, `role` e `companyId`.
+- Tabela `companies` para empresas.
+- Tabelas relacionais para obras, funcionários, cargos, terceirizadas, documentos e assinaturas.
+- Dados complexos dos documentos ficam em colunas `jsonb`.
 
-A verificação roda no middleware (`middleware.ts` → `src/proxy.ts`), que lê os claims do cookie de sessão em cada requisição e aplica os redirecionamentos necessários. As server actions validam novamente o cookie e conferem `role/companyId` antes de acessar dados ou integrações.
-
-## Como se Tornar um Admin
-
-Como o cadastro público foi removido, a criação e promoção de administradores é uma operação de servidor. Existem duas maneiras de fazer isso:
-
-### Método 1: Criar uma Nova Empresa e seu Admin (Recomendado)
-
-Use o script `scripts/create-company.js` para registrar uma nova empresa e seu primeiro administrador de uma só vez.
-
-1.  **Pré-requisitos:** Certifique-se de que seu arquivo `.env` está preenchido com as credenciais do Firebase Admin, conforme descrito na seção "Variáveis de Ambiente".
-2.  **Uso:**
-    ```bash
-    node scripts/create-company.js "Nome da Nova Empresa" "email.do.novo.admin@example.com" "Nome do Admin" "senhaForte123"
-    ```
-    Este script chamará a server action `registerCompany`, que cria o usuário, a empresa, e define o *custom claim* `{ role: 'admin', companyId: '...' }` para o novo usuário.
-
-### Método 2: Promover um Usuário Existente para Admin
-
-Se você já tem um usuário criado e deseja torná-lo um administrador de uma empresa.
-
-1.  **Pré-requisitos:** Certifique-se de que seu arquivo `.env` está preenchido.
-2.  **Encontre o ID da Empresa:** No console do Firebase, vá para a coleção `companies` e copie o ID do documento da empresa à qual você quer associar o admin.
-3.  **Uso:**
-    ```bash
-    node scripts/set-admin.js "email.do.usuario.existente@example.com" "ID_DA_EMPRESA_COPIADO_DO_FIRESTORE"
-    ```
-    Este script encontrará o usuário pelo e-mail e definirá (ou atualizará) suas *custom claims* para `{ role: 'admin', companyId: '...' }`.
-
-> **Importante:** Após executar qualquer um desses scripts e alterar os papéis, o usuário precisa **fazer logout e login novamente** para que seu token de sessão seja atualizado com os novos *custom claims*.  
-> **Segurança:** as server actions agora exigem sessão e checam o `companyId`/`role` do usuário. Para rodar o script `registerCompany` sem sessão, defina `ALLOW_REGISTER_COMPANY_SCRIPT=true` no `.env` (não usar em produção).
-
-## Rodando Localmente: Configurando a Autenticação
-
-Para rodar o projeto completo na sua máquina local, você precisa configurar a autenticação para o **Firebase Admin** (usado para gerenciar usuários e dados) e para a **IA do Google** (Genkit/Gemini).
-
-### 1. Obtendo as Credenciais do Firebase Admin
-
-Para que as `server actions` e scripts do back-end possam gerenciar usuários e dados, eles precisam se autenticar com permissões de administrador. Isso é feito através de uma "conta de serviço" do Firebase.
-
-Siga os passos abaixo para gerar o arquivo de credenciais necessário para preencher o seu `.env`:
-
-1.  **Acesse o Firebase Console:** Vá para [https://console.firebase.google.com/](https://console.firebase.google.com/) e selecione o seu projeto.
-2.  **Configurações do Projeto:** No canto superior esquerdo, clique no ícone de engrenagem ao lado de "Visão geral do projeto" e selecione **"Configurações do projeto"**.
-3.  **Contas de Serviço:** Na página de configurações, clique na aba **"Contas de serviço"**.
-4.  **Gere a Chave Privada:** Clique no botão **"Gerar nova chave privada"**. Uma janela de confirmação aparecerá.
-5.  **Confirme e Baixe:** Clique em **"Gerar chave"**. Um arquivo JSON será baixado para o seu computador. Este arquivo contém suas credenciais de administrador; trate-o com segurança e não o compartilhe publicamente.
-6.  **Preencha o `.env`:** Abra o arquivo JSON que você baixou. Você encontrará os seguintes campos:
-    *   `project_id`: Copie este valor para a variável `FIREBASE_PROJECT_ID` no seu arquivo `.env`.
-    *   `client_email`: Copie este valor para a variável `FIREBASE_CLIENT_EMAIL`.
-    *   `private_key`: Copie todo o conteúdo, incluindo `-----BEGIN PRIVATE KEY-----` e `-----END PRIVATE KEY-----`, para a variável `FIREBASE_PRIVATE_KEY`.
-
-> **Importante:** A `private_key` no arquivo JSON contém quebras de linha (`\n`). Ao copiá-la para o `.env`, você deve garantir que elas sejam preservadas como o texto literal `\n`. O valor final no `.env` deve ser uma única linha longa entre aspas. Veja o exemplo na seção "Variáveis de Ambiente".
-
-### 2. Autenticação para a IA (Genkit/Gemini)
-
-Você tem duas opções para autenticar as chamadas de IA na sua máquina local.
-
-#### Método 1: Login com `gcloud` (Recomendado)
-
-Este método usa as "Credenciais Padrão da Aplicação" (ADC), que é a forma mais segura e recomendada pelo Google.
-
-1.  **Instale o Google Cloud CLI:** Se você ainda não tem, [instale a ferramenta de linha de comando do Google Cloud](https://cloud.google.com/sdk/docs/install).
-
-2.  **Faça o Login:** Execute o seguinte comando no seu terminal:
-    ```bash
-    gcloud auth application-default login
-    ```
-
-3.  **Siga as Instruções:** Seu navegador será aberto para que você faça login com sua conta do Google. Após a autorização, um arquivo de credenciais será criado na sua máquina.
-
-4.  **Pronto!** O Genkit encontrará e usará essas credenciais automaticamente. Você **não** precisa de uma `GEMINI_API_KEY` no seu `.env` ao usar este método.
-
-#### Método 2: Usar uma Chave de API
-
-Este método é mais simples, mas um pouco menos seguro, pois a chave fica no seu arquivo `.env`.
-
-1.  **Acesse o Google AI Studio:** Vá para [https://aistudio.google.com/](https://aistudio.google.com/).
-2.  **Obtenha a Chave:** No menu à esquerda, clique em **"Get API key"** e siga as instruções para criar e copiar sua chave.
-3.  **Configure o `.env`:** Abra seu arquivo `.env` e cole a chave que você copiou:
-    ```env
-    GEMINI_API_KEY="SUA_CHAVE_COPIADA_AQUI"
-    ```
-4.  **Pronto!** O Genkit detectará e usará essa chave automaticamente.
+As server actions validam o cookie de sessão e conferem `role/companyId` antes de acessar dados.
 
 ## Variáveis de Ambiente
 
 Preencha o arquivo `.env` na raiz do projeto.
 
 ```env
-# Credenciais do Firebase Admin SDK (do arquivo JSON da conta de serviço)
-FIREBASE_PROJECT_ID="seu-project-id"
-FIREBASE_CLIENT_EMAIL="firebase-adminsdk-xxxxx@seu-project-id.iam.gserviceaccount.com"
-FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...sua chave privada aqui...\n-----END PRIVATE KEY-----\n"
+NEXT_PUBLIC_SUPABASE_URL=""
+NEXT_PUBLIC_SUPABASE_ANON_KEY=""
+SUPABASE_SERVICE_ROLE_KEY=""
 
-# Chave da API do Gemini (OPCIONAL, use se não for autenticar via gcloud)
-# Obtenha em https://aistudio.google.com/
 GEMINI_API_KEY=""
-
-# URL do Webhook de Produção do n8n (opcional)
-N8N_PRODUCTION_URL="https://seu.n8n.url/webhook/production"
-
-# Modelo de IA do Gemini (opcional, usa o padrão se não for definido)
 GENAI_MODEL="googleai/gemini-2.5-flash"
-```
--   **Importante:** A `private_key` no arquivo JSON do Firebase contém quebras de linha (`\n`). Ao copiá-la para o `.env`, você deve substituí-las literalmente pelo texto `\n`.
 
-## Estrutura de Pastas
+ASSINAFY_API_URL="https://api.assinafy.com.br/v1"
+ASSINAFY_API_KEY=""
+ASSINAFY_WORKSPACE_ACCOUNT_ID=""
 
-```
-src/
-├── app/           # Lógica de Roteamento e Páginas (Front-end)
-├── components/    # Componentes React de UI (Front-end)
-├── hooks/         # Hooks React customizados (Front-end)
-├── lib/           # Código compartilhado e utilitários
-├── server/        # Lógica exclusiva do Servidor (Back-end)
-├── ai/            # Fluxos e prompts de IA (Back-end/Genkit)
-└── repositories/  # Camada de acesso a dados (Firestore)
-└── services/      # Camada de comunicação com APIs externas
+PDF_FUNCTION_URL=""
+PDF_FUNCTION_SECRET=""
+N8N_PRODUCTION_URL="https://seu.n8n.url/webhook/production"
 ```
 
-## Scripts de Manutenção
+## Schema Supabase
 
-### Atualizar Regras e Índices do Firestore
+A migration inicial está em:
 
-Este projeto está configurado para facilitar o deploy das regras de segurança e dos índices do Firestore.
+```bash
+supabase/migrations/20260506100000_initial_schema.sql
+```
 
--   **Como funciona:** Você edita os arquivos `firestore.rules` e `firestore.indexes.json` na raiz do projeto. Para que as alterações tenham efeito no seu projeto Firebase, você precisa executar um comando.
--   **O que você precisa fazer:** Após editar os arquivos, execute o seguinte comando no seu terminal:
-    ```bash
-    npm run update-firestore
-    ```
-    O comando `update-firestore` (definido no `package.json`) usará o Firebase CLI para aplicar as novas regras e criar os novos índices. O processo de criação de índices pode levar alguns minutos para ser concluído.
+Rode essa SQL no Supabase antes de iniciar o app.
 
-### Migrar Dados para Compatibilidade (Soft Delete e Campos Adicionais)
+## Scripts
 
-Se você precisa garantir que todos os registros antigos sejam compatíveis com novas estruturas de dados (como o campo `deletedAt` para exclusão lógica ou novos campos obrigatórios), execute o script de migração.
+Criar empresa e primeiro administrador:
 
-1.  **Pré-requisitos:**
-    -   Certifique-se de que seu arquivo `.env` está preenchido.
-    -   Instale as dependências do projeto (`npm install`), o `tsx` já está configurado em `devDependencies`.
-2.  **Uso:**
-    ```bash
-    npm run migrate-deleted-at
-    ```
-    Este script irá percorrer as coleções (`users`, `companies`, `works`, etc.) e garantir que todos os documentos tenham o campo `deletedAt: null` se ele não existir. Adicionalmente, para a coleção `works`, ele também adicionará o campo `activityDescription: ''` se estiver ausente, para manter a compatibilidade com a estrutura de dados atual.
+```bash
+npm run create-company -- "Nome da Empresa" "admin@empresa.com" "Nome do Admin" "senhaForte123"
+```
+
+Promover usuário existente:
+
+```bash
+npm run set-admin -- "usuario@empresa.com" "ID_DA_EMPRESA"
+```
+
+## Desenvolvimento
+
+```bash
+npm install
+npm run dev
+```
+
+O app roda por padrão em `http://localhost:9002`.

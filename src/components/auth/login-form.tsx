@@ -28,25 +28,14 @@ import { Loader2 } from 'lucide-react';
 import { ptBr } from '@/lib/data/strings';
 import { createSession } from '@/server/auth-actions';
 import { Logo } from '../icons/logo';
-import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '@/firebase/config';
+import { createSupabaseBrowserClient } from '@/supabase/browser';
 
-// Moved here to avoid exporting from a 'use server' file
-const getFirebaseAuthErrorMessage = (errorCode: string): string => {
-  switch (errorCode) {
-    case 'auth/email-already-in-use':
-      return 'Este e-mail já está em uso por outra conta.';
-    case 'auth/invalid-email':
-      return 'O formato do e-mail é inválido.';
-    case 'auth/weak-password':
-      return 'A senha é muito fraca. Tente uma mais forte.';
-    case 'auth/user-not-found':
-    case 'auth/wrong-password':
-    case 'auth/invalid-credential':
-      return 'Credenciais inválidas. Verifique seu e-mail e senha.';
-    default:
-      return ptBr.errors.unexpectedError;
+const getSupabaseAuthErrorMessage = (message?: string): string => {
+  if (!message) return ptBr.errors.unexpectedError;
+  if (message.toLowerCase().includes('invalid login credentials')) {
+    return 'Credenciais inválidas. Verifique seu e-mail e senha.';
   }
+  return message;
 };
 
 export function LoginForm() {
@@ -65,15 +54,21 @@ export function LoginForm() {
   const onSubmit = async (values: LoginValues) => {
     setIsLoading(true);
     try {
-      // 1. Sign in on the client using the Firebase SDK
-      const userCredential = await signInWithEmailAndPassword(auth, values.email, values.password);
-      const user = userCredential.user;
+      const supabase = createSupabaseBrowserClient();
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: values.email,
+        password: values.password,
+      });
 
-      // 2. Get the user's ID token
-      const idToken = await user.getIdToken();
+      if (error || !data.session) {
+        throw error ?? new Error('Sessão Supabase não retornada.');
+      }
 
-      // 3. Send the token to the server action to create the session cookie
-      const result = await createSession(idToken);
+      const result = await createSession({
+        accessToken: data.session.access_token,
+        refreshToken: data.session.refresh_token,
+        expiresIn: data.session.expires_in,
+      });
 
       if (result.error) {
         throw new Error(result.error);
@@ -84,13 +79,12 @@ export function LoginForm() {
         description: ptBr.toasts.success.loginSuccessDescription,
       });
 
-      // 4. Hard redirect to ensure the new session cookie is picked up by the proxy
       window.location.href = '/reports';
 
 
     } catch (error: any) {
       console.error('Login failed:', error);
-      const friendlyMessage = getFirebaseAuthErrorMessage(error.code);
+      const friendlyMessage = getSupabaseAuthErrorMessage(error.message);
       toast({
         variant: 'destructive',
         title: ptBr.toasts.errors.authError,

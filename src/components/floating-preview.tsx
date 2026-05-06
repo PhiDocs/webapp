@@ -46,12 +46,12 @@ export function FloatingPreview({
                 {!isMinimized && (
                     <h3 className="text-sm font-semibold text-gray-700">Pré-visualização</h3>
                 )}
-                <div className="flex items-center gap-1 ml-auto">
+                <div className="flex items-center gap-2 ml-auto">
                     {!isMinimized && (
                         <Button
                             variant="ghost"
-                            size="sm"
-                            className="h-8 w-8 p-0"
+                            size="icon"
+                            className="h-9 w-9 rounded-xl bg-primary text-primary-foreground shadow-sm ring-1 ring-primary/20 transition-colors hover:bg-primary/90"
                             onClick={() => setIsZoomOpen(true)}
                             title="Ver em tela cheia"
                         >
@@ -60,8 +60,8 @@ export function FloatingPreview({
                     )}
                     <Button
                         variant="ghost"
-                        size="sm"
-                        className="h-8 w-8 p-0"
+                        size="icon"
+                        className="h-9 w-9 rounded-xl bg-primary text-primary-foreground shadow-sm ring-1 ring-primary/20 transition-colors hover:bg-primary/90"
                         onClick={handleMinimizeToggle}
                         title={isMinimized ? 'Expandir' : 'Minimizar'}
                     >
@@ -74,8 +74,8 @@ export function FloatingPreview({
                     {onClose && (
                         <Button
                             variant="ghost"
-                            size="sm"
-                            className="h-8 w-8 p-0"
+                            size="icon"
+                            className="h-9 w-9 rounded-xl bg-primary text-primary-foreground shadow-sm ring-1 ring-primary/20 transition-colors hover:bg-primary/90"
                             onClick={onClose}
                             title="Fechar"
                         >

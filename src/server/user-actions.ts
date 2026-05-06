@@ -1,15 +1,12 @@
 'use server';
 
 import { cookies } from 'next/headers';
-import admin from '@/firebase/admin-config';
 import { UserRepository } from '@/repositories/user.repository';
 import type { UserProfile } from '@/components/auth/session-provider';
+import { createSupabaseAdminClient } from '@/supabase/server';
 
 /**
- * THIS FUNCTION IS KEPT FOR POSSIBLE FUTURE SERVER USE,
- * BUT IT IS NO LONGER USED BY THE CLIENT SESSION PROVIDER.
- * 
- * Fetch the full profile of the logged-in user from Firestore.
+ * Fetch the full profile of the logged-in user from Supabase.
  * @returns The user profile or an error.
  */
 export async function getUserProfile(): Promise<{ success: boolean; data?: UserProfile, error?: string }> {
@@ -20,11 +17,15 @@ export async function getUserProfile(): Promise<{ success: boolean; data?: UserP
       return { success: false, error: 'Usuário não autenticado.' };
     }
     
-    const decodedToken = await admin.auth().verifyIdToken(sessionCookie);
-    const user = await UserRepository.get(decodedToken.uid);
+    const { data, error } = await createSupabaseAdminClient().auth.getUser(sessionCookie);
+    if (error || !data.user) {
+      return { success: false, error: 'Sessão inválida.' };
+    }
+
+    const user = await UserRepository.get(data.user.id);
 
     if (!user) {
-      return { success: false, error: 'Perfil do usuário não encontrado no Firestore.' };
+      return { success: false, error: 'Perfil do usuário não encontrado no Supabase.' };
     }
     
     // Ensure the return matches the UserProfile interface
@@ -33,7 +34,7 @@ export async function getUserProfile(): Promise<{ success: boolean; data?: UserP
         name: user.name,
         email: user.email,
         role: user.role,
-        companyId: user.companyId
+        companyId: user.companyId ?? undefined
     };
 
     return { success: true, data: userProfile };

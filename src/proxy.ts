@@ -1,14 +1,8 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { jwtVerify, createRemoteJWKSet } from 'jose';
 
 const PUBLIC_ROUTES = ['/login'];
 const ADMIN_DASHBOARD_PREFIX = '/company';
 const USER_DASHBOARD = '/reports';
-
-// Firebase/Google's public JWKS endpoint for verifying ID tokens
-const JWKS = createRemoteJWKSet(
-  new URL('https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com')
-);
 
 interface VerifiedToken {
   uid: string;
@@ -19,22 +13,42 @@ interface VerifiedToken {
 
 async function verifyIdToken(token: string): Promise<VerifiedToken | null> {
   try {
-    const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
-    if (!projectId) {
-      console.error('NEXT_PUBLIC_FIREBASE_PROJECT_ID is not defined');
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!supabaseUrl || !serviceRoleKey) {
+      console.error('Supabase env vars are not defined');
       return null;
     }
 
-    const { payload } = await jwtVerify(token, JWKS, {
-      issuer: `https://securetoken.google.com/${projectId}`,
-      audience: projectId,
+    const userResponse = await fetch(`${supabaseUrl}/auth/v1/user`, {
+      headers: {
+        apikey: serviceRoleKey,
+        authorization: `Bearer ${token}`,
+      },
     });
 
+    if (!userResponse.ok) return null;
+    const authUser = await userResponse.json();
+
+    const profileResponse = await fetch(
+      `${supabaseUrl}/rest/v1/users?uid=eq.${encodeURIComponent(authUser.id)}&select=uid,email,role,companyId`,
+      {
+        headers: {
+          apikey: serviceRoleKey,
+          authorization: `Bearer ${serviceRoleKey}`,
+        },
+      }
+    );
+
+    if (!profileResponse.ok) return null;
+    const profiles = await profileResponse.json();
+    const profile = profiles[0];
+
     return {
-      uid: payload.sub as string,
-      email: payload.email as string | undefined,
-      role: payload.role as string | undefined,
-      companyId: payload.companyId as string | undefined,
+      uid: authUser.id,
+      email: authUser.email,
+      role: profile?.role ?? 'user',
+      companyId: profile?.companyId ?? undefined,
     };
   } catch (error) {
     console.warn('Token verification failed in proxy:', error);

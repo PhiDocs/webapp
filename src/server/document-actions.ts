@@ -15,15 +15,14 @@ function buildDocumentName(formData: SafetyFormValues) {
   return `${base}${workName}_${date}`;
 }
 
-// Firestore rejects `undefined` values at any nesting level.
-// This recursively converts undefined → null so the data can be saved.
-function sanitizeForFirestore(obj: any): any {
+// JSONB does not preserve undefined values. Convert them to null before saving.
+function sanitizeForDatabase(obj: any): any {
   if (obj === undefined) return null;
   if (obj === null || typeof obj !== 'object') return obj;
-  if (Array.isArray(obj)) return obj.map(sanitizeForFirestore);
+  if (Array.isArray(obj)) return obj.map(sanitizeForDatabase);
   const result: Record<string, any> = {};
   for (const [key, value] of Object.entries(obj)) {
-    result[key] = sanitizeForFirestore(value);
+    result[key] = sanitizeForDatabase(value);
   }
   return result;
 }
@@ -51,9 +50,9 @@ export async function saveDocument({
 
     const now = new Date().toISOString();
     const documentName = buildDocumentName(formData);
-    const safeFormData = sanitizeForFirestore(formData);
-    const safeAnalysisData = sanitizeForFirestore(analysisData);
-    const safeEquipmentData = sanitizeForFirestore(equipmentData);
+    const safeFormData = sanitizeForDatabase(formData);
+    const safeAnalysisData = sanitizeForDatabase(analysisData);
+    const safeEquipmentData = sanitizeForDatabase(equipmentData);
 
     if (documentId) {
       // Atualizar documento existente

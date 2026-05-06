@@ -1,10 +1,10 @@
 'use server';
 
 import { z } from 'zod';
-import admin from '@/firebase/admin-config';
 import { CompanyRepository } from '@/repositories/company.repository';
 import { UserRepository } from '@/repositories/user.repository';
 import { requireAuth } from '@/server/auth-guard';
+import { createSupabaseAdminClient } from '@/supabase/server';
 
 
 const registerCompanySchema = z.object({
@@ -15,8 +15,8 @@ const registerCompanySchema = z.object({
 });
 
 /**
- * Create a new company, an admin user with the correct permissions (custom claims),
- * and save the related records in Firestore.
+ * Create a new company, an admin user with the correct permissions,
+ * and save the related records in Supabase.
  * 
  * @param data - Company and admin data.
  * @returns An object indicating success or error.
@@ -37,28 +37,26 @@ export async function registerCompany(data: unknown) {
   }
 
   const { companyName, adminEmail, adminName, adminPassword } = validation.data;
-  const adminAuth = admin.auth();
+  const supabase = createSupabaseAdminClient();
 
   try {
-    // Step 1: Create the company document first to get the ID
     const companyId = await CompanyRepository.create({ name: companyName });
 
-    // Step 2: Create the user in Firebase Authentication
-    const userRecord = await adminAuth.createUser({
+    const { data: createdUser, error: createUserError } = await supabase.auth.admin.createUser({
       email: adminEmail,
-      emailVerified: true, // Opcional: considerar como verificado
       password: adminPassword,
-      displayName: adminName,
-    });
-    const userId = userRecord.uid;
-
-    // Step 3: Set custom claims for the new user
-    await adminAuth.setCustomUserClaims(userId, { 
-      role: 'admin', 
-      companyId: companyId 
+      email_confirm: true,
+      user_metadata: {
+        name: adminName,
+      },
     });
 
-    // Step 4: Create the Firestore user document, linked to the company
+    if (createUserError || !createdUser.user) {
+      throw createUserError ?? new Error('Falha ao criar usuário no Supabase Auth.');
+    }
+
+    const userId = createdUser.user.id;
+
     await UserRepository.create(userId, {
       uid: userId,
       name: adminName,
@@ -67,7 +65,6 @@ export async function registerCompany(data: unknown) {
       companyId: companyId,
     });
 
-    // Step 5: Update the company document with the owner ID
     await CompanyRepository.update(companyId, { ownerUid: userId });
 
 

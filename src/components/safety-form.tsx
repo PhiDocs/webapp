@@ -31,6 +31,7 @@ import {
   UserCheck,
   PlusCircle,
   Trash2,
+  ArrowDown,
   Briefcase,
   Users,
   ShieldCheck,
@@ -53,6 +54,39 @@ interface SafetyFormProps {
   works: Work[];
   employees: Employee[];
   isDataLoading: boolean;
+}
+
+function StepMarker({ completed }: { completed: boolean }) {
+  const travel = "calc(100% - 12px)";
+  return (
+    <div className="relative flex justify-center self-stretch">
+      <div
+        className={cn(
+          "absolute top-0 bottom-0 w-px transition-colors duration-300",
+          completed ? "bg-primary/60" : "bg-border"
+        )}
+      />
+      <span
+        className={cn(
+          "absolute top-1 h-3 w-3 rounded-full bg-primary ring-2 ring-background transition-[transform,opacity] duration-600 ease-in-out",
+          completed ? "opacity-0" : "opacity-100"
+        )}
+        style={{
+          transform: completed ? `translateY(${travel})` : "translateY(0)",
+          transitionDelay: completed ? "120ms" : "0ms",
+        }}
+      />
+      <span
+        className={cn(
+          "absolute bottom-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-sm transition-[transform,opacity] duration-500 ease-in-out",
+          completed ? "opacity-100 translate-y-0 scale-100" : "opacity-0 translate-y-2 scale-90"
+        )}
+        style={{ transitionDelay: completed ? "240ms" : "0ms" }}
+      >
+        <ArrowDown className="h-3.5 w-3.5" />
+      </span>
+    </div>
+  );
 }
 
 
@@ -93,6 +127,11 @@ export function SafetyForm({
   });
 
   const documentType = useWatch({ control: form.control, name: 'documentType' });
+  const workId = useWatch({ control: form.control, name: 'workId' });
+  const activityDescription = useWatch({ control: form.control, name: 'activityDescription' });
+  const analysisSteps = useWatch({ control: form.control, name: 'analysisSteps' });
+  const teamMembers = useWatch({ control: form.control, name: 'teamMembers' });
+  const responsiblePersons = useWatch({ control: form.control, name: 'responsiblePersons' });
   const [isEditingWorkData, setIsEditingWorkData] = useState(false);
   const [activeAnalysisStep, setActiveAnalysisStep] = useState(0);
 
@@ -111,6 +150,13 @@ export function SafetyForm({
   );
 
 
+  const hasManualAnalysis = Array.isArray(analysisSteps)
+    && analysisSteps.some((step) => (step?.activity || step?.potentialRisks || step?.preventiveMeasures));
+  const hasTeamMembers = Array.isArray(teamMembers)
+    && teamMembers.some((member) => (member?.employeeId || member?.name));
+  const hasResponsibles = Array.isArray(responsiblePersons)
+    && responsiblePersons.some((person) => (person?.employeeId || person?.name));
+
   return (
     <Card className="w-full">
       <CardContent className="pt-6">
@@ -120,33 +166,35 @@ export function SafetyForm({
               control={form.control}
               name="documentType"
               render={({ field }) => (
-                <FormItem className="space-y-3">
-                  <FormLabel>
-                    <FileText className="inline-block mr-2" /> {ptBr.safetyForm.documentType}
-                  </FormLabel>
-                  <FormControl>
-                    <div className="flex items-center justify-between p-4 border rounded-lg bg-primary/5">
-                      <div className="flex items-center gap-2">
-                        <FileText className="h-5 w-5 text-primary" />
-                        <span className="font-semibold text-lg">
-                          {field.value === DOCUMENT_TYPES.APR ? ptBr.documentType.apr : ptBr.documentType.pt}
-                        </span>
+                <div className="grid grid-cols-[24px_1fr] gap-4 mb-8">
+                  <StepMarker completed />
+                  <FormItem className="space-y-3">
+                    <FormLabel>
+                      <FileText className="inline-block mr-2" /> {ptBr.safetyForm.documentType}
+                    </FormLabel>
+                    <FormControl>
+                      <div className="flex items-center justify-between p-4 border rounded-lg bg-gradient-to-r from-primary/10 via-primary/5 to-transparent">
+                        <div className="flex items-center gap-2">
+                          <FileText className="h-5 w-5 text-primary" />
+                          <span className="font-semibold text-lg">
+                            {field.value === DOCUMENT_TYPES.APR ? ptBr.documentType.apr : ptBr.documentType.pt}
+                          </span>
+                        </div>
+                        <Button
+                          type="button"
+                          size="sm"
+                          onClick={() => {
+                            const newType = field.value === DOCUMENT_TYPES.APR ? DOCUMENT_TYPES.PT : DOCUMENT_TYPES.APR;
+                            field.onChange(newType);
+                          }}
+                        >
+                          Alterar para {field.value === DOCUMENT_TYPES.APR ? ptBr.documentType.pt : ptBr.documentType.apr}
+                        </Button>
                       </div>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          const newType = field.value === DOCUMENT_TYPES.APR ? DOCUMENT_TYPES.PT : DOCUMENT_TYPES.APR;
-                          field.onChange(newType);
-                        }}
-                      >
-                        Alterar para {field.value === DOCUMENT_TYPES.APR ? ptBr.documentType.pt : ptBr.documentType.apr}
-                      </Button>
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                </div>
               )}
             />
 
@@ -156,239 +204,256 @@ export function SafetyForm({
               isDataLoading ? <FormSkeleton /> :
                 <div className="space-y-8">
                   <Separator />
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-semibold flex items-center">
-                      <Briefcase className="mr-2" /> {ptBr.safetyForm.workData}
-                    </h3>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setIsEditingWorkData(!isEditingWorkData)}
-                    >
-                      <Pencil className="mr-2 h-4 w-4" /> Editar
-                    </Button>
-                  </div>
+                  <div className="grid grid-cols-[24px_1fr] gap-4 mb-8">
+                    <StepMarker completed={Boolean(workId)} />
+                    <div className="rounded-xl border bg-card p-5">
+                      <div className="-mx-5 -mt-5 mb-4 flex items-center justify-between rounded-t-xl bg-primary px-5 py-3 text-primary-foreground">
+                        <h3 className="text-base font-semibold flex items-center">
+                          <Briefcase className="mr-2" /> {ptBr.safetyForm.workData}
+                        </h3>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setIsEditingWorkData(!isEditingWorkData)}
+                        >
+                          <Pencil className="mr-2 h-4 w-4" /> Editar
+                        </Button>
+                      </div>
 
-                  <FormField
-                    control={form.control}
-                    name="workId"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{ptBr.safetyForm.selectWork}</FormLabel>
-                        <Select onValueChange={(workId) => {
-                          field.onChange(workId);
-                          const work = works.find(w => w.id === workId);
-                          if (work) {
-                            form.setValue('workName', work.name);
-                            form.setValue('workAddress', work.address);
-                            form.setValue('startDate', work.startDate.split('T')[0]);
-                            form.setValue('endDate', work.endDate.split('T')[0]);
-                            form.setValue('workLocationDetails', work.workLocationDetails);
-                          }
-                        }} value={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder={ptBr.safetyForm.selectWorkPlaceholder} />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {works.map((work) => (
-                              <SelectItem key={work.id} value={work.id}>
-                                {work.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormDescription>{ptBr.safetyForm.workDetailsAutoFilled}</FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  {isEditingWorkData && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 animate-in fade-in slide-in-from-top-4 duration-300">
                       <FormField
                         control={form.control}
-                        name="startDate"
+                        name="workId"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>{ptBr.safetyForm.startDate}</FormLabel>
-                            <FormControl>
-                              <Input type="date" {...field} />
-                            </FormControl>
+                            <FormLabel>{ptBr.safetyForm.selectWork}</FormLabel>
+                            <Select onValueChange={(workId) => {
+                              field.onChange(workId);
+                              const work = works.find(w => w.id === workId);
+                              if (work) {
+                                form.setValue('workName', work.name);
+                                form.setValue('workAddress', work.address);
+                                form.setValue('startDate', work.startDate.split('T')[0]);
+                                form.setValue('endDate', work.endDate.split('T')[0]);
+                                form.setValue('workLocationDetails', work.workLocationDetails);
+                              }
+                            }} value={field.value}>
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder={ptBr.safetyForm.selectWorkPlaceholder} />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {works.map((work) => (
+                                  <SelectItem key={work.id} value={work.id}>
+                                    {work.name}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <FormDescription>{ptBr.safetyForm.workDetailsAutoFilled}</FormDescription>
                             <FormMessage />
                           </FormItem>
                         )}
                       />
-                      <FormField
-                        control={form.control}
-                        name="endDate"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>{ptBr.safetyForm.endDate}</FormLabel>
-                            <FormControl>
-                              <Input type="date" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="workLocationDetails"
-                        render={({ field }) => (
-                          <FormItem className="col-span-full">
-                            <FormLabel>{ptBr.safetyForm.workLocation}</FormLabel>
-                            <FormControl>
-                              <Input placeholder={ptBr.safetyForm.workLocationPlaceholder} {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+
+                      {isEditingWorkData && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 animate-in fade-in slide-in-from-top-4 duration-300">
+                          <FormField
+                            control={form.control}
+                            name="startDate"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>{ptBr.safetyForm.startDate}</FormLabel>
+                                <FormControl>
+                                  <Input type="date" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="endDate"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>{ptBr.safetyForm.endDate}</FormLabel>
+                                <FormControl>
+                                  <Input type="date" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="workLocationDetails"
+                            render={({ field }) => (
+                              <FormItem className="col-span-full">
+                                <FormLabel>{ptBr.safetyForm.workLocation}</FormLabel>
+                                <FormControl>
+                                  <Input placeholder={ptBr.safetyForm.workLocationPlaceholder} {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                      )}
                     </div>
-                  )}
+                  </div>
 
                   <Separator />
 
-                  <FormField
-                    control={form.control}
-                    name="activityDescription"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>
+                  <div className="grid grid-cols-[24px_1fr] gap-4 mb-8">
+                    <StepMarker completed={Boolean(activityDescription)} />
+                    <div className="rounded-xl border bg-card p-5">
+                      <div className="-mx-5 -mt-5 mb-4 rounded-t-xl bg-primary px-5 py-3 text-primary-foreground">
+                        <FormLabel className="text-base font-semibold flex items-center text-primary-foreground">
                           <BookOpen className="inline-block mr-2" /> {ptBr.safetyForm.activityDescription}
                         </FormLabel>
-                        <FormControl>
-                          <Textarea
-                            placeholder={ptBr.safetyForm.activityDescriptionPlaceholder}
-                            className="resize-y min-h-[120px]"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                      </div>
+                      <FormField
+                        control={form.control}
+                        name="activityDescription"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <Textarea
+                                placeholder={ptBr.safetyForm.activityDescriptionPlaceholder}
+                                className="resize-y min-h-[120px]"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </div>
 
                   <Separator />
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-semibold flex items-center">
-                      <ShieldCheck className="mr-2" /> {ptBr.safetyForm.manualAnalysisTitle}
-                    </h3>
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    {ptBr.safetyForm.manualAnalysisDescription}
-                  </p>
-
-                  <div className="space-y-4">
-                    {/* Tab Navigation */}
-                    <div className="flex flex-wrap items-center gap-2">
-                      {analysisStepFields.map((_, index) => (
-                        <Button
-                          key={index}
-                          type="button"
-                          variant={activeAnalysisStep === index ? "secondary" : "outline"}
-                          size="sm"
-                          onClick={() => setActiveAnalysisStep(index)}
-                          className={cn(
-                            activeAnalysisStep === index && "bg-secondary border-primary/20",
-                            "min-w-[3rem]"
-                          )}
-                        >
-                          {index + 1}
-                        </Button>
-                      ))}
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          appendAnalysisStep({ activity: '', potentialRisks: '', preventiveMeasures: '' });
-                          setActiveAnalysisStep(analysisStepFields.length);
-                        }}
-                      >
-                        <PlusCircle className="mr-2 h-4 w-4" /> {ptBr.safetyForm.addAnalysisStep}
-                      </Button>
-                    </div>
-
-                    {analysisStepFields.length === 0 && (
-                      <div className="text-sm text-muted-foreground italic border border-dashed rounded-lg p-8 text-center">
-                        {ptBr.safetyForm.manualAnalysisEmpty}
+                  <div className="grid grid-cols-[24px_1fr] gap-4 mb-8">
+                    <StepMarker completed={hasManualAnalysis} />
+                    <div className="rounded-xl border bg-card p-5">
+                      <div className="-mx-5 -mt-5 mb-4 rounded-t-xl bg-primary px-5 py-3 text-primary-foreground">
+                        <h3 className="text-base font-semibold flex items-center text-primary-foreground">
+                          <ShieldCheck className="mr-2" /> {ptBr.safetyForm.manualAnalysisTitle}
+                        </h3>
                       </div>
-                    )}
+                      <p className="text-sm text-muted-foreground">
+                        {ptBr.safetyForm.manualAnalysisDescription}
+                      </p>
 
-                    {analysisStepFields.length > 0 && analysisStepFields[activeAnalysisStep] && (
-                      <div key={analysisStepFields[activeAnalysisStep].id} className="rounded-lg border p-4 space-y-4 animate-in fade-in slide-in-from-left-4 duration-300">
-                        <div className="flex items-center justify-between">
-                          <div className="text-sm font-semibold">
-                            {ptBr.safetyForm.analysisStepLabel} {activeAnalysisStep + 1}
-                          </div>
+                      <div className="space-y-4">
+                        {/* Tab Navigation */}
+                        <div className="mt-3 flex flex-wrap items-center gap-2">
+                          {analysisStepFields.map((_, index) => (
+                            <Button
+                              key={index}
+                              type="button"
+                              variant={activeAnalysisStep === index ? "secondary" : "outline"}
+                              size="sm"
+                              onClick={() => setActiveAnalysisStep(index)}
+                              className={cn(
+                                activeAnalysisStep === index && "bg-secondary border-primary/20",
+                                "min-w-[3rem]"
+                              )}
+                            >
+                              {index + 1}
+                            </Button>
+                          ))}
                           <Button
                             type="button"
-                            variant="ghost"
-                            size="icon"
+                            variant="outline"
+                            size="sm"
                             onClick={() => {
-                              removeAnalysisStep(activeAnalysisStep);
-                              if (activeAnalysisStep > 0) {
-                                setActiveAnalysisStep(activeAnalysisStep - 1);
-                              }
+                              appendAnalysisStep({ activity: '', potentialRisks: '', preventiveMeasures: '' });
+                              setActiveAnalysisStep(analysisStepFields.length);
                             }}
                           >
-                            <Trash2 className="h-4 w-4 text-destructive" />
+                            <PlusCircle className="mr-2 h-4 w-4" /> {ptBr.safetyForm.addAnalysisStep}
                           </Button>
                         </div>
-                        <FormField
-                          control={form.control}
-                          name={`analysisSteps.${activeAnalysisStep}.activity`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>{ptBr.safetyForm.analysisStepActivity}</FormLabel>
-                              <FormControl>
-                                <Textarea
-                                  placeholder={ptBr.safetyForm.analysisStepActivityPlaceholder}
-                                  className="resize-y min-h-[80px]"
-                                  {...field}
-                                />
-                              </FormControl>
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={form.control}
-                          name={`analysisSteps.${activeAnalysisStep}.potentialRisks`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>{ptBr.safetyForm.analysisStepRisks}</FormLabel>
-                              <FormControl>
-                                <Textarea
-                                  placeholder={ptBr.safetyForm.analysisStepRisksPlaceholder}
-                                  className="resize-y min-h-[80px]"
-                                  {...field}
-                                />
-                              </FormControl>
-                            </FormItem>
-                          )}
-                        />
-                        <FormField
-                          control={form.control}
-                          name={`analysisSteps.${activeAnalysisStep}.preventiveMeasures`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>{ptBr.safetyForm.analysisStepMeasures}</FormLabel>
-                              <FormControl>
-                                <Textarea
-                                  placeholder={ptBr.safetyForm.analysisStepMeasuresPlaceholder}
-                                  className="resize-y min-h-[80px]"
-                                  {...field}
-                                />
-                              </FormControl>
-                            </FormItem>
-                          )}
-                        />
+
+                        {analysisStepFields.length === 0 && (
+                          <div className="mt-3 text-sm text-muted-foreground italic border border-dashed rounded-lg p-8 text-center">
+                            {ptBr.safetyForm.manualAnalysisEmpty}
+                          </div>
+                        )}
+
+                        {analysisStepFields.length > 0 && analysisStepFields[activeAnalysisStep] && (
+                          <div key={analysisStepFields[activeAnalysisStep].id} className="mt-3 rounded-lg border p-4 space-y-4 animate-in fade-in slide-in-from-left-4 duration-300">
+                            <div className="flex items-center justify-between">
+                              <div className="text-sm font-semibold">
+                                {ptBr.safetyForm.analysisStepLabel} {activeAnalysisStep + 1}
+                              </div>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => {
+                                  removeAnalysisStep(activeAnalysisStep);
+                                  if (activeAnalysisStep > 0) {
+                                    setActiveAnalysisStep(activeAnalysisStep - 1);
+                                  }
+                                }}
+                              >
+                                <Trash2 className="h-4 w-4 text-destructive" />
+                              </Button>
+                            </div>
+                            <FormField
+                              control={form.control}
+                              name={`analysisSteps.${activeAnalysisStep}.activity`}
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>{ptBr.safetyForm.analysisStepActivity}</FormLabel>
+                                  <FormControl>
+                                    <Textarea
+                                      placeholder={ptBr.safetyForm.analysisStepActivityPlaceholder}
+                                      className="resize-y min-h-[80px]"
+                                      {...field}
+                                    />
+                                  </FormControl>
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={form.control}
+                              name={`analysisSteps.${activeAnalysisStep}.potentialRisks`}
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>{ptBr.safetyForm.analysisStepRisks}</FormLabel>
+                                  <FormControl>
+                                    <Textarea
+                                      placeholder={ptBr.safetyForm.analysisStepRisksPlaceholder}
+                                      className="resize-y min-h-[80px]"
+                                      {...field}
+                                    />
+                                  </FormControl>
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={form.control}
+                              name={`analysisSteps.${activeAnalysisStep}.preventiveMeasures`}
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>{ptBr.safetyForm.analysisStepMeasures}</FormLabel>
+                                  <FormControl>
+                                    <Textarea
+                                      placeholder={ptBr.safetyForm.analysisStepMeasuresPlaceholder}
+                                      className="resize-y min-h-[80px]"
+                                      {...field}
+                                    />
+                                  </FormControl>
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                        )}
                       </div>
-                    )}
+                    </div>
                   </div>
 
                   <Button
@@ -408,55 +473,61 @@ export function SafetyForm({
                   </Button>
                   <Separator />
 
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-semibold flex items-center">
-                      <Users className="mr-2" /> {ptBr.safetyForm.team}
-                    </h3>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() =>
-                        appendTeamMember({ employeeId: '', date: '', name: '', role: '', email: '', phone: '', useAssinafy: true, isManual: false, signatureData: '' })
-                      }
-                    >
-                      <PlusCircle className="mr-2 h-4 w-4" /> {ptBr.actions.addMember}
-                    </Button>
-                  </div>
+                  <div className="grid grid-cols-[24px_1fr] gap-4 mb-8">
+                    <StepMarker completed={hasTeamMembers} />
+                    <div className="rounded-xl border bg-card p-5">
+                      <div className="-mx-5 -mt-5 mb-4 flex items-center justify-between rounded-t-xl bg-primary px-5 py-3 text-primary-foreground">
+                        <h3 className="text-base font-semibold flex items-center text-primary-foreground">
+                          <Users className="mr-2" /> {ptBr.safetyForm.team}
+                        </h3>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="bg-background text-primary hover:bg-background/90"
+                          onClick={() =>
+                            appendTeamMember({ employeeId: '', date: '', name: '', role: '', email: '', phone: '', useAssinafy: true, isManual: false, signatureData: '' })
+                          }
+                        >
+                          <PlusCircle className="mr-2 h-4 w-4" /> {ptBr.actions.addMember}
+                        </Button>
+                      </div>
 
-                  <div className="space-y-4">
-                    {teamMemberFields.map((item, index) => (
-                      <div key={item.id} className="flex flex-col gap-2 rounded-lg border p-4">
-                        <FormField
-                          control={form.control}
-                          name={`teamMembers.${index}.isManual`}
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Modo</FormLabel>
-                              <FormControl>
-                                <Tabs
-                                  value={field.value ? 'manual' : 'employee'}
-                                  onValueChange={(value) => {
-                                    const isManual = value === 'manual';
-                                    field.onChange(isManual);
-                                    if (isManual) {
-                                      form.setValue(`teamMembers.${index}.employeeId`, '');
-                                      form.setValue(`teamMembers.${index}.name`, '');
-                                      form.setValue(`teamMembers.${index}.role`, '');
-                                      form.setValue(`teamMembers.${index}.email`, '');
-                                      form.setValue(`teamMembers.${index}.phone`, '');
-                                    }
-                                  }}
-                                >
-                                  <TabsList>
-                                    <TabsTrigger value="employee">Selecionar funcionário</TabsTrigger>
-                                    <TabsTrigger value="manual">Preencher manualmente</TabsTrigger>
-                                  </TabsList>
-                                </Tabs>
-                              </FormControl>
-                            </FormItem>
-                          )}
-                        />
+                      <div className="grid grid-cols-2 gap-4">
+                        {teamMemberFields.map((item, index) => (
+                          <div key={item.id} className="flex flex-col gap-2 rounded-lg border p-4">
+                          <FormField
+                            control={form.control}
+                            name={`teamMembers.${index}.isManual`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <div className="flex items-center justify-between">
+                                  <FormLabel>Modo</FormLabel>
+                                  <FormControl>
+                                    <Tabs
+                                      value={field.value ? 'manual' : 'employee'}
+                                      onValueChange={(value) => {
+                                        const isManual = value === 'manual';
+                                        field.onChange(isManual);
+                                        if (isManual) {
+                                          form.setValue(`teamMembers.${index}.employeeId`, '');
+                                          form.setValue(`teamMembers.${index}.name`, '');
+                                          form.setValue(`teamMembers.${index}.role`, '');
+                                          form.setValue(`teamMembers.${index}.email`, '');
+                                          form.setValue(`teamMembers.${index}.phone`, '');
+                                        }
+                                      }}
+                                    >
+                                      <TabsList>
+                                        <TabsTrigger value="employee">Selecionar funcionário</TabsTrigger>
+                                        <TabsTrigger value="manual">Preencher manualmente</TabsTrigger>
+                                      </TabsList>
+                                    </Tabs>
+                                  </FormControl>
+                                </div>
+                              </FormItem>
+                            )}
+                          />
                         <div className="flex items-start gap-2">
                           {!form.watch(`teamMembers.${index}.isManual`) ? (
                             <FormField
@@ -535,26 +606,6 @@ export function SafetyForm({
                         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                           <FormField
                             control={form.control}
-                            name={`teamMembers.${index}.useAssinafy`}
-                            render={({ field }) => (
-                              <FormItem className="md:col-span-3">
-                                <FormLabel>{ptBr.safetyForm.signatureMethod}</FormLabel>
-                                <FormControl>
-                                  <Tabs
-                                    value={field.value ? 'assinafy' : 'system'}
-                                    onValueChange={(value) => field.onChange(value === 'assinafy')}
-                                  >
-                                    <TabsList>
-                                      <TabsTrigger value="assinafy">Assinafy (E-mail)</TabsTrigger>
-                                      <TabsTrigger value="system">Assinatura no sistema</TabsTrigger>
-                                    </TabsList>
-                                  </Tabs>
-                                </FormControl>
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={form.control}
                             name={`teamMembers.${index}.date`}
                             render={({ field }) => (
                               <FormItem>
@@ -599,6 +650,26 @@ export function SafetyForm({
                             )}
                           />
                         </div>
+                        <FormField
+                          control={form.control}
+                          name={`teamMembers.${index}.useAssinafy`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>{ptBr.safetyForm.signatureMethod}</FormLabel>
+                              <FormControl>
+                                <Tabs
+                                  value={field.value ? 'assinafy' : 'system'}
+                                  onValueChange={(value) => field.onChange(value === 'assinafy')}
+                                >
+                                  <TabsList>
+                                    <TabsTrigger value="assinafy">Assinafy (E-mail)</TabsTrigger>
+                                    <TabsTrigger value="system">Assinatura no sistema</TabsTrigger>
+                                  </TabsList>
+                                </Tabs>
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
                         {form.watch(`teamMembers.${index}.useAssinafy`) ? (
                           <div className="flex items-center gap-2 rounded-md border px-3 py-2 text-sm text-muted-foreground">
                             <Badge variant="secondary" className="flex items-center gap-1">
@@ -622,39 +693,45 @@ export function SafetyForm({
                             )}
                           />
                         )}
+                          </div>
+                        ))}
+                        <FormMessage>
+                          {form.formState.errors.teamMembers?.root?.message}
+                        </FormMessage>
                       </div>
-                    ))}
-                    <FormMessage>
-                      {form.formState.errors.teamMembers?.root?.message}
-                    </FormMessage>
+                    </div>
                   </div>
                   <Separator />
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-semibold flex items-center">
-                      <UserCheck className="mr-2" /> {ptBr.safetyForm.responsibles}
-                    </h3>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() =>
-                        appendResponsible({
-                          employeeId: '',
-                          name: '',
-                          role: '',
-                          email: '',
-                          phone: '',
-                          useAssinafy: true,
-                          signatureData: '',
-                        })
-                      }
-                    >
-                      <PlusCircle className="mr-2 h-4 w-4" /> {ptBr.actions.addResponsible}
-                    </Button>
-                  </div>
-                  <div className="space-y-4">
-                    {responsibleFields.map((item, index) => (
-                      <div key={item.id} className="flex flex-col gap-2 rounded-lg border p-4">
+                  <div className="grid grid-cols-[24px_1fr] gap-4 mb-8">
+                    <StepMarker completed={hasResponsibles} />
+                    <div className="rounded-xl border bg-card p-5">
+                      <div className="-mx-5 -mt-5 mb-4 flex items-center justify-between rounded-t-xl bg-primary px-5 py-3 text-primary-foreground">
+                        <h3 className="text-base font-semibold flex items-center text-primary-foreground">
+                          <UserCheck className="mr-2" /> {ptBr.safetyForm.responsibles}
+                        </h3>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="bg-background text-primary hover:bg-background/90"
+                          onClick={() =>
+                            appendResponsible({
+                              employeeId: '',
+                              name: '',
+                              role: '',
+                              email: '',
+                              phone: '',
+                              useAssinafy: true,
+                              signatureData: '',
+                            })
+                          }
+                        >
+                          <PlusCircle className="mr-2 h-4 w-4" /> {ptBr.actions.addResponsible}
+                        </Button>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        {responsibleFields.map((item, index) => (
+                          <div key={item.id} className="flex flex-col gap-2 rounded-lg border p-4">
                         <div className="flex items-start gap-2">
                           <FormField
                             control={form.control}
@@ -701,26 +778,6 @@ export function SafetyForm({
                           </Button>
                         </div>
                         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                          <FormField
-                            control={form.control}
-                            name={`responsiblePersons.${index}.useAssinafy`}
-                            render={({ field }) => (
-                              <FormItem className="md:col-span-2">
-                                <FormLabel>{ptBr.safetyForm.signatureMethod}</FormLabel>
-                                <FormControl>
-                                  <Tabs
-                                    value={field.value ? 'assinafy' : 'system'}
-                                    onValueChange={(value) => field.onChange(value === 'assinafy')}
-                                  >
-                                    <TabsList>
-                                      <TabsTrigger value="assinafy">Assinafy (E-mail)</TabsTrigger>
-                                      <TabsTrigger value="system">Assinatura no sistema</TabsTrigger>
-                                    </TabsList>
-                                  </Tabs>
-                                </FormControl>
-                              </FormItem>
-                            )}
-                          />
                           {form.watch(`responsiblePersons.${index}.useAssinafy`) && (
                             <FormField
                               control={form.control}
@@ -756,6 +813,26 @@ export function SafetyForm({
                             )}
                           />
                         </div>
+                        <FormField
+                          control={form.control}
+                          name={`responsiblePersons.${index}.useAssinafy`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>{ptBr.safetyForm.signatureMethod}</FormLabel>
+                              <FormControl>
+                                <Tabs
+                                  value={field.value ? 'assinafy' : 'system'}
+                                  onValueChange={(value) => field.onChange(value === 'assinafy')}
+                                >
+                                  <TabsList>
+                                    <TabsTrigger value="assinafy">Assinafy (E-mail)</TabsTrigger>
+                                    <TabsTrigger value="system">Assinatura no sistema</TabsTrigger>
+                                  </TabsList>
+                                </Tabs>
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
                         {form.watch(`responsiblePersons.${index}.useAssinafy`) ? (
                           <div className="flex items-center gap-2 rounded-md border px-3 py-2 text-sm text-muted-foreground">
                             <Badge variant="secondary" className="flex items-center gap-1">
@@ -779,11 +856,13 @@ export function SafetyForm({
                             )}
                           />
                         )}
+                          </div>
+                        ))}
+                        <FormMessage>
+                          {form.formState.errors.responsiblePersons?.root?.message}
+                        </FormMessage>
                       </div>
-                    ))}
-                    <FormMessage>
-                      {form.formState.errors.responsiblePersons?.root?.message}
-                    </FormMessage>
+                    </div>
                   </div>
                 </div>
             )}

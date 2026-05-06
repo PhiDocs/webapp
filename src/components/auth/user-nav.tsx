@@ -5,7 +5,7 @@ import { signOut } from '@/server/auth-actions';
 import { Button } from '@/components/ui/button';
 import { LogOut, LayoutDashboard } from 'lucide-react';
 import { useSession } from './session-provider';
-import { auth } from '@/firebase/config';
+import { createSupabaseBrowserClient } from '@/supabase/browser';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -35,7 +35,7 @@ export function UserNav() {
 
   const handleSignOut = async () => {
     await signOut();
-    await auth.signOut();
+    await createSupabaseBrowserClient().auth.signOut();
     router.push('/login');
   };
   

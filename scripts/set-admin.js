@@ -1,68 +1,57 @@
-// Load environment variables from the .env file
 const path = require('path');
-require('dotenv').config({ path: path.resolve(process.cwd(), '.env') });
+const { createClient } = require('@supabase/supabase-js');
+const { config: loadEnv } = require('dotenv');
 
-// Import Firebase Admin config
-const admin = require('firebase-admin');
+loadEnv({ path: path.resolve(process.cwd(), '.env') });
+loadEnv({ path: path.resolve(process.cwd(), '.env.local'), override: true });
 
-// Avoid re-initializing the app
-if (!admin.apps.length) {
-  try {
-    admin.initializeApp({
-      credential: admin.credential.cert({
-        projectId: process.env.FIREBASE_PROJECT_ID,
-        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-        privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-      }),
-    });
-  } catch (error) {
-    console.error('Failed to initialize Firebase Admin:', error.message);
-    process.exit(1);
+function getSupabaseAdminClient() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!supabaseUrl || !serviceRoleKey) {
+    throw new Error('Configure NEXT_PUBLIC_SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY no .env.');
   }
+
+  return createClient(supabaseUrl, serviceRoleKey, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    },
+  });
 }
 
 async function setAdminRole(email, companyId) {
-  if (!email) {
-    console.error('Uso: node scripts/set-admin.js "email.do.usuario@example.com" "[ID_DA_EMPRESA_OPCIONAL]"');
-    return;
+  if (!email || !companyId) {
+    console.error('Uso: npm run set-admin -- "email.do.usuario@example.com" "ID_DA_EMPRESA"');
+    process.exit(1);
   }
 
-  try {
-    console.log(`Looking up user by email: ${email}...`);
-    const user = await admin.auth().getUserByEmail(email);
+  const supabase = getSupabaseAdminClient();
+  const { data: users, error: listError } = await supabase.auth.admin.listUsers();
+  if (listError) throw listError;
 
-    // Keep existing claims to avoid overwriting other data
-    const existingClaims = (await admin.auth().getUser(user.uid)).customClaims || {};
+  const user = users.users.find((item) => item.email?.toLowerCase() === email.toLowerCase());
+  if (!user) {
+    throw new Error(`Usuário não encontrado no Supabase Auth: ${email}`);
+  }
 
-    const newClaims = {
-      ...existingClaims,
+  const { error } = await supabase
+    .from('users')
+    .upsert({
+      uid: user.id,
+      email: user.email,
+      name: user.user_metadata?.name || user.email,
       role: 'admin',
-    };
+      companyId,
+      createdAt: new Date().toISOString(),
+    }, { onConflict: 'uid' });
 
-    if (companyId) {
-      newClaims.companyId = companyId;
-      console.log(`Setting claims { role: 'admin', companyId: '${companyId}' } for user ${user.uid}...`);
-    } else {
-      console.log(`Setting claim { role: 'admin' } for user ${user.uid}...`);
-    }
-    
-    await admin.auth().setCustomUserClaims(user.uid, newClaims);
-    
-    console.log(`\n✅ Sucesso! O usuário "${user.displayName}" (${user.email}) agora é um administrador.`);
-    if (companyId) {
-        console.log(`Ele foi associado à empresa com ID: ${companyId}`);
-    }
-    console.log('Reminder: the user must log out and log in again for the change to take effect.');
-
-  } catch (error) {
-    if (error.code === 'auth/user-not-found') {
-      console.error(`\n❌ Error: No user found with email "${email}".`);
-    } else {
-      console.error('\n❌ Failed to set admin role:', error.message);
-    }
-  }
+  if (error) throw error;
+  console.log(`Usuário ${user.email} agora é admin da empresa ${companyId}.`);
 }
 
-const userEmail = process.argv[2];
-const companyId = process.argv[3]; // The third argument is companyId (optional)
-setAdminRole(userEmail, companyId);
+setAdminRole(process.argv[2], process.argv[3]).catch((error) => {
+  console.error('Falha ao definir admin:', error.message);
+  process.exit(1);
+});

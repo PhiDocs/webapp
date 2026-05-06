@@ -1,9 +1,9 @@
-import admin from '@/firebase/admin-config';
 import { LogService } from '@/services/log.service';
+import { createSupabaseAdminClient } from '@/supabase/server';
 
 export const ErrorLogRepository = {
   /**
-   * Save an error log to Firestore and to a local log file.
+     * Save an error log to Supabase and to a local log file.
    * @param error - The error object.
    * @param functionName - The function name where the error occurred.
    * @param email - The user email, if available.
@@ -22,11 +22,12 @@ export const ErrorLogRepository = {
     await LogService.writeToFile(`[${logData.timestamp}] ERROR in ${functionName}: ${logData.errorMessage}\nSTACK: ${logData.stackTrace}\n---`);
 
     try {
-        const logCollection = admin.firestore().collection('errorLogs');
-        await logCollection.add(logData);
+        const { error } = await createSupabaseAdminClient()
+          .from('errorLogs')
+          .insert(logData);
+        if (error) throw error;
     } catch (logError: any) {
-        // If logging to Firestore fails, log to console and the text file.
-        const criticalErrorMessage = `CRITICAL: Failed to log error to Firestore. Firestore Error: ${logError.message}`;
+        const criticalErrorMessage = `CRITICAL: Failed to log error to Supabase. Supabase Error: ${logError.message}`;
         console.error(criticalErrorMessage);
         console.error('Original Error:', error.message);
         
