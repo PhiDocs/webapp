@@ -1,7 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
-import { Loader2 } from 'lucide-react';
+import React, { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 import { createSession } from '@/server/auth-actions';
 import { getUserProfile } from '@/server/user-actions';
@@ -23,6 +22,18 @@ interface SessionContextType {
 
 const SessionContext = createContext<SessionContextType | undefined>(undefined);
 
+function isSameUserProfile(a: UserProfile | null, b: UserProfile | null) {
+  if (!a || !b) return a === b;
+
+  return (
+    a.uid === b.uid &&
+    a.name === b.name &&
+    a.email === b.email &&
+    a.role === b.role &&
+    a.companyId === b.companyId
+  );
+}
+
 export function useSession() {
   const context = useContext(SessionContext);
   if (context === undefined) {
@@ -31,66 +42,143 @@ export function useSession() {
   return context;
 }
 
-export function SessionProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<UserProfile | null>(null);
+interface SessionProviderProps {
+  children: ReactNode;
+  initialUser?: UserProfile | null;
+}
+
+export function SessionProvider({ children, initialUser = null }: SessionProviderProps) {
+  const [user, setUser] = useState<UserProfile | null>(initialUser);
   const [supabaseUser, setSupabaseUser] = useState<SupabaseUser | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(!initialUser);
+  const syncedAccessTokenRef = useRef<string | null>(null);
+  const loadedUserIdRef = useRef<string | null>(initialUser?.uid ?? null);
+  const isMountedRef = useRef(false);
 
   useEffect(() => {
     const supabase = createSupabaseBrowserClient();
+    isMountedRef.current = true;
 
-    const loadSession = async (authUser: SupabaseUser | null) => {
-      setIsLoading(true);
-
-      if (authUser) {
-        setSupabaseUser(authUser);
-        const result = await getUserProfile();
-
-        if (result.success && result.data) {
-          setUser(result.data);
-        } else {
-          console.warn(`Perfil Supabase do usuário ${authUser.id} não encontrado.`);
-          setUser(null);
-        }
-      } else {
-        setSupabaseUser(null);
-        setUser(null);
+    const syncServerSession = async (session: {
+      access_token: string;
+      refresh_token: string;
+      expires_in?: number;
+    }) => {
+      if (syncedAccessTokenRef.current === session.access_token) {
+        return;
       }
-      setIsLoading(false);
+
+      syncedAccessTokenRef.current = session.access_token;
+
+      await createSession({
+        accessToken: session.access_token,
+        refreshToken: session.refresh_token,
+        expiresIn: session.expires_in,
+      });
     };
 
-    supabase.auth.getSession().then(async ({ data }) => {
+    const loadSession = async (
+      authUser: SupabaseUser | null,
+      options?: { showLoader?: boolean; forceProfileReload?: boolean }
+    ) => {
+      if (options?.showLoader && isMountedRef.current) {
+        setIsLoading(true);
+      }
+
+      if (!authUser) {
+        loadedUserIdRef.current = null;
+        syncedAccessTokenRef.current = null;
+
+        if (isMountedRef.current) {
+          setSupabaseUser(null);
+          setUser(null);
+          setIsLoading(false);
+        }
+
+        return;
+      }
+
+      if (isMountedRef.current) {
+        setSupabaseUser((current) => (current?.id === authUser.id ? current : authUser));
+      }
+
+      const shouldReloadProfile =
+        options?.forceProfileReload === true || loadedUserIdRef.current !== authUser.id;
+
+      if (shouldReloadProfile) {
+        const result = await getUserProfile();
+
+        if (!isMountedRef.current) {
+          return;
+        }
+
+        if (result.success && result.data) {
+          loadedUserIdRef.current = authUser.id;
+          setUser((current) => (isSameUserProfile(current, result.data ?? null) ? current : result.data ?? null));
+        } else {
+          console.warn(`Perfil Supabase do usuario ${authUser.id} nao encontrado.`);
+          loadedUserIdRef.current = null;
+          setUser(null);
+        }
+      }
+
+      if (isMountedRef.current) {
+        setIsLoading(false);
+      }
+    };
+
+    const initializeSession = async () => {
+      const { data } = await supabase.auth.getSession();
+
       if (data.session) {
-        await createSession({
-          accessToken: data.session.access_token,
-          refreshToken: data.session.refresh_token,
-          expiresIn: data.session.expires_in,
-        });
+        await syncServerSession(data.session);
       }
-      await loadSession(data.session?.user ?? null);
-    });
 
-    const { data: listener } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      await loadSession(data.session?.user ?? null, initialUser
+        ? {
+            showLoader: false,
+            forceProfileReload: false,
+          }
+        : {
+            showLoader: true,
+            forceProfileReload: true,
+          });
+    };
+
+    void initializeSession();
+
+    const { data: listener } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (session) {
-        await createSession({
-          accessToken: session.access_token,
-          refreshToken: session.refresh_token,
-          expiresIn: session.expires_in,
-        });
+        await syncServerSession(session);
       }
-      await loadSession(session?.user ?? null);
+
+      if (event === 'INITIAL_SESSION') {
+        return;
+      }
+
+      if (event === 'SIGNED_OUT') {
+        await loadSession(null);
+        return;
+      }
+
+      if (event === 'TOKEN_REFRESHED') {
+        if (isMountedRef.current) {
+          setSupabaseUser((current) => (current?.id === session?.user?.id ? current : session?.user ?? null));
+          setIsLoading(false);
+        }
+        return;
+      }
+
+      await loadSession(session?.user ?? null, {
+        forceProfileReload: loadedUserIdRef.current !== session?.user?.id,
+      });
     });
 
-    return () => listener.subscription.unsubscribe();
+    return () => {
+      isMountedRef.current = false;
+      listener.subscription.unsubscribe();
+    };
   }, []);
-
-  if (isLoading) {
-    return (
-      <div className="flex h-screen w-full items-center justify-center bg-background">
-        <Loader2 className="h-10 w-10 animate-spin text-primary" />
-      </div>
-    );
-  }
 
   return (
     <SessionContext.Provider value={{ user, supabaseUser, isLoading }}>

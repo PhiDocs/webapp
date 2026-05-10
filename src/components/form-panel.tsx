@@ -3,34 +3,20 @@
 import type { UseFormReturn } from 'react-hook-form';
 import type { SafetyFormValues, Work, Employee } from '@/lib/types';
 import { SafetyForm } from '@/components/safety-form';
-import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
-import { RefreshCcw, Eye, EyeOff, Send, Loader2, Save, FileDown } from 'lucide-react';
-
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+import { Eye, EyeOff, Send, Loader2, Save, FileDown } from 'lucide-react';
 import { ptBr } from '@/lib/data/strings';
 
 interface FormPanelProps {
   form: UseFormReturn<SafetyFormValues>;
-  onNewReport: () => void;
   onSubmit: (data: SafetyFormValues) => void;
   isLoading: boolean;
   works: Work[];
   employees: Employee[];
   isDataLoading: boolean;
-  showFloatingPreview?: boolean;
-  onToggleFloatingPreview?: () => void;
+  showPreview?: boolean;
+  onTogglePreview?: () => void;
   isSendingSignature?: boolean;
   onSendForSignature?: () => void;
   canSendSignature?: boolean;
@@ -40,58 +26,51 @@ interface FormPanelProps {
   onSaveDraft?: () => void;
 }
 
-export function FormPanel({ form, onNewReport, onSubmit, isLoading, works, employees, isDataLoading, showFloatingPreview, onToggleFloatingPreview, isSendingSignature, onSendForSignature, canSendSignature, isGeneratingPdf, onGeneratePdf, isSavingDraft, onSaveDraft }: FormPanelProps) {
+export function FormPanel({
+  form,
+  onSubmit,
+  isLoading,
+  works,
+  employees,
+  isDataLoading,
+  showPreview,
+  onTogglePreview,
+  isSendingSignature,
+  onSendForSignature,
+  canSendSignature,
+  isGeneratingPdf,
+  onGeneratePdf,
+  isSavingDraft,
+  onSaveDraft,
+}: FormPanelProps) {
+  const hasUnsavedChanges = form.formState.isDirty;
+
   return (
     <div className="h-full">
       <ScrollArea className="h-full">
-        <div className="p-4 md:p-6 space-y-6">
-          <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-            <div className="space-y-3">
-              <h2 className="text-2xl font-bold tracking-tight text-foreground font-headline">
-                {ptBr.formPanel.title}
+        <div className="mx-auto max-w-[940px] px-4 py-6 md:px-8 md:py-8">
+          <div className="mb-8 flex items-start justify-between gap-4">
+            <div className="space-y-2">
+              <h2 className="max-w-[620px] font-headline text-h1 text-foreground">
+                Gerar Novo Documento de Seguranca
               </h2>
-              <p className="text-muted-foreground">
-                {ptBr.formPanel.description}
+              <p className="max-w-[560px] text-body-lg leading-8 text-muted-foreground">
+                Preencha as informacoes detalhadas para a emissao da Analise Preliminar de Risco (APR).
               </p>
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button>
-                    <RefreshCcw className="mr-2 h-4 w-4" />
-                    {ptBr.actions.startNewReport}
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>{ptBr.formPanel.newReportConfirmation.title}</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      {ptBr.formPanel.newReportConfirmation.description}
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>{ptBr.actions.cancel}</AlertDialogCancel>
-                    <AlertDialogAction onClick={onNewReport}>{ptBr.actions.continue}</AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
             </div>
-            <div className="flex gap-2">
-              {onToggleFloatingPreview && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={onToggleFloatingPreview}
-                  title={showFloatingPreview ? "Ocultar pré-visualização" : "Mostrar pré-visualização"}
-                  className="h-11 w-11 rounded-2xl bg-primary text-primary-foreground shadow-sm ring-1 ring-primary/20 transition-colors hover:bg-primary/90"
-                >
-                  {showFloatingPreview ? (
-                    <EyeOff className="h-5 w-5" />
-                  ) : (
-                    <Eye className="h-5 w-5" />
-                  )}
-                </Button>
-              )}
-            </div>
+            {onTogglePreview && (
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={onTogglePreview}
+                title={showPreview ? 'Ocultar pre-visualizacao' : 'Mostrar pre-visualizacao'}
+                className="h-10 w-10 shrink-0 rounded-md border-[#d7dce4] bg-white text-[#0c1e36] hover:bg-[#f5f7fa]"
+              >
+                {showPreview ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </Button>
+            )}
           </div>
+
           <SafetyForm
             form={form}
             onSubmit={onSubmit}
@@ -101,69 +80,77 @@ export function FormPanel({ form, onNewReport, onSubmit, isLoading, works, emplo
             isDataLoading={isDataLoading}
           />
 
-          <div className="flex flex-wrap items-center justify-end gap-2">
-            {onSaveDraft && (
-              <Button
-                type="button"
-                variant="outline"
-                onClick={onSaveDraft}
-                disabled={isSavingDraft}
-                className="min-w-[180px]"
-              >
-                {isSavingDraft ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Salvando...
-                  </>
-                ) : (
-                  <>
-                    <Save className="mr-2 h-4 w-4" />
-                    Salvar rascunho
-                  </>
+          <div className="sticky bottom-0 z-20 mt-6 border-t border-[#e0c0b1] bg-[#f7f9fc]/95 backdrop-blur">
+            <div className="flex min-h-24 flex-col gap-4 px-4 py-4 md:flex-row md:items-center md:justify-between md:px-5">
+              <div className="flex items-center gap-2 text-body-sm text-[#584237]">
+                <span className={`h-2.5 w-2.5 rounded-full ${hasUnsavedChanges ? 'bg-[#d48f58]' : 'bg-[#d6d9df]'}`} />
+                {hasUnsavedChanges ? 'Alteracoes nao salvas' : 'Tudo salvo'}
+              </div>
+              <div className="flex flex-wrap items-center justify-end gap-3 md:flex-nowrap">
+                {onSaveDraft && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={onSaveDraft}
+                    disabled={isSavingDraft}
+                    className="min-w-[184px] whitespace-nowrap rounded-md border-[#4f5f7a] bg-white font-medium text-[#4f5f7a] hover:bg-[#eceef1]"
+                  >
+                    {isSavingDraft ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Salvando...
+                      </>
+                    ) : (
+                      <>
+                        <Save className="mr-2 h-4 w-4" />
+                        Salvar Rascunho
+                      </>
+                    )}
+                  </Button>
                 )}
-              </Button>
-            )}
-            {onGeneratePdf && (
-              <Button
-                type="button"
-                variant="outline"
-                onClick={onGeneratePdf}
-                disabled={isGeneratingPdf}
-                className="min-w-[180px]"
-              >
-                {isGeneratingPdf ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    {ptBr.actions.generatingPdf}
-                  </>
-                ) : (
-                  <>
-                    <FileDown className="mr-2 h-4 w-4" />
-                    {ptBr.actions.generatePdf}
-                  </>
+                {onGeneratePdf && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={onGeneratePdf}
+                    disabled={isGeneratingPdf}
+                    className="min-w-[184px] whitespace-nowrap rounded-md border-[#4f5f7a] bg-white font-medium text-[#4f5f7a] hover:bg-[#eceef1]"
+                  >
+                    {isGeneratingPdf ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        {ptBr.actions.generatingPdf}
+                      </>
+                    ) : (
+                      <>
+                        <FileDown className="mr-2 h-4 w-4" />
+                        {ptBr.actions.generatePdf}
+                      </>
+                    )}
+                  </Button>
                 )}
-              </Button>
-            )}
-            {onSendForSignature && (
-              <Button
-                type="button"
-                onClick={onSendForSignature}
-                disabled={isSendingSignature || !canSendSignature}
-                className="min-w-[180px]"
-              >
-                {isSendingSignature ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    {ptBr.actions.sendingForSignature}
-                  </>
-                ) : (
-                  <>
-                    <Send className="mr-2 h-4 w-4" />
-                    {ptBr.actions.sendForSignature}
-                  </>
+                {onSendForSignature && (
+                  <Button
+                    type="button"
+                    onClick={onSendForSignature}
+                    disabled={isSendingSignature || !canSendSignature}
+                    className="min-w-[210px] whitespace-nowrap rounded-md bg-[#f46e11] font-semibold text-white shadow-lg hover:bg-[#e96710]"
+                  >
+                    {isSendingSignature ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        {ptBr.actions.sendingForSignature}
+                      </>
+                    ) : (
+                      <>
+                        <Send className="mr-2 h-4 w-4" />
+                        {ptBr.actions.sendForSignature}
+                      </>
+                    )}
+                  </Button>
                 )}
-              </Button>
-            )}
+              </div>
+            </div>
           </div>
         </div>
       </ScrollArea>

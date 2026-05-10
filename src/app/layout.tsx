@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Toaster } from "@/components/ui/toaster";
 import { ptBr } from "@/lib/data/strings";
 import { SessionProvider } from "@/components/auth/session-provider";
+import { getSession } from "@/server/auth-guard";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -9,23 +10,34 @@ export const metadata: Metadata = {
   description: "Generate professional safety documents (APR, APT) with AI assistance.",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const session = await getSession();
+  const initialUser = session
+    ? {
+        uid: session.uid,
+        email: session.email ?? '',
+        name: session.email ?? 'Usuario',
+        role: session.role,
+        companyId: session.companyId,
+      }
+    : null;
+
   return (
-    <html lang="en" suppressHydrationWarning={true}>
+    <html lang="pt-BR" suppressHydrationWarning={true}>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap"
           rel="stylesheet"
         />
       </head>
       <body className="font-body antialiased" suppressHydrationWarning={true}>
-        <SessionProvider>
+        <SessionProvider initialUser={initialUser}>
           {children}
         </SessionProvider>
         <Toaster />

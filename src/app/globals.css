@@ -4,31 +4,31 @@
 
 @layer base {
   :root {
-    --background: 225 83% 98%;
-    --foreground: 222 24% 16%;
+    --background: 210 33% 98%;
+    --foreground: 200 11% 11%;
     --card: 0 0% 100%;
-    --card-foreground: 222 24% 16%;
+    --card-foreground: 220 22% 12%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222 24% 16%;
-    --primary: 182 85% 39%;
+    --popover-foreground: 220 22% 12%;
+    --primary: 26 100% 31%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 220 16% 92%;
-    --secondary-foreground: 222 24% 18%;
-    --muted: 220 16% 92%;
-    --muted-foreground: 220 10% 45%;
-    --accent: 182 85% 39%;
+    --secondary: 217 22% 39%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 210 17% 93%;
+    --muted-foreground: 215 10% 39%;
+    --accent: 217 22% 39%;
     --accent-foreground: 0 0% 100%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    --border: 220 12% 85%;
+    --border: 23 37% 71%;
     --input: 0 0% 100%;
-    --ring: 182 85% 39%;
-    --chart-1: 182 85% 39%;
-    --chart-2: 199 65% 42%;
-    --chart-3: 210 30% 55%;
-    --chart-4: 156 42% 45%;
-    --chart-5: 36 70% 58%;
-    --radius: 0.75rem;
+    --ring: 26 100% 31%;
+    --chart-1: 26 100% 31%;
+    --chart-2: 217 22% 39%;
+    --chart-3: 215 18% 49%;
+    --chart-4: 215 38% 81%;
+    --chart-5: 34 88% 68%;
+    --radius: 0.5rem;
   }
 
   .dark {
@@ -66,16 +66,38 @@
 
   body {
     @apply bg-background text-foreground;
-    background-image: radial-gradient(circle at 12% 10%, rgba(13, 179, 184, 0.12), transparent 45%),
-      radial-gradient(circle at 90% 20%, rgba(91, 108, 140, 0.12), transparent 40%),
-      linear-gradient(180deg, rgba(244, 247, 254, 1) 0%, rgba(244, 247, 254, 1) 100%);
-    background-attachment: fixed;
+    background: hsl(var(--background));
+    font-family: Inter, sans-serif;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: "Hanken Grotesk", Inter, sans-serif;
   }
 }
 
 /* --- PRINT & PDF SHARED STYLES --- */
 /* These styles apply to both the on-screen preview and the print output. */
-.print-preview-wrapper .print-document-container,
+.print-preview-wrapper {
+  width: 794px;
+}
+
+.print-preview-wrapper .print-document-container {
+  box-shadow: none;
+  width: 794px;
+  min-height: 1123px;
+  height: auto;
+  border-radius: 0;
+  overflow: visible;
+  font-size: 9pt;
+  background: white;
+  color: black;
+}
+
 .print-only .print-document-container {
   box-shadow: none;
   width: 100%;

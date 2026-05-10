@@ -4,6 +4,7 @@ import { cookies } from 'next/headers';
 import { ErrorLogRepository } from '@/repositories/error-log.repository';
 import { UserRepository } from '@/repositories/user.repository';
 import { createSupabaseAdminClient } from '@/supabase/server';
+import { SESSION_META_COOKIE_NAME, signSessionCookie } from '@/lib/auth/session-cookie';
 
 async function ensureUserDocument(authUser: { id: string; email?: string; user_metadata?: Record<string, any> }) {
   const uid = authUser.id;
@@ -29,6 +30,7 @@ export async function createSession(session: { accessToken: string; refreshToken
     }
 
     await ensureUserDocument(data.user);
+    const profile = await UserRepository.get(data.user.id);
 
     const maxAge = session.expiresIn ?? 60 * 60;
     const cookieStore = await cookies();
@@ -46,6 +48,23 @@ export async function createSession(session: { accessToken: string; refreshToken
       maxAge: 60 * 60 * 24 * 30,
       path: '/',
     });
+    cookieStore.set(
+      SESSION_META_COOKIE_NAME,
+      await signSessionCookie({
+        uid: data.user.id,
+        email: data.user.email ?? undefined,
+        name: profile?.name ?? data.user.user_metadata?.name ?? data.user.email ?? 'Usuario',
+        role: profile?.role ?? 'user',
+        companyId: profile?.companyId ?? undefined,
+      }),
+      {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 60 * 60 * 24 * 30,
+        path: '/',
+      }
+    );
 
     return { error: null };
   } catch (error: any) {
@@ -60,6 +79,7 @@ export async function signOut(): Promise<{ error: string | null }> {
     const cookieStore = await cookies();
     cookieStore.delete('session');
     cookieStore.delete('refreshToken');
+    cookieStore.delete(SESSION_META_COOKIE_NAME);
     return { error: null };
   } catch (error: any)
  {

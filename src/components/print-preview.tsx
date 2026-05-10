@@ -3,10 +3,9 @@ import type { SafetyFormValues, Company } from '@/lib/types';
 import type { SafetyAnalysisOutput, ProtectiveEquipmentOutput } from '@/server/ai-actions';
 import { Logo } from '@/components/icons/logo';
 import { PTPreview } from './pt-preview';
-import { ClipboardList, UserCheck, ShieldCheck, HardHat, Construction, Users, AlertTriangle } from 'lucide-react';
+import { ClipboardList, Construction, ShieldCheck, Users } from 'lucide-react';
 import { ptBr } from '@/lib/data/strings';
 import { DOCUMENT_TYPES } from '@/lib/constants';
-
 
 interface PrintPreviewProps {
   formData: SafetyFormValues;
@@ -16,261 +15,620 @@ interface PrintPreviewProps {
   error?: string | null;
 }
 
-const Empty = () => <span className="italic text-gray-400">{ptBr.other.notFilled}</span>;
+const COLORS = {
+  white: '#ffffff',
+  text: '#191c1e',
+  secondary: '#4f5f7a',
+  secondaryStrong: '#314d78',
+  primary: '#9e4300',
+  primaryStrong: '#b24a00',
+  border: '#e0c0b1',
+  borderSoft: '#dfe3e8',
+  headerFill: '#eceff3',
+  watermark: 'rgba(158,67,0,0.16)',
+};
 
-function APRHeader({ data, company }: { data: SafetyFormValues; company: Company | null }) {
-  return (
-    <header className="print-header avoid-break">
-      <div className="flex items-start justify-between gap-4 border-b pb-2">
-        <div className="flex items-start gap-4 flex-1 min-w-0">
-          {company?.logo ? (
-            <img src={company.logo} alt={ptBr.other.companyLogoAlt} className="h-16 w-auto max-w-[120px] object-contain" />
-          ) : (
-            <Logo className="h-12 w-12 text-gray-700" />
-          )}
-          <div className='flex-1 min-w-0'>
-            <h1 className="text-xl font-bold text-gray-800 break-words">{company?.name || <Empty />}</h1>
-            <p className='text-sm mt-2 font-bold'>
-              {ptBr.printPreview.apr.title}
-            </p>
-          </div>
-        </div>
-        <div className="flex flex-col gap-1 items-end text-xs text-gray-600 shrink-0">
-          <div className="px-3 py-1 border rounded-md bg-gray-50">
-            <span className="font-semibold">{ptBr.printPreview.apr.aprNumber}</span> {data.documentType === DOCUMENT_TYPES.APR ? 'APR' : 'PT'} Nº {'01'}
-          </div>
-          <div className="px-3 py-1 border rounded-md bg-gray-50">
-            <span className="font-semibold">{ptBr.printPreview.apr.review}</span> {'01'}
-          </div>
-        </div>
-      </div>
-    </header>
-  );
-}
+const headingFont = '"Hanken Grotesk", Inter, Arial, sans-serif';
+const bodyFont = 'Inter, Arial, sans-serif';
+const monoFont = '"JetBrains Mono", "Courier New", monospace';
 
-function PrintFooter() {
-  const date = new Date().toLocaleDateString('pt-BR');
+const pageStyle: React.CSSProperties = {
+  width: '210mm',
+  minHeight: '297mm',
+  background: COLORS.white,
+  color: COLORS.text,
+  position: 'relative',
+  padding: '20mm 20mm 16mm',
+  fontFamily: bodyFont,
+  boxSizing: 'border-box',
+};
 
-  return (
-    <footer className="print-footer avoid-break mt-4 text-xs text-gray-500 border-t pt-2">
-      <div className="flex justify-between items-center w-full">
-        <p>{ptBr.printPreview.footer.mte}</p>
-        <p>{ptBr.printPreview.footer.date} {date}</p>
-      </div>
-    </footer>
-  );
-}
+const emptyTextStyle: React.CSSProperties = {
+  color: '#8c7165',
+  fontStyle: 'italic',
+};
 
-const Section = ({ title, icon, children, allowBreak = false }: { title: string, icon: React.ElementType, children: React.ReactNode, allowBreak?: boolean }) => {
-  const Icon = icon;
-  return (
-    <section className={`${allowBreak ? '' : 'avoid-break'} mt-2`}>
-      <h3 className="section-title flex items-center justify-center">
-        <Icon className="inline-block mr-2 h-4 w-4" />
-        {title}
-      </h3>
-      <div className="section-content">
-        {children}
-      </div>
-    </section>
-  );
-}
-
-
-function ResponsiblesSection({ data }: { data: SafetyFormValues }) {
-  return (
-    <Section title={ptBr.printPreview.apr.responsibles} icon={UserCheck} allowBreak={true}>
-      <table className="w-full border-collapse border mt-0 analysis-table">
-        <thead>
-          <tr>
-            <th className="text-left w-[40%]">{ptBr.printPreview.apr.name}</th>
-            <th className="text-left w-[30%]">{ptBr.printPreview.apr.role}</th>
-            <th className="text-left w-[30%]">{ptBr.printPreview.apr.signature}</th>
-          </tr>
-        </thead>
-        <tbody>
-          {(data.responsiblePersons?.length > 0 ? data.responsiblePersons : [{ name: '', role: '' }]).map((person, index: number) => (
-            <tr key={`resp-${index}`} className="avoid-break">
-              <td className="h-10">{person.name || <Empty />}</td>
-              <td>{person.role || <Empty />}</td>
-              <td>
-                {person.signatureData ? (
-                  <img src={person.signatureData} alt={ptBr.other.signatureAlt} className="max-h-10" />
-                ) : null}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </Section>
-  );
-}
-
-function TeamSection({ data }: { data: SafetyFormValues }) {
-  const teamMembers = data.teamMembers || [];
-  if (teamMembers.length === 0) return null;
-
-  return (
-    <Section title={ptBr.printPreview.apr.team} icon={Users} allowBreak={true}>
-      <table className="w-full border-collapse border mt-0 analysis-table">
-        <thead>
-          <tr>
-            <th className="text-left w-[20%]">{ptBr.printPreview.apr.date}</th>
-            <th className="text-left w-[35%]">{ptBr.printPreview.apr.name}</th>
-            <th className="text-left w-[20%]">{ptBr.printPreview.apr.role}</th>
-            <th className="text-left w-[25%]">{ptBr.printPreview.apr.signature}</th>
-          </tr>
-        </thead>
-        <tbody>
-          {teamMembers.map((member: any, index: number) => (
-            <tr key={`team-${index}`} className="avoid-break">
-              <td className="h-10">{getShortDate(member.date) || <Empty />}</td>
-              <td>{member.name || <Empty />}</td>
-              <td>{member.role || <Empty />}</td>
-              <td>
-                {member.signatureData ? (
-                  <img src={member.signatureData} alt={ptBr.other.signatureAlt} className="max-h-10" />
-                ) : null}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </Section>
-  );
-}
-
-function AnalysisTable({ steps }: { steps: any[] }) {
-  return (
-    <Section title={ptBr.printPreview.apr.operationalProcedure} icon={ShieldCheck} allowBreak={true}>
-      <table className="w-full border-collapse text-xs analysis-table">
-        <thead>
-          <tr>
-            <th className="p-1 text-left w-[5%]">{ptBr.printPreview.apr.item}</th>
-            <th className="p-1 text-left w-[25%]">{ptBr.printPreview.apr.activities}</th>
-            <th className="p-1 text-left w-[25%]">{ptBr.printPreview.apr.potentialRisks}</th>
-            <th className="p-1 text-left w-[45%]">{ptBr.printPreview.apr.preventiveMeasures}</th>
-          </tr>
-        </thead>
-        <tbody>
-          {steps.map((step: any, index: number) => (
-            <tr key={`proc-step-${step.item || index}`}>
-              <td className="p-2 align-top text-center">{step.item}</td>
-              <td className="p-2 align-top">{step.activity}</td>
-              <td className="p-2 align-top">{step.potentialRisks}</td>
-              <td className="p-2 align-top whitespace-pre-wrap">{step.preventiveMeasures}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </Section>
-  );
-}
-
-function EquipmentSection({ data }: { data: ProtectiveEquipmentOutput | null }) {
-  if (!data) return null;
-
-  return (
-    <div className='grid grid-cols-2 gap-4 avoid-break'>
-      <Section title={ptBr.printPreview.apr.requiredEpi} icon={HardHat}>
-        <div className='p-2'>
-          <ul className="list-disc pl-4 space-y-1 text-sm">
-            {data.epiItems.map((item, index) => <li key={`epi-${index}`}>{item}</li>)}
-          </ul>
-          <p className="text-xs italic mt-2"><strong>{ptBr.printPreview.apr.obs}</strong> {data.epiNote}</p>
-        </div>
-      </Section>
-      <Section title={ptBr.printPreview.apr.requiredEpc} icon={Construction}>
-        <div className='p-2'>
-          <ul className="list-disc pl-4 space-y-1 text-sm">
-            {data.epcItems.map((item, index) => <li key={`epc-${index}`}>{item}</li>)}
-          </ul>
-          <p className="text-xs italic mt-2"><strong>{ptBr.printPreview.apr.obs}</strong> {data.epcNote}</p>
-        </div>
-      </Section>
-    </div>
-  )
-}
-
-function getShortDate(dateString: string | undefined) {
+function formatDate(dateString?: string) {
   if (!dateString) return null;
+
   try {
     const date = new Date(dateString);
-    const zonedDate = new Date(date.valueOf() + date.getTimezoneOffset() * 60 * 1000);
-    return zonedDate.toLocaleDateString('pt-BR');
-  } catch (e) {
-    return ptBr.other.invalidDate;
+    const normalized = new Date(date.valueOf() + date.getTimezoneOffset() * 60 * 1000);
+    return normalized.toLocaleDateString('pt-BR');
+  } catch {
+    return null;
   }
 }
 
-function APRPreviewContent({ formData, analysisData, equipmentData, company, error }: { formData: SafetyFormValues, analysisData: SafetyAnalysisOutput | null, equipmentData: ProtectiveEquipmentOutput | null, company: Company | null, error?: string | null }) {
-  if (!formData) return null;
+function buildAprId(data: SafetyFormValues) {
+  const baseDate = formatDate(data.startDate) || new Date().toLocaleDateString('pt-BR');
+  const [day, month, year] = baseDate.split('/');
+  return `APR-${year || '2026'}-${(month || '01').padStart(2, '0')}${(day || '01').padStart(2, '0')}`;
+}
 
-  const showAnalysis = !error && analysisData && analysisData.proceduralSteps && analysisData.proceduralSteps.length > 0;
+function getProcedureRows(formData: SafetyFormValues, analysisData: SafetyAnalysisOutput | null) {
+  if (analysisData?.proceduralSteps?.length) {
+    return analysisData.proceduralSteps
+      .filter((step) => step.activity || step.potentialRisks || step.preventiveMeasures)
+      .map((step, index) => ({
+        activity: step.activity || '',
+        risks: step.potentialRisks || '',
+        measures: step.preventiveMeasures || '',
+        item: step.item || index + 1,
+      }));
+  }
+
+  if (formData.analysisSteps?.length) {
+    return formData.analysisSteps
+      .filter((step) => step.activity || step.potentialRisks || step.preventiveMeasures)
+      .map((step, index) => ({
+        activity: step.activity || '',
+        risks: step.potentialRisks || '',
+        measures: step.preventiveMeasures || '',
+        item: step.item || index + 1,
+      }));
+  }
+
+  return [];
+}
+
+function splitLines(text?: string) {
+  if (!text) return [];
+  return text
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean);
+}
+
+function renderText(text?: string) {
+  const lines = splitLines(text);
+  if (!lines.length) return <span style={emptyTextStyle}>{ptBr.other.notFilled}</span>;
+
+  return lines.map((line, index) => (
+    <React.Fragment key={`${line}-${index}`}>
+      {line}
+      {index < lines.length - 1 ? <br /> : null}
+    </React.Fragment>
+  ));
+}
+
+function renderBulletText(text?: string) {
+  const lines = splitLines(text);
+  if (!lines.length) return <span style={emptyTextStyle}>{ptBr.other.notFilled}</span>;
 
   return (
-    <div className="page-content-wrapper">
-      <APRHeader data={formData} company={company} />
-      <main className='print-main flex flex-col gap-4'>
-        <Section title={ptBr.printPreview.apr.workData} icon={ClipboardList}>
-          <table className="w-full border-collapse info-grid">
-            <tbody>
-              <tr>
-                <td className="w-1/2"><strong>{ptBr.printPreview.apr.workName}</strong>{formData.workName || <Empty />}</td>
-                <td className="w-1/2"><strong>{ptBr.printPreview.apr.workAddress}</strong>{formData.workAddress || <Empty />}</td>
-              </tr>
-              <tr>
-                <td><strong>{ptBr.printPreview.apr.startDate}</strong>{getShortDate(formData.startDate) || <Empty />}</td>
-                <td><strong>{ptBr.printPreview.apr.endDate}</strong>{getShortDate(formData.endDate) || <Empty />}</td>
-              </tr>
-              <tr>
-                <td colSpan={2}><strong>{ptBr.printPreview.apr.workLocation}</strong>{formData.workLocationDetails || <Empty />}</td>
-              </tr>
-              <tr>
-                <td colSpan={2}><strong>{ptBr.printPreview.apr.activityDescription}</strong>{formData.activityDescription || <Empty />}</td>
-              </tr>
-            </tbody>
-          </table>
-        </Section>
-
-
-
-        {error ? (
-          <Section title={ptBr.printPreview.apr.operationalProcedure} icon={AlertTriangle}>
-            <div className="text-center text-destructive bg-destructive/10 border-2 border-dashed border-destructive/30 rounded-lg p-4">
-              <h3 className="text-base font-semibold">{ptBr.previewPanel.error.title}</h3>
-              <p className='mt-2 text-sm'>{error}</p>
-            </div>
-          </Section>
-        ) : showAnalysis ? (
-          <AnalysisTable steps={analysisData.proceduralSteps} />
-        ) : (
-          <Section title={ptBr.printPreview.apr.operationalProcedure} icon={ShieldCheck}>
-            <div className="text-center py-8">
-              <Empty />
-            </div>
-          </Section>
-        )}
-
-        {!error && <EquipmentSection data={equipmentData} />}
-
-        <TeamSection data={formData} />
-        <ResponsiblesSection data={formData} />
-      </main>
-      <PrintFooter />
+    <div>
+      {lines.map((line, index) => (
+        <div key={`${line}-${index}`} style={{ marginBottom: index === lines.length - 1 ? 0 : 5 }}>
+          {line.startsWith('•') || line.startsWith('-') ? line : `• ${line}`}
+        </div>
+      ))}
     </div>
   );
 }
 
+function SignatureCell({ signatureData }: { signatureData?: string }) {
+  if (!signatureData?.startsWith('data:image')) return null;
+
+  return (
+    <img
+      src={signatureData}
+      alt={ptBr.other.signatureAlt}
+      style={{ maxHeight: 28, maxWidth: '100%', objectFit: 'contain' }}
+    />
+  );
+}
+
+function SectionTitle({
+  index,
+  title,
+  icon,
+}: {
+  index: string;
+  title: string;
+  icon: React.ReactNode;
+}) {
+  return (
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 10,
+        background: COLORS.headerFill,
+        borderLeft: `4px solid ${COLORS.primary}`,
+        padding: '12px 20px',
+        marginBottom: 12,
+      }}
+    >
+      <span style={{ color: COLORS.primary, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+        {icon}
+      </span>
+      <h2
+        style={{
+          margin: 0,
+          fontFamily: headingFont,
+          fontSize: 17,
+          fontWeight: 700,
+          lineHeight: 1.2,
+          color: COLORS.text,
+          textTransform: 'uppercase',
+        }}
+      >
+        {index}. {title}
+      </h2>
+    </div>
+  );
+}
+
+function FieldLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <div
+      style={{
+        fontFamily: monoFont,
+        fontSize: 11,
+        lineHeight: 1.1,
+        letterSpacing: '0.08em',
+        textTransform: 'uppercase',
+        color: COLORS.secondaryStrong,
+        marginBottom: 8,
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+function UnderlineValue({
+  children,
+  bold = false,
+  minHeight = 34,
+}: {
+  children: React.ReactNode;
+  bold?: boolean;
+  minHeight?: number;
+}) {
+  return (
+    <div
+      style={{
+        minHeight,
+        paddingBottom: 6,
+        borderBottom: `1px solid ${COLORS.borderSoft}`,
+        fontSize: bold ? 18 : 13,
+        lineHeight: bold ? 1.2 : 1.35,
+        fontWeight: bold ? 700 : 400,
+        color: COLORS.text,
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+function HeaderMetaRow({ label, value, bordered = true }: { label: string; value: string; bordered?: boolean }) {
+  return (
+    <div
+      style={{
+        display: 'grid',
+        gridTemplateColumns: '56px 1fr',
+        gap: 8,
+        alignItems: 'center',
+        padding: bordered ? '6px 0' : '6px 0 0',
+        borderBottom: bordered ? `1px solid ${COLORS.borderSoft}` : 'none',
+      }}
+    >
+      <span
+        style={{
+          fontFamily: monoFont,
+          fontSize: 10,
+          lineHeight: 1.1,
+          color: COLORS.secondaryStrong,
+          letterSpacing: '0.08em',
+        }}
+      >
+        {label}
+      </span>
+      <span
+        style={{
+          fontFamily: monoFont,
+          fontSize: 10,
+          lineHeight: 1.1,
+          fontWeight: 700,
+          color: COLORS.text,
+          textAlign: 'right',
+        }}
+      >
+        {value}
+      </span>
+    </div>
+  );
+}
+
+function APRPreviewContent({
+  formData,
+  analysisData,
+  company,
+}: {
+  formData: SafetyFormValues;
+  analysisData: SafetyAnalysisOutput | null;
+  equipmentData: ProtectiveEquipmentOutput | null;
+  company: Company | null;
+  error?: string | null;
+}) {
+  const procedures = getProcedureRows(formData, analysisData);
+  const teamMembers = (formData.teamMembers || []).filter((member) => member.name || member.role || member.signatureData);
+  const responsibles = (formData.responsiblePersons || []).filter((person) => person.name || person.role || person.signatureData);
+  const footerDate = new Date().toLocaleDateString('pt-BR');
+  const headerDate = formatDate(formData.startDate) || footerDate;
+  const revision = '04';
+  const aprId = buildAprId(formData);
+  return (
+    <div style={pageStyle}>
+      <header
+        style={{
+          display: 'grid',
+          gridTemplateColumns: '1.15fr 2.35fr 1.15fr',
+          border: `1px solid #b39a8a`,
+          marginBottom: 28,
+        }}
+      >
+        <div
+          style={{
+            borderRight: `1px solid #b39a8a`,
+            padding: '18px 16px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <Logo style={{ width: 42, height: 42, color: COLORS.primaryStrong }} />
+            <span
+              style={{
+                fontFamily: headingFont,
+                fontSize: 25,
+                lineHeight: 1,
+                fontWeight: 700,
+                color: COLORS.primaryStrong,
+                letterSpacing: '-0.03em',
+              }}
+            >
+              PhiDocs
+            </span>
+          </div>
+        </div>
+
+        <div
+          style={{
+            borderRight: `1px solid #b39a8a`,
+            padding: '18px 20px 16px',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
+            textAlign: 'center',
+          }}
+        >
+          <div
+            style={{
+              fontFamily: headingFont,
+              fontSize: 23,
+              lineHeight: 1.35,
+              fontWeight: 500,
+              letterSpacing: '0.04em',
+              textTransform: 'uppercase',
+            }}
+          >
+            Analise Preliminar de Risco
+            <br />
+            (APR)
+          </div>
+          <div
+            style={{
+              marginTop: 10,
+              fontFamily: monoFont,
+              fontSize: 11,
+              lineHeight: 1.1,
+              letterSpacing: '0.08em',
+              textTransform: 'uppercase',
+              color: COLORS.secondaryStrong,
+            }}
+          >
+            Seguranca do Trabalho e Compliance
+          </div>
+        </div>
+
+        <div style={{ padding: '12px 12px 10px' }}>
+          <HeaderMetaRow label="ID:" value={aprId} />
+          <HeaderMetaRow label="REVISAO:" value={revision} />
+          <HeaderMetaRow label="DATA:" value={headerDate} bordered={false} />
+        </div>
+      </header>
+
+      <section style={{ marginBottom: 30 }}>
+        <SectionTitle
+          index="1"
+          title="Dados da Obra / Projeto"
+          icon={<Construction size={16} strokeWidth={2.2} />}
+        />
+
+        <div
+          style={{
+            border: `1px solid ${COLORS.border}`,
+            borderRadius: 6,
+            padding: 18,
+          }}
+        >
+          <div style={{ marginBottom: 10 }}>
+            <FieldLabel>Nome do Projeto</FieldLabel>
+            <UnderlineValue bold>
+              {formData.workName || <span style={emptyTextStyle}>{ptBr.other.notFilled}</span>}
+            </UnderlineValue>
+          </div>
+
+          <div style={{ marginBottom: 10 }}>
+            <FieldLabel>Endereco / Localizacao</FieldLabel>
+            <UnderlineValue>
+              {formData.workAddress || <span style={emptyTextStyle}>{ptBr.other.notFilled}</span>}
+            </UnderlineValue>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '0.95fr 1fr 1.9fr', gap: 18 }}>
+            <div>
+              <FieldLabel>Data de Inicio</FieldLabel>
+              <UnderlineValue>
+                {formatDate(formData.startDate) || <span style={emptyTextStyle}>{ptBr.other.notFilled}</span>}
+              </UnderlineValue>
+            </div>
+            <div>
+              <FieldLabel>Previsao de Termino</FieldLabel>
+              <UnderlineValue>
+                {formatDate(formData.endDate) || <span style={emptyTextStyle}>{ptBr.other.notFilled}</span>}
+              </UnderlineValue>
+            </div>
+            <div>
+              <FieldLabel>Descricao da Atividade</FieldLabel>
+              <UnderlineValue minHeight={46}>
+                {formData.activityDescription || <span style={emptyTextStyle}>{ptBr.other.notFilled}</span>}
+              </UnderlineValue>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section style={{ marginBottom: 28 }}>
+        <SectionTitle
+          index="2"
+          title="Procedimento Operacional e Riscos"
+          icon={<ClipboardList size={16} strokeWidth={2.2} />}
+        />
+
+        <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed', fontSize: 11.2 }}>
+          <thead>
+            <tr style={{ background: COLORS.headerFill, color: '#3a2a1f', textTransform: 'uppercase' }}>
+              <th style={{ width: '25%', border: `1px solid ${COLORS.border}`, padding: '11px 10px', textAlign: 'center', fontWeight: 500 }}>
+                Etapa da Atividade
+              </th>
+              <th style={{ width: '25%', border: `1px solid ${COLORS.border}`, padding: '11px 10px', textAlign: 'center', fontWeight: 500 }}>
+                Riscos Potenciais
+              </th>
+              <th style={{ width: '50%', border: `1px solid ${COLORS.border}`, padding: '11px 10px', textAlign: 'center', fontWeight: 500 }}>
+                Medidas de Controle / Mitigacao (EPI/EPC)
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {procedures.length > 0 ? (
+              procedures.map((step, index) => (
+                <tr key={`procedure-${index}`} style={{ background: index % 2 === 1 ? '#fcfdfd' : COLORS.white }}>
+                  <td style={{ border: `1px solid ${COLORS.border}`, padding: '10px 10px 12px', verticalAlign: 'top', lineHeight: 1.45 }}>
+                    {(step.item || index + 1) ? `${step.item || index + 1}. ` : ''}
+                    {renderText(step.activity)}
+                  </td>
+                  <td style={{ border: `1px solid ${COLORS.border}`, padding: '10px 10px 12px', verticalAlign: 'top', lineHeight: 1.45 }}>
+                    {renderBulletText(step.risks)}
+                  </td>
+                  <td style={{ border: `1px solid ${COLORS.border}`, padding: '10px 10px 12px', verticalAlign: 'top', lineHeight: 1.45 }}>
+                    {renderText(step.measures)}
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td
+                  colSpan={3}
+                  style={{
+                    border: `1px solid ${COLORS.border}`,
+                    padding: '18px 16px',
+                    textAlign: 'center',
+                    color: COLORS.secondary,
+                    fontStyle: 'italic',
+                  }}
+                >
+                  Preencha os campos para visualizar a analise detalhada aqui.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </section>
+
+      <section style={{ marginBottom: 28 }}>
+        <SectionTitle
+          index="3"
+          title="Equipe de Trabalho"
+          icon={<Users size={16} strokeWidth={2.2} />}
+        />
+
+        <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed', fontSize: 11.2 }}>
+          <thead>
+            <tr style={{ background: COLORS.headerFill, color: '#3a2a1f', textTransform: 'uppercase' }}>
+              <th style={{ width: '40%', border: `1px solid ${COLORS.border}`, padding: '11px 10px', textAlign: 'left', fontWeight: 500 }}>
+                Nome Completo
+              </th>
+              <th style={{ width: '25%', border: `1px solid ${COLORS.border}`, padding: '11px 10px', textAlign: 'left', fontWeight: 500 }}>
+                Funcao
+              </th>
+              <th style={{ width: '35%', border: `1px solid ${COLORS.border}`, padding: '11px 10px', textAlign: 'center', fontWeight: 500 }}>
+                Assinatura / Visto
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {teamMembers.length > 0 ? (
+              teamMembers.map((member, index) => (
+                <tr key={`team-${index}`} style={{ background: index % 2 === 1 ? '#fcfdfd' : COLORS.white }}>
+                  <td style={{ border: `1px solid ${COLORS.border}`, padding: '11px 10px', verticalAlign: 'middle' }}>
+                    {member.name || <span style={emptyTextStyle}>{ptBr.other.notFilled}</span>}
+                  </td>
+                  <td style={{ border: `1px solid ${COLORS.border}`, padding: '11px 10px', verticalAlign: 'middle' }}>
+                    {member.role || <span style={emptyTextStyle}>{ptBr.other.notFilled}</span>}
+                  </td>
+                  <td style={{ border: `1px solid ${COLORS.border}`, padding: '8px 10px', textAlign: 'center', verticalAlign: 'middle' }}>
+                    <SignatureCell signatureData={member.signatureData} />
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td
+                  colSpan={3}
+                  style={{
+                    border: `1px solid ${COLORS.border}`,
+                    padding: '18px 16px',
+                    textAlign: 'center',
+                    color: COLORS.secondary,
+                    fontStyle: 'italic',
+                  }}
+                >
+                  Nenhum membro adicionado.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </section>
+
+      <section style={{ marginTop: 'auto', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 40 }}>
+        {Array.from({ length: 2 }).map((_, index) => {
+          const person = responsibles[index];
+
+          return (
+            <div key={`responsible-${index}`} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <div
+                style={{
+                  width: '100%',
+                  height: 48,
+                  borderBottom: `1px solid ${COLORS.text}`,
+                  marginBottom: 8,
+                  display: 'flex',
+                  alignItems: 'flex-end',
+                  justifyContent: 'center',
+                }}
+              >
+                {person?.signatureData ? <SignatureCell signatureData={person.signatureData} /> : null}
+              </div>
+              <div style={{ fontSize: 13.5, lineHeight: 1.25, fontWeight: 700, color: COLORS.text, textAlign: 'center' }}>
+                {person?.name || <span style={emptyTextStyle}>{ptBr.other.notFilled}</span>}
+              </div>
+              <div
+                style={{
+                  marginTop: 4,
+                  fontFamily: monoFont,
+                  fontSize: 10,
+                  lineHeight: 1.2,
+                  letterSpacing: '0.06em',
+                  textTransform: 'uppercase',
+                  color: COLORS.secondary,
+                  textAlign: 'center',
+                }}
+              >
+                {person?.role || 'Responsavel'}
+              </div>
+            </div>
+          );
+        })}
+      </section>
+
+      <footer
+        style={{
+          marginTop: 18,
+          paddingTop: 8,
+          borderTop: `1px solid ${COLORS.borderSoft}`,
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          fontFamily: monoFont,
+          fontSize: 9,
+          lineHeight: 1.15,
+          color: COLORS.secondary,
+        }}
+      >
+        <div>
+          Emitido em {footerDate} via <span style={{ fontWeight: 700, color: COLORS.primary }}>PhiDocs Safety &amp; Compliance</span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span>Pagina 01 de 01</span>
+          <ShieldCheck size={12} strokeWidth={2.2} />
+        </div>
+      </footer>
+
+      <div
+        style={{
+          position: 'absolute',
+          right: 28,
+          bottom: 36,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 8,
+          color: COLORS.watermark,
+          pointerEvents: 'none',
+        }}
+      >
+        <Logo style={{ width: 42, height: 42 }} />
+        <span style={{ fontFamily: headingFont, fontSize: 28, fontWeight: 700, letterSpacing: '-0.03em' }}>PHIDOCS</span>
+      </div>
+    </div>
+  );
+}
 
 export function PrintPreview({ formData, analysisData, equipmentData, company, error }: PrintPreviewProps) {
   const documentType = formData?.documentType;
 
   return (
     <div className="print-preview-wrapper">
-      <div id="print-content-root" className="print-document-container w-[210mm] min-h-[297mm] bg-white shadow-lg rounded-lg text-gray-800 font-sans p-[15mm]">
+      <div
+        id="print-content-root"
+        className="print-document-container bg-white shadow-lg"
+        style={{ width: '210mm', minHeight: '297mm' }}
+      >
         {documentType === DOCUMENT_TYPES.APR ? (
-          <APRPreviewContent formData={formData} analysisData={analysisData} equipmentData={equipmentData} company={company} error={error} />
+          <APRPreviewContent
+            formData={formData}
+            analysisData={analysisData}
+            equipmentData={equipmentData}
+            company={company}
+            error={error}
+          />
         ) : (
           <PTPreview formData={formData} company={company} />
         )}

@@ -44,7 +44,7 @@ export const ptBr = {
     },
   },
   header: {
-    title: 'Safety Docs AI',
+    title: 'PhiDocs',
     form: 'Formulário',
     preview: 'Pré-visualização',
   },

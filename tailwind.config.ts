@@ -11,8 +11,17 @@ export default {
     extend: {
       fontFamily: {
         body: ['Inter', 'sans-serif'],
-        headline: ['Inter', 'sans-serif'],
-        code: ['monospace'],
+        headline: ['"Hanken Grotesk"', 'Inter', 'sans-serif'],
+        code: ['"JetBrains Mono"', 'monospace'],
+      },
+      fontSize: {
+        h1: ['40px', { lineHeight: '1.2', letterSpacing: '-0.02em', fontWeight: '700' }],
+        h2: ['32px', { lineHeight: '1.3', fontWeight: '600' }],
+        h3: ['24px', { lineHeight: '1.4', fontWeight: '600' }],
+        'body-lg': ['18px', { lineHeight: '1.6', fontWeight: '400' }],
+        'body-md': ['16px', { lineHeight: '1.5', fontWeight: '400' }],
+        'body-sm': ['14px', { lineHeight: '1.5', fontWeight: '400' }],
+        'code-label': ['12px', { lineHeight: '1', letterSpacing: '0.05em', fontWeight: '500' }],
       },
       colors: {
         background: 'hsl(var(--background))',

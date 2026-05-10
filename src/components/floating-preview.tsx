@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { X, Maximize2, Minimize2, ZoomIn } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { Search, Maximize2, Minimize2, ZoomIn, ZoomOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PrintPreview } from '@/components/print-preview';
 import type { SafetyFormValues, Company } from '@/lib/types';
@@ -9,126 +9,160 @@ import type { SafetyAnalysisOutput, ProtectiveEquipmentOutput } from '@/server/a
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 interface FloatingPreviewProps {
-    formData: SafetyFormValues;
-    analysisData: SafetyAnalysisOutput | null;
-    equipmentData: ProtectiveEquipmentOutput | null;
-    company: Company | null;
-    error?: string | null;
-    onClose?: () => void;
-    onMinimizedChange?: (isMinimized: boolean) => void;
+  formData: SafetyFormValues;
+  analysisData: SafetyAnalysisOutput | null;
+  equipmentData: ProtectiveEquipmentOutput | null;
+  company: Company | null;
+  error?: string | null;
+  onClose?: () => void;
+  onMinimizedChange?: (isMinimized: boolean) => void;
 }
 
 export function FloatingPreview({
-    formData,
-    analysisData,
-    equipmentData,
-    company,
-    error,
-    onClose,
-    onMinimizedChange,
+  formData,
+  analysisData,
+  equipmentData,
+  company,
+  error,
+  onMinimizedChange,
 }: FloatingPreviewProps) {
-    const [isMinimized, setIsMinimized] = useState(false);
-    const [isZoomOpen, setIsZoomOpen] = useState(false);
+  const [isMinimized, setIsMinimized] = useState(false);
+  const [isZoomOpen, setIsZoomOpen] = useState(false);
+  const documentWidth = 794;
+  const documentHeight = 1123;
+  const [previewScale, setPreviewScale] = useState(0.34);
+  const previewWidth = useMemo(() => documentWidth * previewScale, [documentWidth, previewScale]);
+  const previewHeight = useMemo(() => documentHeight * previewScale, [documentHeight, previewScale]);
 
-    const handleMinimizeToggle = () => {
-        const newMinimized = !isMinimized;
-        setIsMinimized(newMinimized);
-        onMinimizedChange?.(newMinimized);
-    };
+  const handleMinimizeToggle = () => {
+    const nextValue = !isMinimized;
+    setIsMinimized(nextValue);
+    onMinimizedChange?.(nextValue);
+  };
 
-    return (
-        <div
-            className={`fixed top-16 right-0 h-[calc(100vh-4rem)] bg-white shadow-2xl border-l border-gray-200 transition-all duration-300 ease-in-out z-10 ${isMinimized ? 'w-16' : 'w-[500px]'
-                }`}
-        >
-            {/* Header */}
-            <div className="flex items-center justify-between p-3 border-b bg-gray-50">
-                {!isMinimized && (
-                    <h3 className="text-sm font-semibold text-gray-700">Pré-visualização</h3>
-                )}
-                <div className="flex items-center gap-2 ml-auto">
-                    {!isMinimized && (
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-9 w-9 rounded-xl bg-primary text-primary-foreground shadow-sm ring-1 ring-primary/20 transition-colors hover:bg-primary/90"
-                            onClick={() => setIsZoomOpen(true)}
-                            title="Ver em tela cheia"
-                        >
-                            <ZoomIn className="h-4 w-4" />
-                        </Button>
-                    )}
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-9 w-9 rounded-xl bg-primary text-primary-foreground shadow-sm ring-1 ring-primary/20 transition-colors hover:bg-primary/90"
-                        onClick={handleMinimizeToggle}
-                        title={isMinimized ? 'Expandir' : 'Minimizar'}
-                    >
-                        {isMinimized ? (
-                            <Maximize2 className="h-4 w-4" />
-                        ) : (
-                            <Minimize2 className="h-4 w-4" />
-                        )}
-                    </Button>
-                    {onClose && (
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-9 w-9 rounded-xl bg-primary text-primary-foreground shadow-sm ring-1 ring-primary/20 transition-colors hover:bg-primary/90"
-                            onClick={onClose}
-                            title="Fechar"
-                        >
-                            <X className="h-4 w-4" />
-                        </Button>
-                    )}
-                </div>
-            </div>
+  const handleZoomOut = () => setPreviewScale((current) => Math.max(0.24, Number((current - 0.03).toFixed(2))));
+  const handleZoomIn = () => setPreviewScale((current) => Math.min(0.5, Number((current + 0.03).toFixed(2))));
+  const handleZoomReset = () => setPreviewScale(0.34);
 
-            {/* Content */}
-            {!isMinimized && (
-                <div className="h-[calc(100vh-4rem-57px)] overflow-y-auto bg-gray-100 p-4">
-                    <div className="transform scale-[0.6] origin-top-left w-[166.67%]">
-                        <PrintPreview
-                            formData={formData}
-                            analysisData={analysisData}
-                            equipmentData={equipmentData}
-                            company={company}
-                            error={error}
-                        />
-                    </div>
-                </div>
-            )}
-
-            {/* Minimized state */}
-            {isMinimized && (
-                <div className="flex flex-col items-center justify-center h-[calc(100vh-4rem-57px)] text-gray-500">
-                    <div className="transform -rotate-90 whitespace-nowrap text-xs font-medium">
-                        Pré-visualização
-                    </div>
-                </div>
-            )}
-
-            <Dialog open={isZoomOpen} onOpenChange={setIsZoomOpen}>
-                <DialogContent className="max-w-[95vw] w-[95vw] h-[90vh] p-0">
-                    <DialogHeader className="px-4 py-3 border-b">
-                        <DialogTitle>Pré-visualização</DialogTitle>
-                    </DialogHeader>
-                    <div className="h-[calc(90vh-60px)] overflow-auto bg-gray-100 p-6">
-                        <div className="mx-auto w-fit">
-                            <div className="transform scale-[0.9] origin-top">
-                                <PrintPreview
-                                    formData={formData}
-                                    analysisData={analysisData}
-                                    equipmentData={equipmentData}
-                                    company={company}
-                                    error={error}
-                                />
-                            </div>
-                        </div>
-                    </div>
-                </DialogContent>
-            </Dialog>
+  return (
+    <div
+      className={`fixed right-0 top-16 z-10 hidden h-[calc(100vh-64px)] border-l border-[#e6cfc1] bg-[#f3f4f6] transition-all duration-300 ease-in-out xl:flex ${
+        isMinimized ? 'w-[68px]' : 'w-[360px]'
+      }`}
+    >
+      <div className="flex h-16 items-center justify-between gap-2 border-b border-[#e6cfc1] bg-[#f8f8f8] px-4">
+        {!isMinimized && (
+          <h3 className="font-headline text-[16px] font-semibold leading-5 text-[#191c1e]">
+            Pre-visualizacao
+          </h3>
+        )}
+        <div className="ml-auto flex items-center gap-2">
+          {!isMinimized && (
+            <>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 rounded-md text-[#2a2d34] hover:bg-white"
+                onClick={handleZoomOut}
+                title="Diminuir zoom"
+              >
+                <ZoomOut className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 rounded-md text-[#2a2d34] hover:bg-white"
+                onClick={handleZoomIn}
+                title="Aumentar zoom"
+              >
+                <ZoomIn className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 rounded-md px-2 text-xs text-[#2a2d34] hover:bg-white"
+                onClick={handleZoomReset}
+                title="Redefinir zoom"
+              >
+                {Math.round(previewScale * 100)}%
+              </Button>
+            </>
+          )}
+          {!isMinimized && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 rounded-md text-[#2a2d34] hover:bg-white"
+              onClick={() => setIsZoomOpen(true)}
+              title="Ampliar preview"
+            >
+              <Search className="h-4 w-4" />
+            </Button>
+          )}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 rounded-md text-[#2a2d34] hover:bg-white"
+            onClick={handleMinimizeToggle}
+            title={isMinimized ? 'Expandir preview' : 'Minimizar preview'}
+          >
+            {isMinimized ? <Maximize2 className="h-4 w-4" /> : <Minimize2 className="h-4 w-4" />}
+          </Button>
         </div>
-    );
+      </div>
+
+      {!isMinimized ? (
+        <div className="h-[calc(100vh-64px-64px)] overflow-y-auto overflow-x-hidden bg-[#efefef] px-3 py-4">
+          <div className="flex w-full justify-center">
+            <div
+              className="overflow-hidden border border-[#ddd] bg-white shadow-[0_12px_24px_rgba(16,24,40,0.12)]"
+              style={{ width: `${previewWidth}px`, height: `${previewHeight}px` }}
+            >
+              <div
+                className="origin-top-left"
+                style={{
+                  width: `${documentWidth}px`,
+                  height: `${documentHeight}px`,
+                  transform: `scale(${previewScale})`,
+                }}
+              >
+                <PrintPreview
+                  formData={formData}
+                  analysisData={analysisData}
+                  equipmentData={equipmentData}
+                  company={company}
+                  error={error}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="flex h-[calc(100vh-64px-64px)] items-center justify-center">
+          <div className="-rotate-90 whitespace-nowrap font-code text-code-label text-[#4a5b73]">
+            PREVIEW
+          </div>
+        </div>
+      )}
+
+      <Dialog open={isZoomOpen} onOpenChange={setIsZoomOpen}>
+        <DialogContent className="h-[92vh] max-w-[96vw] p-0">
+          <DialogHeader className="border-b border-[#e1d6cb] px-5 py-4">
+            <DialogTitle>Pre-visualizacao</DialogTitle>
+          </DialogHeader>
+          <div className="h-[calc(92vh-70px)] overflow-auto bg-[#eceef1] p-6">
+            <div className="mx-auto w-fit overflow-hidden bg-white shadow-[0_10px_30px_rgba(12,30,54,0.12)]">
+              <PrintPreview
+                formData={formData}
+                analysisData={analysisData}
+                equipmentData={equipmentData}
+                company={company}
+                error={error}
+              />
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
 }

@@ -1,6 +1,7 @@
 import { cookies } from 'next/headers';
 import { UserRepository } from '@/repositories/user.repository';
 import { createSupabaseAdminClient } from '@/supabase/server';
+import { SESSION_META_COOKIE_NAME, verifySessionCookie } from '@/lib/auth/session-cookie';
 
 type UserRole = 'admin' | 'user';
 
@@ -33,6 +34,14 @@ async function decodeSessionToken(token: string): Promise<AuthContext | null> {
 
 export async function getSession(): Promise<AuthContext | null> {
   const cookieStore = await cookies();
+  const sessionMetaCookie = cookieStore.get(SESSION_META_COOKIE_NAME)?.value;
+  if (sessionMetaCookie) {
+    const decodedMeta = await verifySessionCookie(sessionMetaCookie);
+    if (decodedMeta) {
+      return decodedMeta;
+    }
+  }
+
   const sessionCookie = cookieStore.get('session')?.value;
   if (!sessionCookie) return null;
   return decodeSessionToken(sessionCookie);
