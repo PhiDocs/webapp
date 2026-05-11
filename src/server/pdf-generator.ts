@@ -8,11 +8,8 @@ const PDF_FUNCTION_SECRET = process.env.PDF_FUNCTION_SECRET || '';
 const isProd = process.env.NODE_ENV === 'production';
 
 const pdfStyles = `
-  /* Reset and base styles */
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: system-ui, -apple-system, sans-serif; font-size: 9pt; line-height: 1.4; color: #1a1a1a; background: white; }
-  
-  /* Utility classes */
   .flex { display: flex; }
   .flex-col { flex-direction: column; }
   .flex-1 { flex: 1; }
@@ -98,7 +95,6 @@ const pdfStyles = `
   .border-collapse { border-collapse: collapse; }
   [colspan="2"] { grid-column: span 2; }
 
-  /* Print specific styles */
   .print-preview-wrapper { width: 100%; }
   .print-document-container,
   #print-content-root,
@@ -116,7 +112,7 @@ const pdfStyles = `
   .print-only { display: block !important; }
   .page-content-wrapper { padding: 0; }
   .avoid-break { page-break-inside: avoid; }
-  
+
   .section-title {
     font-size: 10pt;
     font-weight: bold;
@@ -163,8 +159,7 @@ const pdfStyles = `
   }
   table.analysis-table td { white-space: pre-wrap; }
   .text-xxs { font-size: 0.65rem; line-height: 0.8rem; }
-  
-  /* PT specific styles */
+
   .pt-header-table th, .pt-header-table td { border: 1px solid #ccc; padding: 0.25rem; }
   .pt-checklist-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.25rem; }
   .pt-checkbox { width: 0.75rem; height: 0.75rem; border: 1px solid #333; display: inline-block; margin-right: 0.25rem; }
@@ -190,7 +185,7 @@ function buildHtml(componentHtml: string): string {
 
 async function generatePdfViaCloudFunction(html: string): Promise<Buffer> {
   if (!PDF_FUNCTION_URL) {
-    throw new Error('PDF_FUNCTION_URL não configurada. Verifique as variáveis de ambiente.');
+    throw new Error('PDF_FUNCTION_URL nao configurada. Verifique as variaveis de ambiente.');
   }
 
   const response = await fetch(PDF_FUNCTION_URL, {
@@ -209,31 +204,83 @@ async function generatePdfViaCloudFunction(html: string): Promise<Buffer> {
 
   const data = await response.json();
   if (!data.pdf) {
-    throw new Error('Cloud Function não retornou o PDF.');
+    throw new Error('Cloud Function nao retornou o PDF.');
   }
 
   return Buffer.from(data.pdf, 'base64');
 }
 
-async function generatePdfLocally(html: string): Promise<Buffer> {
+async function createBrowserInstance() {
   const puppeteer = await import('puppeteer');
-  // Reutiliza uma instância de browser em dev para evitar custo por requisição
+  return puppeteer.default.launch();
+}
+
+async function getOrCreatePdfBrowser() {
   const g: any = globalThis as any;
+
   if (!g.__pdfBrowserPromise) {
-    g.__pdfBrowserPromise = puppeteer.default.launch();
+    g.__pdfBrowserPromise = createBrowserInstance();
+    return g.__pdfBrowserPromise;
   }
-  const browser = await g.__pdfBrowserPromise;
+
   try {
+    const browser = await g.__pdfBrowserPromise;
+    if (browser?.connected) {
+      return browser;
+    }
+  } catch {
+    // recria abaixo
+  }
+
+  g.__pdfBrowserPromise = createBrowserInstance();
+  return g.__pdfBrowserPromise;
+}
+
+async function generatePdfLocally(html: string): Promise<Buffer> {
+  const g: any = globalThis as any;
+
+  const renderPdf = async () => {
+    const browser = await getOrCreatePdfBrowser();
     const page = await browser.newPage();
-    await page.setContent(html, { waitUntil: 'domcontentloaded' });
-    const pdfBuffer = await page.pdf({
-      format: 'A4',
-      printBackground: true,
-      margin: { top: '0', right: '0', bottom: '0', left: '0' },
-    });
-    return Buffer.from(pdfBuffer);
-  } finally {
-    // Não fechar o browser em dev para reaproveitar; o processo encerra automaticamente
+
+    try {
+      await page.setContent(html, { waitUntil: 'domcontentloaded' });
+      const pdfBuffer = await page.pdf({
+        format: 'A4',
+        printBackground: true,
+        margin: { top: '20mm', right: '20mm', bottom: '16mm', left: '20mm' },
+      });
+      return Buffer.from(pdfBuffer);
+    } finally {
+      await page.close().catch(() => undefined);
+    }
+  };
+
+  try {
+    return await renderPdf();
+  } catch (error: any) {
+    const message = String(error?.message || error || '');
+    const recoverableBrowserError = [
+      'Connection closed',
+      'Target closed',
+      'Session closed',
+      'Browser has disconnected',
+      'Protocol error',
+    ].some((fragment) => message.includes(fragment));
+
+    if (!recoverableBrowserError) {
+      throw error;
+    }
+
+    try {
+      const staleBrowser = await g.__pdfBrowserPromise;
+      await staleBrowser?.close?.().catch(() => undefined);
+    } catch {
+      // ignora falha ao fechar a instancia antiga
+    }
+
+    g.__pdfBrowserPromise = null;
+    return renderPdf();
   }
 }
 
@@ -255,12 +302,12 @@ export async function generatePdfBuffer({
       analysisData,
       equipmentData,
       company,
+      renderMode: 'pdf',
     })
   );
 
   const fullHtml = buildHtml(componentHtml);
 
-  // Em produção, usa a Cloud Function; localmente, usa Puppeteer direto
   if (isProd) {
     return generatePdfViaCloudFunction(fullHtml);
   }

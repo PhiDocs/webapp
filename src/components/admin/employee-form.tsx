@@ -39,7 +39,6 @@ export function EmployeeForm({
   defaultValues,
   isPending,
   jobRoles,
-  subcontractors,
 }: EmployeeFormProps) {
   const [isCreatingRole, setIsCreatingRole] = useState(!defaultValues?.roleId);
 
@@ -56,6 +55,9 @@ export function EmployeeForm({
     },
   });
 
+  const fieldClassName = 'h-11 rounded-md border border-[#d7dde6] bg-white text-[#191c1e] placeholder:text-[#8b97ab] focus-visible:border-[#ccb4a6] focus-visible:ring-[#9e4300]/15';
+  const labelClassName = 'text-[0.95rem] font-medium text-[#6f7f97]';
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4 py-4">
@@ -65,9 +67,9 @@ export function EmployeeForm({
             name="firstName"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Nome</FormLabel>
+                <FormLabel className={labelClassName}>Nome</FormLabel>
                 <FormControl>
-                  <Input placeholder="Nome" {...field} />
+                  <Input className={fieldClassName} placeholder="Nome" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -78,65 +80,68 @@ export function EmployeeForm({
             name="lastName"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Sobrenome</FormLabel>
+                <FormLabel className={labelClassName}>Sobrenome</FormLabel>
                 <FormControl>
-                  <Input placeholder="Sobrenome" {...field} />
+                  <Input className={fieldClassName} placeholder="Sobrenome" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
         </div>
+
         <FormField
           control={form.control}
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Email</FormLabel>
+              <FormLabel className={labelClassName}>Email</FormLabel>
               <FormControl>
-                <Input type='email' placeholder="email@exemplo.com" {...field} />
+                <Input className={fieldClassName} type="email" placeholder="email@exemplo.com" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
+
         <FormField
           control={form.control}
           name="cpf"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>CPF</FormLabel>
+              <FormLabel className={labelClassName}>CPF</FormLabel>
               <FormControl>
-                <Input placeholder="000.000.000-00" {...field} />
+                <Input className={fieldClassName} placeholder="000.000.000-00" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
+
         <FormField
           control={form.control}
           name="phone"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Telefone / WhatsApp</FormLabel>
+              <FormLabel className={labelClassName}>Telefone / WhatsApp</FormLabel>
               <FormControl>
-                <PhoneInput value={field.value} onChange={field.onChange} onBlur={field.onBlur} />
+                <PhoneInput className={fieldClassName} value={field.value} onChange={field.onChange} onBlur={field.onBlur} />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
+
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <FormLabel>Função</FormLabel>
+            <FormLabel className={labelClassName}>Funcao</FormLabel>
             <Button
               type="button"
               variant="ghost"
               size="sm"
-              className="h-6 text-xs text-muted-foreground hover:text-primary"
+              className="h-6 text-xs text-[#6f7f97] hover:text-[#9e4300]"
               onClick={() => {
                 setIsCreatingRole(!isCreatingRole);
-                // Reset values when switching
                 if (!isCreatingRole) {
                   form.setValue('roleId', 'new');
                   form.setValue('roleName', '');
@@ -154,7 +159,7 @@ export function EmployeeForm({
               ) : (
                 <>
                   <Plus className="mr-1 h-3 w-3" />
-                  Criar Nova Função
+                  Criar Nova Funcao
                 </>
               )}
             </Button>
@@ -167,7 +172,7 @@ export function EmployeeForm({
               render={({ field }) => (
                 <FormItem>
                   <FormControl>
-                    <Input placeholder="Digite o nome do novo cargo" {...field} />
+                    <Input className={fieldClassName} placeholder="Digite o nome do novo cargo" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -181,7 +186,7 @@ export function EmployeeForm({
                 <FormItem>
                   <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
                     <FormControl>
-                      <SelectTrigger>
+                      <SelectTrigger className={fieldClassName}>
                         <SelectValue placeholder="Selecione um cargo" />
                       </SelectTrigger>
                     </FormControl>
@@ -199,6 +204,7 @@ export function EmployeeForm({
             />
           )}
         </div>
+
         <DialogFooter>
           <Button type="submit" disabled={isPending}>
             {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

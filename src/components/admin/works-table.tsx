@@ -157,7 +157,7 @@ export function WorksTable({ companyId }: WorksTableProps) {
           <DialogTrigger asChild>
             <Button
               onClick={() => setEditingWork(null)}
-              className="h-14 w-full rounded-xl bg-[#f46e11] px-8 text-lg font-semibold text-white shadow-[0_10px_20px_rgba(244,110,17,0.22)] hover:bg-[#de620f] xl:w-auto"
+              className="h-16 w-full rounded-xl bg-[#9e4300] px-8 text-lg font-bold text-white shadow-[0_8px_18px_rgba(158,67,0,0.24)] hover:bg-[#8a3a00] xl:w-auto"
             >
               <Plus className="mr-3 h-5 w-5" />
               Nova Obra

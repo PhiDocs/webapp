@@ -24,7 +24,6 @@ import { EmployeesTable } from '@/components/admin/employees-table';
 import { JobRolesTable } from '@/components/admin/job-roles-table';
 import { SubcontractorsTable } from '@/components/admin/subcontractors-table';
 import { CompanySettings } from '@/components/admin/company-settings';
-import { N8nSettings } from '@/components/admin/n8n-settings';
 import { WorksTable } from '@/components/admin/works-table';
 import { Button } from '@/components/ui/button';
 import { signOut } from '@/server/auth-actions';
@@ -119,22 +118,12 @@ export default function CompanyPage() {
       case 'settings':
         if (!company) {
           return (
-            <div className="grid grid-cols-1 gap-8 xl:grid-cols-12">
-              <Skeleton className="xl:col-span-8 h-[920px] w-full rounded-2xl" />
-              <Skeleton className="xl:col-span-4 h-[620px] w-full rounded-2xl" />
-            </div>
+            <Skeleton className="h-[520px] w-full rounded-2xl" />
           );
         }
 
         return (
-          <div className="grid grid-cols-1 gap-8 xl:grid-cols-12">
-            <div className="xl:col-span-8">
-              <CompanySettings company={company} onCompanyUpdate={loadCompany} />
-            </div>
-            <div className="xl:col-span-4">
-              <N8nSettings company={company} />
-            </div>
-          </div>
+          <CompanySettings company={company} onCompanyUpdate={loadCompany} />
         );
       case 'works':
       default:

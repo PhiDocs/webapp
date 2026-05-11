@@ -621,7 +621,7 @@ export function SafetyForm({
                                   {(member.name || 'U').slice(0, 1).toUpperCase()}
                                 </div>
                                 <span className="text-sm font-medium text-[#191c1e]">
-                                  {member.name}{member.role ? ` - ${member.role}` : ''}
+                                  {member.name}
                                 </span>
                                 <button
                                   type="button"
@@ -688,53 +688,17 @@ export function SafetyForm({
                                 </div>
 
                                 {teamDraft.employeeId && (
-                                  <>
-                                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                                      <div>
-                                        <FormLabel>Nome</FormLabel>
-                                        <Input value={teamDraft.name} readOnly className="h-10 rounded-md border-[#ccb4a6] bg-[#f2f4f7]" />
-                                      </div>
-                                      <div>
-                                        <FormLabel>{ptBr.safetyForm.teamRole}</FormLabel>
-                                        <Input value={teamDraft.role} readOnly className="h-10 rounded-md border-[#ccb4a6] bg-[#f2f4f7]" />
-                                      </div>
+                                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                    <div>
+                                      <FormLabel>{ptBr.safetyForm.teamDate}</FormLabel>
+                                      <Input
+                                        type="date"
+                                        value={teamDraft.date}
+                                        onChange={(event) => setTeamDraft((current) => current ? { ...current, date: event.target.value } : current)}
+                                        className="h-10 rounded-md border-[#ccb4a6]"
+                                      />
                                     </div>
-                                    <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                                      <div>
-                                        <FormLabel>{ptBr.safetyForm.teamDate}</FormLabel>
-                                        <Input
-                                          type="date"
-                                          value={teamDraft.date}
-                                          onChange={(event) => setTeamDraft((current) => current ? { ...current, date: event.target.value } : current)}
-                                          className="h-10 rounded-md border-[#ccb4a6]"
-                                        />
-                                      </div>
-                                      {teamDraft.useAssinafy && (
-                                        <div>
-                                          <FormLabel className="flex items-center gap-2">
-                                            <Mail className="h-4 w-4" />
-                                            {ptBr.auth.email}
-                                          </FormLabel>
-                                          <Input
-                                            value={teamDraft.email}
-                                            onChange={(event) => setTeamDraft((current) => current ? { ...current, email: event.target.value } : current)}
-                                            placeholder={ptBr.auth.emailPlaceholder}
-                                            className="h-10 rounded-md border-[#ccb4a6]"
-                                          />
-                                        </div>
-                                      )}
-                                      <div>
-                                        <FormLabel className="flex items-center gap-2">
-                                          <MessageCircle className="h-4 w-4" />
-                                          Telefone (opcional)
-                                        </FormLabel>
-                                        <PhoneInput
-                                          value={teamDraft.phone}
-                                          onChange={(value) => setTeamDraft((current) => current ? { ...current, phone: value } : current)}
-                                        />
-                                      </div>
-                                    </div>
-                                  </>
+                                  </div>
                                 )}
                               </>
                             ) : (
@@ -897,7 +861,7 @@ export function SafetyForm({
                                   {(person.name || 'U').slice(0, 1).toUpperCase()}
                                 </div>
                                 <span className="text-sm font-medium text-[#191c1e]">
-                                  {person.name}{person.role ? ` - ${person.role}` : ''}
+                                  {person.name}
                                 </span>
                                 <button
                                   type="button"
@@ -946,44 +910,6 @@ export function SafetyForm({
 
                             {responsibleDraft.employeeId && (
                               <>
-                                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                                  <div>
-                                    <FormLabel>Nome</FormLabel>
-                                    <Input value={responsibleDraft.name} readOnly className="h-10 rounded-md border-[#ccb4a6] bg-[#f2f4f7]" />
-                                  </div>
-                                  <div>
-                                    <FormLabel>Funcao</FormLabel>
-                                    <Input value={responsibleDraft.role} readOnly className="h-10 rounded-md border-[#ccb4a6] bg-[#f2f4f7]" />
-                                  </div>
-                                </div>
-
-                                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                                  {responsibleDraft.useAssinafy && (
-                                    <div>
-                                      <FormLabel className="flex items-center gap-2">
-                                        <Mail className="h-4 w-4" />
-                                        {ptBr.auth.email}
-                                      </FormLabel>
-                                      <Input
-                                        className="h-10 rounded-md border-[#ccb4a6] bg-white"
-                                        placeholder={ptBr.auth.emailPlaceholder}
-                                        value={responsibleDraft.email}
-                                        onChange={(event) => setResponsibleDraft((current) => current ? { ...current, email: event.target.value } : current)}
-                                      />
-                                    </div>
-                                  )}
-                                  <div>
-                                    <FormLabel className="flex items-center gap-2">
-                                      <MessageCircle className="h-4 w-4" />
-                                      Telefone (opcional)
-                                    </FormLabel>
-                                    <PhoneInput
-                                      value={responsibleDraft.phone}
-                                      onChange={(value) => setResponsibleDraft((current) => current ? { ...current, phone: value } : current)}
-                                    />
-                                  </div>
-                                </div>
-
                                 <div>
                                   <FormLabel>{ptBr.safetyForm.signatureMethod}</FormLabel>
                                   <Tabs

@@ -3,11 +3,10 @@
 import { useEffect, useRef, useTransition, type ChangeEvent } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Building2, Link as LinkIcon, Loader2, Terminal, Upload } from 'lucide-react';
+import { Building2, Loader2, Upload } from 'lucide-react';
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -37,8 +36,8 @@ export function CompanySettings({ company, onCompanyUpdate }: CompanySettingsPro
     defaultValues: {
       name: company.name || '',
       logo: company.logo || '',
-      n8nProductionUrl: company.n8nProductionUrl || '',
-      n8nTestUrl: company.n8nTestUrl || '',
+      n8nProductionUrl: '',
+      n8nTestUrl: '',
     },
   });
 
@@ -46,8 +45,8 @@ export function CompanySettings({ company, onCompanyUpdate }: CompanySettingsPro
     form.reset({
       name: company.name || '',
       logo: company.logo || '',
-      n8nProductionUrl: company.n8nProductionUrl || '',
-      n8nTestUrl: company.n8nTestUrl || '',
+      n8nProductionUrl: '',
+      n8nTestUrl: '',
     });
   }, [company, form]);
 
@@ -156,9 +155,9 @@ export function CompanySettings({ company, onCompanyUpdate }: CompanySettingsPro
                       </button>
 
                       <div className="space-y-2">
-                        <FormDescription className="text-base text-[#584237]">
+                        <p className="text-base text-[#584237]">
                           Recomendado: 512x512px. PNG ou SVG.
-                        </FormDescription>
+                        </p>
                         <button
                           type="button"
                           onClick={() => {
@@ -177,75 +176,6 @@ export function CompanySettings({ company, onCompanyUpdate }: CompanySettingsPro
                         <FormMessage />
                       </div>
                     </div>
-                  </div>
-                </FormItem>
-              )}
-            />
-          </div>
-        </section>
-
-        <section className="rounded-2xl border border-[#e0c0b1] bg-white px-6 py-7 shadow-sm">
-          <div className="mb-10 border-b border-[#ecd4c8] pb-5">
-            <div className="flex items-center gap-3 text-[#9e4300]">
-              <LinkIcon className="h-6 w-6" />
-              <h2 className="font-headline text-[2rem] font-semibold text-[#191c1e]">Configuracao de Webhooks (n8n)</h2>
-            </div>
-          </div>
-
-          <div className="space-y-8">
-            <FormField
-              control={form.control}
-              name="n8nProductionUrl"
-              render={({ field }) => (
-                <FormItem className="space-y-3">
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <FormLabel className="text-[1.05rem] font-semibold text-[#191c1e]">URL de Producao</FormLabel>
-                    <span className="rounded-full bg-[#e9edf3] px-3 py-1 text-xs font-medium uppercase tracking-[0.14em] text-[#37485f]">
-                      Prod Environment
-                    </span>
-                  </div>
-                  <div>
-                    <FormControl>
-                      <div className="relative">
-                        <LinkIcon className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#4f5f7a]" />
-                        <Input
-                          {...field}
-                          type="url"
-                          placeholder="https://seu.n8n.cloud/webhook/production..."
-                          className="h-14 rounded-2xl border-2 border-[#e0c0b1] bg-white pl-12 pr-4 font-mono text-[1rem] text-[#37485f] focus-visible:ring-[#9e4300]/20"
-                        />
-                      </div>
-                    </FormControl>
-                    <FormMessage className="mt-2" />
-                  </div>
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="n8nTestUrl"
-              render={({ field }) => (
-                <FormItem className="space-y-3">
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <FormLabel className="text-[1.05rem] font-semibold text-[#191c1e]">URL de Teste</FormLabel>
-                    <span className="rounded-full bg-[#e9edf3] px-3 py-1 text-xs font-medium uppercase tracking-[0.14em] text-[#54637c]">
-                      Staging
-                    </span>
-                  </div>
-                  <div>
-                    <FormControl>
-                      <div className="relative">
-                        <Terminal className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#4f5f7a]" />
-                        <Input
-                          {...field}
-                          type="url"
-                          placeholder="https://seu.n8n.cloud/webhook-test/..."
-                          className="h-14 rounded-2xl border-2 border-[#e0c0b1] bg-white pl-12 pr-4 font-mono text-[1rem] text-[#37485f] focus-visible:ring-[#9e4300]/20"
-                        />
-                      </div>
-                    </FormControl>
-                    <FormMessage className="mt-2" />
                   </div>
                 </FormItem>
               )}

@@ -3,7 +3,7 @@ import type { SafetyFormValues, Company } from '@/lib/types';
 import type { SafetyAnalysisOutput, ProtectiveEquipmentOutput } from '@/server/ai-actions';
 import { Logo } from '@/components/icons/logo';
 import { PTPreview } from './pt-preview';
-import { ClipboardList, Construction, ShieldCheck, Users } from 'lucide-react';
+import { ClipboardList, Construction, ShieldCheck, UserCheck, Users } from 'lucide-react';
 import { ptBr } from '@/lib/data/strings';
 import { DOCUMENT_TYPES } from '@/lib/constants';
 
@@ -13,6 +13,7 @@ interface PrintPreviewProps {
   equipmentData: ProtectiveEquipmentOutput | null;
   company: Company | null;
   error?: string | null;
+  renderMode?: 'preview' | 'pdf';
 }
 
 const COLORS = {
@@ -32,16 +33,31 @@ const headingFont = '"Hanken Grotesk", Inter, Arial, sans-serif';
 const bodyFont = 'Inter, Arial, sans-serif';
 const monoFont = '"JetBrains Mono", "Courier New", monospace';
 
-const pageStyle: React.CSSProperties = {
-  width: '210mm',
-  minHeight: '297mm',
-  background: COLORS.white,
-  color: COLORS.text,
-  position: 'relative',
-  padding: '20mm 20mm 16mm',
-  fontFamily: bodyFont,
-  boxSizing: 'border-box',
-};
+function getPageStyle(renderMode: 'preview' | 'pdf'): React.CSSProperties {
+  if (renderMode === 'pdf') {
+    return {
+      width: '100%',
+      minHeight: 'auto',
+      background: COLORS.white,
+      color: COLORS.text,
+      position: 'relative',
+      padding: 0,
+      fontFamily: bodyFont,
+      boxSizing: 'border-box',
+    };
+  }
+
+  return {
+    width: '210mm',
+    minHeight: '297mm',
+    background: COLORS.white,
+    color: COLORS.text,
+    position: 'relative',
+    padding: '20mm 20mm 16mm',
+    fontFamily: bodyFont,
+    boxSizing: 'border-box',
+  };
+}
 
 const emptyTextStyle: React.CSSProperties = {
   color: '#8c7165',
@@ -267,12 +283,14 @@ function APRPreviewContent({
   formData,
   analysisData,
   company,
+  renderMode,
 }: {
   formData: SafetyFormValues;
   analysisData: SafetyAnalysisOutput | null;
   equipmentData: ProtectiveEquipmentOutput | null;
   company: Company | null;
   error?: string | null;
+  renderMode: 'preview' | 'pdf';
 }) {
   const procedures = getProcedureRows(formData, analysisData);
   const teamMembers = (formData.teamMembers || []).filter((member) => member.name || member.role || member.signatureData);
@@ -281,8 +299,9 @@ function APRPreviewContent({
   const headerDate = formatDate(formData.startDate) || footerDate;
   const revision = '04';
   const aprId = buildAprId(formData);
+  const hasCompanyLogo = Boolean(company?.logo);
   return (
-    <div style={pageStyle}>
+    <div style={getPageStyle(renderMode)}>
       <header
         style={{
           display: 'grid',
@@ -300,21 +319,45 @@ function APRPreviewContent({
             justifyContent: 'center',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <Logo style={{ width: 42, height: 42, color: COLORS.primaryStrong }} />
-            <span
+          {hasCompanyLogo ? (
+            <div
               style={{
-                fontFamily: headingFont,
-                fontSize: 25,
-                lineHeight: 1,
-                fontWeight: 700,
-                color: COLORS.primaryStrong,
-                letterSpacing: '-0.03em',
+                width: '100%',
+                height: 74,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                overflow: 'hidden',
               }}
             >
-              PhiDocs
-            </span>
-          </div>
+              <img
+                src={company?.logo}
+                alt={company?.name || 'Logo da empresa'}
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'contain',
+                  display: 'block',
+                }}
+              />
+            </div>
+          ) : (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <Logo style={{ width: 42, height: 42, color: COLORS.primaryStrong, flexShrink: 0 }} />
+              <span
+                style={{
+                  fontFamily: headingFont,
+                  fontSize: 25,
+                  lineHeight: 1.05,
+                  fontWeight: 700,
+                  color: COLORS.primaryStrong,
+                  letterSpacing: '-0.03em',
+                }}
+              >
+                PhiDocs
+              </span>
+            </div>
+          )}
         </div>
 
         <div
@@ -528,45 +571,91 @@ function APRPreviewContent({
         </table>
       </section>
 
-      <section style={{ marginTop: 'auto', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 40 }}>
-        {Array.from({ length: 2 }).map((_, index) => {
-          const person = responsibles[index];
+      <section
+        style={{
+          marginTop: 28,
+          breakInside: 'avoid',
+          pageBreakInside: 'avoid',
+        }}
+      >
+        <SectionTitle
+          index="4"
+          title="Responsaveis"
+          icon={<UserCheck size={16} strokeWidth={2.2} />}
+        />
 
-          return (
-            <div key={`responsible-${index}`} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: '1fr 1fr',
+            columnGap: 28,
+            rowGap: 24,
+          }}
+        >
+          {responsibles.length > 0 ? (
+            responsibles.map((person, index) => (
               <div
+                key={`responsible-${index}`}
                 style={{
-                  width: '100%',
-                  height: 48,
-                  borderBottom: `1px solid ${COLORS.text}`,
-                  marginBottom: 8,
+                  minHeight: 96,
                   display: 'flex',
-                  alignItems: 'flex-end',
-                  justifyContent: 'center',
+                  flexDirection: 'column',
+                  justifyContent: 'flex-end',
+                  alignItems: 'center',
+                  breakInside: 'avoid',
+                  pageBreakInside: 'avoid',
                 }}
               >
-                {person?.signatureData ? <SignatureCell signatureData={person.signatureData} /> : null}
+                <div
+                  style={{
+                    width: '100%',
+                    minHeight: 54,
+                    borderBottom: `1px solid ${COLORS.text}`,
+                    marginBottom: 8,
+                    display: 'flex',
+                    alignItems: 'flex-end',
+                    justifyContent: 'center',
+                    paddingBottom: 4,
+                  }}
+                >
+                  {person.signatureData ? <SignatureCell signatureData={person.signatureData} /> : null}
+                </div>
+                <div style={{ fontSize: 13.5, lineHeight: 1.25, fontWeight: 700, color: COLORS.text, textAlign: 'center' }}>
+                  {person.name || <span style={emptyTextStyle}>{ptBr.other.notFilled}</span>}
+                </div>
+                <div
+                  style={{
+                    marginTop: 4,
+                    fontFamily: monoFont,
+                    fontSize: 10,
+                    lineHeight: 1.2,
+                    letterSpacing: '0.06em',
+                    textTransform: 'uppercase',
+                    color: COLORS.secondary,
+                    textAlign: 'center',
+                  }}
+                >
+                  {person.role || 'Responsavel'}
+                </div>
               </div>
-              <div style={{ fontSize: 13.5, lineHeight: 1.25, fontWeight: 700, color: COLORS.text, textAlign: 'center' }}>
-                {person?.name || <span style={emptyTextStyle}>{ptBr.other.notFilled}</span>}
-              </div>
-              <div
-                style={{
-                  marginTop: 4,
-                  fontFamily: monoFont,
-                  fontSize: 10,
-                  lineHeight: 1.2,
-                  letterSpacing: '0.06em',
-                  textTransform: 'uppercase',
-                  color: COLORS.secondary,
-                  textAlign: 'center',
-                }}
-              >
-                {person?.role || 'Responsavel'}
-              </div>
+            ))
+          ) : (
+            <div
+              style={{
+                gridColumn: '1 / -1',
+                minHeight: 72,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                border: `1px dashed ${COLORS.border}`,
+                color: COLORS.secondary,
+                fontStyle: 'italic',
+              }}
+            >
+              Nenhum responsavel adicionado.
             </div>
-          );
-        })}
+          )}
+        </div>
       </section>
 
       <footer
@@ -611,7 +700,7 @@ function APRPreviewContent({
   );
 }
 
-export function PrintPreview({ formData, analysisData, equipmentData, company, error }: PrintPreviewProps) {
+export function PrintPreview({ formData, analysisData, equipmentData, company, error, renderMode = 'preview' }: PrintPreviewProps) {
   const documentType = formData?.documentType;
 
   return (
@@ -619,7 +708,7 @@ export function PrintPreview({ formData, analysisData, equipmentData, company, e
       <div
         id="print-content-root"
         className="print-document-container bg-white shadow-lg"
-        style={{ width: '210mm', minHeight: '297mm' }}
+        style={renderMode === 'pdf' ? { width: '100%', minHeight: 'auto' } : { width: '210mm', minHeight: '297mm' }}
       >
         {documentType === DOCUMENT_TYPES.APR ? (
           <APRPreviewContent
@@ -628,6 +717,7 @@ export function PrintPreview({ formData, analysisData, equipmentData, company, e
             equipmentData={equipmentData}
             company={company}
             error={error}
+            renderMode={renderMode}
           />
         ) : (
           <PTPreview formData={formData} company={company} />
