@@ -10,6 +10,7 @@ import type { SavedDocument, SignatureDocument } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { UserNav } from '@/components/auth/user-nav';
+import { Logo } from '@/components/icons/logo';
 import { createSupabaseBrowserClient } from '@/supabase/browser';
 import { signOut } from '@/server/auth-actions';
 import {
@@ -39,7 +40,6 @@ import {
   Download,
   EllipsisVertical,
   Eye,
-  FileBadge2,
   FileCheck2,
   FileClock,
   FilePenLine,
@@ -369,14 +369,9 @@ export default function DocumentsPage() {
     <div className="min-h-screen bg-[#f7f9fc]">
       <aside className="fixed left-0 top-0 z-50 hidden h-screen w-64 flex-col border-r border-[#e0c0b1] bg-[#f2f4f7] py-4 lg:flex">
         <div className="px-4 pb-8">
-          <div className="flex items-center gap-4">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#9e4300] text-white">
-              <FileBadge2 className="h-5 w-5" />
-            </div>
-            <div>
-              <h2 className="font-headline text-[2rem] font-semibold leading-tight text-[#9e4300]">PhiDocs</h2>
-              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#4f5f7a]">Safety Compliance AI</p>
-            </div>
+          <div className="space-y-3">
+            <Logo className="h-auto w-[210px]" />
+            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#4f5f7a]">Safety Compliance AI</p>
           </div>
         </div>
 
@@ -425,7 +420,7 @@ export default function DocumentsPage() {
       <div className="lg:pl-64">
         <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b border-[#e0c0b1] bg-white px-6 shadow-sm">
           <div className="flex items-center gap-6">
-            <h1 className="font-headline text-[2rem] font-semibold tracking-tight text-[#9e4300]">PhiDocs</h1>
+            <Logo className="h-auto w-[170px]" />
             <nav className="hidden items-center gap-6 md:flex">
               <Link href="/reports" className="text-[1rem] text-[#584237] transition-colors hover:text-[#9e4300]">
                 Relatorios

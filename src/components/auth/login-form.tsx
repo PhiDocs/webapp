@@ -99,10 +99,7 @@ export function LoginForm() {
     <>
     <div className="flex flex-col items-center m-32 gap-16 justify-center ">
         <div className="top-8 flex items-center gap-3">
-            <Logo className="h-8 w-8 text-primary" />
-            <h1 className="text-xl font-bold text-foreground font-headline">
-                {ptBr.header.title}
-            </h1>
+            <Logo className="h-auto w-[260px]" />
         </div>
         <Card className="w-full max-w-sm">
           <CardHeader>

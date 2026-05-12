@@ -35,6 +35,9 @@ import {
   Users,
   ShieldCheck,
   Pencil,
+  Loader2,
+  CheckCircle2,
+  Lightbulb,
 } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { PTForm } from './pt-form';
@@ -93,6 +96,9 @@ export function SafetyForm({
 
   const documentType = useWatch({ control: form.control, name: 'documentType' });
   const workId = useWatch({ control: form.control, name: 'workId' });
+  const workName = useWatch({ control: form.control, name: 'workName' });
+  const startDate = useWatch({ control: form.control, name: 'startDate' });
+  const endDate = useWatch({ control: form.control, name: 'endDate' });
   const activityDescription = useWatch({ control: form.control, name: 'activityDescription' });
   const analysisSteps = useWatch({ control: form.control, name: 'analysisSteps' });
   const teamMembers = useWatch({ control: form.control, name: 'teamMembers' });
@@ -209,8 +215,10 @@ export function SafetyForm({
   );
 
 
-  const hasManualAnalysis = Array.isArray(analysisSteps)
+  const hasGeneratedAnalysis = Array.isArray(analysisSteps)
     && analysisSteps.some((step) => (step?.activity || step?.potentialRisks || step?.preventiveMeasures));
+  const canFillActivity = Boolean(workId && workName && startDate && endDate);
+  const canGenerateAnalysis = Boolean(activityDescription?.trim().length);
   const hasTeamMembers = Array.isArray(teamMembers)
     && teamMembers.some((member) => (member?.employeeId || member?.name));
   const hasResponsibles = Array.isArray(responsiblePersons)
@@ -411,49 +419,83 @@ export function SafetyForm({
                     </div>
                   </div>
 
-                  <div className="mb-5">
-                    <div className="overflow-hidden rounded-md border border-[#e6cfc1] bg-white shadow-sm">
-                      <div className="bg-[#5f7394] px-5 py-3 text-white">
-                        <FormLabel className="flex items-center font-headline text-h3 text-white">
-                          <BookOpen className="inline-block mr-2" /> {ptBr.safetyForm.activityDescription}
-                        </FormLabel>
-                      </div>
+                  {canFillActivity ? (
+                    <div className="mb-5">
+                      <div className="overflow-hidden rounded-md border border-[#e6cfc1] bg-white shadow-sm">
+                        <div className="bg-[#5f7394] px-5 py-3 text-white">
+                          <FormLabel className="flex items-center font-headline text-h3 text-white">
+                            <BookOpen className="inline-block mr-2" /> {ptBr.safetyForm.activityDescription}
+                          </FormLabel>
+                        </div>
                         <div className="space-y-4 px-5 pb-5 pt-4">
-                       <FormField
-                         control={form.control}
-                         name="activityDescription"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormControl>
-                              <Textarea
-                                placeholder={ptBr.safetyForm.activityDescriptionPlaceholder}
-                                className="min-h-[128px] resize-none rounded-md border-[#ccb4a6]"
-                                {...field}
-                              />
-                            </FormControl>
-                             <FormMessage />
-                           </FormItem>
-                         )}
-                       />
-                        <div className="flex justify-end">
-                          <Button
-                            type="button"
-                            disabled={isLoading}
-                            className="rounded-md bg-[#f46e11] px-6 text-white hover:bg-[#e96710]"
-                            onClick={async () => {
-                              const isValid = await form.trigger('activityDescription');
-                              if (isValid) {
-                                onSubmit(form.getValues());
-                              }
-                            }}
-                          >
-                            {isLoading ? ptBr.actions.generatingAnalysis : ptBr.actions.generateAnalysis}
-                          </Button>
+                          <div className="flex items-start gap-2 rounded-md border border-[#f0c8aa] bg-[#fff4e8] px-3 py-2 text-sm text-[#7a3300]">
+                            <Lightbulb className="mt-0.5 h-4 w-4 shrink-0 text-[#f46e11]" />
+                            <p>
+                              Explique qual APR voce quer gerar. Exemplo: limpar calhas a 15 metros de altura.
+                            </p>
+                          </div>
+                          <FormField
+                            control={form.control}
+                            name="activityDescription"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormControl>
+                                  <Textarea
+                                    placeholder={ptBr.safetyForm.activityDescriptionPlaceholder}
+                                    className="min-h-[128px] resize-none rounded-md border-[#ccb4a6]"
+                                    {...field}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          {isLoading && (
+                            <div className="space-y-2 rounded-md border border-[#e6cfc1] bg-[#fff8f2] p-3">
+                              <div className="flex items-center gap-2 text-sm font-medium text-[#9e4300]">
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                                Gerando analise de seguranca...
+                              </div>
+                              <div className="h-2 overflow-hidden rounded-full bg-[#eceef1]">
+                                <div className="h-full w-2/3 animate-pulse rounded-full bg-[#f46e11]" />
+                              </div>
+                            </div>
+                          )}
+
+                          {hasGeneratedAnalysis && !isLoading && (
+                            <div className="flex items-start gap-2 rounded-md border border-[#b7dfc5] bg-[#eefaf2] px-3 py-2 text-sm font-medium text-[#116329]">
+                              <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" />
+                              Analise gerada. Verifique o resultado na pre-visualizacao do PDF.
+                            </div>
+                          )}
+
+                          <div className="flex justify-end">
+                            <Button
+                              type="button"
+                              disabled={isLoading || !canGenerateAnalysis}
+                              className="rounded-md bg-[#f46e11] px-6 text-white hover:bg-[#e96710]"
+                              onClick={async () => {
+                                const isValid = await form.trigger('activityDescription');
+                                if (isValid) {
+                                  onSubmit(form.getValues());
+                                }
+                              }}
+                            >
+                              {isLoading ? ptBr.actions.generatingAnalysis : ptBr.actions.generateAnalysis}
+                            </Button>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
+                  ) : (
+                    <div className="mb-5 rounded-md border border-dashed border-[#ccb4a6] bg-white px-5 py-4 text-sm text-[#4f5f7a] shadow-sm">
+                      Complete os dados da obra para liberar a descricao da atividade.
+                    </div>
+                  )}
 
+                  {hasGeneratedAnalysis && (
+                    <>
                   <div className="mb-5">
                     <div className="overflow-hidden rounded-md border border-[#e6cfc1] bg-white shadow-sm">
                       <div className="flex flex-col gap-3 bg-[#5f7394] px-5 py-3 text-white sm:flex-row sm:items-center sm:justify-between">
@@ -572,25 +614,6 @@ export function SafetyForm({
                       </div>
                     </div>
                   </div>
-                  {analysisStepFields.length > 0 && (
-                    <div className="flex justify-center">
-                      <Button
-                        type="button"
-                        disabled={isLoading}
-                        className="rounded-md bg-[#f46e11] px-6 text-white hover:bg-[#e96710]"
-                        onClick={async () => {
-                          const isValid = await form.trigger('activityDescription');
-                          if (isValid) {
-                            onSubmit(form.getValues());
-                          }
-                        }}
-                      >
-                        {isLoading
-                          ? ptBr.actions.generatingAnalysis
-                          : ptBr.actions.generateAnalysis}
-                      </Button>
-                    </div>
-                  )}
                   <div className="mb-5">
                     <div className="overflow-hidden rounded-md border border-[#e6cfc1] bg-white shadow-sm">
                       <div className="flex flex-col gap-3 bg-[#5f7394] px-5 py-3 text-white sm:flex-row sm:items-center sm:justify-between">
@@ -977,6 +1000,8 @@ export function SafetyForm({
                       </div>
                     </div>
                   </div>
+                    </>
+                  )}
                 </div>
             )}
           </form>

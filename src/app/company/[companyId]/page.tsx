@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { UserNav } from '@/components/auth/user-nav';
 import { useSession } from '@/components/auth/session-provider';
+import { Logo } from '@/components/icons/logo';
 import { getCompanyById } from '@/server/company-actions';
 import type { Company } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -151,7 +152,7 @@ export default function CompanyPage() {
     return (
       <div className="min-h-screen bg-[#f7f9fc]">
         <div className="flex h-16 items-center border-b border-[#e6cfc1] bg-[#f8f8f8] px-6">
-          <span className="font-headline text-h3 tracking-tight text-[#9e4300]">PhiDocs</span>
+          <Logo className="h-auto w-[170px]" />
         </div>
         <div className="mx-auto flex max-w-[1600px] gap-6 px-6 py-8">
           <Skeleton className="hidden h-[720px] w-80 rounded-none lg:block" />
@@ -169,7 +170,7 @@ export default function CompanyPage() {
     <div className="min-h-screen bg-[#f7f9fc]">
       <header className="fixed inset-x-0 top-0 z-30 flex h-16 items-center border-b border-[#e6cfc1] bg-[#f8f8f8] px-6 shadow-sm">
         <div className="flex items-center gap-4">
-          <span className="font-headline text-[2.1rem] font-semibold tracking-tight text-[#9e4300]">PhiDocs</span>
+          <Logo className="h-auto w-[170px]" />
           <nav className="ml-8 hidden items-center gap-10 text-body-md text-[#584237] md:flex">
             <Link href="/reports" className="transition-colors hover:text-[#b74813]">
               Relatorios
@@ -205,12 +206,10 @@ export default function CompanyPage() {
 
       <aside className="fixed left-0 top-16 z-20 hidden h-[calc(100vh-4rem)] w-80 flex-col border-r border-[#e0c0b1] bg-[#f3f4f6] lg:flex">
         <div className="px-8 pb-8 pt-7">
-          <div className="flex items-center gap-4">
-            <div className="rounded-xl p-2 text-[#9e4300]">
-              <Shield className="h-10 w-10" />
-            </div>
+          <div className="space-y-4">
+            <Logo className="h-auto w-[210px]" />
             <div>
-              <h1 className="font-headline text-[2rem] font-semibold leading-9 text-[#191c1e]">Gestao PhiDocs</h1>
+              <h1 className="font-headline text-[2rem] font-semibold leading-9 text-[#191c1e]">Gestao</h1>
               <p className="mt-2 text-[1rem] text-[#4f5f7a]">Safety Compliance AI</p>
             </div>
           </div>

@@ -26,7 +26,7 @@ const COLORS = {
   border: '#e0c0b1',
   borderSoft: '#dfe3e8',
   headerFill: '#eceff3',
-  watermark: 'rgba(158,67,0,0.16)',
+  watermark: 'rgba(158,67,0,0.08)',
 };
 
 const headingFont = '"Hanken Grotesk", Inter, Arial, sans-serif';
@@ -342,20 +342,8 @@ function APRPreviewContent({
               />
             </div>
           ) : (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <Logo style={{ width: 42, height: 42, color: COLORS.primaryStrong, flexShrink: 0 }} />
-              <span
-                style={{
-                  fontFamily: headingFont,
-                  fontSize: 25,
-                  lineHeight: 1.05,
-                  fontWeight: 700,
-                  color: COLORS.primaryStrong,
-                  letterSpacing: '-0.03em',
-                }}
-              >
-                PhiDocs
-              </span>
+            <div style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Logo style={{ width: 168, height: 'auto', display: 'block' }} />
             </div>
           )}
         </div>
@@ -574,6 +562,7 @@ function APRPreviewContent({
       <section
         style={{
           marginTop: 28,
+          marginBottom: 42,
           breakInside: 'avoid',
           pageBreakInside: 'avoid',
         }}
@@ -589,7 +578,8 @@ function APRPreviewContent({
             display: 'grid',
             gridTemplateColumns: '1fr 1fr',
             columnGap: 28,
-            rowGap: 24,
+            rowGap: 34,
+            paddingBottom: 24,
           }}
         >
           {responsibles.length > 0 ? (
@@ -597,7 +587,7 @@ function APRPreviewContent({
               <div
                 key={`responsible-${index}`}
                 style={{
-                  minHeight: 96,
+                  minHeight: 112,
                   display: 'flex',
                   flexDirection: 'column',
                   justifyContent: 'flex-end',
@@ -660,7 +650,7 @@ function APRPreviewContent({
 
       <footer
         style={{
-          marginTop: 18,
+          marginTop: 8,
           paddingTop: 8,
           borderTop: `1px solid ${COLORS.borderSoft}`,
           display: 'flex',
@@ -670,6 +660,8 @@ function APRPreviewContent({
           fontSize: 9,
           lineHeight: 1.15,
           color: COLORS.secondary,
+          position: 'relative',
+          zIndex: 2,
         }}
       >
         <div>
@@ -685,16 +677,17 @@ function APRPreviewContent({
         style={{
           position: 'absolute',
           right: 28,
-          bottom: 36,
+          bottom: 50,
           display: 'flex',
           alignItems: 'center',
           gap: 8,
           color: COLORS.watermark,
           pointerEvents: 'none',
+          zIndex: 0,
+          opacity: 0.45,
         }}
       >
-        <Logo style={{ width: 42, height: 42 }} />
-        <span style={{ fontFamily: headingFont, fontSize: 28, fontWeight: 700, letterSpacing: '-0.03em' }}>PHIDOCS</span>
+        <Logo style={{ width: 132, height: 'auto' }} />
       </div>
     </div>
   );

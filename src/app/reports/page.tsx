@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef, type MouseEvent } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import type { SafetyAnalysisOutput, ProtectiveEquipmentOutput } from '@/server/ai-actions';
 import type { SafetyFormValues, Work, Employee, Company } from '@/lib/types';
@@ -15,6 +15,7 @@ import { useToast } from '@/hooks/use-toast';
 import { FormPanel } from '@/components/form-panel';
 import { ptBr } from '@/lib/data/strings';
 import { DOCUMENT_TYPES } from '@/lib/constants';
+import { Logo } from '@/components/icons/logo';
 import { PrintPreview } from '@/components/print-preview';
 import { UserNav } from '@/components/auth/user-nav';
 import { useSession } from '@/components/auth/session-provider';
@@ -26,14 +27,12 @@ import { Bell, Briefcase, CircleHelp, HardHat, LogOut, Plus, Settings, Shield, U
 import { Button } from '@/components/ui/button';
 import {
   AlertDialog,
-  AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { createSupabaseBrowserClient } from '@/supabase/browser';
 import { signOut } from '@/server/auth-actions';
@@ -88,6 +87,9 @@ export default function ReportsPage() {
   const [showPreview, setShowPreview] = useState(true);
   const [isPreviewMinimized, setIsPreviewMinimized] = useState(false);
   const [previewPanelWidth, setPreviewPanelWidth] = useState(DEFAULT_PREVIEW_PANEL_WIDTH);
+  const [unsavedDialogOpen, setUnsavedDialogOpen] = useState(false);
+  const [pendingNavigation, setPendingNavigation] = useState<(() => void) | null>(null);
+  const [unsavedDialogMode, setUnsavedDialogMode] = useState<'new-report' | 'leave'>('leave');
   const { toast } = useToast();
 
   const form = useForm<SafetyFormValues>({
@@ -151,6 +153,18 @@ export default function ReportsPage() {
   const liveFormData = form.watch();
   const watchedAnalysisSteps = useWatch({ control: form.control, name: 'analysisSteps' });
   const analysis = useMemo(() => normalizeAnalysisSteps(watchedAnalysisSteps), [watchedAnalysisSteps]);
+  const hasUnsavedChanges = form.formState.isDirty;
+
+  useEffect(() => {
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      if (!hasUnsavedChanges) return;
+      event.preventDefault();
+      event.returnValue = '';
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [hasUnsavedChanges]);
 
   useEffect(() => {
     if (user?.companyId) {
@@ -282,7 +296,7 @@ export default function ReportsPage() {
   const handleSaveDraft = async () => {
     if (!company?.id) {
       toast({ variant: 'destructive', title: 'Erro', description: 'Empresa nao identificada.' });
-      return;
+      return false;
     }
 
     setIsSavingDraft(true);
@@ -305,11 +319,50 @@ export default function ReportsPage() {
 
       form.reset(form.getValues());
       toast({ title: 'Rascunho salvo', description: 'O documento foi salvo com sucesso.' });
+      return true;
     } catch (saveError: any) {
       toast({ variant: 'destructive', title: 'Erro ao salvar', description: saveError.message });
+      return false;
     } finally {
       setIsSavingDraft(false);
     }
+  };
+
+  const clearUnsavedDialog = () => {
+    setUnsavedDialogOpen(false);
+    setPendingNavigation(null);
+  };
+
+  const requestNavigation = (action: () => void, mode: 'new-report' | 'leave' = 'leave') => {
+    if (!hasUnsavedChanges) {
+      action();
+      return;
+    }
+
+    setUnsavedDialogMode(mode);
+    setPendingNavigation(() => action);
+    setUnsavedDialogOpen(true);
+  };
+
+  const handleSaveAndContinue = async () => {
+    const saved = await handleSaveDraft();
+    if (!saved) return;
+
+    const action = pendingNavigation;
+    clearUnsavedDialog();
+    action?.();
+  };
+
+  const handleContinueWithoutSaving = () => {
+    const action = pendingNavigation;
+    clearUnsavedDialog();
+    action?.();
+  };
+
+  const handleGuardedLinkClick = (event: MouseEvent<HTMLAnchorElement>, href: string) => {
+    if (!hasUnsavedChanges) return;
+    event.preventDefault();
+    requestNavigation(() => router.push(href), 'leave');
   };
 
   const handleSendForSignature = async () => {
@@ -416,12 +469,12 @@ export default function ReportsPage() {
       <div className="no-print min-h-screen bg-[#f7f9fc]">
         <header className="fixed inset-x-0 top-0 z-30 flex h-16 items-center border-b border-[#e6cfc1] bg-[#f8f8f8] px-6 shadow-sm">
           <div className="flex items-center gap-4">
-            <span className="font-headline text-h3 tracking-tight text-[#9e4300]">PhiDocs</span>
+            <Logo className="h-auto w-[170px]" />
             <nav className="ml-10 hidden items-center gap-10 md:flex text-body-md text-[#584237]">
-              <Link href="/reports" className="border-b-2 border-[#9e4300] pb-1 font-semibold text-[#9e4300]">
+              <Link href="/reports" onClick={(event) => handleGuardedLinkClick(event, '/reports')} className="border-b-2 border-[#9e4300] pb-1 font-semibold text-[#9e4300]">
                 Relatorios
               </Link>
-              <Link href="/documents" className="transition-colors hover:text-[#b74813]">
+              <Link href="/documents" onClick={(event) => handleGuardedLinkClick(event, '/documents')} className="transition-colors hover:text-[#b74813]">
                 Documentos
               </Link>
             </nav>
@@ -439,13 +492,10 @@ export default function ReportsPage() {
 
          <aside className="fixed inset-y-0 left-0 top-16 z-20 hidden w-64 flex-col border-r border-[#e6cfc1] bg-[#f3f4f6] lg:flex">
           <div className="px-4 py-5">
-            <div className="mb-4 flex items-center gap-2">
-              <div className="flex h-12 w-auto items-center justify-center rounded bg-white px-2 shadow-sm">
-                <span className="text-[8px] font-bold text-[#f46e11]">Phi</span>
-              </div>
-              <span className="font-code text-code-label text-[#1f2b3e]">PhiDocs</span>
+            <div className="mb-4">
+              <Logo className="h-auto w-[210px]" />
             </div>
-            <h1 className="font-headline text-h3 text-[#191c1e]">Gestao PhiDocs</h1>
+            <h1 className="font-headline text-h3 text-[#191c1e]">Gestao</h1>
             <p className="mt-1 text-body-sm italic text-[#4f5f7a]">AI Safety &amp; Compliance</p>
           </div>
 
@@ -457,6 +507,12 @@ export default function ReportsPage() {
                   <li key={item.label}>
                     <Link
                       href={companyPanelHref(item.section)}
+                      onClick={(event) => {
+                        const href = companyPanelHref(item.section);
+                        if (href !== '#') {
+                          handleGuardedLinkClick(event, href);
+                        }
+                      }}
                       className="flex items-center gap-4 rounded-md px-4 py-3 text-body-sm text-[#4f5f7a] transition-colors hover:bg-[#e6e8eb] hover:text-[#191c1e]"
                     >
                       <Icon className="h-4 w-4" />
@@ -469,24 +525,13 @@ export default function ReportsPage() {
           </nav>
 
           <div className="mt-auto border-t border-[#e0c0b1] px-4 py-4">
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button className="h-12 w-full rounded-md bg-[#f46e11] font-semibold text-white hover:bg-[#e96710]">
-                  <Plus className="h-4 w-4" />
-                  Novo Relatorio
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>{ptBr.formPanel.newReportConfirmation.title}</AlertDialogTitle>
-                  <AlertDialogDescription>{ptBr.formPanel.newReportConfirmation.description}</AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>{ptBr.actions.cancel}</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleNewReport}>{ptBr.actions.continue}</AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
+            <Button
+              className="h-12 w-full rounded-md bg-[#f46e11] font-semibold text-white hover:bg-[#e96710]"
+              onClick={() => requestNavigation(handleNewReport, 'new-report')}
+            >
+              <Plus className="h-4 w-4" />
+              Novo Relatorio
+            </Button>
 
             <div className="mt-6 space-y-1 pb-4">
               <Button variant="ghost" className="w-full justify-start rounded-md px-4 py-3 text-body-sm text-[#4f5f7a] hover:bg-[#e6e8eb] hover:text-[#191c1e]">
@@ -495,7 +540,7 @@ export default function ReportsPage() {
               </Button>
               <Button
                 variant="ghost"
-                onClick={handleSignOut}
+                onClick={() => requestNavigation(handleSignOut, 'leave')}
                 className="w-full justify-start rounded-md px-4 py-3 text-body-sm text-[#4f5f7a] hover:bg-[#e6e8eb] hover:text-[#191c1e]"
               >
                 <LogOut className="h-4 w-4" />
@@ -557,6 +602,40 @@ export default function ReportsPage() {
           error={analysis?.proceduralSteps?.length ? null : error}
         />
       </div>
+
+      <AlertDialog open={unsavedDialogOpen} onOpenChange={setUnsavedDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {unsavedDialogMode === 'new-report' ? 'Comecar novo relatorio?' : 'Sair sem salvar?'}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {unsavedDialogMode === 'new-report'
+                ? 'Voce tem alteracoes nao salvas. Salve o rascunho antes de limpar este formulario ou continue sem salvar.'
+                : 'Voce tem alteracoes nao salvas neste documento. Salve o rascunho antes de sair desta pagina ou continue sem salvar.'}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="gap-2 sm:justify-end">
+            <AlertDialogCancel onClick={clearUnsavedDialog}>{ptBr.actions.cancel}</AlertDialogCancel>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleContinueWithoutSaving}
+              className="rounded-md border-[#ccb4a6] text-[#584237] hover:bg-[#fff4e8]"
+            >
+              Continuar sem salvar
+            </Button>
+            <Button
+              type="button"
+              onClick={handleSaveAndContinue}
+              disabled={isSavingDraft}
+              className="rounded-md bg-[#f46e11] text-white hover:bg-[#e96710]"
+            >
+              {isSavingDraft ? 'Salvando...' : 'Salvar rascunho'}
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }
