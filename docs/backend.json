@@ -2,13 +2,13 @@
   "entities": {
     "user": {
       "title": "User",
-      "description": "Represents a user in the system.",
+      "description": "Represents a user profile in the system.",
       "type": "object",
       "properties": {
-        "uid": { "type": "string", "description": "The user's unique ID from Firebase Auth." },
+        "uid": { "type": "string", "description": "The user UUID from Supabase Auth (auth.users.id)." },
         "name": { "type": "string", "description": "The user's full name." },
         "email": { "type": "string", "format": "email", "description": "The user's email address." },
-        "role": { "type": "string", "enum": ["admin", "user"], "description": "The user's role, as stored in Firestore. The source of truth for authorization is the custom claim." },
+        "role": { "type": "string", "enum": ["admin", "user"], "description": "Application role stored in public.users." },
         "companyId": { "type": "string", "description": "ID of the company the user belongs to." },
         "createdAt": { "type": "string", "format": "date-time", "description": "Timestamp of creation." }
       },
@@ -47,9 +47,9 @@
       "properties": {
         "firstName": { "type": "string", "description": "Employee's first name." },
         "lastName": { "type": "string", "description": "Employee's last name." },
-        "roleId": { "type": "string", "description": "ID of the JobRole document." },
+        "roleId": { "type": "string", "description": "ID of the related job role record." },
         "roleName": { "type": "string", "description": "Denormalized name of the job role for quick display." },
-        "subcontractorId": { "type": "string", "description": "ID of the Subcontractor document, if applicable." },
+        "subcontractorId": { "type": "string", "description": "ID of the related subcontractor record, if applicable." },
         "subcontractorName": { "type": "string", "description": "Denormalized name of the subcontractor for quick display." },
         "email": { "type": "string", "format": "email", "description": "Employee's email address." },
         "cpf": { "type": "string", "description": "Employee's CPF (Brazilian individual taxpayer registry)." },
@@ -99,69 +99,41 @@
       "required": ["workId", "type", "createdAt", "formData"]
     },
     "errorLog": {
-        "title": "Error Log",
-        "description": "Represents a log of an error that occurred in the application for debugging purposes.",
-        "type": "object",
-        "properties": {
-            "timestamp": { "type": "string", "format": "date-time", "description": "When the error occurred." },
-            "functionName": { "type": "string", "description": "The name of the function where the error was caught (e.g., 'signUp', 'signIn')." },
-            "userEmail": { "type": "string", "description": "The email of the user involved, if available." },
-            "errorCode": { "type": "string", "description": "The specific error code from Firebase or other services." },
-            "errorMessage": { "type": "string", "description": "The detailed error message." },
-            "stackTrace": { "type": "string", "description": "The stack trace of the error, if available." }
-        },
-        "required": ["timestamp", "functionName", "errorMessage"]
+      "title": "Error Log",
+      "description": "Represents a log of an error that occurred in the application for debugging purposes.",
+      "type": "object",
+      "properties": {
+        "timestamp": { "type": "string", "format": "date-time", "description": "When the error occurred." },
+        "functionName": { "type": "string", "description": "The name of the function where the error was caught." },
+        "userEmail": { "type": "string", "description": "The email of the user involved, if available." },
+        "errorCode": { "type": "string", "description": "The specific error code returned by the provider or service." },
+        "errorMessage": { "type": "string", "description": "The detailed error message." },
+        "stackTrace": { "type": "string", "description": "The stack trace of the error, if available." }
+      },
+      "required": ["timestamp", "functionName", "errorMessage"]
     }
   },
   "auth": {
-    "providers": ["email"],
-    "customClaims": {
-        "role": {
-            "description": "Defines the user's role in the system.",
-            "type": "string",
-            "values": {
-                "admin": "Grants access to administrative routes and functionalities.",
-                "user": "Default role for standard users with access to document generation."
-            }
-        },
-        "companyId": {
-            "description": "Associates a user with a specific company.",
-            "type": "string"
-        }
+    "provider": "supabase-auth",
+    "methods": ["email_password"],
+    "authorization": {
+      "sourceOfTruth": "public.users",
+      "roleField": "role",
+      "companyField": "companyId"
     }
   },
-  "firestore": {
-    "/users/{userId}": {
-      "schema": { "$ref": "#/entities/user" },
-      "description": "Stores public profiles for users."
-    },
-    "/companies/{companyId}": {
-      "schema": { "$ref": "#/entities/company" },
-      "description": "Stores information about each company."
-    },
-    "/companies/{companyId}/employees/{employeeId}": {
-      "schema": { "$ref": "#/entities/employee" },
-      "description": "Stores employees for a specific company."
-    },
-    "/companies/{companyId}/jobRoles/{jobRoleId}": {
-      "schema": { "$ref": "#/entities/jobRole" },
-      "description": "Stores job roles for a specific company."
-    },
-    "/companies/{companyId}/subcontractors/{subcontractorId}": {
-      "schema": { "$ref": "#/entities/subcontractor" },
-      "description": "Stores subcontractors for a specific company."
-    },
-    "/works/{workId}": {
-      "schema": { "$ref": "#/entities/work" },
-      "description": "Stores information about each work site, belonging to a company."
-    },
-    "/documents/{documentId}": {
-      "schema": { "$ref": "#/entities/document" },
-      "description": "Stores all generated safety documents."
-    },
-    "/errorLogs/{logId}": {
-        "schema": { "$ref": "#/entities/errorLog" },
-        "description": "Stores application errors for debugging."
+  "database": {
+    "provider": "supabase-postgres",
+    "schema": "public",
+    "tables": {
+      "users": { "schema": { "$ref": "#/entities/user" }, "description": "Stores user profiles and authorization scope." },
+      "companies": { "schema": { "$ref": "#/entities/company" }, "description": "Stores information about each company." },
+      "works": { "schema": { "$ref": "#/entities/work" }, "description": "Stores work sites, each linked to a company." },
+      "employees": { "schema": { "$ref": "#/entities/employee" }, "description": "Stores employees for a specific company." },
+      "jobRoles": { "schema": { "$ref": "#/entities/jobRole" }, "description": "Stores job roles for a specific company." },
+      "subcontractors": { "schema": { "$ref": "#/entities/subcontractor" }, "description": "Stores subcontractors for a specific company." },
+      "documents": { "schema": { "$ref": "#/entities/document" }, "description": "Stores generated safety documents." },
+      "errorLogs": { "schema": { "$ref": "#/entities/errorLog" }, "description": "Stores application errors for debugging." }
     }
   }
 }

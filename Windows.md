@@ -6,87 +6,68 @@ This guide explains how to run the project on a Windows machine.
 
 - **Git**: https://git-scm.com/download/win
 - **Node.js (LTS)**: https://nodejs.org/
-- **Firebase CLI** (optional but recommended):
-  ```bash
-  npm install -g firebase-tools
-  ```
 - **Google Cloud CLI** (optional, for Genkit/Gemini auth):
   https://cloud.google.com/sdk/docs/install
+- **Docker Desktop** (optional, for local full stack with Supabase):
+  https://www.docker.com/products/docker-desktop/
 
 ## 2) Clone and install dependencies
 
 ```bash
 git clone <your-repo-url>
-cd studio
+cd webapp
 npm install
 ```
 
 ## 3) Environment variables
 
-Create a `.env` file in the project root. You can start from `env.template` if it exists:
+Create a `.env` file in the project root:
 
 ```bash
 copy env.template .env
 ```
 
-Fill in:
+Fill in at least:
 
-```
-FIREBASE_PROJECT_ID="your-project-id"
-FIREBASE_CLIENT_EMAIL="firebase-adminsdk-xxxx@your-project-id.iam.gserviceaccount.com"
-FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...your key...\n-----END PRIVATE KEY-----\n"
+```env
+NEXT_PUBLIC_SUPABASE_URL=""
+SUPABASE_URL_INTERNAL=""
+NEXT_PUBLIC_SUPABASE_ANON_KEY=""
+SUPABASE_SERVICE_ROLE_KEY=""
 
-# Optional (only if you are not using gcloud auth)
-GEMINI_API_KEY="your-gemini-api-key"
-
-# Optional
-N8N_PRODUCTION_URL="https://your.n8n.url/webhook/production"
+GEMINI_API_KEY=""
 GENAI_MODEL="googleai/gemini-2.5-flash"
+
+ASSINAFY_API_URL="https://api.assinafy.com.br/v1"
+ASSINAFY_API_KEY=""
+ASSINAFY_WORKSPACE_ACCOUNT_ID=""
+
+PDF_FUNCTION_URL=""
+PDF_FUNCTION_SECRET=""
+N8N_PRODUCTION_URL="https://seu.n8n.url/webhook/production"
 ```
 
-Important: in `FIREBASE_PRIVATE_KEY`, keep `\n` as literal characters in a single line.
-
-## 4) Auth for Genkit/Gemini (optional)
-
-If you prefer using Google Cloud credentials instead of `GEMINI_API_KEY`:
-
-```bash
-gcloud auth application-default login
-```
-
-## 5) Run the app
+## 4) Run the app
 
 ```bash
 npm run dev
 ```
 
 The dev server starts on:
-```
+
+```text
 http://localhost:9002
 ```
 
-## 6) Firestore rules and indexes (optional)
-
-If you change `firestore.rules` or `firestore.indexes.json`:
+## 5) Docker local (optional)
 
 ```bash
-npm run update-firestore
+copy .env.docker.example .env.docker
+docker compose --env-file .env.docker up -d --build
 ```
 
-## 7) Maintenance scripts (optional)
-
-Migration script:
-```bash
-npm run migrate-deleted-at
-```
-
-Pull Firestore rules from Firebase (requires Google auth):
-```bash
-npm run pull-firestore-rules
-```
-
-## 8) Troubleshooting
+## 6) Troubleshooting
 
 - **Node version mismatch**: install Node LTS and re-run `npm install`.
-- **Firebase auth errors**: confirm your `.env` values and that the service account is valid.
-- **Genkit/Gemini errors**: either configure `GEMINI_API_KEY` or login with `gcloud`.
+- **Supabase auth/data errors**: confirm `NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_URL_INTERNAL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` and `SUPABASE_SERVICE_ROLE_KEY`.
+- **Genkit/Gemini errors**: configure `GEMINI_API_KEY` or login with `gcloud auth application-default login`.

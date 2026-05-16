@@ -18,20 +18,20 @@ O objetivo é transformar a ferramenta de geração de documentos em uma platafo
 
 Após análise, tomamos as seguintes decisões-chave para garantir que o projeto seja escalável, manutenível e rápido de desenvolver.
 
-### 1. Escolha do Banco de Dados: Firebase (Firestore) vs. SQL
+### 1. Escolha do Banco de Dados: Supabase (Postgres)
 
-- **Decisão:** Utilizaremos o **Firebase (Firestore)** como nosso banco de dados principal.
+- **Decisão:** Utilizamos o **Supabase (Postgres)** como banco de dados principal.
 - **Justificativa:**
-    - **Velocidade de Desenvolvimento:** O Firebase é um Backend-as-a-Service (BaaS) que já integra Autenticação e Banco de Dados. Isso nos permite construir as funcionalidades diretamente, sem a necessidade de criar e manter uma API backend separada, que seria obrigatória com um banco SQL.
-    - **Funcionalidades em Tempo Real:** O Firestore facilita a implementação de interfaces que se atualizam em tempo real (ex: um painel que mostra novos dados sem recarregar a página), o que seria complexo com SQL.
-    - **Escalabilidade e Manutenção:** Como uma solução "serverless", o Firebase escala automaticamente e elimina a necessidade de gerenciarmos servidores de banco de dados.
+    - **Velocidade de Desenvolvimento:** O Supabase é um Backend-as-a-Service (BaaS) que já integra Autenticação e Banco de Dados. Isso nos permite construir as funcionalidades diretamente, sem a necessidade de criar e manter uma API backend separada, que seria obrigatória com um banco SQL.
+    - **Funcionalidades em Tempo Real:** O Postgres facilita a implementação de interfaces que se atualizam em tempo real (ex: um painel que mostra novos dados sem recarregar a página), o que seria complexo com SQL.
+    - **Escalabilidade e Manutenção:** Como uma solução "serverless", o Supabase escala automaticamente e elimina a necessidade de gerenciarmos servidores de banco de dados.
     - **Segurança Integrada:** As regras de segurança são declarativas e aplicadas diretamente no banco de dados, simplificando o controle de acesso.
 
 ### 2. Padrão de Design: Camada de Repositório (Repository Pattern)
 
 - **Decisão:** Iremos abstrair todo o acesso ao banco de dados através de uma camada de "Repositórios".
 - **Justificativa:**
-    - **Flexibilidade:** A lógica de negócio da aplicação (ex: Server Actions) não saberá que está usando o Firebase. Ela apenas chamará métodos de um repositório (ex: `userRepository.create()`). Isso nos dá a liberdade de, no futuro, trocar o Firebase por um banco SQL (ou qualquer outro) apenas reescrevendo a camada de repositório, sem impactar o resto da aplicação.
+    - **Flexibilidade:** A lógica de negócio da aplicação (ex: Server Actions) não saberá que está usando o Supabase. Ela apenas chamará métodos de um repositório (ex: `userRepository.create()`). Isso nos dá a liberdade de, no futuro, trocar o Supabase por um banco SQL (ou qualquer outro) apenas reescrevendo a camada de repositório, sem impactar o resto da aplicação.
     - **Organização e Testabilidade:** Separa claramente as responsabilidades no código e facilita a criação de testes automatizados.
 
 ### 3. Padrão de Design: Camada de Serviço (Service Layer)
@@ -47,8 +47,8 @@ A implementação será dividida em fases para garantir um desenvolvimento incre
 
 ### Fase 1: Estrutura de Backend e Autenticação (Fundação)
 
-1.  **Configurar o Backend com Firebase:**
-    - Inicializar o projeto Firebase (Authentication e Firestore).
+1.  **Configurar o Backend com Supabase:**
+    - Inicializar o projeto Supabase (Authentication e Postgres).
     - Criar a estrutura de dados inicial em `docs/backend.json` para definir `Usuários`, `Empresas` e `Obras`.
     - Implementar a primeira camada de repositório para acesso aos dados.
 
@@ -57,18 +57,18 @@ A implementação será dividida em fases para garantir um desenvolvimento incre
     - O cadastro público foi removido.
 
 3.  **Implementar Permissões e Proteção de Rotas:**
-    - Criar a lógica para diferenciar usuários `admin` e `user` (usando Custom Claims do Firebase).
+    - Criar a lógica para diferenciar usuários `admin` e `user` (usando metadados de autorização e perfil em `public.users`).
     - Proteger as páginas da aplicação para que apenas usuários logados possam acessá-las (Já implementado via Middleware).
     - Proteger áreas específicas para que apenas administradores possam acessá-las.
 
 4. **Novo Fluxo de Acesso: Convite para Administradores**
-    - **Análise Técnica:** Em vez de um cadastro público, o sistema adotará um modelo de convite para os administradores das empresas clientes. Esta é a prática de mercado para sistemas B2B, garantindo controle e segurança. A solução se baseará em **Firebase Custom Claims**.
+    - **Análise Técnica:** Em vez de um cadastro público, o sistema adotará um modelo de convite para os administradores das empresas clientes. Esta é a prática de mercado para sistemas B2B, garantindo controle e segurança. A solução se baseará em **Supabase Auth + tabela `public.users` (role/companyId)**.
     - **Requisitos Técnicos:**
-        - **Criação Manual do Admin:** O "super-admin" do Safety Docs AI criará um novo usuário diretamente no painel do **Firebase Authentication**.
-        - **Atribuição de Papel via Custom Claim:** Após a criação, o super-admin usará o **Firebase Admin SDK** (via um script local ou um Cloud Function) para atribuir um *custom claim* ao novo usuário. Ex: `{ role: 'admin', companyId: 'fk-id-empresa' }`. Este `claim` é um metadado seguro, assinado no token do usuário, e servirá como a fonte da verdade para suas permissões.
-        - **Verificação no Lado do Servidor:** O **Middleware** será atualizado para decodificar o token de sessão, ler os `custom claims` e redirecionar o usuário com base em seu papel (`admin` ou `user`), garantindo que apenas administradores acessem o painel de admin.
-        - **Primeiro Login:** Quando o usuário admin fizer login pela primeira vez, a aplicação verificará se seu documento existe no Firestore. Se não existir, uma `server action` criará o documento, populando seu papel e ID da empresa a partir dos `custom claims` lidos do token.
-    - **Justificativa:** Esta abordagem é segura porque os `custom claims` só podem ser definidos no lado do servidor, impedindo que um usuário mal-intencionado eleve seus próprios privilégios. É também escalável e desacoplado, pois a lógica de permissão fica contida no token do usuário.
+        - **Criação Manual do Admin:** O "super-admin" do Safety Docs AI criará um novo usuário diretamente no painel do **Supabase Auth**.
+        - **Atribuição de Papel via perfil interno:** Após a criação, o super-admin usará o **Supabase Auth Admin API** para criar/atualizar o usuário no Auth e garantir o perfil correspondente em `public.users` (ex.: `role='admin'` e `companyId='fk-id-empresa'`).
+        - **Verificação no Lado do Servidor:** O **Middleware** será atualizado para decodificar o token de sessão, consultar o perfil em `public.users` e redirecionar o usuário com base em seu papel (`admin` ou `user`), garantindo que apenas administradores acessem o painel de admin.
+        - **Primeiro Login:** Quando o usuário admin fizer login pela primeira vez, a aplicação verificará se seu documento existe no Postgres. Se não existir, uma `server action` criará o documento, populando seu papel e ID da empresa a partir do perfil persistido em `public.users`.
+    - **Justificativa:** Esta abordagem é segura porque a autorização fica centralizada no backend e no perfil persistido em `public.users`, com validações server-side em todas as ações sensíveis. É também escalável e desacoplado, pois a lógica de permissão fica centralizada no backend e nas validações sobre `public.users`.
 
 ### Fase 2: O Painel do Administrador (Gerenciamento Central)
 
@@ -90,7 +90,7 @@ A implementação será dividida em fases para garantir um desenvolvimento incre
 ### Fase 3: Integração e Histórico
 
 9.  **Conectar Formulários ao Banco de Dados:**
-    - Modificar o fluxo de geração de documentos (APR/PT). Ao serem criados, eles serão salvos no Firestore, vinculados a uma Obra e à Empresa do usuário logado.
+    - Modificar o fluxo de geração de documentos (APR/PT). Ao serem criados, eles serão salvos no Postgres, vinculados a uma Obra e à Empresa do usuário logado.
 
 10. **Ajustar os Formulários com Dados do Admin:**
     - Atualizar os formulários para que os campos de "Responsáveis" e "Equipe" possam ser preenchidos selecionando funcionários já cadastrados na obra.
