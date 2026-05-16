@@ -1,9 +1,9 @@
 import { createClient } from '@supabase/supabase-js';
 
 function getSupabaseUrl() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseUrl = process.env.SUPABASE_URL_INTERNAL || process.env.NEXT_PUBLIC_SUPABASE_URL;
   if (!supabaseUrl) {
-    throw new Error('NEXT_PUBLIC_SUPABASE_URL precisa estar configurada.');
+    throw new Error('SUPABASE_URL_INTERNAL ou NEXT_PUBLIC_SUPABASE_URL precisa estar configurada.');
   }
   return supabaseUrl;
 }

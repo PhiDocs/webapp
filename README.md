@@ -25,10 +25,11 @@ As server actions validam o cookie de sessão e conferem `role/companyId` antes 
 
 ## Variáveis de Ambiente
 
-Preencha o arquivo `.env` na raiz do projeto.
+Para ambiente local sem Docker, preencha o arquivo `.env` na raiz do projeto.
 
 ```env
 NEXT_PUBLIC_SUPABASE_URL=""
+SUPABASE_URL_INTERNAL=""
 NEXT_PUBLIC_SUPABASE_ANON_KEY=""
 SUPABASE_SERVICE_ROLE_KEY=""
 
@@ -52,7 +53,45 @@ A migration inicial está em:
 supabase/migrations/20260506100000_initial_schema.sql
 ```
 
-Rode essa SQL no Supabase antes de iniciar o app.
+No fluxo Docker local abaixo, essa migration é aplicada automaticamente no primeiro boot do banco.
+
+## Docker Local (App + Supabase + Postgres)
+
+1. Copie o arquivo de exemplo:
+
+```bash
+cp .env.docker.example .env.docker
+```
+
+2. Suba tudo:
+
+```bash
+docker compose --env-file .env.docker up -d --build
+```
+
+3. Acesse:
+
+- App: `http://localhost:9002`
+- Supabase Gateway: `http://localhost:8000`
+- Supabase Studio: `http://localhost:8000` (basic auth configurado em `DASHBOARD_USERNAME` / `DASHBOARD_PASSWORD`)
+- Postgres direto: `localhost:54322` (usuário `postgres`, senha `POSTGRES_PASSWORD`, db `postgres`)
+
+### Bootstrap automático
+
+O serviço `bootstrap` cria/reaproveita a empresa e o admin local via Supabase Auth Admin API com as variáveis:
+
+- `LOCAL_COMPANY_NAME`
+- `LOCAL_ADMIN_NAME`
+- `LOCAL_ADMIN_EMAIL`
+- `LOCAL_ADMIN_PASSWORD`
+
+Ele é idempotente: pode rodar de novo sem duplicar empresa e usuário.
+
+Para ver o resultado do bootstrap:
+
+```bash
+docker compose --env-file .env.docker logs bootstrap
+```
 
 ## Scripts
 
