@@ -1,13 +1,13 @@
 create table if not exists public.incidentes (
-  id uuid primary key default gen_random_uuid(),
-  "companyId" uuid not null references public.companies(id) on delete cascade,
+  id text primary key default gen_random_uuid()::text,
+  "companyId" text not null references public.companies(id) on delete cascade,
   titulo text not null,
   tipo_ocorrencia text not null check (tipo_ocorrencia in ('incidente_sem_lesao', 'quase_acidente', 'acidente_com_lesao', 'acidente_com_afastamento', 'dano_material', 'condicao_insegura', 'comportamento_inseguro', 'ocorrencia_ambiental', 'emergencia')),
   data_ocorrencia date not null,
   hora_ocorrencia time,
   local text not null,
   setor text not null,
-  colaborador_id uuid references public.colaboradores(id) on delete set null,
+  colaborador_id text references public.colaboradores(id) on delete set null,
   descricao text not null,
   atividade_realizada text,
   houve_lesao boolean not null default false,
@@ -46,7 +46,7 @@ create table if not exists public.incidentes (
   treinamento_obrigatorio boolean not null default false,
   treinamento_realizado boolean not null default false,
   treinamento_valido boolean not null default false,
-  treinamento_relacionado_id uuid references public.treinamentos(id) on delete set null,
+  treinamento_relacionado_id text references public.treinamentos(id) on delete set null,
   observacao_treinamento text,
   historico jsonb not null default '[]'::jsonb,
   created_at timestamptz not null default now(),
@@ -55,8 +55,8 @@ create table if not exists public.incidentes (
 );
 
 create table if not exists public.incidente_testemunhas (
-  id uuid primary key default gen_random_uuid(),
-  incidente_id uuid not null references public.incidentes(id) on delete cascade,
+  id text primary key default gen_random_uuid()::text,
+  incidente_id text not null references public.incidentes(id) on delete cascade,
   nome text,
   contato text,
   funcao text,
@@ -66,8 +66,8 @@ create table if not exists public.incidente_testemunhas (
 );
 
 create table if not exists public.incidente_acoes (
-  id uuid primary key default gen_random_uuid(),
-  incidente_id uuid not null references public.incidentes(id) on delete cascade,
+  id text primary key default gen_random_uuid()::text,
+  incidente_id text not null references public.incidentes(id) on delete cascade,
   tipo_acao text not null check (tipo_acao in ('medida_imediata', 'acao_corretiva', 'acao_preventiva', 'orientacao', 'treinamento', 'substituicao_de_epi', 'manutencao', 'sinalizacao', 'bloqueio_de_area', 'revisao_de_procedimento')),
   descricao text,
   responsavel text,

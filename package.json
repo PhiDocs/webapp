@@ -11,6 +11,7 @@
     "analyze": "set ANALYZE=true&& next build",
     "create-company": "tsx scripts/create-company.ts",
     "set-admin": "node scripts/set-admin.js",
+    "db:migrate": "node scripts/run-migrations.js",
     "docker:up": "docker compose --env-file .env.docker up -d --build",
     "docker:down": "docker compose down"
   },

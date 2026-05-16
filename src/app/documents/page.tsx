@@ -211,8 +211,13 @@ export default function DocumentsPage() {
   };
 
   useEffect(() => {
+    if (user && !user.companyId) {
+      router.replace('/awaiting-company');
+      return;
+    }
+
     void loadData();
-  }, [user?.companyId]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [user, user?.companyId, router]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const rows = useMemo<DocumentRow[]>(() => {
     const draftRows = drafts

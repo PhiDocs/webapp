@@ -10,6 +10,7 @@ export interface UserProfile {
   uid: string;
   name: string;
   email: string;
+  phone?: string;
   role: 'admin' | 'user';
   companyId?: string;
 }
@@ -29,6 +30,7 @@ function isSameUserProfile(a: UserProfile | null, b: UserProfile | null) {
     a.uid === b.uid &&
     a.name === b.name &&
     a.email === b.email &&
+    a.phone === b.phone &&
     a.role === b.role &&
     a.companyId === b.companyId
   );

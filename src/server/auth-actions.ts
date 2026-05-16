@@ -6,19 +6,94 @@ import { UserRepository } from '@/repositories/user.repository';
 import { createSupabaseAdminClient } from '@/supabase/server';
 import { SESSION_META_COOKIE_NAME, signSessionCookie } from '@/lib/auth/session-cookie';
 
+function normalizePhone(phone?: string | null): string | null {
+  if (!phone) return null;
+  const cleaned = phone.replace(/\D/g, '');
+  if (!cleaned) return null;
+  return cleaned;
+}
+
 async function ensureUserDocument(authUser: { id: string; email?: string; user_metadata?: Record<string, any> }) {
   const uid = authUser.id;
   const email = authUser.email;
   const existingUser = await UserRepository.get(uid);
+  const metadataPhone = normalizePhone(authUser.user_metadata?.phone);
 
   if (!existingUser && email) {
     await UserRepository.create(uid, {
       uid,
       name: authUser.user_metadata?.name || email,
       email,
+      phone: metadataPhone,
       role: 'user',
       companyId: null,
     });
+    return;
+  }
+
+  if (!existingUser || !email) {
+    return;
+  }
+
+  const nextName = authUser.user_metadata?.name || existingUser.name;
+  const currentPhone = existingUser.phone ?? null;
+  const nextPhone = existingUser.phone ?? metadataPhone ?? null;
+
+  if (existingUser.name !== nextName || existingUser.email !== email || currentPhone !== nextPhone) {
+    await UserRepository.update(uid, {
+      name: nextName,
+      email,
+      phone: nextPhone ?? null,
+    });
+  }
+}
+
+export async function syncSignupProfile(data: {
+  uid: string;
+  name: string;
+  phone?: string;
+}): Promise<{ error: string | null }> {
+  try {
+    if (!data.uid) {
+      throw new Error('UID inválido.');
+    }
+
+    const { data: authData, error: authError } = await createSupabaseAdminClient().auth.admin.getUserById(data.uid);
+    if (authError || !authData.user) {
+      throw authError ?? new Error('Usuário de autenticação não encontrado.');
+    }
+
+    const email = authData.user.email;
+    if (!email) {
+      throw new Error('E-mail do usuário não encontrado.');
+    }
+
+    const existingUser = await UserRepository.get(data.uid);
+    const normalizedName = data.name?.trim() || authData.user.user_metadata?.name || email;
+    const normalizedPhone = normalizePhone(data.phone) ?? normalizePhone(authData.user.user_metadata?.phone);
+
+    if (existingUser) {
+      await UserRepository.update(data.uid, {
+        name: normalizedName,
+        email,
+        phone: normalizedPhone ?? null,
+      });
+    } else {
+      await UserRepository.create(data.uid, {
+        uid: data.uid,
+        name: normalizedName,
+        email,
+        phone: normalizedPhone,
+        role: 'user',
+        companyId: null,
+      });
+    }
+
+    return { error: null };
+  } catch (error: any) {
+    console.error('syncSignupProfile error:', error);
+    await ErrorLogRepository.log(error, 'syncSignupProfile');
+    return { error: error.message || 'Falha ao salvar perfil do usuário.' };
   }
 }
 

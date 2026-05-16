@@ -4,6 +4,7 @@ export type UserData = {
     uid: string;
     name: string;
     email: string;
+    phone?: string | null;
     role: 'admin' | 'user';
     companyId?: string | null;
 }
@@ -33,7 +34,7 @@ export const UserRepository = {
     async get(userId: string): Promise<UserData | null> {
         const { data, error } = await createSupabaseAdminClient()
           .from('users')
-          .select('uid,name,email,role,companyId')
+          .select('uid,name,email,phone,role,companyId')
           .eq('uid', userId)
           .maybeSingle();
 

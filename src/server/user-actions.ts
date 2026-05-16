@@ -33,6 +33,7 @@ export async function getUserProfile(): Promise<{ success: boolean; data?: UserP
         uid: user.uid,
         name: user.name,
         email: user.email,
+        phone: user.phone ?? undefined,
         role: user.role,
         companyId: user.companyId ?? undefined
     };

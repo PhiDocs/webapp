@@ -34,6 +34,7 @@ export const ptBr = {
     creatingAccount: 'Criando conta...',
     backToLogin: 'Voltar para o login',
     goToSignup: 'Não tem uma conta? Cadastre-se',
+    goToLogin: 'Já tem uma conta? Entrar',
   },
   formPanel: {
     title: 'Gere seu Documento de Segurança',
@@ -81,6 +82,10 @@ export const ptBr = {
     emailPlaceholder: 'seu@email.com',
     password: 'Senha',
     passwordPlaceholder: '••••••••',
+    confirmPassword: 'Confirmar senha',
+    confirmPasswordPlaceholder: '••••••••',
+    phone: 'Telefone',
+    phonePlaceholder: '(00) 00000-0000',
     name: 'Nome Completo',
     namePlaceholder: 'Seu nome completo',
   },
@@ -355,7 +360,7 @@ export const ptBr = {
       loginSuccess: 'Login realizado com sucesso!',
       loginSuccessDescription: 'Você será redirecionado em breve.',
       signupSuccess: 'Conta criada com sucesso!',
-      signupSuccessDescription: 'Você será redirecionado para a página de login.',
+      signupSuccessDescription: 'Você já pode entrar com seu e-mail e senha.',
       signatureSent: 'Convites enviados',
       signatureSentDescription: 'Os signatários receberam o e-mail de assinatura.',
     },
@@ -380,6 +385,7 @@ export const ptBr = {
     nameRequired: 'Nome é obrigatório.',
     emailRequired: 'E-mail é obrigatório.',
     invalidEmail: 'Por favor, insira um e-mail válido.',
+    invalidPhone: 'Por favor, insira um telefone válido com DDD.',
     passwordRequired: 'Senha é obrigatória.',
     passwordMinLength: 'A senha deve ter pelo menos 6 caracteres.',
     passwordsMustMatch: 'As senhas devem ser iguais.',
@@ -400,9 +406,6 @@ export const ptBr = {
     companyLogoAlt: 'Logo da Empresa',
   }
 };
-
-
-
 
 
 

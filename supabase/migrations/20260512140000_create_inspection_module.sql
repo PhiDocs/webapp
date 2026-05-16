@@ -1,6 +1,6 @@
 create table if not exists public.checklists_modelos (
-  id uuid primary key default gen_random_uuid(),
-  "companyId" uuid not null references public.companies(id) on delete cascade,
+  id text primary key default gen_random_uuid()::text,
+  "companyId" text not null references public.companies(id) on delete cascade,
   nome text not null,
   tipo_inspecao text not null,
   descricao text,
@@ -10,9 +10,9 @@ create table if not exists public.checklists_modelos (
 );
 
 create table if not exists public.checklist_itens_modelo (
-  id uuid primary key default gen_random_uuid(),
-  "companyId" uuid not null references public.companies(id) on delete cascade,
-  checklist_modelo_id uuid not null references public.checklists_modelos(id) on delete cascade,
+  id text primary key default gen_random_uuid()::text,
+  "companyId" text not null references public.companies(id) on delete cascade,
+  checklist_modelo_id text not null references public.checklists_modelos(id) on delete cascade,
   pergunta text not null,
   categoria text,
   ordem integer not null default 0,
@@ -22,8 +22,8 @@ create table if not exists public.checklist_itens_modelo (
 );
 
 create table if not exists public.inspecoes (
-  id uuid primary key default gen_random_uuid(),
-  "companyId" uuid not null references public.companies(id) on delete cascade,
+  id text primary key default gen_random_uuid()::text,
+  "companyId" text not null references public.companies(id) on delete cascade,
   titulo text not null,
   tipo text not null,
   descricao text,
@@ -38,7 +38,7 @@ create table if not exists public.inspecoes (
   plano_acao_geral text,
   prazo_correcao date,
   responsavel_correcao text,
-  checklist_modelo_id uuid references public.checklists_modelos(id) on delete set null,
+  checklist_modelo_id text references public.checklists_modelos(id) on delete set null,
   colaboradores_vinculados text[] not null default '{}',
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
@@ -46,9 +46,9 @@ create table if not exists public.inspecoes (
 );
 
 create table if not exists public.itens_inspecao (
-  id uuid primary key default gen_random_uuid(),
-  "companyId" uuid not null references public.companies(id) on delete cascade,
-  inspecao_id uuid not null references public.inspecoes(id) on delete cascade,
+  id text primary key default gen_random_uuid()::text,
+  "companyId" text not null references public.companies(id) on delete cascade,
+  inspecao_id text not null references public.inspecoes(id) on delete cascade,
   pergunta text not null,
   categoria text,
   resposta text not null default 'nao_verificado' check (resposta in ('conforme', 'nao_conforme', 'nao_se_aplica', 'nao_verificado')),
@@ -65,10 +65,10 @@ create table if not exists public.itens_inspecao (
 );
 
 create table if not exists public.planos_acao_inspecao (
-  id uuid primary key default gen_random_uuid(),
-  "companyId" uuid not null references public.companies(id) on delete cascade,
-  inspecao_id uuid not null references public.inspecoes(id) on delete cascade,
-  item_id uuid references public.itens_inspecao(id) on delete cascade,
+  id text primary key default gen_random_uuid()::text,
+  "companyId" text not null references public.companies(id) on delete cascade,
+  inspecao_id text not null references public.inspecoes(id) on delete cascade,
+  item_id text references public.itens_inspecao(id) on delete cascade,
   descricao text not null,
   responsavel text,
   prazo date,

@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { DOCUMENT_TYPES, PT_FIT_STATUS, type DocumentType } from './constants';
 import { ptBr } from './data/strings';
+import { isValidBrazilianPhone } from './utils/phone-validator';
 
 const validationMessages = {
   ...ptBr.validations,
@@ -265,6 +266,16 @@ export const signupSchema = z.object({
   name: z.string().min(1, validationMessages.nameRequired),
   email: z.string().min(1, validationMessages.emailRequired).email(validationMessages.invalidEmail),
   password: z.string().min(6, validationMessages.passwordMinLength),
+  confirmPassword: z.string().min(1, validationMessages.confirmPasswordRequired),
+  phone: z
+    .string()
+    .optional()
+    .refine((value) => !value || isValidBrazilianPhone(value), {
+      message: validationMessages.invalidPhone,
+    }),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: validationMessages.passwordsMustMatch,
+  path: ['confirmPassword'],
 });
 export type SignupValues = z.infer<typeof signupSchema>;
 
@@ -986,6 +997,5 @@ export type Subcontractor = {
   createdAt: string;
   deletedAt?: string | null;
 }
-
 
 

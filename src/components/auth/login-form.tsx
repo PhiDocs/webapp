@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useState } from 'react';
@@ -32,8 +33,12 @@ import { createSupabaseBrowserClient } from '@/supabase/browser';
 
 const getSupabaseAuthErrorMessage = (message?: string): string => {
   if (!message) return ptBr.errors.unexpectedError;
-  if (message.toLowerCase().includes('invalid login credentials')) {
+  const normalized = message.toLowerCase();
+  if (normalized.includes('invalid login credentials')) {
     return 'Credenciais inválidas. Verifique seu e-mail e senha.';
+  }
+  if (normalized.includes('email not confirmed')) {
+    return 'Confirme seu e-mail antes de entrar.';
   }
   return message;
 };
@@ -153,6 +158,11 @@ export function LoginForm() {
                   ) : (
                     ptBr.actions.login
                   )}
+                </Button>
+                <Button asChild variant="outline" className="w-full">
+                  <Link href="/signup">
+                    {ptBr.actions.createAccount}
+                  </Link>
                 </Button>
               </CardFooter>
             </form>

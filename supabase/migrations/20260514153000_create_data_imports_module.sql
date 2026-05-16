@@ -1,6 +1,6 @@
 create table if not exists public.importacoes (
-  id uuid primary key default gen_random_uuid(),
-  company_id uuid not null references public.companies(id) on delete cascade,
+  id text primary key default gen_random_uuid()::text,
+  company_id text not null references public.companies(id) on delete cascade,
   tipo_importacao text not null,
   nome_arquivo text not null,
   formato_arquivo text not null,
@@ -21,8 +21,8 @@ create table if not exists public.importacoes (
 );
 
 create table if not exists public.importacao_erros (
-  id uuid primary key default gen_random_uuid(),
-  importacao_id uuid not null references public.importacoes(id) on delete cascade,
+  id text primary key default gen_random_uuid()::text,
+  importacao_id text not null references public.importacoes(id) on delete cascade,
   linha integer not null,
   campo text,
   valor text,

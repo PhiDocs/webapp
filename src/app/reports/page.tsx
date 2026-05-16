@@ -244,10 +244,10 @@ export default function ReportsPage() {
       };
       void fetchData();
     } else if (user && !user.companyId) {
-      toast({ variant: 'destructive', title: 'Usuario sem empresa', description: 'Sua conta nao esta associada a uma empresa.' });
+      router.replace('/awaiting-company');
       setIsDataLoading(false);
     }
-  }, [user, toast]);
+  }, [user, toast, router]);
 
   const draftLoadedRef = useRef<string | null>(null);
   useEffect(() => {

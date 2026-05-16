@@ -24,6 +24,8 @@ export default function RootPage() {
         if (user) {
             if (user.role === 'admin' && user.companyId) {
                 router.replace(`/company/${user.companyId}`);
+            } else if (!user.companyId) {
+                router.replace('/awaiting-company');
             } else {
                 router.replace('/reports');
             }
