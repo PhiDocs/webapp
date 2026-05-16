@@ -2,6 +2,15 @@ import { execSync } from 'child_process';
 
 /** @type {import('next').NextConfig} */
 const isDev = process.env.NODE_ENV !== 'production';
+let withBundleAnalyzer = (config) => config;
+if (process.env.ANALYZE === 'true') {
+  try {
+    const createBundleAnalyzer = (await import('@next/bundle-analyzer')).default;
+    withBundleAnalyzer = createBundleAnalyzer({ enabled: true });
+  } catch {
+    console.warn('Bundle analyzer solicitado, mas @next/bundle-analyzer nao esta instalado.');
+  }
+}
 
 // Captura a tag mais recente + hash do commit atual no momento do build
 let appVersion = 'dev';
@@ -77,4 +86,4 @@ const nextConfig = {
   },
 };
 
-export default nextConfig;
+export default withBundleAnalyzer(nextConfig);

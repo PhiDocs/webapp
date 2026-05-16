@@ -355,6 +355,604 @@ export type Employee = {
   deletedAt?: string | null;
 }
 
+// --- Collaborator Schema ---
+export const collaboratorStatusValues = ['ativo', 'afastado', 'desligado'] as const;
+
+function onlyDigits(value?: string) {
+  return (value || '').replace(/\D/g, '');
+}
+
+function isValidCpf(value?: string) {
+  const cpf = onlyDigits(value);
+  if (cpf.length !== 11 || /^(\d)\1+$/.test(cpf)) return false;
+
+  const calcDigit = (base: string, factor: number) => {
+    const total = base.split('').reduce((sum, digit) => {
+      const result = sum + Number(digit) * factor;
+      factor -= 1;
+      return result;
+    }, 0);
+    const rest = (total * 10) % 11;
+    return rest === 10 ? 0 : rest;
+  };
+
+  const digit1 = calcDigit(cpf.slice(0, 9), 10);
+  const digit2 = calcDigit(cpf.slice(0, 10), 11);
+  return digit1 === Number(cpf[9]) && digit2 === Number(cpf[10]);
+}
+
+function isNotFutureDate(value?: string) {
+  if (!value) return true;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return true;
+  const today = new Date();
+  today.setHours(23, 59, 59, 999);
+  return date <= today;
+}
+
+export const collaboratorFormSchema = z.object({
+  nome_completo: z.string().min(1, 'Nome completo e obrigatorio.'),
+  cpf: z.string().min(1, 'CPF e obrigatorio.').refine(isValidCpf, 'Informe um CPF valido.'),
+  rg: z.string().optional(),
+  data_nascimento: z.string().optional(),
+  telefone: z.string().optional(),
+  email: z.string().email('E-mail invalido.').optional().or(z.literal('')),
+  endereco: z.string().optional(),
+  foto_url: z.string().url('Informe uma URL valida para a foto.').optional().or(z.literal('')),
+  matricula: z.string().optional(),
+  empresa: z.string().optional(),
+  setor: z.string().min(1, 'Setor e obrigatorio.'),
+  funcao: z.string().min(1, 'Funcao e obrigatoria.'),
+  data_admissao: z.string().optional().refine(isNotFutureDate, 'A data de admissao nao pode ser futura.'),
+  tipo_contrato: z.string().optional(),
+  status: z.enum(collaboratorStatusValues, { required_error: 'Status e obrigatorio.' }),
+  gestor_responsavel: z.string().optional(),
+  local_trabalho: z.string().optional(),
+  turno_trabalho: z.string().optional(),
+  atividades_realizadas: z.string().optional(),
+  riscos_associados: z.string().optional(),
+  aso_validade: z.string().optional(),
+  observacoes_seguranca: z.string().optional(),
+  observacoes_gerais: z.string().optional(),
+});
+
+export type CollaboratorFormValues = z.infer<typeof collaboratorFormSchema>;
+
+export type CollaboratorAiRecommendations = {
+  generated_at: string;
+  epi_obrigatorios: string[];
+  epi_entregues: string[];
+  epi_pendentes: string[];
+  treinamentos_obrigatorios: string[];
+  treinamentos_realizados: string[];
+  treinamentos_vencidos: string[];
+  riscos_associados: string[];
+  medidas_preventivas: string[];
+  nao_conformidades: string[];
+  incidentes: string[];
+  relatorios: string[];
+  observacoes: string;
+};
+
+export type Collaborator = CollaboratorFormValues & {
+  id: string;
+  companyId: string;
+  created_at: string;
+  updated_at: string;
+  archived_at?: string | null;
+  ai_recommendations?: CollaboratorAiRecommendations | null;
+};
+
+// --- EPI Schema ---
+export const epiDeliveryStatusValues = ['entregue', 'pendente', 'vencido', 'proximo_troca', 'substituido', 'devolvido', 'cancelado'] as const;
+
+export const epiFormSchema = z.object({
+  nome: z.string().min(1, 'Nome do EPI e obrigatorio.'),
+  descricao: z.string().optional(),
+  categoria: z.string().optional(),
+  ca: z.string().optional(),
+  validade_ca: z.string().optional(),
+  valor_unitario: z.coerce.number().min(0).optional(),
+  fornecedor: z.string().optional(),
+  data_compra: z.string().optional(),
+  prazo_troca_dias: z.coerce.number().min(0).optional(),
+  ativo: z.boolean().default(true),
+});
+
+export const epiDeliveryFormSchema = z.object({
+  colaborador_id: z.string().min(1, 'Selecione um colaborador.'),
+  epi_id: z.string().min(1, 'Selecione um EPI.'),
+  data_entrega: z.string().min(1, 'Data de entrega e obrigatoria.'),
+  data_validade: z.string().optional(),
+  data_proxima_troca: z.string().optional(),
+  quantidade: z.coerce.number().min(1, 'Quantidade deve ser maior que zero.'),
+  responsavel_entrega: z.string().min(1, 'Responsavel pela entrega e obrigatorio.'),
+  status: z.enum(epiDeliveryStatusValues),
+  assinatura_url: z.string().optional(),
+  comprovante_url: z.string().optional(),
+  observacoes: z.string().optional(),
+});
+
+export type EpiFormValues = z.infer<typeof epiFormSchema>;
+export type EpiDeliveryFormValues = z.infer<typeof epiDeliveryFormSchema>;
+export type EpiDeliveryStatus = typeof epiDeliveryStatusValues[number];
+
+export type Epi = EpiFormValues & {
+  id: string;
+  companyId: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type EpiByFunction = {
+  id: string;
+  companyId: string;
+  funcao: string;
+  epi_id: string;
+  obrigatorio: boolean;
+  observacao?: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type EpiDelivery = EpiDeliveryFormValues & {
+  id: string;
+  companyId: string;
+  created_at: string;
+  updated_at: string;
+  archived_at?: string | null;
+  colaborador?: Collaborator | null;
+  epi?: Epi | null;
+};
+
+export type EpiRequiredItem = {
+  epi: Epi;
+  obrigatorio: boolean;
+  observacao?: string;
+  source: 'funcao' | 'ia' | 'padrao';
+};
+
+// --- Training Schema ---
+export const trainingRecordStatusValues = ['valido', 'pendente', 'vencido', 'proximo_vencimento', 'dispensado', 'cancelado'] as const;
+
+export const trainingFormSchema = z.object({
+  nome: z.string().min(1, 'Nome do treinamento e obrigatorio.'),
+  norma: z.string().optional(),
+  descricao: z.string().optional(),
+  carga_horaria: z.coerce.number().min(0).optional(),
+  validade_meses: z.coerce.number().min(0).optional(),
+  obrigatorio: z.boolean().default(true),
+  ativo: z.boolean().default(true),
+  observacoes: z.string().optional(),
+});
+
+export const collaboratorTrainingFormSchema = z.object({
+  colaborador_id: z.string().min(1, 'Selecione um colaborador.'),
+  treinamento_id: z.string().min(1, 'Selecione um treinamento.'),
+  data_realizacao: z.string().min(1, 'Data de realizacao e obrigatoria.'),
+  data_vencimento: z.string().optional(),
+  instrutor: z.string().optional(),
+  empresa_treinamento: z.string().optional(),
+  carga_horaria_realizada: z.coerce.number().min(0).optional(),
+  certificado_url: z.string().optional(),
+  lista_presenca_url: z.string().optional(),
+  status: z.enum(trainingRecordStatusValues),
+  observacoes: z.string().optional(),
+});
+
+export type TrainingFormValues = z.infer<typeof trainingFormSchema>;
+export type CollaboratorTrainingFormValues = z.infer<typeof collaboratorTrainingFormSchema>;
+export type TrainingRecordStatus = typeof trainingRecordStatusValues[number];
+
+export type Training = TrainingFormValues & {
+  id: string;
+  companyId: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type TrainingByFunction = {
+  id: string;
+  companyId: string;
+  funcao: string;
+  treinamento_id: string;
+  obrigatorio: boolean;
+  observacao?: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type CollaboratorTraining = CollaboratorTrainingFormValues & {
+  id: string;
+  companyId: string;
+  created_at: string;
+  updated_at: string;
+  archived_at?: string | null;
+  colaborador?: Collaborator | null;
+  treinamento?: Training | null;
+};
+
+export type RequiredTrainingItem = {
+  treinamento: Training;
+  obrigatorio: boolean;
+  observacao?: string;
+  source: 'funcao' | 'ia' | 'padrao';
+};
+
+// --- Inspection Schema ---
+export const inspectionStatusValues = ['aberta', 'em_andamento', 'concluida', 'atrasada', 'cancelada'] as const;
+export const inspectionRiskValues = ['baixo', 'medio', 'alto', 'critico'] as const;
+export const inspectionItemAnswerValues = ['conforme', 'nao_conforme', 'nao_se_aplica', 'nao_verificado'] as const;
+export const inspectionItemStatusValues = ['conforme', 'nao_conforme', 'pendente', 'corrigido', 'nao_se_aplica'] as const;
+export const inspectionActionStatusValues = ['aberta', 'em_andamento', 'concluida', 'atrasada', 'cancelada'] as const;
+
+export const inspectionFormSchema = z.object({
+  titulo: z.string().min(1, 'Titulo da inspecao e obrigatorio.'),
+  tipo: z.string().min(1, 'Tipo de inspecao e obrigatorio.'),
+  descricao: z.string().optional(),
+  data_inspecao: z.string().min(1, 'Data da inspecao e obrigatoria.'),
+  hora_inspecao: z.string().optional(),
+  local: z.string().min(1, 'Local e obrigatorio.'),
+  setor: z.string().min(1, 'Setor e obrigatorio.'),
+  responsavel_inspecao: z.string().min(1, 'Responsavel pela inspecao e obrigatorio.'),
+  status: z.enum(inspectionStatusValues),
+  grau_risco: z.enum(inspectionRiskValues),
+  observacoes_gerais: z.string().optional(),
+  plano_acao_geral: z.string().optional(),
+  prazo_correcao: z.string().optional(),
+  responsavel_correcao: z.string().optional(),
+  checklist_modelo_id: z.string().optional(),
+  colaboradores_vinculados: z.array(z.string()).optional(),
+});
+
+export const inspectionItemFormSchema = z.object({
+  pergunta: z.string().min(1, 'Pergunta e obrigatoria.'),
+  categoria: z.string().optional(),
+  resposta: z.enum(inspectionItemAnswerValues),
+  status: z.enum(inspectionItemStatusValues),
+  observacao: z.string().optional(),
+  grau_risco: z.enum(inspectionRiskValues),
+  acao_recomendada: z.string().optional(),
+  responsavel_correcao: z.string().optional(),
+  prazo_correcao: z.string().optional(),
+  foto_url: z.string().optional(),
+  anexo_url: z.string().optional(),
+});
+
+export const inspectionActionFormSchema = z.object({
+  descricao: z.string().min(1, 'Descricao da acao e obrigatoria.'),
+  responsavel: z.string().optional(),
+  prazo: z.string().optional(),
+  status: z.enum(inspectionActionStatusValues),
+  data_conclusao: z.string().optional(),
+  observacoes: z.string().optional(),
+});
+
+export type InspectionStatus = typeof inspectionStatusValues[number];
+export type InspectionRisk = typeof inspectionRiskValues[number];
+export type InspectionItemAnswer = typeof inspectionItemAnswerValues[number];
+export type InspectionItemStatus = typeof inspectionItemStatusValues[number];
+export type InspectionActionStatus = typeof inspectionActionStatusValues[number];
+export type InspectionFormValues = z.infer<typeof inspectionFormSchema>;
+export type InspectionItemFormValues = z.infer<typeof inspectionItemFormSchema>;
+export type InspectionActionFormValues = z.infer<typeof inspectionActionFormSchema>;
+
+export type ChecklistTemplate = {
+  id: string;
+  companyId: string;
+  nome: string;
+  tipo_inspecao: string;
+  descricao?: string;
+  ativo: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+export type ChecklistTemplateItem = {
+  id: string;
+  companyId: string;
+  checklist_modelo_id: string;
+  pergunta: string;
+  categoria?: string;
+  ordem: number;
+  obrigatorio: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+export type InspectionItem = InspectionItemFormValues & {
+  id: string;
+  companyId: string;
+  inspecao_id: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type InspectionAction = InspectionActionFormValues & {
+  id: string;
+  companyId: string;
+  inspecao_id: string;
+  item_id?: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type Inspection = InspectionFormValues & {
+  id: string;
+  companyId: string;
+  created_at: string;
+  updated_at: string;
+  archived_at?: string | null;
+  itens?: InspectionItem[];
+  acoes?: InspectionAction[];
+};
+
+// --- Nonconformity Schema ---
+export const nonconformityStatusValues = ['aberta', 'em_analise', 'em_correcao', 'resolvida', 'atrasada', 'cancelada'] as const;
+export const nonconformitySeverityValues = ['baixa', 'media', 'alta', 'critica'] as const;
+export const nonconformityProbabilityValues = ['baixa', 'media', 'alta'] as const;
+export const nonconformityRiskValues = ['baixo', 'medio', 'alto', 'critico'] as const;
+export const nonconformityOriginValues = ['inspecao', 'auditoria', 'incidente', 'observacao_manual', 'denuncia_interna', 'analise_de_risco', 'treinamento', 'entrega_de_epi'] as const;
+export const nonconformityValidationStatusValues = ['pendente', 'validada', 'reprovada'] as const;
+
+export const nonconformityFormSchema = z.object({
+  titulo: z.string().min(1, 'Titulo da nao conformidade e obrigatorio.'),
+  descricao: z.string().min(1, 'Descricao detalhada e obrigatoria.'),
+  data_identificacao: z.string().min(1, 'Data de identificacao e obrigatoria.'),
+  hora_identificacao: z.string().optional(),
+  local: z.string().min(1, 'Local e obrigatorio.'),
+  setor: z.string().min(1, 'Setor e obrigatorio.'),
+  colaborador_id: z.string().optional(),
+  origem: z.enum(nonconformityOriginValues),
+  origem_id: z.string().optional(),
+  inspecao_id: z.string().optional(),
+  item_inspecao_id: z.string().optional(),
+  gravidade: z.enum(nonconformitySeverityValues),
+  probabilidade: z.enum(nonconformityProbabilityValues),
+  nivel_risco: z.enum(nonconformityRiskValues),
+  risco_associado: z.string().optional(),
+  evidencia_url: z.string().optional(),
+  foto_url: z.string().optional(),
+  responsavel_correcao: z.string().optional(),
+  prazo_correcao: z.string().optional(),
+  acao_corretiva: z.string().optional(),
+  acao_preventiva: z.string().optional(),
+  causa_provavel: z.string().optional(),
+  causa_raiz: z.string().optional(),
+  status: z.enum(nonconformityStatusValues),
+  data_conclusao: z.string().optional(),
+  validado_por: z.string().optional(),
+  observacoes: z.string().optional(),
+  correcao_realizada: z.string().optional(),
+  evidencia_correcao_url: z.string().optional(),
+  data_validacao: z.string().optional(),
+  validacao_status: z.enum(nonconformityValidationStatusValues).optional(),
+  motivo_reabertura: z.string().optional(),
+});
+
+export const nonconformityConclusionSchema = z.object({
+  correcao_realizada: z.string().min(1, 'Descreva a correcao realizada.'),
+  data_conclusao: z.string().min(1, 'Data de conclusao e obrigatoria.'),
+  evidencia_correcao_url: z.string().optional(),
+  validado_por: z.string().optional(),
+  observacoes: z.string().optional(),
+  data_validacao: z.string().optional(),
+  validacao_status: z.enum(nonconformityValidationStatusValues),
+});
+
+export const nonconformityReopenSchema = z.object({
+  motivo_reabertura: z.string().min(1, 'Informe o motivo da reabertura.'),
+  acao_corretiva: z.string().min(1, 'Informe a nova acao corretiva.'),
+  prazo_correcao: z.string().min(1, 'Informe o novo prazo.'),
+  responsavel_correcao: z.string().min(1, 'Informe o responsavel.'),
+});
+
+export type NonconformityStatus = typeof nonconformityStatusValues[number];
+export type NonconformitySeverity = typeof nonconformitySeverityValues[number];
+export type NonconformityProbability = typeof nonconformityProbabilityValues[number];
+export type NonconformityRisk = typeof nonconformityRiskValues[number];
+export type NonconformityOrigin = typeof nonconformityOriginValues[number];
+export type NonconformityValidationStatus = typeof nonconformityValidationStatusValues[number];
+export type NonconformityFormValues = z.infer<typeof nonconformityFormSchema>;
+export type NonconformityConclusionValues = z.infer<typeof nonconformityConclusionSchema>;
+export type NonconformityReopenValues = z.infer<typeof nonconformityReopenSchema>;
+
+export type NonconformityHistoryEntry = {
+  at: string;
+  action: string;
+  description?: string;
+  user?: string;
+};
+
+export type Nonconformity = NonconformityFormValues & {
+  id: string;
+  companyId: string;
+  created_at: string;
+  updated_at: string;
+  archived_at?: string | null;
+  historico?: NonconformityHistoryEntry[];
+  colaborador?: Collaborator | null;
+};
+
+// --- Incident Schema ---
+export const incidentTypeValues = ['incidente_sem_lesao', 'quase_acidente', 'acidente_com_lesao', 'acidente_com_afastamento', 'dano_material', 'condicao_insegura', 'comportamento_inseguro', 'ocorrencia_ambiental', 'emergencia'] as const;
+export const incidentStatusValues = ['aberto', 'em_investigacao', 'aguardando_acao', 'concluido', 'cancelado'] as const;
+export const incidentSeverityValues = ['baixa', 'media', 'alta', 'critica'] as const;
+export const incidentProbabilityValues = ['baixa', 'media', 'alta'] as const;
+export const incidentRiskValues = ['baixo', 'medio', 'alto', 'critico'] as const;
+export const incidentActionTypeValues = ['medida_imediata', 'acao_corretiva', 'acao_preventiva', 'orientacao', 'treinamento', 'substituicao_de_epi', 'manutencao', 'sinalizacao', 'bloqueio_de_area', 'revisao_de_procedimento'] as const;
+export const incidentActionStatusValues = ['aberta', 'em_andamento', 'concluida', 'atrasada', 'cancelada'] as const;
+
+export const incidentWitnessFormSchema = z.object({
+  nome: z.string().optional(),
+  contato: z.string().optional(),
+  funcao: z.string().optional(),
+  relato: z.string().optional(),
+});
+
+export const incidentActionFormSchema = z.object({
+  tipo_acao: z.enum(incidentActionTypeValues),
+  descricao: z.string().optional(),
+  responsavel: z.string().optional(),
+  prazo: z.string().optional(),
+  status: z.enum(incidentActionStatusValues),
+  data_conclusao: z.string().optional(),
+  evidencia_url: z.string().optional(),
+  observacoes: z.string().optional(),
+});
+
+export const incidentFormSchema = z.object({
+  titulo: z.string().min(1, 'Titulo do incidente e obrigatorio.'),
+  tipo_ocorrencia: z.enum(incidentTypeValues),
+  data_ocorrencia: z.string().min(1, 'Data da ocorrencia e obrigatoria.'),
+  hora_ocorrencia: z.string().optional(),
+  local: z.string().min(1, 'Local e obrigatorio.'),
+  setor: z.string().min(1, 'Setor e obrigatorio.'),
+  colaborador_id: z.string().optional(),
+  descricao: z.string().min(1, 'Descricao detalhada e obrigatoria.'),
+  atividade_realizada: z.string().optional(),
+  houve_lesao: z.boolean().default(false),
+  tipo_lesao: z.string().optional(),
+  parte_corpo_atingida: z.string().optional(),
+  houve_afastamento: z.boolean().default(false),
+  dias_afastamento: z.coerce.number().min(0).optional(),
+  houve_dano_material: z.boolean().default(false),
+  descricao_dano_material: z.string().optional(),
+  gravidade: z.enum(incidentSeverityValues),
+  probabilidade: z.enum(incidentProbabilityValues),
+  nivel_risco: z.enum(incidentRiskValues),
+  causa_imediata: z.string().optional(),
+  causa_raiz: z.string().optional(),
+  medidas_imediatas: z.string().optional(),
+  acao_corretiva: z.string().optional(),
+  acao_preventiva: z.string().optional(),
+  responsavel_investigacao: z.string().optional(),
+  prazo_investigacao: z.string().optional(),
+  status: z.enum(incidentStatusValues),
+  data_conclusao: z.string().optional(),
+  evidencia_url: z.string().optional(),
+  foto_url: z.string().optional(),
+  observacoes: z.string().optional(),
+  resumo_investigacao: z.string().optional(),
+  causa_raiz_confirmada: z.string().optional(),
+  correcao_realizada: z.string().optional(),
+  prevencao_recomendada: z.string().optional(),
+  responsavel_conclusao: z.string().optional(),
+  evidencia_final_url: z.string().optional(),
+  epi_obrigatorio: z.boolean().default(false),
+  epi_entregue: z.boolean().default(false),
+  epi_utilizado: z.boolean().default(false),
+  epi_adequado: z.boolean().default(false),
+  observacao_epi: z.string().optional(),
+  treinamento_obrigatorio: z.boolean().default(false),
+  treinamento_realizado: z.boolean().default(false),
+  treinamento_valido: z.boolean().default(false),
+  treinamento_relacionado_id: z.string().optional(),
+  observacao_treinamento: z.string().optional(),
+  testemunhas: z.array(incidentWitnessFormSchema).optional(),
+  acoes: z.array(incidentActionFormSchema).optional(),
+});
+
+export const incidentConclusionSchema = z.object({
+  resumo_investigacao: z.string().min(1, 'Resumo da investigacao e obrigatorio.'),
+  causa_raiz_confirmada: z.string().min(1, 'Causa raiz confirmada e obrigatoria.'),
+  correcao_realizada: z.string().min(1, 'Correcao realizada e obrigatoria.'),
+  prevencao_recomendada: z.string().min(1, 'Prevencao recomendada e obrigatoria.'),
+  data_conclusao: z.string().min(1, 'Data da conclusao e obrigatoria.'),
+  responsavel_conclusao: z.string().min(1, 'Responsavel pela conclusao e obrigatorio.'),
+  evidencia_final_url: z.string().optional(),
+  observacoes: z.string().optional(),
+});
+
+export type IncidentType = typeof incidentTypeValues[number];
+export type IncidentStatus = typeof incidentStatusValues[number];
+export type IncidentSeverity = typeof incidentSeverityValues[number];
+export type IncidentProbability = typeof incidentProbabilityValues[number];
+export type IncidentRisk = typeof incidentRiskValues[number];
+export type IncidentActionType = typeof incidentActionTypeValues[number];
+export type IncidentActionStatus = typeof incidentActionStatusValues[number];
+export type IncidentWitnessFormValues = z.infer<typeof incidentWitnessFormSchema>;
+export type IncidentActionFormValues = z.infer<typeof incidentActionFormSchema>;
+export type IncidentFormValues = z.infer<typeof incidentFormSchema>;
+export type IncidentConclusionValues = z.infer<typeof incidentConclusionSchema>;
+
+export type IncidentHistoryEntry = {
+  at: string;
+  action: string;
+  description?: string;
+  user?: string;
+};
+
+export type IncidentWitness = IncidentWitnessFormValues & {
+  id: string;
+  incidente_id: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type IncidentAction = IncidentActionFormValues & {
+  id: string;
+  incidente_id: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type Incident = Omit<IncidentFormValues, 'testemunhas' | 'acoes'> & {
+  id: string;
+  companyId: string;
+  created_at: string;
+  updated_at: string;
+  archived_at?: string | null;
+  historico?: IncidentHistoryEntry[];
+  colaborador?: Collaborator | null;
+  testemunhas?: IncidentWitness[];
+  acoes?: IncidentAction[];
+};
+
+// --- Costs & Prevention Schema ---
+export const costPreventionCategoryValues = ['prevencao', 'correcao', 'incidente', 'treinamento', 'EPI', 'exame_ocupacional', 'manutencao_preventiva', 'manutencao_corretiva', 'sinalizacao', 'adequacao_de_seguranca', 'afastamento', 'multa_autuacao', 'retrabalho', 'consultoria', 'auditoria', 'outros'] as const;
+export const costPreventionTypeValues = ['investimento_preventivo', 'custo_corretivo', 'custo_operacional', 'custo_emergencial', 'custo_recorrente', 'custo_pontual', 'custo_estimado', 'custo_real'] as const;
+export const costPreventionOriginValues = ['manual', 'entrega_de_epi', 'treinamento', 'inspecao', 'nao_conformidade', 'incidente', 'manutencao', 'exame', 'auditoria'] as const;
+
+export const costPreventionFormSchema = z.object({
+  descricao: z.string().min(1, 'Descricao do custo e obrigatoria.'),
+  categoria: z.enum(costPreventionCategoryValues),
+  tipo_custo: z.enum(costPreventionTypeValues),
+  valor: z.coerce.number().min(0, 'Valor deve ser maior ou igual a zero.'),
+  data_custo: z.string().min(1, 'Data do custo e obrigatoria.'),
+  fornecedor: z.string().optional(),
+  setor: z.string().optional(),
+  colaborador_id: z.string().optional(),
+  epi_id: z.string().optional(),
+  treinamento_id: z.string().optional(),
+  inspecao_id: z.string().optional(),
+  nao_conformidade_id: z.string().optional(),
+  incidente_id: z.string().optional(),
+  origem: z.enum(costPreventionOriginValues),
+  comprovante_url: z.string().optional(),
+  responsavel_registro: z.string().optional(),
+  observacoes: z.string().optional(),
+});
+
+export type CostPreventionCategory = typeof costPreventionCategoryValues[number];
+export type CostPreventionType = typeof costPreventionTypeValues[number];
+export type CostPreventionOrigin = typeof costPreventionOriginValues[number];
+export type CostPreventionFormValues = z.infer<typeof costPreventionFormSchema>;
+
+export type CostPrevention = CostPreventionFormValues & {
+  id: string;
+  companyId: string;
+  created_at: string;
+  updated_at: string;
+  archived_at?: string | null;
+  colaborador?: Collaborator | null;
+  epi?: Epi | null;
+  treinamento?: Training | null;
+  inspecao?: Inspection | null;
+  nao_conformidade?: Nonconformity | null;
+  incidente?: Incident | null;
+};
+
 // --- JobRole Schema ---
 export const jobRoleFormSchema = z.object({
   name: z.string().min(2, "O nome do cargo é obrigatório."),

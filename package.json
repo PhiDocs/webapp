@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
+    "analyze": "set ANALYZE=true&& next build",
     "create-company": "tsx scripts/create-company.ts",
     "set-admin": "node scripts/set-admin.js",
     "docker:up": "docker compose --env-file .env.docker up -d --build",

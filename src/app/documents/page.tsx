@@ -34,6 +34,7 @@ import {
   Bell,
   Briefcase,
   CheckCircle2,
+  ChevronDown,
   ChevronLeft,
   ChevronRight,
   CircleHelp,
@@ -53,6 +54,7 @@ import {
   Settings,
   Shield,
   UserCog,
+  UserRound,
   Users,
 } from 'lucide-react';
 
@@ -73,11 +75,19 @@ const PAGE_SIZE = 10;
 
 const adminNavItems = [
   { label: 'Obras', icon: HardHat, section: 'works' },
+  { label: 'Colaboradores', icon: UserRound, section: 'collaborators' },
   { label: 'Funcionarios', icon: Users, section: 'employees' },
   { label: 'Cargos', icon: Shield, section: 'jobRoles' },
   { label: 'Terceirizadas', icon: UserCog, section: 'subcontractors' },
   { label: 'Configuracoes', icon: Settings, section: 'settings' },
 ] as const;
+
+const aprPtNavItems = adminNavItems.filter((item) =>
+  ['works', 'employees', 'jobRoles', 'subcontractors'].includes(item.section)
+);
+const standaloneNavItems = adminNavItems.filter((item) =>
+  !['works', 'employees', 'jobRoles', 'subcontractors'].includes(item.section)
+);
 
 const filters: Array<{ value: FilterType; label: string }> = [
   { value: 'all', label: 'Todos' },
@@ -176,6 +186,7 @@ export default function DocumentsPage() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [rowRefreshingId, setRowRefreshingId] = useState<string | null>(null);
   const [resendingId, setResendingId] = useState<string | null>(null);
+  const [isAprPtMenuOpen, setIsAprPtMenuOpen] = useState(true);
 
   const loadData = async () => {
     if (!user?.companyId) {
@@ -371,12 +382,42 @@ export default function DocumentsPage() {
         <div className="px-4 pb-8">
           <div className="space-y-3">
             <Logo className="h-auto w-[210px]" />
-            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#4f5f7a]">Safety Compliance AI</p>
+            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#4f5f7a]">Phi Docs</p>
           </div>
         </div>
 
         <nav className="flex-1 space-y-1">
-          {adminNavItems.map((item) => {
+          <div className="mx-2">
+            <button
+              type="button"
+              onClick={() => setIsAprPtMenuOpen((current) => !current)}
+              className="flex w-full items-center justify-between rounded-xl px-4 py-3 text-[1rem] font-semibold text-[#4f5f7a] transition-colors hover:bg-[#e6e8eb] hover:text-[#191c1e]"
+            >
+              <span className="flex items-center gap-4">
+                <FileText className="h-5 w-5" />
+                APRs/PT
+              </span>
+              <ChevronDown className={['h-4 w-4 transition-transform', isAprPtMenuOpen ? 'rotate-180' : ''].join(' ')} />
+            </button>
+            {isAprPtMenuOpen && (
+              <div className="mt-1 space-y-1 border-l border-[#d8dadd] pl-3">
+                {aprPtNavItems.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <Link
+                      key={item.label}
+                      href={companyPanelHref(item.section)}
+                      className="flex items-center gap-3 rounded-xl px-4 py-2.5 text-[0.95rem] text-[#4f5f7a] transition-colors hover:bg-[#e6e8eb] hover:text-[#191c1e]"
+                    >
+                      <Icon className="h-4 w-4" />
+                      {item.label}
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+          {standaloneNavItems.map((item) => {
             const Icon = item.icon;
             return (
               <Link

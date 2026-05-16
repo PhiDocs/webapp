@@ -23,7 +23,30 @@ import { getWorks } from '@/server/work-actions';
 import { getEmployees } from '@/server/employee-actions';
 import { getCompanyById } from '@/server/company-actions';
 import { DocumentPreviewPanel } from '@/components/document-preview-panel';
-import { Bell, Briefcase, CircleHelp, HardHat, LogOut, Plus, Settings, Shield, UserCog, Users } from 'lucide-react';
+import {
+  BarChart3,
+  Bell,
+  Briefcase,
+  Building2,
+  ChevronDown,
+  CircleHelp,
+  ClipboardCheck,
+  Coins,
+  FileText,
+  Flame,
+  GraduationCap,
+  HardHat,
+  LogOut,
+  PackageCheck,
+  Plus,
+  Settings,
+  Shield,
+  ShieldAlert,
+  Siren,
+  UserCog,
+  UserRound,
+  Users,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   AlertDialog,
@@ -36,6 +59,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { createSupabaseBrowserClient } from '@/supabase/browser';
 import { signOut } from '@/server/auth-actions';
+import { getModuleColor, moduleColorForSection } from '@/lib/module-colors';
 
 function normalizeAnalysisSteps(steps: any[] | undefined): SafetyAnalysisOutput | null {
   if (!steps || steps.length === 0) return null;
@@ -59,12 +83,31 @@ function normalizeAnalysisSteps(steps: any[] | undefined): SafetyAnalysisOutput 
   return { proceduralSteps: normalized };
 }
 
-const adminNavItems = [
-  { label: 'Obras', icon: HardHat, section: 'works' },
-  { label: 'Funcionarios', icon: Users, section: 'employees' },
-  { label: 'Cargos', icon: Shield, section: 'jobRoles' },
-  { label: 'Terceirizadas', icon: UserCog, section: 'subcontractors' },
-  { label: 'Configuracoes', icon: Settings, section: 'settings' },
+const companyNavItems = {
+  dashboard: { label: 'Dashboard', icon: BarChart3, section: 'dashboardGeneral', description: 'Veja indicadores gerais de segurança.' },
+  works: { label: 'Obras', icon: HardHat, section: 'works', description: 'Gerencie obras usadas em APRs e permissões.' },
+  employees: { label: 'Funcionários', icon: Users, section: 'employees', description: 'Gerencie funcionários usados em APRs e PTs.' },
+  jobRoles: { label: 'Cargos', icon: Shield, section: 'jobRoles', description: 'Mantenha funções e responsabilidades.' },
+  subcontractors: { label: 'Terceirizadas', icon: UserCog, section: 'subcontractors', description: 'Gerencie empresas terceirizadas.' },
+  collaborators: { label: 'Colaboradores', icon: UserRound, section: 'collaborators', description: 'Cadastre e acompanhe colaboradores.' },
+  epiDeliveries: { label: 'Entregas de EPI', icon: PackageCheck, section: 'epiDeliveries', description: 'Controle EPIs entregues, pendentes e vencidos.' },
+  trainings: { label: 'Treinamentos', icon: GraduationCap, section: 'trainings', description: 'Controle treinamentos, certificados e vencimentos.' },
+  inspections: { label: 'Inspeções', icon: ClipboardCheck, section: 'inspections', description: 'Realize checklists e inspeções em campo.' },
+  fireExtinguishers: { label: 'Extintores', icon: Flame, section: 'fireExtinguishers', description: 'Controle vencimentos, recargas, inspeções e mapa de extintores.' },
+  nonconformities: { label: 'Não Conformidades', icon: ShieldAlert, section: 'nonconformities', description: 'Acompanhe desvios, correções e prazos.' },
+  incidents: { label: 'Incidentes', icon: Siren, section: 'incidents', description: 'Registre e investigue ocorrências.' },
+  costsPrevention: { label: 'Custos & Prevenção', icon: Coins, section: 'costsPrevention', description: 'Acompanhe custos e oportunidades de prevenção.' },
+  settings: { label: 'Configurações', icon: Settings, section: 'settings', description: 'Configure empresa e integrações.' },
+} as const;
+
+const reportNavigationGroups = [
+  { title: 'Início', items: [companyNavItems.dashboard] },
+  { title: 'APRs e Permissões', items: [companyNavItems.works, companyNavItems.employees, companyNavItems.jobRoles, companyNavItems.subcontractors], apr: true },
+  { title: 'Gestão de Segurança', items: [companyNavItems.collaborators, companyNavItems.epiDeliveries, companyNavItems.trainings, companyNavItems.inspections] },
+  { title: 'Prevenção e Emergência', items: [companyNavItems.fireExtinguishers] },
+  { title: 'Ocorrências e Ações', items: [companyNavItems.nonconformities, companyNavItems.incidents] },
+  { title: 'Financeiro e Análises', items: [companyNavItems.costsPrevention] },
+  { title: 'Administração', items: [companyNavItems.settings] },
 ] as const;
 
 const DEFAULT_PREVIEW_PANEL_WIDTH = 640;
@@ -90,6 +133,7 @@ export default function ReportsPage() {
   const [unsavedDialogOpen, setUnsavedDialogOpen] = useState(false);
   const [pendingNavigation, setPendingNavigation] = useState<(() => void) | null>(null);
   const [unsavedDialogMode, setUnsavedDialogMode] = useState<'new-report' | 'leave'>('leave');
+  const [isAprPtMenuOpen, setIsAprPtMenuOpen] = useState(true);
   const { toast } = useToast();
 
   const form = useForm<SafetyFormValues>({
@@ -461,8 +505,31 @@ export default function ReportsPage() {
     router.push('/login');
   };
 
-  const companyPanelHref = (section: (typeof adminNavItems)[number]['section']) =>
+  const companyPanelHref = (section: string) =>
     user?.companyId ? `/company/${user.companyId}?section=${section}` : '#';
+
+  const renderCompanyNavItem = (item: (typeof companyNavItems)[keyof typeof companyNavItems], compact = false) => {
+    const Icon = item.icon;
+    const href = companyPanelHref(item.section);
+    const color = getModuleColor(moduleColorForSection(item.section));
+    return (
+      <Link
+        key={item.section}
+        href={href}
+        title={item.description}
+        onClick={(event) => {
+          if (href !== '#') handleGuardedLinkClick(event, href);
+        }}
+        className={[
+          'flex items-center gap-3 rounded-xl text-[#4f5f7a] transition-colors hover:bg-[#e6e8eb] hover:text-[#191c1e]',
+          compact ? 'px-4 py-2.5 text-sm' : 'px-3.5 py-3 text-[0.95rem]',
+        ].join(' ')}
+      >
+        <Icon className={compact ? 'h-4 w-4 shrink-0' : 'h-5 w-5 shrink-0'} style={{ color: color.icon }} />
+        {item.label}
+      </Link>
+    );
+  };
 
   return (
     <>
@@ -472,7 +539,7 @@ export default function ReportsPage() {
             <Logo className="h-auto w-[170px]" />
             <nav className="ml-10 hidden items-center gap-10 md:flex text-body-md text-[#584237]">
               <Link href="/reports" onClick={(event) => handleGuardedLinkClick(event, '/reports')} className="border-b-2 border-[#9e4300] pb-1 font-semibold text-[#9e4300]">
-                Relatorios
+                Relatórios
               </Link>
               <Link href="/documents" onClick={(event) => handleGuardedLinkClick(event, '/documents')} className="transition-colors hover:text-[#b74813]">
                 Documentos
@@ -490,58 +557,84 @@ export default function ReportsPage() {
           </div>
         </header>
 
-         <aside className="fixed inset-y-0 left-0 top-16 z-20 hidden w-64 flex-col border-r border-[#e6cfc1] bg-[#f3f4f6] lg:flex">
-          <div className="px-4 py-5">
-            <div className="mb-4">
-              <Logo className="h-auto w-[210px]" />
+        <aside className="fixed inset-y-0 left-0 top-16 z-20 hidden w-80 flex-col border-r border-[#e6cfc1] bg-[#f3f4f6] lg:flex">
+          <div className="px-5 pb-5 pt-6">
+            <div className="flex items-start gap-3">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#fff1e7] text-[#9e4300]">
+                <Building2 className="h-5 w-5" />
+              </div>
+              <div className="min-w-0">
+                <h1 className="truncate text-lg font-semibold leading-6 text-[#191c1e]">Gestão</h1>
+                <p className="mt-1 truncate text-sm text-[#4f5f7a]">{company?.name || 'Phi Docs'}</p>
+              </div>
             </div>
-            <h1 className="font-headline text-h3 text-[#191c1e]">Gestao</h1>
-            <p className="mt-1 text-body-sm italic text-[#4f5f7a]">AI Safety &amp; Compliance</p>
           </div>
 
-          <nav className="flex-1 px-2">
-            <ul className="space-y-1.5">
-              {adminNavItems.map((item) => {
-                const Icon = item.icon;
-                return (
-                  <li key={item.label}>
-                    <Link
-                      href={companyPanelHref(item.section)}
-                      onClick={(event) => {
-                        const href = companyPanelHref(item.section);
-                        if (href !== '#') {
-                          handleGuardedLinkClick(event, href);
-                        }
-                      }}
-                      className="flex items-center gap-4 rounded-md px-4 py-3 text-body-sm text-[#4f5f7a] transition-colors hover:bg-[#e6e8eb] hover:text-[#191c1e]"
-                    >
-                      <Icon className="h-4 w-4" />
-                      {item.label}
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
+          <nav className="flex-1 overflow-y-auto px-3 pb-3">
+            <div className="space-y-5">
+              {reportNavigationGroups.map((group) => (
+                <section key={group.title} className="space-y-1.5">
+                  <p className="px-3 text-[0.68rem] font-bold uppercase tracking-[0.16em] text-[#7b8495]">{group.title}</p>
+                  {'apr' in group && group.apr ? (
+                    <div>
+                      <button
+                        type="button"
+                        onClick={() => setIsAprPtMenuOpen((current) => !current)}
+                        className="flex w-full items-center justify-between rounded-xl px-3.5 py-3 text-left text-[0.95rem] font-semibold transition-colors hover:bg-[#e6e8eb]"
+                        style={{ color: getModuleColor('aprs').text }}
+                      >
+                        <span className="flex items-center gap-3">
+                          <FileText className="h-5 w-5" style={{ color: getModuleColor('aprs').icon }} />
+                          APRs e PTs
+                        </span>
+                        <ChevronDown className={['h-4 w-4 transition-transform', isAprPtMenuOpen ? 'rotate-180' : ''].join(' ')} />
+                      </button>
+                      {isAprPtMenuOpen ? (
+                        <div className="ml-4 mt-1 space-y-1 border-l border-[#d8dadd] pl-3">
+                          {group.items.map((item) => renderCompanyNavItem(item, true))}
+                        </div>
+                      ) : null}
+                    </div>
+                  ) : (
+                    <div className="space-y-1">
+                      {group.items.map((item) => renderCompanyNavItem(item))}
+                      {group.title === 'Financeiro e Análises' ? (
+                        <>
+                          <Link href="/reports" className="flex items-center gap-3 rounded-xl border-l-4 px-3.5 py-3 text-[0.95rem] font-semibold" style={{ backgroundColor: getModuleColor('relatorios').soft, borderLeftColor: getModuleColor('relatorios').primary, color: getModuleColor('relatorios').text }}>
+                            <BarChart3 className="h-5 w-5 shrink-0" style={{ color: getModuleColor('relatorios').icon }} />
+                            Relatórios
+                          </Link>
+                          <Link href="/documents" onClick={(event) => handleGuardedLinkClick(event, '/documents')} className="flex items-center gap-3 rounded-xl px-3.5 py-3 text-[0.95rem] text-[#4f5f7a] transition-colors hover:bg-[#e6e8eb] hover:text-[#191c1e]">
+                            <FileText className="h-5 w-5 shrink-0" style={{ color: getModuleColor('documentos').icon }} />
+                            Documentos
+                          </Link>
+                        </>
+                      ) : null}
+                    </div>
+                  )}
+                </section>
+              ))}
+            </div>
           </nav>
 
           <div className="mt-auto border-t border-[#e0c0b1] px-4 py-4">
             <Button
-              className="h-12 w-full rounded-md bg-[#f46e11] font-semibold text-white hover:bg-[#e96710]"
+              className="h-12 w-full rounded-xl bg-[#9e4300] font-semibold text-white hover:bg-[#8c3b00]"
               onClick={() => requestNavigation(handleNewReport, 'new-report')}
             >
               <Plus className="h-4 w-4" />
-              Novo Relatorio
+              Novo Relatório
             </Button>
 
             <div className="mt-6 space-y-1 pb-4">
-              <Button variant="ghost" className="w-full justify-start rounded-md px-4 py-3 text-body-sm text-[#4f5f7a] hover:bg-[#e6e8eb] hover:text-[#191c1e]">
+              <Button variant="ghost" className="w-full justify-start rounded-xl px-4 py-3 text-body-sm text-[#4f5f7a] hover:bg-[#e6e8eb] hover:text-[#191c1e]">
                 <CircleHelp className="h-4 w-4" />
                 Suporte
               </Button>
               <Button
                 variant="ghost"
                 onClick={() => requestNavigation(handleSignOut, 'leave')}
-                className="w-full justify-start rounded-md px-4 py-3 text-body-sm text-[#4f5f7a] hover:bg-[#e6e8eb] hover:text-[#191c1e]"
+                className="w-full justify-start rounded-xl px-4 py-3 text-body-sm text-[#d01818] hover:bg-[#fbe2df] hover:text-[#d01818]"
               >
                 <LogOut className="h-4 w-4" />
                 Sair
@@ -551,10 +644,10 @@ export default function ReportsPage() {
         </aside>
 
         <main
-          className="pt-16 transition-all duration-300 lg:pl-64"
+          className="pt-16 transition-all duration-300 lg:pl-80"
           style={{
             paddingRight: showPreview ? (isPreviewMinimized ? '72px' : `${previewPanelWidth}px`) : undefined,
-            paddingLeft: 'calc(16rem + 2rem)',
+            paddingLeft: 'calc(20rem + 2rem)',
           }}
         >
           <div className="min-h-[calc(100vh-64px)]">

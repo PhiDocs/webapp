@@ -1,19 +1,36 @@
 'use client';
 
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import { useEffect, useMemo, useState } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import {
   Bell,
+  BarChart3,
   Briefcase,
+  ChevronDown,
   CircleHelp,
+  ClipboardCheck,
+  Coins,
+  FileText,
+  FileUp,
+  Flame,
+  GraduationCap,
   HardHat,
   LogOut,
+  Menu,
+  PackageCheck,
+  PanelLeftClose,
+  PanelLeftOpen,
   Search,
   Settings,
   Shield,
+  ShieldAlert,
+  Siren,
   UserCog,
+  UserRound,
   Users,
+  X,
 } from 'lucide-react';
 import { UserNav } from '@/components/auth/user-nav';
 import { useSession } from '@/components/auth/session-provider';
@@ -21,28 +38,142 @@ import { Logo } from '@/components/icons/logo';
 import { getCompanyById } from '@/server/company-actions';
 import type { Company } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
-import { EmployeesTable } from '@/components/admin/employees-table';
-import { JobRolesTable } from '@/components/admin/job-roles-table';
-import { SubcontractorsTable } from '@/components/admin/subcontractors-table';
-import { CompanySettings } from '@/components/admin/company-settings';
-import { WorksTable } from '@/components/admin/works-table';
 import { Button } from '@/components/ui/button';
 import { signOut } from '@/server/auth-actions';
 import { createSupabaseBrowserClient } from '@/supabase/browser';
+import { cn } from '@/lib/utils';
+import { getModuleColor, moduleColorForSection, type ModuleColorKey } from '@/lib/module-colors';
+import { navigateCompanySection } from '@/lib/client-navigation';
 
-type AdminSection = 'works' | 'employees' | 'jobRoles' | 'subcontractors' | 'settings';
+type AdminSection = 'works' | 'dashboardGeneral' | 'collaborators' | 'epiDeliveries' | 'trainings' | 'inspections' | 'fireExtinguishers' | 'incidents' | 'costsPrevention' | 'nonconformities' | 'employees' | 'jobRoles' | 'subcontractors' | 'dataImports' | 'settings';
+type SectionNavigationEvent = CustomEvent<{ section: AdminSection; filters?: Record<string, string> }>;
 
 const adminSections: Array<{
   value: AdminSection;
   label: string;
   icon: typeof Briefcase;
+  description: string;
+  roles?: string[];
 }> = [
-  { value: 'works', label: 'Obras', icon: HardHat },
-  { value: 'employees', label: 'Funcionarios', icon: Users },
-  { value: 'jobRoles', label: 'Cargos', icon: Shield },
-  { value: 'subcontractors', label: 'Terceirizadas', icon: UserCog },
-  { value: 'settings', label: 'Configuracoes', icon: Settings },
+  { value: 'works', label: 'Obras', icon: HardHat, description: 'Gerencie obras usadas em APRs e permissoes.', roles: ['admin', 'tecnico'] },
+  { value: 'dashboardGeneral', label: 'Central de Seguranca', icon: BarChart3, description: 'Veja indicadores gerais de seguranca.', roles: ['admin', 'tecnico', 'gestor'] },
+  { value: 'collaborators', label: 'Colaboradores', icon: UserRound, description: 'Cadastre e acompanhe colaboradores.', roles: ['admin', 'rh', 'tecnico'] },
+  { value: 'epiDeliveries', label: 'Entregas de EPI', icon: PackageCheck, description: 'Controle EPIs entregues, pendentes e vencidos.', roles: ['admin', 'tecnico'] },
+  { value: 'trainings', label: 'Treinamentos', icon: GraduationCap, description: 'Controle treinamentos, certificados e vencimentos.', roles: ['admin', 'rh', 'tecnico'] },
+  { value: 'inspections', label: 'Inspecoes', icon: ClipboardCheck, description: 'Realize checklists e inspecoes em campo.', roles: ['admin', 'tecnico'] },
+  { value: 'fireExtinguishers', label: 'Extintores', icon: Flame, description: 'Controle vencimentos, recargas, inspecoes e mapa de extintores.', roles: ['admin', 'tecnico', 'gestor'] },
+  { value: 'incidents', label: 'Incidentes', icon: Siren, description: 'Registre e investigue ocorrencias.', roles: ['admin', 'tecnico', 'gestor'] },
+  { value: 'costsPrevention', label: 'Custos & Prevencao', icon: Coins, description: 'Acompanhe custos e oportunidades de prevencao.', roles: ['admin', 'gestor'] },
+  { value: 'nonconformities', label: 'Nao Conformidades', icon: ShieldAlert, description: 'Acompanhe desvios, correcoes e prazos.', roles: ['admin', 'tecnico'] },
+  { value: 'employees', label: 'Funcionarios APR/PT', icon: Users, description: 'Gerencie funcionarios usados em APRs e PTs.', roles: ['admin'] },
+  { value: 'jobRoles', label: 'Cargos', icon: Shield, description: 'Mantenha funcoes e responsabilidades.', roles: ['admin'] },
+  { value: 'subcontractors', label: 'Terceirizadas', icon: UserCog, description: 'Gerencie empresas terceirizadas.', roles: ['admin'] },
+  { value: 'dataImports', label: 'Importacao de Dados', icon: FileUp, description: 'Importe planilhas e documentos com revisao antes de salvar.', roles: ['admin', 'tecnico', 'rh'] },
+  { value: 'settings', label: 'Configuracoes', icon: Settings, description: 'Configure empresa e integracoes.', roles: ['admin'] },
 ];
+
+const getSection = (value: AdminSection) => adminSections.find((section) => section.value === value)!;
+
+type NavigationItem =
+  | { type: 'section'; section: AdminSection; label?: string; description?: string; icon?: typeof Briefcase; module?: ModuleColorKey; keywords?: string[]; roles?: string[] }
+  | { type: 'link'; label: string; href: string; icon: typeof Briefcase; description: string; module: ModuleColorKey; keywords?: string[]; roles?: string[] };
+
+const navigationGroups: Array<{ id: string; title: string; defaultOpen: boolean; items: NavigationItem[] }> = [
+  {
+    id: 'principal',
+    title: 'Principal',
+    defaultOpen: true,
+    items: [
+      { type: 'section', section: 'dashboardGeneral', label: 'Central de Seguranca', icon: Shield, module: 'dashboard', description: 'Visao operacional de riscos, pendencias e respaldo.', keywords: ['central', 'seguranca', 'risco', 'inicio'] },
+      { type: 'section', section: 'dashboardGeneral', label: 'Dashboard', icon: BarChart3, module: 'dashboard', description: 'Indicadores gerais e graficos executivos.', keywords: ['dashboard', 'indicadores', 'graficos'] },
+    ],
+  },
+  {
+    id: 'operacional',
+    title: 'Gestao Operacional',
+    defaultOpen: true,
+    items: [
+      { type: 'section', section: 'collaborators' },
+      { type: 'section', section: 'epiDeliveries' },
+      { type: 'section', section: 'trainings' },
+      { type: 'section', section: 'inspections' },
+    ],
+  },
+  {
+    id: 'riscos',
+    title: 'Riscos e Ocorrencias',
+    defaultOpen: false,
+    items: [{ type: 'section', section: 'nonconformities' }, { type: 'section', section: 'incidents' }],
+  },
+  {
+    id: 'emergencia',
+    title: 'Prevencao e Emergencia',
+    defaultOpen: false,
+    items: [{ type: 'section', section: 'fireExtinguishers' }],
+  },
+  {
+    id: 'dados',
+    title: 'Dados e Relatorios',
+    defaultOpen: false,
+    items: [
+      { type: 'link', label: 'Relatorios', href: '/reports', icon: BarChart3, module: 'relatorios', description: 'Acesse relatorios e exportacoes.', keywords: ['relatorio', 'pdf', 'exportar'] },
+      { type: 'link', label: 'Documentos', href: '/documents', icon: FileText, module: 'documentos', description: 'Acesse documentos e registros gerados.', roles: ['admin', 'tecnico'], keywords: ['documento', 'arquivo', 'respaldo'] },
+      { type: 'section', section: 'dataImports' },
+      { type: 'section', section: 'costsPrevention' },
+    ],
+  },
+  {
+    id: 'aprs',
+    title: 'APRs e PTs',
+    defaultOpen: false,
+    items: [
+      { type: 'link', label: 'APRs e PTs', href: '/reports', icon: FileText, module: 'aprs', description: 'Gere APRs, IPTs e permissoes de trabalho.', roles: ['admin', 'tecnico'], keywords: ['apr', 'ipt', 'pt', 'permissao'] },
+      { type: 'section', section: 'works' },
+      { type: 'section', section: 'employees', label: 'Equipe APR/PT', description: 'Gerencie funcionarios usados em APRs e PTs.', keywords: ['funcionarios', 'equipe', 'apr', 'pt'] },
+      { type: 'section', section: 'jobRoles' },
+      { type: 'section', section: 'subcontractors' },
+    ],
+  },
+  {
+    id: 'sistema',
+    title: 'Sistema',
+    defaultOpen: false,
+    items: [{ type: 'section', section: 'settings' }],
+  },
+];
+
+function SectionLoading() {
+  return (
+    <div className="space-y-5">
+      <div className="rounded-2xl border border-[#e0c0b1] bg-white p-6 shadow-sm">
+        <Skeleton className="h-8 w-72 rounded-lg" />
+        <Skeleton className="mt-3 h-5 w-[34rem] max-w-full rounded-lg" />
+      </div>
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        {Array.from({ length: 8 }).map((_, index) => (
+          <Skeleton key={index} className="h-32 rounded-2xl" />
+        ))}
+      </div>
+      <Skeleton className="h-80 rounded-2xl" />
+    </div>
+  );
+}
+
+const WorksTable = dynamic(() => import('@/components/admin/works-table').then((mod) => mod.WorksTable), { loading: SectionLoading });
+const SafetyDashboardGeneral = dynamic(() => import('@/components/admin/safety-dashboard-general').then((mod) => mod.SafetyDashboardGeneral), { loading: SectionLoading });
+const CollaboratorsTable = dynamic(() => import('@/components/admin/collaborators-table').then((mod) => mod.CollaboratorsTable), { loading: SectionLoading });
+const EpiDeliveriesTable = dynamic(() => import('@/components/admin/epi-deliveries-table').then((mod) => mod.EpiDeliveriesTable), { loading: SectionLoading });
+const TrainingsTable = dynamic(() => import('@/components/admin/trainings-table').then((mod) => mod.TrainingsTable), { loading: SectionLoading });
+const InspectionsTable = dynamic(() => import('@/components/admin/inspections-table').then((mod) => mod.InspectionsTable), { loading: SectionLoading });
+const FireExtinguishersDashboard = dynamic(() => import('@/components/admin/fire-extinguishers-dashboard').then((mod) => mod.FireExtinguishersDashboard), { loading: SectionLoading });
+const IncidentsTable = dynamic(() => import('@/components/admin/incidents-table').then((mod) => mod.IncidentsTable), { loading: SectionLoading });
+const CostsPreventionTable = dynamic(() => import('@/components/admin/costs-prevention-table').then((mod) => mod.CostsPreventionTable), { loading: SectionLoading });
+const NonconformitiesTable = dynamic(() => import('@/components/admin/nonconformities-table').then((mod) => mod.NonconformitiesTable), { loading: SectionLoading });
+const EmployeesTable = dynamic(() => import('@/components/admin/employees-table').then((mod) => mod.EmployeesTable), { loading: SectionLoading });
+const JobRolesTable = dynamic(() => import('@/components/admin/job-roles-table').then((mod) => mod.JobRolesTable), { loading: SectionLoading });
+const SubcontractorsTable = dynamic(() => import('@/components/admin/subcontractors-table').then((mod) => mod.SubcontractorsTable), { loading: SectionLoading });
+const DataImportsDashboard = dynamic(() => import('@/components/admin/data-imports-dashboard').then((mod) => mod.DataImportsDashboard), { loading: SectionLoading });
+const CompanySettings = dynamic(() => import('@/components/admin/company-settings').then((mod) => mod.CompanySettings), { loading: SectionLoading });
 
 export default function CompanyPage() {
   const params = useParams();
@@ -51,13 +182,20 @@ export default function CompanyPage() {
   const { user, isLoading: isSessionLoading } = useSession();
   const companyId = params.companyId as string;
 
-  const [activeSection, setActiveSection] = useState<AdminSection>('works');
+  const requestedSection = searchParams.get('section') as AdminSection | null;
+  const initialSection = requestedSection && adminSections.some((section) => section.value === requestedSection) ? requestedSection : 'dashboardGeneral';
+
+  const [activeSection, setActiveSection] = useState<AdminSection>(initialSection);
+  const [renderedSection, setRenderedSection] = useState<AdminSection | null>(initialSection);
+  const [isSectionSwitching, setIsSectionSwitching] = useState(false);
   const [company, setCompany] = useState<Company | null>(null);
   const [isCompanyLoading, setIsCompanyLoading] = useState(true);
   const [isAuthorizing, setIsAuthorizing] = useState(() => !user);
   const [employeeSearch, setEmployeeSearch] = useState('');
-
-  const requestedSection = searchParams.get('section') as AdminSection | null;
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [menuSearch, setMenuSearch] = useState('');
+  const [openMenuGroups, setOpenMenuGroups] = useState<string[]>(() => navigationGroups.filter((group) => group.defaultOpen).map((group) => group.id));
 
   const loadCompany = async () => {
     if (!companyId) return;
@@ -105,17 +243,80 @@ export default function CompanyPage() {
 
     if (adminSections.some((section) => section.value === requestedSection) && requestedSection !== activeSection) {
       setActiveSection(requestedSection);
+      setRenderedSection(requestedSection);
     }
   }, [activeSection, requestedSection]);
 
+  useEffect(() => {
+    const syncFromLocation = () => {
+      const params = new URLSearchParams(window.location.search);
+      const nextSection = params.get('section') as AdminSection | null;
+      if (nextSection && adminSections.some((section) => section.value === nextSection)) {
+        setActiveSection(nextSection);
+        setRenderedSection(nextSection);
+      }
+    };
+
+    const handleSectionEvent = (event: Event) => {
+      const detail = (event as SectionNavigationEvent).detail;
+      if (!detail?.section || !adminSections.some((section) => section.value === detail.section)) return;
+      setActiveSection(detail.section);
+      setIsMobileMenuOpen(false);
+      setIsSectionSwitching(true);
+      setRenderedSection(null);
+      window.setTimeout(() => {
+        setRenderedSection(detail.section);
+        setIsSectionSwitching(false);
+      }, 30);
+    };
+
+    window.addEventListener('popstate', syncFromLocation);
+    window.addEventListener('phidocs:section-change', handleSectionEvent);
+    return () => {
+      window.removeEventListener('popstate', syncFromLocation);
+      window.removeEventListener('phidocs:section-change', handleSectionEvent);
+    };
+  }, []);
+
+  const activeMenuGroupId = useMemo(() => {
+    return navigationGroups.find((group) => group.items.some((item) => item.type === 'section' && item.section === activeSection))?.id;
+  }, [activeSection]);
+
+  useEffect(() => {
+    if (!activeMenuGroupId) return;
+    setOpenMenuGroups((current) => (current.includes(activeMenuGroupId) ? current : [...current, activeMenuGroupId]));
+  }, [activeMenuGroupId]);
+
   const currentSection = useMemo(() => {
-    switch (activeSection) {
+    if (!renderedSection || isSectionSwitching) return <SectionLoading />;
+
+    switch (renderedSection) {
+      case 'dashboardGeneral':
+        return <SafetyDashboardGeneral companyId={companyId} companyName={company?.name} />;
+      case 'collaborators':
+        return <CollaboratorsTable companyId={companyId} companyName={company?.name} />;
+      case 'epiDeliveries':
+        return <EpiDeliveriesTable companyId={companyId} companyName={company?.name} />;
+      case 'trainings':
+        return <TrainingsTable companyId={companyId} />;
+      case 'inspections':
+        return <InspectionsTable companyId={companyId} />;
+      case 'fireExtinguishers':
+        return <FireExtinguishersDashboard companyId={companyId} companyName={company?.name} />;
+      case 'incidents':
+        return <IncidentsTable companyId={companyId} />;
+      case 'costsPrevention':
+        return <CostsPreventionTable companyId={companyId} />;
+      case 'nonconformities':
+        return <NonconformitiesTable companyId={companyId} />;
       case 'employees':
         return <EmployeesTable companyId={companyId} searchTerm={employeeSearch} />;
       case 'jobRoles':
         return <JobRolesTable companyId={companyId} />;
       case 'subcontractors':
         return <SubcontractorsTable companyId={companyId} />;
+      case 'dataImports':
+        return <DataImportsDashboard companyId={companyId} companyName={company?.name} />;
       case 'settings':
         if (!company) {
           return (
@@ -130,16 +331,18 @@ export default function CompanyPage() {
       default:
         return <WorksTable companyId={companyId} />;
     }
-  }, [activeSection, company, companyId]);
+  }, [company, companyId, employeeSearch, isSectionSwitching, renderedSection]);
 
   const isSettingsSection = activeSection === 'settings';
 
   const handleSectionChange = (section: AdminSection) => {
-    setActiveSection(section);
+    if (section === activeSection && renderedSection === section) {
+      setIsMobileMenuOpen(false);
+      return;
+    }
 
-    const params = new URLSearchParams(searchParams.toString());
-    params.set('section', section);
-    router.replace(`/company/${companyId}?${params.toString()}`, { scroll: false });
+    setIsMobileMenuOpen(false);
+    navigateCompanySection(companyId, section);
   };
 
   const handleSignOut = async () => {
@@ -147,6 +350,117 @@ export default function CompanyPage() {
     await createSupabaseBrowserClient().auth.signOut();
     router.push('/login');
   };
+
+  const sidebarWidthClass = isSidebarCollapsed ? 'lg:w-24' : 'lg:w-80';
+  const mainOffsetClass = isSidebarCollapsed ? 'lg:ml-24' : 'lg:ml-80';
+  const menuQuery = menuSearch.trim().toLowerCase();
+  const itemMatchesSearch = (item: NavigationItem) => {
+    if (!menuQuery) return true;
+    if (item.type === 'section') {
+      const section = getSection(item.section);
+      return `${item.label || section.label} ${item.description || section.description} ${(item.keywords || []).join(' ')}`.toLowerCase().includes(menuQuery);
+    }
+    return `${item.label} ${item.description} ${(item.keywords || []).join(' ')}`.toLowerCase().includes(menuQuery);
+  };
+  const filteredNavigationGroups = navigationGroups
+    .map((group) => ({
+      ...group,
+      items: group.items.filter(itemMatchesSearch),
+    }))
+    .filter((group) => group.items.length > 0);
+
+  const itemClass = (active: boolean, compact = false) => cn(
+    'group flex w-full items-center gap-3 rounded-xl text-left transition-all duration-150',
+    compact ? 'px-3 py-2 text-[0.88rem]' : 'px-3 py-2.5 text-[0.92rem]',
+    active
+      ? 'border-l-4 font-semibold shadow-sm'
+      : 'text-[#4f5f7a] hover:bg-[#e6e8eb] hover:text-[#191c1e]',
+    isSidebarCollapsed && !compact && !isMobileMenuOpen && 'justify-center px-2',
+  );
+
+  const renderSectionButton = (item: Extract<NavigationItem, { type: 'section' }>, compact = false) => {
+    const section = getSection(item.section);
+    const Icon = item.icon || section.icon;
+    const label = item.label || section.label;
+    const description = item.description || section.description;
+    const isActive = activeSection === section.value && item.label !== 'Dashboard';
+    const color = getModuleColor(item.module || moduleColorForSection(section.value));
+
+    return (
+      <button
+        key={section.value}
+        type="button"
+        title={description}
+        onClick={() => handleSectionChange(section.value)}
+        className={itemClass(isActive, compact)}
+        style={isActive ? { backgroundColor: color.soft, borderLeftColor: color.primary, color: color.text } : undefined}
+      >
+        <Icon className={cn('shrink-0', compact ? 'h-4 w-4' : 'h-5 w-5')} style={{ color: isActive ? color.icon : color.primary }} />
+        {!isSidebarCollapsed || compact || isMobileMenuOpen ? <span className="truncate">{label}</span> : null}
+      </button>
+    );
+  };
+
+  const renderNavigation = (mobile = false) => (
+    <nav className="flex-1 overflow-y-auto px-3 pb-3">
+      {!isSidebarCollapsed || mobile ? (
+        <div className="mb-4 px-1">
+          <div className="relative">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#6c7280]" />
+            <input
+              value={menuSearch}
+              onChange={(event) => setMenuSearch(event.target.value)}
+              placeholder="Buscar modulo..."
+              className="h-10 w-full rounded-xl border border-[#e0c0b1] bg-[#f8f8f8] pl-9 pr-3 text-sm text-[#191c1e] outline-none focus:border-[#f46e11]"
+            />
+          </div>
+        </div>
+      ) : null}
+
+      <div className="space-y-2.5">
+        {filteredNavigationGroups.map((group) => (
+          <section key={group.title} className="space-y-1.5">
+            {!isSidebarCollapsed || mobile ? (
+              <button
+                type="button"
+                onClick={() => setOpenMenuGroups((current) => current.includes(group.id) ? current.filter((id) => id !== group.id) : [...current, group.id])}
+                className="flex w-full items-center justify-between rounded-lg px-3 py-1.5 text-left text-[0.68rem] font-bold uppercase tracking-[0.16em] text-[#7b8495] hover:bg-[#e6e8eb]"
+              >
+                <span>{group.title}</span>
+                <ChevronDown className={cn('h-3.5 w-3.5 transition-transform', (openMenuGroups.includes(group.id) || menuQuery) && 'rotate-180')} />
+              </button>
+            ) : (
+              <div className="mx-auto h-px w-10 bg-[#d8dadd]" />
+            )}
+            {(openMenuGroups.includes(group.id) || Boolean(menuQuery) || isSidebarCollapsed) ? <div className="space-y-1">
+              {group.items.map((item) => {
+                if (item.type === 'section') return renderSectionButton(item);
+
+                if (item.type === 'link') {
+                  const Icon = item.icon;
+                  const color = getModuleColor(item.module);
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      title={item.description}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className={itemClass(false)}
+                    >
+                      <Icon className="h-5 w-5 shrink-0" style={{ color: color.icon }} />
+                      {!isSidebarCollapsed || mobile || isMobileMenuOpen ? <span className="truncate">{item.label}</span> : null}
+                    </Link>
+                  );
+                }
+
+                return null;
+              })}
+            </div> : null}
+          </section>
+        ))}
+      </div>
+    </nav>
+  );
 
   if (isSessionLoading || isAuthorizing) {
     return (
@@ -170,15 +484,15 @@ export default function CompanyPage() {
     <div className="min-h-screen bg-[#f7f9fc]">
       <header className="fixed inset-x-0 top-0 z-30 flex h-16 items-center border-b border-[#e6cfc1] bg-[#f8f8f8] px-6 shadow-sm">
         <div className="flex items-center gap-4">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setIsMobileMenuOpen(true)}
+            className="h-10 w-10 rounded-full text-[#415778] hover:bg-[#eef1f5] lg:hidden"
+          >
+            <Menu className="h-5 w-5" />
+          </Button>
           <Logo className="h-auto w-[170px]" />
-          <nav className="ml-8 hidden items-center gap-10 text-body-md text-[#584237] md:flex">
-            <Link href="/reports" className="transition-colors hover:text-[#b74813]">
-              Relatorios
-            </Link>
-            <Link href="/documents" className="transition-colors hover:text-[#b74813]">
-              Documentos
-            </Link>
-          </nav>
         </div>
         <div className="ml-auto flex items-center gap-4">
           <div className="relative hidden lg:block">
@@ -204,74 +518,72 @@ export default function CompanyPage() {
         </div>
       </header>
 
-      <aside className="fixed left-0 top-16 z-20 hidden h-[calc(100vh-4rem)] w-80 flex-col border-r border-[#e0c0b1] bg-[#f3f4f6] lg:flex">
-        <div className="px-8 pb-8 pt-7">
-          <div className="space-y-4">
-            <Logo className="h-auto w-[210px]" />
-            <div>
-              <h1 className="font-headline text-[2rem] font-semibold leading-9 text-[#191c1e]">Gestao</h1>
-              <p className="mt-2 text-[1rem] text-[#4f5f7a]">Safety Compliance AI</p>
-            </div>
-          </div>
+      <aside className={cn('fixed left-0 top-16 z-20 hidden h-[calc(100vh-4rem)] flex-col border-r border-[#e0c0b1] bg-[#f3f4f6] transition-all duration-200 lg:flex', sidebarWidthClass)}>
+        <div className={cn('px-5 pb-4 pt-4', isSidebarCollapsed && 'px-3')}>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setIsSidebarCollapsed((current) => !current)}
+            className={cn('h-9 rounded-xl text-[#4f5f7a] hover:bg-[#e6e8eb]', isSidebarCollapsed ? 'mx-auto w-11' : 'w-full justify-start px-3')}
+            title={isSidebarCollapsed ? 'Expandir menu' : 'Recolher menu'}
+          >
+            {isSidebarCollapsed ? <PanelLeftOpen className="h-4 w-4" /> : <><PanelLeftClose className="h-4 w-4" /><span className="ml-2 text-sm">Recolher menu</span></>}
+          </Button>
         </div>
 
-        <nav className="flex-1 px-4">
-          <ul className="space-y-1.5">
-            {adminSections.map((section) => {
-              const Icon = section.icon;
-              const isActive = activeSection === section.value;
+        {renderNavigation(false)}
 
-              return (
-                <li key={section.value}>
-                  <button
-                    type="button"
-                    onClick={() => handleSectionChange(section.value)}
-                    className={[
-                      'mx-0 flex w-full items-center gap-4 rounded-2xl px-4 py-4 text-left text-[1rem] transition-colors',
-                      isActive
-                        ? 'bg-[#ff6f08] font-medium text-[#341100] shadow-sm'
-                        : 'text-[#4f5f7a] hover:bg-[#e6e8eb] hover:text-[#191c1e]',
-                    ].join(' ')}
-                  >
-                    <Icon className="h-5 w-5" />
-                    {section.label}
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
-        </nav>
-
-        <div className="mt-auto border-t border-[#e0c0b1] px-4 py-5">
-          <div className="pb-6">
-            <Button className="h-16 w-full rounded-2xl bg-[#9e4300] text-[1rem] font-semibold text-white shadow-[0_8px_24px_rgba(158,67,0,0.18)] hover:bg-[#8c3b00]">
-              <Briefcase className="h-5 w-5" />
-              Novo Relatorio
-            </Button>
-          </div>
+        <div className={cn('mt-auto border-t border-[#e0c0b1] px-3 py-4', isSidebarCollapsed && 'px-2')}>
           <div className="space-y-1">
             <Button
               variant="ghost"
-              className="h-14 justify-start rounded-2xl px-4 text-[1rem] text-[#4f5f7a] hover:bg-[#e6e8eb] hover:text-[#191c1e]"
+              className={cn('h-11 rounded-xl text-[#4f5f7a] hover:bg-[#e6e8eb] hover:text-[#191c1e]', isSidebarCollapsed ? 'w-full justify-center px-0' : 'w-full justify-start px-3')}
+              title="Suporte"
             >
               <CircleHelp className="h-4 w-4" />
-              Suporte
+              {!isSidebarCollapsed ? <span>Suporte</span> : null}
             </Button>
             <Button
               variant="ghost"
               onClick={handleSignOut}
-              className="h-14 justify-start rounded-2xl px-4 text-[1rem] text-[#d01818] hover:bg-[#fbe2df] hover:text-[#d01818]"
+              className={cn('h-11 rounded-xl text-[#d01818] hover:bg-[#fbe2df] hover:text-[#d01818]', isSidebarCollapsed ? 'w-full justify-center px-0' : 'w-full justify-start px-3')}
+              title="Sair"
             >
               <LogOut className="h-4 w-4" />
-              Sair
+              {!isSidebarCollapsed ? <span>Sair</span> : null}
             </Button>
           </div>
+          {!isSidebarCollapsed ? <p className="mt-3 px-3 text-xs text-[#7b8495]">Versao {process.env.NEXT_PUBLIC_APP_VERSION || 'dev'}</p> : null}
         </div>
       </aside>
 
-      <main className="min-h-screen pt-16 lg:ml-80">
+      {isMobileMenuOpen ? (
+        <div className="fixed inset-0 z-50 lg:hidden">
+          <button type="button" aria-label="Fechar menu" className="absolute inset-0 bg-black/35" onClick={() => setIsMobileMenuOpen(false)} />
+          <aside className="relative flex h-full w-[min(88vw,22rem)] flex-col border-r border-[#e0c0b1] bg-[#f3f4f6] shadow-2xl">
+            <div className="flex items-center justify-between px-5 py-4">
+              <div>
+                <p className="text-lg font-semibold text-[#191c1e]">Menu</p>
+                <p className="text-sm text-[#4f5f7a]">Gestao SST</p>
+              </div>
+              <Button variant="ghost" size="icon" onClick={() => setIsMobileMenuOpen(false)} className="rounded-full">
+                <X className="h-5 w-5" />
+              </Button>
+            </div>
+            {renderNavigation(true)}
+            <div className="border-t border-[#e0c0b1] p-4">
+              <Button variant="ghost" onClick={handleSignOut} className="w-full justify-start rounded-xl text-[#d01818] hover:bg-[#fbe2df] hover:text-[#d01818]">
+                <LogOut className="h-4 w-4" />
+                Sair
+              </Button>
+            </div>
+          </aside>
+        </div>
+      ) : null}
+
+      <main className={cn('min-h-screen pt-16 transition-[margin] duration-200', mainOffsetClass)}>
         <div className={isSettingsSection ? 'mx-auto max-w-[1600px] px-4 py-8 sm:px-8' : 'mx-auto max-w-[1600px] px-4 py-6 sm:px-6'}>
-          {!['works', 'employees', 'jobRoles'].includes(activeSection) && (
+          {!['works', 'dashboardGeneral', 'collaborators', 'epiDeliveries', 'trainings', 'inspections', 'incidents', 'costsPrevention', 'nonconformities', 'employees', 'jobRoles', 'dataImports'].includes(activeSection) && (
             isSettingsSection ? (
               <div className="mb-8">
                 {isCompanyLoading ? (
@@ -308,34 +620,6 @@ export default function CompanyPage() {
               </div>
             )
           )}
-
-          <div className="lg:hidden">
-            <div className="mb-6 overflow-x-auto rounded-2xl border border-[#e0c0b1] bg-white p-2 shadow-sm">
-              <div className="flex min-w-max gap-2">
-                {adminSections.map((section) => {
-                  const Icon = section.icon;
-                  const isActive = activeSection === section.value;
-
-                  return (
-                    <button
-                      key={section.value}
-                      type="button"
-                      onClick={() => handleSectionChange(section.value)}
-                      className={[
-                        'flex items-center gap-2 rounded-md px-4 py-2 text-sm transition-colors',
-                        isActive
-                          ? 'bg-[#f46e11] font-semibold text-white'
-                          : 'bg-[#f3f4f6] text-[#4f5f7a] hover:bg-[#e6e8eb] hover:text-[#191c1e]',
-                      ].join(' ')}
-                    >
-                      <Icon className="h-4 w-4" />
-                      {section.label}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
 
           {currentSection}
         </div>

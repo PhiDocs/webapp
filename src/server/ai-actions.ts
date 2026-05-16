@@ -5,8 +5,14 @@ import { genkit } from 'genkit';
 import { googleAI } from '@genkit-ai/googleai';
 import { z } from 'zod';
 import { ptBr } from '@/lib/data/strings';
+import type { CollaboratorAiRecommendations } from '@/lib/types';
+import { CollaboratorRepository } from '@/repositories/collaborator.repository';
 import { ErrorLogRepository } from '@/repositories/error-log.repository';
 import { requireAuth } from '@/server/auth-guard';
+
+if (!process.env.GOOGLE_GENAI_API_KEY && process.env.GEMINI_API_KEY) {
+  process.env.GOOGLE_GENAI_API_KEY = process.env.GEMINI_API_KEY;
+}
 
 // Create Genkit instance with Google AI plugin
 const ai = genkit({
@@ -37,6 +43,34 @@ const ProtectiveEquipmentOutputSchema = z.object({
   epcNote: z.string().describe('An observation note regarding EPC integrity and project conformity.'),
 });
 export type ProtectiveEquipmentOutput = z.infer<typeof ProtectiveEquipmentOutputSchema>;
+
+const CollaboratorRecommendationsSchema = z.object({
+  epi_obrigatorios: z.array(z.string()).describe('EPIs obrigatorios para a funcao e atividades do colaborador.'),
+  treinamentos_obrigatorios: z.array(z.string()).describe('Treinamentos obrigatorios ou recomendados para a funcao.'),
+  riscos_associados: z.array(z.string()).describe('Riscos associados a funcao, setor, local de trabalho e atividades.'),
+  medidas_preventivas: z.array(z.string()).describe('Medidas preventivas recomendadas.'),
+  observacoes: z.string().describe('Resumo tecnico objetivo para o profissional de seguranca do trabalho.'),
+});
+
+type CollaboratorRecommendationsOutput = z.infer<typeof CollaboratorRecommendationsSchema>;
+
+function buildSavedRecommendations(output: CollaboratorRecommendationsOutput): CollaboratorAiRecommendations {
+  return {
+    generated_at: new Date().toISOString(),
+    epi_obrigatorios: output.epi_obrigatorios,
+    epi_entregues: [],
+    epi_pendentes: output.epi_obrigatorios,
+    treinamentos_obrigatorios: output.treinamentos_obrigatorios,
+    treinamentos_realizados: [],
+    treinamentos_vencidos: output.treinamentos_obrigatorios,
+    riscos_associados: output.riscos_associados,
+    medidas_preventivas: output.medidas_preventivas,
+    nao_conformidades: [],
+    incidentes: [],
+    relatorios: [],
+    observacoes: output.observacoes,
+  };
+}
 
 export async function getSafetyAnalysis(data: { activityDescription: string }): Promise<{ data: SafetyAnalysisOutput | null; error: string | null }> {
   try {
@@ -94,6 +128,78 @@ export async function getSafetyAnalysis(data: { activityDescription: string }): 
     let errorMessage = ptBr.validations.safetyAnalysisFailed;
     if (e.message?.toLowerCase().includes('api key')) {
         errorMessage = 'A chave de API do Gemini não foi configurada corretamente no servidor. Verifique as variáveis de ambiente.';
+    }
+
+    return { data: null, error: errorMessage };
+  }
+}
+
+export async function generateCollaboratorRecommendations(data: {
+  collaboratorId: string;
+  companyId: string;
+}): Promise<{ data: CollaboratorAiRecommendations | null; error: string | null; cached?: boolean }> {
+  try {
+    await requireAuth({ matchCompanyId: data.companyId, requireCompany: true });
+  } catch (e: any) {
+    return { data: null, error: e.message || ptBr.validations.invalidInput };
+  }
+
+  if (!data.collaboratorId || !data.companyId) {
+    return { data: null, error: 'Colaborador ou empresa nao informado.' };
+  }
+
+  try {
+    const collaborator = await CollaboratorRepository.getById(data.collaboratorId, data.companyId);
+    if (!collaborator) {
+      return { data: null, error: 'Colaborador nao encontrado.' };
+    }
+
+    if (collaborator.ai_recommendations) {
+      return { data: collaborator.ai_recommendations, error: null, cached: true };
+    }
+
+    const geminiPro = process.env.GENAI_MODEL || 'googleai/gemini-pro';
+    const prompt = `Voce e um especialista senior em Seguranca do Trabalho no Brasil, com dominio das Normas Regulamentadoras.
+
+Gere recomendacoes para a ficha de um colaborador. Use linguagem objetiva, tecnica e pronta para alimentar modulos futuros de EPI, treinamentos, riscos e medidas preventivas.
+
+Dados do colaborador:
+- Nome: ${collaborator.nome_completo}
+- Empresa: ${collaborator.empresa || 'Nao informado'}
+- Setor: ${collaborator.setor}
+- Funcao: ${collaborator.funcao}
+- Local de trabalho: ${collaborator.local_trabalho || 'Nao informado'}
+- Turno: ${collaborator.turno_trabalho || 'Nao informado'}
+- Atividades realizadas: ${collaborator.atividades_realizadas || 'Nao informado'}
+- Riscos ja informados: ${collaborator.riscos_associados || 'Nao informado'}
+- Observacoes de seguranca: ${collaborator.observacoes_seguranca || 'Nao informado'}
+
+Retorne somente JSON valido no schema solicitado. Nao use markdown.`;
+
+    const { output } = await ai.generate({
+      model: geminiPro,
+      prompt,
+      output: {
+        format: 'json',
+        schema: CollaboratorRecommendationsSchema,
+      },
+    });
+
+    if (!output) {
+      throw new Error('AI response is empty or invalid.');
+    }
+
+    const recommendations = buildSavedRecommendations(output);
+    await CollaboratorRepository.updateRecommendations(data.collaboratorId, data.companyId, recommendations);
+
+    return { data: recommendations, error: null, cached: false };
+  } catch (e: any) {
+    console.error('Error in generateCollaboratorRecommendations:', e);
+    await ErrorLogRepository.log(e, 'generateCollaboratorRecommendations');
+
+    let errorMessage = 'Falha ao gerar recomendacoes com IA. Tente novamente em instantes.';
+    if (e.message?.toLowerCase().includes('api key')) {
+      errorMessage = 'A chave de API do Gemini nao foi configurada corretamente no servidor.';
     }
 
     return { data: null, error: errorMessage };
