@@ -19,20 +19,69 @@ const ai = genkit({
     plugins: [googleAI()],
 });
 
+/**
+ * Orcamento de raciocinio do Gemini 2.5.
+ *
+ * O modelo vem com "thinking" liberado, e era o que fazia a analise da APR
+ * levar mais de um minuto. Um minuto de espera em 4G de obra faz a pessoa
+ * achar que travou e recarregar, perdendo o preenchimento.
+ *
+ * Medido no navegador, mesma atividade ("solda no costado do tanque 02, a 8
+ * metros de altura, com macarico e acesso por andaime"):
+ *
+ *   padrao (sem limite) ... 64,9s ... 10 etapas
+ *   teto de 1024 ......... 64,2s ... 10 etapas   <- nao limita nada
+ *   zero ................. 28,2s ... 17 etapas
+ *
+ * O teto intermediario nao serve: so o zero explicito corta. E com zero o
+ * resultado veio mais completo, nao menos — 17 etapas, todas com as seis
+ * listas preenchidas. A conferencia tecnica do conteudo continua sendo do
+ * responsavel, como sempre foi.
+ *
+ * Se um dia o conteudo parecer raso, da para devolver o raciocinio pelo .env
+ * sem mexer no codigo (GENAI_THINKING_REDACAO=-1 deixa o modelo decidir).
+ */
+const ORCAMENTO_RACIOCINIO = {
+  /** Escolher itens de um catalogo fechado nao precisa de deliberacao. */
+  selecao: Number(process.env.GENAI_THINKING_SELECAO ?? 0),
+  /** Redigir a analise de risco. Ver a medicao acima. */
+  redacao: Number(process.env.GENAI_THINKING_REDACAO ?? 0),
+};
+
+const configDeRaciocinio = (tipo: keyof typeof ORCAMENTO_RACIOCINIO) => ({
+  thinkingConfig: { thinkingBudget: ORCAMENTO_RACIOCINIO[tipo] },
+});
+
 // Schema definitions
 const activitySchema = z.object({
     activityDescription: z.string().min(10, ptBr.validations.activityDescription),
 });
 
-const ProceduralStepSchema = z.object({
+// O que o modelo devolve: tudo em listas, para a tela poder editar item a item.
+const ProceduralStepAISchema = z.object({
     item: z.number().describe('The sequential item number for the operational procedure step.'),
     activity: z.string().describe('The specific activity or step in the operational procedure.'),
-    potentialRisks: z.string().describe('The potential risks associated with this specific activity. What could go wrong.'),
-    preventiveMeasures: z.string().describe('The preventive measures and safety recommendations for this step, based on Brazilian NRs. This should include necessary EPIs.'),
+    hazards: z.array(z.string()).describe('Perigos (hazards): the sources of harm present in this step. Short noun phrases, in Brazilian Portuguese. Example: "Energia eletrica", "Trabalho em altura".'),
+    risks: z.array(z.string()).describe('Riscos: what can go wrong in this step. Short phrases, in Brazilian Portuguese. Example: "Choque eletrico", "Arco eletrico".'),
+    consequences: z.array(z.string()).describe('Consequencias: the outcome if the risk materializes. Short phrases, in Brazilian Portuguese. Example: "Queimadura de segundo grau", "Parada cardiorrespiratoria".'),
+    measures: z.array(z.string()).describe('Medidas preventivas e de controle for this step, grounded in the Brazilian NRs. Short imperative phrases, in Brazilian Portuguese. Example: "Bloqueio e etiquetagem (LOTO)", "Teste de ausencia de tensao".'),
+    epis: z.array(z.string()).describe('EPIs required specifically for this step, in Brazilian Portuguese. Example: "Luva isolante classe 0", "Protetor facial para arco eletrico".'),
+    epcs: z.array(z.string()).describe('EPCs required for this step when applicable. Empty array when none apply.'),
+});
+
+const SafetyAnalysisAIOutputSchema = z.object({
+  proceduralSteps: z.array(ProceduralStepAISchema).describe('An array of detailed operational procedure steps for the described work activity. Generate a comprehensive list of steps, from preparation to completion.'),
+});
+
+// O que o resto do sistema consome: as listas mais os dois campos de texto
+// antigos, que continuam alimentando o PDF sem nenhuma mudanca nele.
+const ProceduralStepSchema = ProceduralStepAISchema.extend({
+    potentialRisks: z.string(),
+    preventiveMeasures: z.string(),
 });
 
 const SafetyAnalysisOutputSchema = z.object({
-  proceduralSteps: z.array(ProceduralStepSchema).describe('An array of detailed operational procedure steps for the described work activity. Generate a comprehensive list of steps, from preparation to completion.'),
+  proceduralSteps: z.array(ProceduralStepSchema).describe('Procedural steps enriched with the legacy text fields.'),
 });
 export type SafetyAnalysisOutput = z.infer<typeof SafetyAnalysisOutputSchema>;
 
@@ -96,6 +145,16 @@ export async function getSafetyAnalysis(data: { activityDescription: string }): 
     The output must be a valid JSON object that conforms to the following Zod schema. Do not include any text or markdown formatting outside of the JSON object itself.
     Schema: ${JSON.stringify(SafetyAnalysisOutputSchema.shape)}
 
+    For every step, fill the lists separately and do not repeat the same content across them:
+    - hazards: the source of harm (what is dangerous)
+    - risks: what can go wrong
+    - consequences: the outcome for the worker if it happens
+    - measures: how to prevent it, grounded in the Brazilian NRs
+    - epis: individual protection required for that specific step
+    - epcs: collective protection for that step, or an empty array
+
+    Write every item as a short phrase in Brazilian Portuguese, one idea per item.
+
     Example of a step:
     - item: 1
     - activity: "1. TREINAMENTO DE 'ST' DA ATIVIDADE;"
@@ -109,10 +168,11 @@ export async function getSafetyAnalysis(data: { activityDescription: string }): 
 
     const { output } = await ai.generate({
       model: geminiPro,
+      config: configDeRaciocinio('redacao'),
       prompt: prompt,
       output: {
         format: 'json',
-        schema: SafetyAnalysisOutputSchema,
+        schema: SafetyAnalysisAIOutputSchema,
       },
     });
 
@@ -120,7 +180,25 @@ export async function getSafetyAnalysis(data: { activityDescription: string }): 
       throw new Error("AI response is empty or invalid.");
     }
 
-    return { data: output, error: null };
+    // Os dois campos de texto antigos sao derivados das listas, para que o PDF
+    // e os documentos ja emitidos continuem funcionando sem alteracao.
+    const enriquecido: SafetyAnalysisOutput = {
+      proceduralSteps: output.proceduralSteps.map((step) => ({
+        ...step,
+        potentialRisks: [
+          ...(step.hazards || []).map((h) => `Perigo: ${h}`),
+          ...(step.risks || []),
+          ...(step.consequences || []).map((c) => `Consequencia: ${c}`),
+        ].join('\n'),
+        preventiveMeasures: [
+          ...(step.measures || []),
+          ...((step.epis || []).length ? [`EPI: ${(step.epis || []).join(', ')}`] : []),
+          ...((step.epcs || []).length ? [`EPC: ${(step.epcs || []).join(', ')}`] : []),
+        ].join('\n'),
+      })),
+    };
+
+    return { data: enriquecido, error: null };
   } catch (e: any) {
     console.error("Error in getSafetyAnalysis:", e);
     await ErrorLogRepository.log(e, 'getSafetyAnalysis');
@@ -178,6 +256,7 @@ Retorne somente JSON valido no schema solicitado. Nao use markdown.`;
 
     const { output } = await ai.generate({
       model: geminiPro,
+      config: configDeRaciocinio('redacao'),
       prompt,
       output: {
         format: 'json',
@@ -237,6 +316,7 @@ export async function getProtectiveEquipment(data: { activityDescription: string
 
     const { output } = await ai.generate({
         model: geminiPro,
+        config: configDeRaciocinio('redacao'),
         prompt: prompt,
         output: {
           format: 'json',
@@ -259,5 +339,80 @@ export async function getProtectiveEquipment(data: { activityDescription: string
     }
     
     return { data: null, error: errorMessage };
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Sugestao de controles para a Permissao de Trabalho.
+//
+// Reaproveita a mesma infraestrutura das outras chamadas (genkit + googleAI).
+// A diferenca importante: o modelo NAO inventa requisito. Ele recebe a lista
+// de ids que existem no sistema e so pode escolher dentro dela — e, mesmo
+// assim, a resposta e filtrada contra essa lista antes de sair daqui.
+// ---------------------------------------------------------------------------
+
+const PtControlSuggestionSchema = z.object({
+  itemIds: z.array(z.string()).describe('IDs of relevant checklist controls, chosen ONLY from the provided list.'),
+  rationale: z.string().describe('One short sentence in Brazilian Portuguese explaining the selection.'),
+});
+
+export type PtControlSuggestion = {
+  itemIds: string[];
+  rationale: string;
+};
+
+export async function getPtControlSuggestions(data: {
+  descricaoTarefa: string;
+  atividadesMarcadas: string[];
+  idsDisponiveis: Array<{ id: string; rotulo: string }>;
+}): Promise<{ data: PtControlSuggestion | null; error: string | null }> {
+  if (!data.descricaoTarefa || data.descricaoTarefa.trim().length < 10) {
+    return { data: null, error: 'Descreva a tarefa com mais detalhe para receber sugestoes.' };
+  }
+  if (data.idsDisponiveis.length === 0) {
+    return { data: null, error: 'Nenhum controle disponivel para sugerir.' };
+  }
+
+  const permitidos = new Set(data.idsDisponiveis.map((item) => item.id));
+
+  try {
+    const geminiPro = process.env.GENAI_MODEL || 'googleai/gemini-pro';
+
+    const catalogo = data.idsDisponiveis
+      .map((item) => `- ${item.id}: ${item.rotulo}`)
+      .join('\n');
+
+    const prompt = `You are assisting a Brazilian workplace safety technician filling a Work Permit (Permissao de Trabalho).
+
+    Activity types already marked: ${data.atividadesMarcadas.join(', ') || 'none'}
+    Task description: ${data.descricaoTarefa}
+
+    Below is the COMPLETE catalogue of controls available in this system. You may ONLY choose ids from this list. Never invent an id, never invent a control that is not listed:
+
+${catalogo}
+
+    Return the ids of the controls that are relevant for this specific task. Be selective: only what genuinely applies. If nothing applies, return an empty array.
+    The rationale must be a single short sentence in Brazilian Portuguese.`;
+
+    const { output } = await ai.generate({
+      model: geminiPro,
+      config: configDeRaciocinio('selecao'),
+      prompt,
+      output: { format: 'json', schema: PtControlSuggestionSchema },
+    });
+
+    if (!output) throw new Error('AI response is empty or invalid.');
+
+    // Ultima barreira: qualquer id fora do catalogo e descartado em silencio.
+    const filtrados = (output.itemIds || []).filter((id) => permitidos.has(id));
+
+    return {
+      data: { itemIds: filtrados, rationale: output.rationale || '' },
+      error: null,
+    };
+  } catch (e: any) {
+    console.error('Error in getPtControlSuggestions:', e);
+    await ErrorLogRepository.log(e, 'getPtControlSuggestions');
+    return { data: null, error: 'Nao foi possivel gerar sugestoes agora.' };
   }
 }
