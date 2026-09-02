@@ -3,187 +3,395 @@ import type { SafetyFormValues, PtTeamMember, Company } from '@/lib/types';
 import { ptChecklistItems } from '@/lib/data/pt-checklist';
 import { ptBr } from '@/lib/data/strings';
 import { PT_FIT_STATUS } from '@/lib/constants';
+import { ClipboardList, Construction, ShieldCheck, UserCheck, Users, Wind } from 'lucide-react';
+import {
+  COLORS, CheckBox, DocumentFooter, FieldLabel, SectionTitle, TableCell, TableHead,
+  UnderlineValue, Vazio, getPageStyle, headingFont, monoFont,
+} from './document-primitives';
 
 interface PTPreviewProps {
   formData: SafetyFormValues;
   company: Company | null;
+  renderMode?: 'preview' | 'pdf';
 }
 
+function formatarData(valor?: string) {
+  if (!valor) return null;
+  const [ano, mes, dia] = (valor || '').split('-');
+  return ano && mes && dia ? `${dia}/${mes}/${ano}` : valor;
+}
 
-const CheckboxDisplay = ({ checked }: { checked: boolean }) => (
-    <div className="w-3 h-3 border border-black flex items-center justify-center">
-        {checked && <div className="w-[7px] h-[7px] bg-black"></div>}
+function TeamTable({
+  members,
+  showEmpresa = false,
+}: {
+  members: PtTeamMember[];
+  showEmpresa?: boolean;
+}) {
+  return (
+    <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
+      <thead>
+        <tr>
+          <TableHead width="30%">{ptBr.ptForm.name}</TableHead>
+          <TableHead width="20%">{ptBr.ptForm.rgCpf}</TableHead>
+          <TableHead width={showEmpresa ? '20%' : '30%'}>{ptBr.ptForm.role}</TableHead>
+          {showEmpresa ? <TableHead width="18%">{ptBr.ptForm.company}</TableHead> : null}
+          <TableHead width="12%">{ptBr.ptForm.isFit}</TableHead>
+        </tr>
+      </thead>
+      <tbody>
+        {members.map((membro, indice) => (
+          <tr key={indice}>
+            <TableCell>{membro.name || <Vazio texto={ptBr.other.notFilled} />}</TableCell>
+            <TableCell>{membro.rgCpf || <Vazio texto="-" />}</TableCell>
+            <TableCell>{membro.func || <Vazio texto="-" />}</TableCell>
+            {showEmpresa ? <TableCell>{membro.empresa || <Vazio texto="-" />}</TableCell> : null}
+            <TableCell align="center">
+              {/* So a resposta escolhida aparece: manter as duas opcoes lado a
+                  lado deixava duvida sobre qual valia. */}
+              {membro.apto === PT_FIT_STATUS.YES || membro.apto === PT_FIT_STATUS.NO ? (
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 10.5 }}>
+                  <CheckBox checked />
+                  {membro.apto === PT_FIT_STATUS.YES ? ptBr.ptForm.yes : ptBr.ptForm.no}
+                </span>
+              ) : (
+                <Vazio texto="-" />
+              )}
+            </TableCell>
+          </tr>
+        ))}
+
+        {members.length === 0 ? (
+          <tr>
+            <TableCell align="center">
+              <Vazio texto="Nenhum participante adicionado." />
+            </TableCell>
+            <TableCell>{''}</TableCell>
+            <TableCell>{''}</TableCell>
+            {showEmpresa ? <TableCell>{''}</TableCell> : null}
+            <TableCell>{''}</TableCell>
+          </tr>
+        ) : null}
+      </tbody>
+    </table>
+  );
+}
+
+function LinhaAssinatura({ rotulo, nome }: { rotulo: string; nome?: string }) {
+  return (
+    <div style={{ flex: 1 }}>
+      <div
+        style={{
+          minHeight: 46,
+          borderBottom: `1px solid ${COLORS.text}`,
+          marginBottom: 6,
+        }}
+      />
+      <div
+        style={{
+          fontFamily: monoFont,
+          fontSize: 9.5,
+          letterSpacing: '0.06em',
+          textTransform: 'uppercase',
+          color: COLORS.secondaryStrong,
+        }}
+      >
+        {rotulo}
+      </div>
+      <div style={{ fontSize: 11.5, color: COLORS.text, marginTop: 2 }}>
+        {nome || <Vazio texto={ptBr.other.notFilled} />}
+      </div>
     </div>
-);
+  );
+}
 
-const Empty = () => <span className="italic text-gray-400">{ptBr.other.notFilled}</span>;
-
-const TextLine = ({ label, value, className = '' }: { label: string, value: string | undefined, className?: string}) => (
-    <div className={`flex items-end border-b border-black ${className}`}>
-        <span className="text-xxs font-bold uppercase mr-1">{label}:</span>
-        <span className="text-xs flex-1 text-left whitespace-pre-wrap break-words">{value || <Empty />}</span>
-    </div>
-);
-
-const Section = ({ title, children, className = "" }: { title: string, children: React.ReactNode, className?: string }) => (
-    <div className={`avoid-break ${className}`}>
-        <h3 className="section-title text-xxs font-bold text-center bg-gray-200 py-0.5">{title}</h3>
-        {children}
-    </div>
-);
-
-const TeamTable = ({ title, members, showEmpresa = false }: { title: string, members: PtTeamMember[], showEmpresa?: boolean }) => {
-    if (!members || members.length === 0) return null;
-
-    return (
-        <Section title={title} className="!mt-2">
-            <table className="w-full border-collapse info-grid text-xs">
-                <thead className='text-center font-bold'>
-                    <tr>
-                        <td className='w-1/3'>{ptBr.ptForm.name}</td>
-                        <td className='w-1/4'>{ptBr.ptForm.rgCpf}</td>
-                        <td className='w-1/4'>{ptBr.ptForm.role}</td>
-                        {showEmpresa && <td className='w-1/5'>{ptBr.ptForm.company}</td>}
-                        <td className='w-1/6'>{ptBr.ptForm.isFit}</td>
-                    </tr>
-                </thead>
-                <tbody>
-                    {members.map((m, i) => (
-                        <tr key={i} className='h-6'>
-                            <td>{m.name || <Empty />}</td>
-                            <td>{m.rgCpf || <Empty />}</td>
-                            <td>{m.func || <Empty />}</td>
-                            {showEmpresa && <td>{m.empresa || <Empty />}</td>}
-                            <td className='text-center'>
-                                <div className='flex items-center justify-center gap-2'>
-                                    <CheckboxDisplay checked={m.apto === PT_FIT_STATUS.YES} /> {ptBr.ptForm.yes}
-                                    <CheckboxDisplay checked={m.apto === PT_FIT_STATUS.NO} /> {ptBr.ptForm.no}
-                                </div>
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-        </Section>
-    );
-};
-
-
-export function PTPreview({ formData, company }: PTPreviewProps) {
-  if (!formData?.pt) {
-    return null; // or a placeholder component
-  }
+export function PTPreview({ formData, company, renderMode = 'preview' }: PTPreviewProps) {
+  if (!formData?.pt) return null;
 
   const { pt: ptData } = formData;
   const checklist = ptData.ptChecklist || {};
 
-  const getCheckedItems = (sectionId: string) => {
-    return ptChecklistItems.find(s => s.id === sectionId)?.items.filter(item => checklist[item.id]) || [];
-  }
+  const secoesMarcadas = ptChecklistItems.filter((secao) =>
+    secao.items.some((item) => checklist[item.id]),
+  );
 
+  // A numeracao acompanha as secoes que existem neste documento.
+  let contador = 0;
+  const proximo = () => String(++contador);
+  const emitidoEm = new Date().toLocaleDateString('pt-BR');
+  // Documentos novos trazem a liberacao como lista; os antigos, tres campos.
+  const responsaveis = (ptData.ptResponsaveis || []).filter((pessoa) => pessoa?.name);
+
+  // Mesma moldura A4 da APR: margem de 20mm na tela, zero no PDF.
   return (
-    <div className="page-content-wrapper text-black">
-      <header className="print-header avoid-break">
-        <table className="w-full border-collapse info-grid">
-            <tbody>
-                <tr>
-                    <td rowSpan={2} className="w-1/4 align-middle text-center">
-                         {company?.logo ? (
-                           <img src={company.logo} alt={ptBr.other.companyLogoAlt} className="h-16 w-auto max-w-[120px] object-contain mx-auto" />
-                         ) : <div className="h-16 w-auto"></div>}
-                    </td>
-                    <td rowSpan={2} className="w-1/2 text-center">
-                        <h1 className="text-lg font-bold">{ptBr.printPreview.pt.title}</h1>
-                        <p className="text-xs font-bold text-red-600">{ptBr.printPreview.pt.subtitle}</p>
-                    </td>
-                    <td className="w-1/4 !p-1 text-center">
-                        <span className='font-bold'>{company?.name || <Empty />}</span>
-                    </td>
-                </tr>
-                 <tr>
-                    <td className="!p-0">
-                        <div className='flex text-xs'>
-                            <div className="flex-1 p-1 border-r border-black"><strong>{ptBr.printPreview.pt.date}</strong> {ptData.ptData}</div>
-                            <div className="flex-1 p-1"><strong>{ptBr.printPreview.pt.time}</strong></div>
-                        </div>
-                    </td>
-                </tr>
-                 <tr>
-                    <td colSpan={2} className='!p-1'>
-                        <TextLine label={ptBr.printPreview.pt.location} value={ptData.ptLocalAtividade} />
-                    </td>
-                    <td className='!p-1'>
-                        <div className='flex text-xs'>
-                            <div className="flex-1 p-1 border-r border-black"><strong>{ptBr.printPreview.pt.startTime}</strong> {ptData.ptHoraInicio}</div>
-                            <div className="flex-1 p-1"><strong>{ptBr.printPreview.pt.endTime}</strong> {ptData.ptHoraFim}</div>
-                        </div>
-                    </td>
-                 </tr>
-                 <tr>
-                    <td colSpan={3} className='!p-1'><TextLine label={ptBr.printPreview.pt.equipment} value={ptData.ptEquipamentoLinha} /></td>
-                 </tr>
-                  <tr>
-                    <td colSpan={3} className='!p-1'><TextLine label={ptBr.printPreview.pt.taskDescription} value={ptData.ptDescricaoTarefa} /></td>
-                 </tr>
-            </tbody>
-        </table>
+    <div style={getPageStyle(renderMode)}>
+      {/* ---------------- Cabecalho ---------------- */}
+      <header
+        style={{
+          display: 'flex',
+          alignItems: 'stretch',
+          border: `1px solid ${COLORS.border}`,
+          marginBottom: 22,
+        }}
+      >
+        <div
+          style={{
+            width: 150,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: 12,
+            borderRight: `1px solid ${COLORS.border}`,
+          }}
+        >
+          {company?.logo ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={company.logo}
+              alt={ptBr.other.companyLogoAlt}
+              style={{ maxHeight: 56, maxWidth: 120, objectFit: 'contain' }}
+            />
+          ) : (
+            <span style={{ fontFamily: headingFont, fontSize: 13, color: COLORS.secondary }}>
+              {company?.name || 'PhiDocs'}
+            </span>
+          )}
+        </div>
+
+        <div
+          style={{
+            flex: 1,
+            padding: '14px 18px',
+            textAlign: 'center',
+            borderRight: `1px solid ${COLORS.border}`,
+          }}
+        >
+          <h1
+            style={{
+              margin: 0,
+              fontFamily: headingFont,
+              fontSize: 19,
+              fontWeight: 700,
+              lineHeight: 1.15,
+              textTransform: 'uppercase',
+              color: COLORS.text,
+            }}
+          >
+            {ptBr.printPreview.pt.title}
+          </h1>
+          <p
+            style={{
+              margin: '4px 0 0',
+              fontFamily: monoFont,
+              fontSize: 9.5,
+              letterSpacing: '0.08em',
+              textTransform: 'uppercase',
+              color: COLORS.primary,
+            }}
+          >
+            {ptBr.printPreview.pt.subtitle}
+          </p>
+        </div>
+
+        <div style={{ width: 180, padding: '12px 14px' }}>
+          <FieldLabel>{ptBr.printPreview.pt.date}</FieldLabel>
+          <div style={{ fontSize: 12, color: COLORS.text, marginBottom: 8 }}>
+            {formatarData(ptData.ptData) || <Vazio texto={ptBr.other.notFilled} />}
+          </div>
+          <FieldLabel>Horario</FieldLabel>
+          <div style={{ fontSize: 12, color: COLORS.text }}>
+            {ptData.ptHoraInicio || '--:--'} as {ptData.ptHoraFim || '--:--'}
+          </div>
+        </div>
       </header>
 
-      <main className="print-main text-xs space-y-1">
-        {ptChecklistItems.map(section => {
-            const checkedItems = section.items.filter(item => checklist[item.id]);
-            if (checkedItems.length === 0) return null;
+      {/* ---------------- 1. Dados da permissao ---------------- */}
+      <section style={{ marginBottom: 26, breakInside: 'avoid', pageBreakInside: 'avoid' }}>
+        <SectionTitle
+          index={proximo()}
+          title="Dados da Permissao"
+          icon={<Construction size={16} strokeWidth={2.2} />}
+        />
 
-            return (
-                <Section key={section.id} title={ptBr.ptChecklist.titles[section.id as keyof typeof ptBr.ptChecklist.titles]}>
-                    <div className={`grid ${section.columns === 3 ? 'grid-cols-3' : section.columns === 2 ? 'grid-cols-2' : 'grid-cols-1'} gap-x-4 p-1 border border-black border-t-0`}>
-                       {section.items.map(item => (
-                           <div key={item.id} className="flex items-center space-x-1.5">
-                               <CheckboxDisplay checked={!!checklist[item.id]} />
-                               <span>{ptBr.ptChecklist.items[item.id as keyof typeof ptBr.ptChecklist.items]}</span>
-                           </div>
-                       ))}
+        <div style={{ border: `1px solid ${COLORS.border}`, borderRadius: 6, padding: 18 }}>
+          <div style={{ marginBottom: 10 }}>
+            <FieldLabel>{ptBr.printPreview.pt.location}</FieldLabel>
+            <UnderlineValue bold>
+              {ptData.ptLocalAtividade || <Vazio texto={ptBr.other.notFilled} />}
+            </UnderlineValue>
+          </div>
+
+          <div style={{ marginBottom: 10 }}>
+            <FieldLabel>{ptBr.printPreview.pt.equipment}</FieldLabel>
+            <UnderlineValue>
+              {ptData.ptEquipamentoLinha || <Vazio texto={ptBr.other.notFilled} />}
+            </UnderlineValue>
+          </div>
+
+          <div>
+            <FieldLabel>{ptBr.printPreview.pt.taskDescription}</FieldLabel>
+            <UnderlineValue minHeight={52}>
+              {ptData.ptDescricaoTarefa || <Vazio texto={ptBr.other.notFilled} />}
+            </UnderlineValue>
+          </div>
+        </div>
+      </section>
+
+      {/* ---------------- Condicoes e requisitos ---------------- */}
+      {secoesMarcadas.length > 0 ? (
+        <section style={{ marginBottom: 26 }}>
+          <SectionTitle
+            index={proximo()}
+            title="Condicoes e Requisitos"
+            icon={<ClipboardList size={16} strokeWidth={2.2} />}
+          />
+
+          <div style={{ display: 'grid', gap: 14 }}>
+            {secoesMarcadas.map((secao) => (
+              <div key={secao.id} style={{ border: `1px solid ${COLORS.border}` }}>
+                <div
+                  style={{
+                    background: COLORS.headerFill,
+                    borderBottom: `1px solid ${COLORS.border}`,
+                    padding: '7px 12px',
+                    fontFamily: monoFont,
+                    fontSize: 9.5,
+                    letterSpacing: '0.06em',
+                    textTransform: 'uppercase',
+                    color: COLORS.secondaryStrong,
+                  }}
+                >
+                  {ptBr.ptChecklist.titles[secao.id as keyof typeof ptBr.ptChecklist.titles]}
+                </div>
+
+                <div
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: `repeat(${secao.columns === 3 ? 3 : secao.columns === 2 ? 2 : 1}, minmax(0, 1fr))`,
+                    gap: '6px 16px',
+                    padding: '10px 12px',
+                  }}
+                >
+                  {secao.items.map((item) => (
+                    <div
+                      key={item.id}
+                      style={{ display: 'flex', alignItems: 'flex-start', gap: 6, fontSize: 11, lineHeight: 1.4 }}
+                    >
+                      <span style={{ marginTop: 2 }}>
+                        <CheckBox checked={Boolean(checklist[item.id])} />
+                      </span>
+                      <span style={{ color: checklist[item.id] ? COLORS.text : COLORS.secondary }}>
+                        {ptBr.ptChecklist.items[item.id as keyof typeof ptBr.ptChecklist.items]}
+                      </span>
                     </div>
-                </Section>
-            );
-        })}
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      ) : null}
 
-        <TeamTable title={ptBr.printPreview.pt.collaborators} members={ptData.ptColaboradores || []} showEmpresa={true} />
-        
-        {ptData.ptEnableEspacoConfinado && (
-            <Section title={ptBr.printPreview.pt.confinedSpaceTitle}>
-                <table className="w-full border-collapse info-grid text-xs">
-                    <thead className='text-center'>
-                        <tr className='font-bold'>
-                            <td>{ptBr.printPreview.pt.oxygen}</td>
-                            <td>{ptBr.printPreview.pt.le}</td>
-                            <td>{ptBr.printPreview.pt.h2s}</td>
-                            <td>{ptBr.printPreview.pt.co2}</td>
-                            <td className='w-1/4'>{ptBr.printPreview.pt.observation}</td>
-                        </tr>
-                    </thead>
-                    <tbody className='text-center'>
-                        <tr className='h-6'>
-                            <td>{ptData.ptOxigenio || <Empty />}</td>
-                            <td>{ptData.ptLE || <Empty />}</td>
-                            <td>{ptData.ptH2S || <Empty />}</td>
-                            <td>{ptData.ptCO2 || <Empty />}</td>
-                            <td>{ptData.ptObservacao || <Empty />}</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </Section>
-        )}
-        
-        {ptData.ptEnableVigia && (
-            <TeamTable title={ptBr.printPreview.pt.lookouts} members={ptData.ptVigias || []} showEmpresa={false} />
-        )}
+      {/* ---------------- Colaboradores ---------------- */}
+      <section style={{ marginBottom: 26 }}>
+        <SectionTitle
+          index={proximo()}
+          title={ptBr.printPreview.pt.collaborators}
+          icon={<Users size={16} strokeWidth={2.2} />}
+        />
+        <TeamTable members={ptData.ptColaboradores || []} showEmpresa />
+      </section>
 
-        {ptData.ptEnableResgatistas && (
-            <TeamTable title={ptBr.printPreview.pt.rescuers} members={ptData.ptResgatistas || []} showEmpresa={true} />
-        )}
+      {/* ---------------- Espaco confinado ---------------- */}
+      {ptData.ptEnableEspacoConfinado ? (
+        <section style={{ marginBottom: 26, breakInside: 'avoid', pageBreakInside: 'avoid' }}>
+          <SectionTitle
+            index={proximo()}
+            title={ptBr.printPreview.pt.confinedSpaceTitle}
+            icon={<Wind size={16} strokeWidth={2.2} />}
+          />
+          <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
+            <thead>
+              <tr>
+                <TableHead>{ptBr.printPreview.pt.oxygen}</TableHead>
+                <TableHead>{ptBr.printPreview.pt.le}</TableHead>
+                <TableHead>{ptBr.printPreview.pt.h2s}</TableHead>
+                <TableHead>{ptBr.printPreview.pt.co2}</TableHead>
+                <TableHead width="34%">{ptBr.printPreview.pt.observation}</TableHead>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <TableCell align="center">{ptData.ptOxigenio || <Vazio texto="-" />}</TableCell>
+                <TableCell align="center">{ptData.ptLE || <Vazio texto="-" />}</TableCell>
+                <TableCell align="center">{ptData.ptH2S || <Vazio texto="-" />}</TableCell>
+                <TableCell align="center">{ptData.ptCO2 || <Vazio texto="-" />}</TableCell>
+                <TableCell>{ptData.ptObservacao || <Vazio texto="-" />}</TableCell>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+      ) : null}
 
-      </main>
+      {/* ---------------- Vigias ---------------- */}
+      {ptData.ptEnableVigia ? (
+        <section style={{ marginBottom: 26 }}>
+          <SectionTitle
+            index={proximo()}
+            title={ptBr.printPreview.pt.lookouts}
+            icon={<ShieldCheck size={16} strokeWidth={2.2} />}
+          />
+          <TeamTable members={ptData.ptVigias || []} />
+        </section>
+      ) : null}
+
+      {/* ---------------- Resgatistas ---------------- */}
+      {ptData.ptEnableResgatistas ? (
+        <section style={{ marginBottom: 26 }}>
+          <SectionTitle
+            index={proximo()}
+            title={ptBr.printPreview.pt.rescuers}
+            icon={<ShieldCheck size={16} strokeWidth={2.2} />}
+          />
+          <TeamTable members={ptData.ptResgatistas || []} showEmpresa />
+        </section>
+      ) : null}
+
+      {/* ---------------- Assinaturas ---------------- */}
+      <section style={{ breakInside: 'avoid', pageBreakInside: 'avoid' }}>
+        <SectionTitle
+          index={proximo()}
+          title="Liberacao e Assinaturas"
+          icon={<UserCheck size={16} strokeWidth={2.2} />}
+        />
+        <div
+          style={{
+            display: 'flex',
+            gap: 24,
+            border: `1px solid ${COLORS.border}`,
+            borderRadius: 6,
+            padding: '22px 18px 14px',
+          }}
+        >
+          {responsaveis.length > 0
+            ? responsaveis.map((pessoa, indice) => (
+                <LinhaAssinatura
+                  key={`${pessoa.name}-${indice}`}
+                  rotulo={pessoa.role || 'Responsavel'}
+                  nome={pessoa.name}
+                />
+              ))
+            : (
+              <>
+                <LinhaAssinatura rotulo="Gestor da Area" nome={ptData.ptGestorArea?.name} />
+                <LinhaAssinatura rotulo="Responsavel pela Atividade" nome={ptData.ptResponsavelAtividade?.name} />
+                <LinhaAssinatura rotulo="SESMT" nome={ptData.ptSesmt?.name} />
+              </>
+            )}
+        </div>
+      </section>
+
+      <DocumentFooter emitidoEm={emitidoEm} />
     </div>
   );
 }

@@ -1,5 +1,7 @@
 'use client';
 
+import { useState } from 'react';
+
 import type { UseFormReturn } from 'react-hook-form';
 import { useFieldArray, useWatch, useForm } from 'react-hook-form';
 import type { SafetyFormValues } from '@/lib/types';
@@ -21,10 +23,25 @@ import { Switch } from './ui/switch';
 import { Badge } from './ui/badge';
 import { PhoneInput } from './ui/phone-input';
 import { ptBr } from '@/lib/data/strings';
+import { cn } from '@/lib/utils';
 import { PT_FIT_STATUS } from '@/lib/constants';
+import {
+  controlesSugeridos, exigeEspacoConfinado, exigeResgatista, exigeVigia,
+  idsValidos, regrasAtivas, secaoVisivel, type OrigemControle,
+} from '@/lib/pt-rules';
+import { getPtControlSuggestions } from '@/server/ai-actions';
+import { Check, Sparkles } from 'lucide-react';
+import { PtSuggestedControls } from './pt-suggested-controls';
+import { DocumentActivityPicker } from './document-activity-picker';
 
 
 interface PTFormProps {
+  /** Etapa visivel do assistente. Cada bloco so aparece na etapa dele. */
+  passoVisivel?: number;
+  /** Participantes e assinaturas passam a ser o seletor de pessoas da APR. */
+  pessoasExternas?: boolean;
+  recentActivities?: string[];
+  similarActivities?: string[];
   form: ReturnType<typeof useForm<SafetyFormValues>>;
 }
 
@@ -34,7 +51,62 @@ const SectionTitle = ({ children }: { children: React.ReactNode }) => (
     </h3>
   );
 
-const CheckboxField = ({ form, name, label }: { form: UseFormReturn<SafetyFormValues>, name: string, label: string }) => (
+/**
+ * Chave de uma exigencia (espaco confinado, vigia, equipe de resgate).
+ *
+ * O estado mostrado e o efetivo, nao so o que a pessoa marcou na mao: quando o
+ * tipo de atividade ja obriga, a chave aparece ligada e travada, com o motivo
+ * do lado. Antes ela ficava apagada enquanto a secao que ela controla aparecia
+ * logo abaixo, o que dava a impressao de botao quebrado.
+ */
+const ExigenciaSwitch = ({
+  rotulo,
+  ligado,
+  porRegra,
+  onChange,
+}: {
+  rotulo: string;
+  ligado: boolean;
+  porRegra: boolean;
+  onChange: (valor: boolean) => void;
+}) => (
+  <FormItem className="flex flex-row items-center justify-between gap-4">
+    <div className="min-w-0">
+      <FormLabel>{rotulo}</FormLabel>
+      {porRegra && (
+        <p className="mt-0.5 text-xs text-[#8a5a00]">
+          Obrigatorio para o tipo de atividade marcado. Nao da para desligar.
+        </p>
+      )}
+    </div>
+    <FormControl>
+      <Switch
+        checked={ligado}
+        disabled={porRegra}
+        onCheckedChange={onChange}
+        aria-label={rotulo}
+      />
+    </FormControl>
+  </FormItem>
+);
+
+/**
+ * Item do checklist. Quando ha sugestao para ele, a marca aparece ao lado do
+ * proprio item — e clicar nela marca a caixa, sem tirar a pessoa do contexto.
+ */
+const CheckboxField = ({
+  form,
+  name,
+  label,
+  sugestao,
+  onAceitarSugestao,
+}: {
+  form: UseFormReturn<SafetyFormValues>;
+  name: string;
+  label: string;
+  sugestao?: OrigemControle;
+  onAceitarSugestao?: () => void;
+}) => (
     <FormField
       control={form.control}
       name={name as any}
@@ -46,7 +118,28 @@ const CheckboxField = ({ form, name, label }: { form: UseFormReturn<SafetyFormVa
               onCheckedChange={field.onChange}
             />
           </FormControl>
-          <FormLabel className="font-normal text-sm">{label}</FormLabel>
+          <FormLabel className="font-normal text-sm">
+            {label}
+            {sugestao && !form.getValues(name as never) && (
+              <button
+                type="button"
+                onClick={(evento) => {
+                  evento.preventDefault();
+                  onAceitarSugestao?.();
+                }}
+                title="Clique para marcar este item"
+                className={cn(
+                  'ml-2 inline-flex items-center gap-1 rounded-pill border px-2 py-0.5 align-middle text-[10px] font-semibold uppercase tracking-[0.05em] transition-colors',
+                  sugestao === 'ia'
+                    ? 'border-[#8a5a00] bg-[#faf3e4] text-[#8a5a00] hover:bg-[#f2e6c8]'
+                    : 'border-[#1b5e3f] bg-[#eaf2ed] text-[#1b5e3f] hover:bg-[#dde9e2]',
+                )}
+              >
+                {sugestao === 'ia' ? <Sparkles className="h-2.5 w-2.5" /> : <Check className="h-2.5 w-2.5" />}
+                {sugestao === 'ia' ? 'Sugestão da IA' : 'Sugerido'}
+              </button>
+            )}
+          </FormLabel>
         </FormItem>
       )}
     />
@@ -219,17 +312,90 @@ const CheckboxField = ({ form, name, label }: { form: UseFormReturn<SafetyFormVa
   };
 
 
-export function PTForm({ form }: PTFormProps) {
+export function PTForm({ form, passoVisivel = 1, pessoasExternas = false, recentActivities = [], similarActivities = [] }: PTFormProps) {
     const { control } = form;
 
-    const enableEspacoConfinado = useWatch({ control, name: 'pt.ptEnableEspacoConfinado' });
-    const enableVigia = useWatch({ control, name: 'pt.ptEnableVigia' });
-    const enableResgatistas = useWatch({ control, name: 'pt.ptEnableResgatistas' });
+    const checklist = useWatch({ control, name: 'pt.ptChecklist' }) || {};
+    // Espaco confinado marcado no checklist ja liga a avaliacao e o vigia.
+    const espacoConfinadoPorRegra = exigeEspacoConfinado(checklist);
+    const vigiaPorRegra = exigeVigia(checklist);
+    const enableEspacoConfinadoManual = useWatch({ control, name: 'pt.ptEnableEspacoConfinado' });
+    const enableEspacoConfinado = enableEspacoConfinadoManual || espacoConfinadoPorRegra;
+    const enableVigiaManual = useWatch({ control, name: 'pt.ptEnableVigia' });
+    const enableVigia = enableVigiaManual || vigiaPorRegra;
+    const descricaoTarefa = useWatch({ control, name: 'pt.ptDescricaoTarefa' }) || '';
+    const registrosDeControle = useWatch({ control, name: 'pt.ptControlesAdicionados' }) || [];
+
+    // As sugestoes vivem aqui para poderem aparecer ao lado de cada item.
+    const [sugestoesIa, setSugestoesIa] = useState<string[]>([]);
+    const [motivoIa, setMotivoIa] = useState('');
+    const [carregandoIa, setCarregandoIa] = useState(false);
+    const [erroIa, setErroIa] = useState('');
+
+    const pedirSugestoes = async () => {
+      setCarregandoIa(true);
+      setErroIa('');
+      const disponiveis = [...idsValidos()].map((id) => ({
+        id,
+        rotulo: ptBr.ptChecklist.items[id as keyof typeof ptBr.ptChecklist.items] || id,
+      }));
+      const resultado = await getPtControlSuggestions({
+        descricaoTarefa,
+        atividadesMarcadas: regrasAtivas(checklist).map((regra) => regra.rotulo),
+        idsDisponiveis: disponiveis,
+      });
+      if (resultado.error || !resultado.data) {
+        setErroIa(resultado.error || 'Nao foi possivel gerar sugestoes.');
+      } else {
+        setSugestoesIa(resultado.data.itemIds);
+        setMotivoIa(resultado.data.rationale);
+      }
+      setCarregandoIa(false);
+    };
+
+    // Qual marca cada item recebe. A IA tem prioridade visual sobre a regra.
+    const sugestaoPorItem = new Map<string, OrigemControle>();
+    for (const item of controlesSugeridos(checklist)) {
+      sugestaoPorItem.set(item.itemId, 'regra');
+    }
+    for (const itemId of sugestoesIa) {
+      if (!checklist?.[itemId]) sugestaoPorItem.set(itemId, 'ia');
+    }
+
+    // Aplicar e remover controle sempre deixam rastro de onde veio a decisao.
+    const aplicarControle = (itemId: string, origem: OrigemControle) => {
+      form.setValue(`pt.ptChecklist.${itemId}` as never, true as never, { shouldDirty: true });
+      const registros = form.getValues('pt.ptControlesAdicionados') || [];
+      const semEste = registros.filter((registro) => registro.itemId !== itemId);
+      form.setValue('pt.ptControlesAdicionados', [
+        ...semEste,
+        { itemId, origem, em: new Date().toISOString() },
+      ], { shouldDirty: true });
+    };
+
+    const removerControle = (itemId: string) => {
+      form.setValue(`pt.ptChecklist.${itemId}` as never, false as never, { shouldDirty: true });
+      const registros = form.getValues('pt.ptControlesAdicionados') || [];
+      form.setValue('pt.ptControlesAdicionados', registros.map((registro) =>
+        registro.itemId === itemId
+          ? { ...registro, removidoEm: new Date().toISOString() }
+          : registro,
+      ), { shouldDirty: true });
+    };
+    const enableResgatistasManual = useWatch({ control, name: 'pt.ptEnableResgatistas' });
+    const resgatistaPorRegra = exigeResgatista(checklist);
+    const enableResgatistas = enableResgatistasManual || resgatistaPorRegra;
 
     return (
         <div className="space-y-6">
-          <Separator />
-          <h3 className="text-lg font-semibold">{ptBr.ptForm.title}</h3>
+          {/* ---------- Etapa: atividade ---------- */}
+          <div className={cn('space-y-6', passoVisivel !== 1 && 'hidden')}>
+          <div className="overflow-hidden rounded-md border border-[#cfcbc0] bg-white">
+            <div className="bg-[#111111] px-5 py-3">
+              <h3 className="font-headline text-h3 text-white">Dados da atividade</h3>
+              <p className="mt-0.5 text-xs text-white/80">Onde, quando e o que sera feito.</p>
+            </div>
+            <div className="space-y-4 p-5">
           
           {/* Header Info */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -291,33 +457,69 @@ export function PTForm({ form }: PTFormProps) {
                 />
               </div>
           </div>
-           <FormField
-              control={control}
-              name="pt.ptDescricaoTarefa"
-              render={({ field }) => (
-                  <FormItem>
-                      <FormLabel>{ptBr.ptForm.taskDescription}</FormLabel>
-                      <FormControl><Input {...field} /></FormControl>
-                      <FormMessage />
-                  </FormItem>
-              )}
+            </div>
+          </div>
+
+          <DocumentActivityPicker
+            titulo="Qual e a tarefa?"
+            dica="Descreva o que sera executado. Quanto mais detalhe, melhores ficam as sugestoes de controle na proxima etapa."
+            placeholder="Ex.: solda no costado do tanque 02, a 8 metros de altura"
+            valor={descricaoTarefa}
+            onChange={(texto) => form.setValue('pt.ptDescricaoTarefa', texto, { shouldDirty: true, shouldValidate: true })}
+            semelhantes={similarActivities}
+            recentes={recentActivities}
+          />
+          </div>
+
+          {/* ---------- Etapa: condicoes e requisitos ---------- */}
+          <div className={cn('space-y-6', passoVisivel !== 2 && 'hidden')}>
+          <PtSuggestedControls
+            checklist={checklist}
+            registros={registrosDeControle}
+            quantidadeSugerida={sugestaoPorItem.size}
+            motivoIa={motivoIa}
+            erroIa={erroIa}
+            carregandoIa={carregandoIa}
+            podeSugerir={descricaoTarefa.trim().length >= 10}
+            onPedirSugestoes={pedirSugestoes}
+            onRemover={removerControle}
           />
 
-          {/* Checklist sections */}
-          {ptChecklistItems.map((section) => (
+          {ptChecklistItems.filter((section) => secaoVisivel(section.id, checklist)).map((section) => (
             <div key={section.id}>
                 <SectionTitle>{ptBr.ptChecklist.titles[section.id as keyof typeof ptBr.ptChecklist.titles]}</SectionTitle>
                 <div className={`grid grid-cols-1 ${section.columns === 2 ? 'md:grid-cols-2' : ''} ${section.columns === 3 ? 'md:grid-cols-3' : ''} gap-x-8 gap-y-3`}>
                     {section.items.map((item) => (
-                       <CheckboxField key={item.id} form={form} name={`pt.ptChecklist.${item.id}`} label={ptBr.ptChecklist.items[item.id as keyof typeof ptBr.ptChecklist.items]} />
+                       <CheckboxField
+                         key={item.id}
+                         form={form}
+                         name={`pt.ptChecklist.${item.id}`}
+                         label={ptBr.ptChecklist.items[item.id as keyof typeof ptBr.ptChecklist.items]}
+                         sugestao={sugestaoPorItem.get(item.id)}
+                         onAceitarSugestao={() => aplicarControle(item.id, sugestaoPorItem.get(item.id) || 'manual')}
+                       />
                     ))}
                 </div>
             </div>
           ))}
 
-          <Separator />
           
-          <DynamicTeamSection form={form} name="pt.ptColaboradores" title={ptBr.ptForm.collaborators} showEmpresa={true} />
+          </div>
+
+          {/* ---------- Etapa: participantes ---------- */}
+          {/*
+            Atencao ao que `pessoasExternas` desliga aqui.
+
+            A escolha de colaboradores vem da PersonPicker compartilhada, em
+            safety-form, e por isso fica de fora quando a prop esta ligada. Mas
+            a avaliacao de espaco confinado, o vigia e o resgatista NAO tem
+            equivalente em nenhuma outra tela: se forem escondidos junto, uma PT
+            de espaco confinado sai sem o vigia que a NR-33 exige.
+          */}
+          <div className={cn('space-y-6', passoVisivel !== 3 && 'hidden')}>
+          {!pessoasExternas && (
+            <DynamicTeamSection form={form} name="pt.ptColaboradores" title={ptBr.ptForm.collaborators} showEmpresa={true} />
+          )}
 
           {/* Optional Sections Toggles */}
           <div className='space-y-4 rounded-lg border p-4'>
@@ -325,10 +527,12 @@ export function PTForm({ form }: PTFormProps) {
               control={form.control}
               name="pt.ptEnableEspacoConfinado"
               render={({ field }) => (
-                <FormItem className="flex flex-row items-center justify-between">
-                  <FormLabel>{ptBr.ptForm.confinedSpace}</FormLabel>
-                  <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
-                </FormItem>
+                <ExigenciaSwitch
+                  rotulo={ptBr.ptForm.confinedSpace}
+                  ligado={enableEspacoConfinado}
+                  porRegra={espacoConfinadoPorRegra}
+                  onChange={field.onChange}
+                />
               )}
             />
             {enableEspacoConfinado && (
@@ -349,10 +553,12 @@ export function PTForm({ form }: PTFormProps) {
               control={form.control}
               name="pt.ptEnableVigia"
               render={({ field }) => (
-                <FormItem className="flex flex-row items-center justify-between">
-                  <FormLabel>{ptBr.ptForm.needsLookout}</FormLabel>
-                  <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
-                </FormItem>
+                <ExigenciaSwitch
+                  rotulo={ptBr.ptForm.needsLookout}
+                  ligado={enableVigia}
+                  porRegra={vigiaPorRegra}
+                  onChange={field.onChange}
+                />
               )}
             />
              {enableVigia && (
@@ -365,10 +571,12 @@ export function PTForm({ form }: PTFormProps) {
               control={form.control}
               name="pt.ptEnableResgatistas"
               render={({ field }) => (
-                <FormItem className="flex flex-row items-center justify-between">
-                  <FormLabel>{ptBr.ptForm.needsRescueTeam}</FormLabel>
-                  <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
-                </FormItem>
+                <ExigenciaSwitch
+                  rotulo={ptBr.ptForm.needsRescueTeam}
+                  ligado={enableResgatistas}
+                  porRegra={resgatistaPorRegra}
+                  onChange={field.onChange}
+                />
               )}
             />
             {enableResgatistas && (
@@ -379,6 +587,10 @@ export function PTForm({ form }: PTFormProps) {
           </div>
           
            {/* Signatures */}
+          </div>
+
+          {/* ---------- Etapa: assinaturas ---------- */}
+          <div className={cn('space-y-6', (pessoasExternas || passoVisivel !== 4) && 'hidden')}>
           <SectionTitle>{ptBr.ptForm.signatures}</SectionTitle>
            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <SignerField form={form} fieldPrefix="pt.ptGestorArea" label={ptBr.ptForm.areaManager} />
@@ -387,6 +599,7 @@ export function PTForm({ form }: PTFormProps) {
            </div>
 
 
+          </div>
         </div>
       );
 }

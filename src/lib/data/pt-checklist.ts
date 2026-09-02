@@ -65,6 +65,8 @@ export const ptChecklistItems = [
             { id: 'solicitar_liberacao_operador' },
             { id: 'isolar_sinalizar_agua' },
             { id: 'verificar_valvulas_corta_chama' },
+            { id: 'ventilacao_quente' },
+            { id: 'controlar_fagulhas' },
             { id: 'quente_acionar_sesmt_risco' },
         ]
     },
@@ -80,7 +82,21 @@ export const ptChecklistItems = [
             { id: 'isolar_guarda_corpo' },
             { id: 'instalar_cabos_guias' },
             { id: 'amarrar_ferramentas' },
+            { id: 'habilitacao_altura' },
+            { id: 'condicao_climatica' },
+            { id: 'plano_resgate_altura' },
             { id: 'altura_acionar_sesmt_risco' },
+        ]
+    },
+    {
+        id: 'precaucoes_confinado',
+        columns: 2,
+        items: [
+            { id: 'identificar_espaco' },
+            { id: 'monitoramento_continuo' },
+            { id: 'ventilacao_confinado' },
+            { id: 'equipe_autorizada' },
+            { id: 'plano_emergencia_confinado' },
         ]
     },
     {

@@ -4,6 +4,10 @@ import type { SafetyAnalysisOutput, ProtectiveEquipmentOutput } from '@/server/a
 import { Logo } from '@/components/icons/logo';
 import { PTPreview } from './pt-preview';
 import { ClipboardList, Construction, ShieldCheck, UserCheck, Users } from 'lucide-react';
+import {
+  COLORS, FieldLabel, SectionTitle, UnderlineValue, getPageStyle,
+  bodyFont, emptyTextStyle, headingFont, monoFont,
+} from './document-primitives';
 import { ptBr } from '@/lib/data/strings';
 import { DOCUMENT_TYPES } from '@/lib/constants';
 
@@ -15,54 +19,6 @@ interface PrintPreviewProps {
   error?: string | null;
   renderMode?: 'preview' | 'pdf';
 }
-
-const COLORS = {
-  white: '#ffffff',
-  text: '#191c1e',
-  secondary: '#4f5f7a',
-  secondaryStrong: '#314d78',
-  primary: '#9e4300',
-  primaryStrong: '#b24a00',
-  border: '#e0c0b1',
-  borderSoft: '#dfe3e8',
-  headerFill: '#eceff3',
-  watermark: 'rgba(158,67,0,0.08)',
-};
-
-const headingFont = '"Hanken Grotesk", Inter, Arial, sans-serif';
-const bodyFont = 'Inter, Arial, sans-serif';
-const monoFont = '"JetBrains Mono", "Courier New", monospace';
-
-function getPageStyle(renderMode: 'preview' | 'pdf'): React.CSSProperties {
-  if (renderMode === 'pdf') {
-    return {
-      width: '100%',
-      minHeight: 'auto',
-      background: COLORS.white,
-      color: COLORS.text,
-      position: 'relative',
-      padding: 0,
-      fontFamily: bodyFont,
-      boxSizing: 'border-box',
-    };
-  }
-
-  return {
-    width: '210mm',
-    minHeight: '297mm',
-    background: COLORS.white,
-    color: COLORS.text,
-    position: 'relative',
-    padding: '20mm 20mm 16mm',
-    fontFamily: bodyFont,
-    boxSizing: 'border-box',
-  };
-}
-
-const emptyTextStyle: React.CSSProperties = {
-  color: '#8c7165',
-  fontStyle: 'italic',
-};
 
 function formatDate(dateString?: string) {
   if (!dateString) return null;
@@ -155,91 +111,6 @@ function SignatureCell({ signatureData }: { signatureData?: string }) {
   );
 }
 
-function SectionTitle({
-  index,
-  title,
-  icon,
-}: {
-  index: string;
-  title: string;
-  icon: React.ReactNode;
-}) {
-  return (
-    <div
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: 10,
-        background: COLORS.headerFill,
-        borderLeft: `4px solid ${COLORS.primary}`,
-        padding: '12px 20px',
-        marginBottom: 12,
-      }}
-    >
-      <span style={{ color: COLORS.primary, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
-        {icon}
-      </span>
-      <h2
-        style={{
-          margin: 0,
-          fontFamily: headingFont,
-          fontSize: 17,
-          fontWeight: 700,
-          lineHeight: 1.2,
-          color: COLORS.text,
-          textTransform: 'uppercase',
-        }}
-      >
-        {index}. {title}
-      </h2>
-    </div>
-  );
-}
-
-function FieldLabel({ children }: { children: React.ReactNode }) {
-  return (
-    <div
-      style={{
-        fontFamily: monoFont,
-        fontSize: 11,
-        lineHeight: 1.1,
-        letterSpacing: '0.08em',
-        textTransform: 'uppercase',
-        color: COLORS.secondaryStrong,
-        marginBottom: 8,
-      }}
-    >
-      {children}
-    </div>
-  );
-}
-
-function UnderlineValue({
-  children,
-  bold = false,
-  minHeight = 34,
-}: {
-  children: React.ReactNode;
-  bold?: boolean;
-  minHeight?: number;
-}) {
-  return (
-    <div
-      style={{
-        minHeight,
-        paddingBottom: 6,
-        borderBottom: `1px solid ${COLORS.borderSoft}`,
-        fontSize: bold ? 18 : 13,
-        lineHeight: bold ? 1.2 : 1.35,
-        fontWeight: bold ? 700 : 400,
-        color: COLORS.text,
-      }}
-    >
-      {children}
-    </div>
-  );
-}
-
 function HeaderMetaRow({ label, value, bordered = true }: { label: string; value: string; bordered?: boolean }) {
   return (
     <div
@@ -282,6 +153,7 @@ function HeaderMetaRow({ label, value, bordered = true }: { label: string; value
 function APRPreviewContent({
   formData,
   analysisData,
+  equipmentData,
   company,
   renderMode,
 }: {
@@ -298,6 +170,11 @@ function APRPreviewContent({
   const footerDate = new Date().toLocaleDateString('pt-BR');
   const headerDate = formatDate(formData.startDate) || footerDate;
   const revision = '04';
+  // EPI/EPC sao gerados pela IA e agora entram no documento. A numeracao das
+  // secoes seguintes acompanha a presenca deles.
+  const temEquipamentos = Boolean(
+    equipmentData && ((equipmentData.epiItems?.length || 0) > 0 || (equipmentData.epcItems?.length || 0) > 0),
+  );
   const aprId = buildAprId(formData);
   const hasCompanyLogo = Boolean(company?.logo);
   return (
@@ -423,6 +300,13 @@ function APRPreviewContent({
             </UnderlineValue>
           </div>
 
+          <div style={{ marginBottom: 10 }}>
+            <FieldLabel>Local da Atividade</FieldLabel>
+            <UnderlineValue>
+              {formData.workLocationDetails || <span style={emptyTextStyle}>{ptBr.other.notFilled}</span>}
+            </UnderlineValue>
+          </div>
+
           <div style={{ display: 'grid', gridTemplateColumns: '0.95fr 1fr 1.9fr', gap: 18 }}>
             <div>
               <FieldLabel>Data de Inicio</FieldLabel>
@@ -503,9 +387,79 @@ function APRPreviewContent({
         </table>
       </section>
 
+      {temEquipamentos ? (
+        <section style={{ marginBottom: 28, breakInside: 'avoid', pageBreakInside: 'avoid' }}>
+          <SectionTitle
+            index="3"
+            title="EPI e EPC Obrigatorios"
+            icon={<ShieldCheck size={16} strokeWidth={2.2} />}
+          />
+
+          <div style={{ display: 'flex', gap: 16 }}>
+            {[
+              {
+                titulo: 'EPI - Equipamento de Protecao Individual',
+                itens: equipmentData?.epiItems || [],
+                nota: equipmentData?.epiNote,
+              },
+              {
+                titulo: 'EPC - Equipamento de Protecao Coletiva',
+                itens: equipmentData?.epcItems || [],
+                nota: equipmentData?.epcNote,
+              },
+            ].map((grupo) => (
+              <div key={grupo.titulo} style={{ flex: 1, border: `1px solid ${COLORS.border}` }}>
+                <div
+                  style={{
+                    background: COLORS.headerFill,
+                    borderBottom: `1px solid ${COLORS.border}`,
+                    padding: '7px 12px',
+                    fontFamily: headingFont,
+                    fontSize: 9.5,
+                    letterSpacing: '0.06em',
+                    textTransform: 'uppercase',
+                    color: COLORS.secondaryStrong,
+                  }}
+                >
+                  {grupo.titulo}
+                </div>
+
+                <ul style={{ margin: 0, padding: '10px 12px 10px 26px', fontSize: 11.2, lineHeight: 1.5 }}>
+                  {grupo.itens.map((item: string, indice: number) => (
+                    <li key={`${grupo.titulo}-${indice}`} style={{ marginBottom: 3 }}>
+                      {item}
+                    </li>
+                  ))}
+                  {grupo.itens.length === 0 ? (
+                    <li style={{ listStyle: 'none', marginLeft: -14, color: COLORS.secondary }}>
+                      Nao aplicavel a esta atividade.
+                    </li>
+                  ) : null}
+                </ul>
+
+                {grupo.nota ? (
+                  <p
+                    style={{
+                      margin: 0,
+                      borderTop: `1px solid ${COLORS.borderSoft}`,
+                      padding: '8px 12px',
+                      fontSize: 9.5,
+                      lineHeight: 1.45,
+                      color: COLORS.secondary,
+                    }}
+                  >
+                    {grupo.nota}
+                  </p>
+                ) : null}
+              </div>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
       <section style={{ marginBottom: 28 }}>
         <SectionTitle
-          index="3"
+          index={temEquipamentos ? '4' : '3'}
           title="Equipe de Trabalho"
           icon={<Users size={16} strokeWidth={2.2} />}
         />
@@ -568,7 +522,7 @@ function APRPreviewContent({
         }}
       >
         <SectionTitle
-          index="4"
+          index={temEquipamentos ? '5' : '4'}
           title="Responsaveis"
           icon={<UserCheck size={16} strokeWidth={2.2} />}
         />
@@ -667,8 +621,10 @@ function APRPreviewContent({
         <div>
           Emitido em {footerDate} via <span style={{ fontWeight: 700, color: COLORS.primary }}>PhiDocs Safety &amp; Compliance</span>
         </div>
+        {/* A paginacao real vem do Puppeteer (pdf-generator.ts). Aqui havia
+            "Pagina 01 de 01" fixo, que saia errado em toda APR de varias
+            paginas — e esta APR de teste tem 10 etapas. */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <span>Pagina 01 de 01</span>
           <ShieldCheck size={12} strokeWidth={2.2} />
         </div>
       </footer>
@@ -713,7 +669,7 @@ export function PrintPreview({ formData, analysisData, equipmentData, company, e
             renderMode={renderMode}
           />
         ) : (
-          <PTPreview formData={formData} company={company} />
+          <PTPreview formData={formData} company={company} renderMode={renderMode} />
         )}
       </div>
     </div>

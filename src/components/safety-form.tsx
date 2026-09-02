@@ -2,7 +2,8 @@
 
 import { useForm, useFieldArray, useWatch } from 'react-hook-form';
 import React, { useEffect, useState } from 'react';
-import type { SafetyFormValues, Work, Employee } from '@/lib/types';
+import type { SafetyFormValues, Work, Employee, ResponsibleContact, ResponsibleContactInput, AprPtProject } from '@/lib/types';
+import type { ProtectiveEquipmentOutput } from '@/server/ai-actions';
 import { Button } from '@/components/ui/button';
 import {
   Form,
@@ -17,7 +18,6 @@ import { cn } from "@/lib/utils";
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Select,
   SelectContent,
@@ -32,22 +32,27 @@ import {
   PlusCircle,
   Trash2,
   Briefcase,
+  HardHat,
   Users,
   ShieldCheck,
   Pencil,
+  Check,
   Loader2,
   CheckCircle2,
   Lightbulb,
 } from 'lucide-react';
-import { Separator } from '@/components/ui/separator';
 import { PTForm } from './pt-form';
+import { PersonPicker, type PersonOption, type PickedPerson } from './person-picker';
+import { CompanyStep, type EmpresaOpcao } from './company-step';
+import { AprReview, type Pendencia } from './apr-review';
+import { DocumentActivityPicker } from './document-activity-picker';
+import { PtReview } from './pt-review';
+import { pendenciasDaPt } from '@/lib/pt-rules';
+import { AnalysisStepCard, type ItensDaEtapa, type ListaDaEtapa } from './analysis-step-card';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ptBr } from '@/lib/data/strings';
-import { DOCUMENT_TYPES } from '@/lib/constants';
+import { DOCUMENT_TYPES, PT_FIT_STATUS } from '@/lib/constants';
 import { Skeleton } from './ui/skeleton';
-import { Badge } from './ui/badge';
-import { PhoneInput } from './ui/phone-input';
-import { Mail, MessageCircle } from 'lucide-react';
-import { SignaturePad } from './signature-pad';
 
 interface SafetyFormProps {
   form: ReturnType<typeof useForm<SafetyFormValues>>;
@@ -55,8 +60,109 @@ interface SafetyFormProps {
   isLoading: boolean;
   works: Work[];
   employees: Employee[];
+  responsibleContacts?: ResponsibleContact[];
+  onSaveResponsibleContact?: (data: ResponsibleContactInput) => Promise<boolean>;
+  /** EPI e EPC vem da mesma geracao da analise e seguem para o PDF. */
+  equipment?: ProtectiveEquipmentOutput | null;
+  onEquipmentChange?: (next: ProtectiveEquipmentOutput) => void;
+  /** Etapa 1: a "empresa da atividade" e o projeto APR/PT, que carrega razao
+      social, CNPJ e logo do cliente. */
+  projects?: AprPtProject[];
+  selectedProjectId?: string;
+  onSelectProject?: (projectId: string) => void;
+  onCreateProject?: () => void;
+  /** Empresas do projeto selecionado. Escolher uma preenche os dados do documento. */
+  onSelectCompany?: (workId: string) => void;
+  onCreateCompany?: () => void;
+  /** Descricoes de atividades ja usadas, oferecidas como atalho na etapa 2. */
+  recentActivities?: string[];
+  /** Locais ja usados nesta empresa, oferecidos para reuso na etapa de contexto. */
+  knownLocations?: string[];
+  /** Atividades parecidas ja usadas antes. Referencia, nunca copia automatica. */
+  similarActivities?: string[];
+  /** Acoes da etapa de finalizacao, ja existentes na pagina. */
+  onVisualizarDocumento?: () => void;
+  onFinalizar?: () => Promise<boolean> | void;
+  isFinalizando?: boolean;
+  onEnviarAssinatura?: () => void;
+  isEnviando?: boolean;
   isDataLoading: boolean;
 }
+
+function FormSkeleton() {
+  return (
+    <div className="space-y-6">
+      <Skeleton className="h-10 w-1/3" />
+      <div className="space-y-4">
+        <Skeleton className="h-8 w-1/4" />
+        <Skeleton className="h-10 w-full" />
+      </div>
+      <div className="space-y-4">
+        <Skeleton className="h-8 w-1/4" />
+        <Skeleton className="h-10 w-full" />
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Mostra o conteudo direto na pagina durante o assistente, e dentro de uma
+ * janela quando a pessoa clica em "Editar" na tela de revisao.
+ */
+function EnvoltorioEtapa({
+  aberto,
+  titulo,
+  onFechar,
+  children,
+}: {
+  aberto: boolean;
+  titulo: string;
+  onFechar: () => void;
+  children: React.ReactNode;
+}) {
+  if (!aberto) return <>{children}</>;
+
+  return (
+    <Dialog open onOpenChange={(estaAberto) => { if (!estaAberto) onFechar(); }}>
+      <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="font-headline text-h3">Editar: {titulo}</DialogTitle>
+        </DialogHeader>
+
+        {children}
+
+        <div className="flex justify-end border-t border-[#cfcbc0] pt-4">
+          <Button
+            type="button"
+            className="rounded-md bg-[#7a1f1f] text-white hover:bg-[#5f1818]"
+            onClick={onFechar}
+          >
+            Concluir e voltar a revisao
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+const PT_STEPS = [
+  { title: 'Empresa', description: 'Para quem e a permissao.' },
+  { title: 'Atividade', description: 'Local, equipamento e horario.' },
+  { title: 'Condicoes', description: 'Tipo de trabalho e precaucoes.' },
+  { title: 'Participantes', description: 'Quem executa e quem vigia.' },
+  { title: 'Assinaturas', description: 'Quem libera a atividade.' },
+  { title: 'Revisao', description: 'Confira e emita a PT.' },
+] as const;
+
+const APR_STEPS = [
+  { title: 'Empresa', description: 'Para quem e a atividade.' },
+  { title: 'Atividade', description: 'O que sera realizado.' },
+  { title: 'Contexto', description: 'Local, periodo e detalhes.' },
+  { title: 'Participantes', description: 'Quem executa e quem responde.' },
+  { title: 'Analise', description: 'Riscos, medidas, EPI e EPC.' },
+  { title: 'Revisao', description: 'Confira antes de gerar.' },
+  { title: 'Finalizacao', description: 'Rascunho, PDF ou assinatura.' },
+] as const;
 
 export function SafetyForm({
   form,
@@ -64,6 +170,24 @@ export function SafetyForm({
   isLoading,
   works,
   employees,
+  responsibleContacts = [],
+  onSaveResponsibleContact,
+  equipment,
+  onEquipmentChange,
+  projects = [],
+  selectedProjectId = '',
+  onSelectProject,
+  onCreateProject,
+  onSelectCompany,
+  onCreateCompany,
+  recentActivities = [],
+  knownLocations = [],
+  similarActivities = [],
+  onVisualizarDocumento,
+  onFinalizar,
+  isFinalizando = false,
+  onEnviarAssinatura,
+  isEnviando = false,
   isDataLoading,
 }: SafetyFormProps) {
 
@@ -103,54 +227,63 @@ export function SafetyForm({
   const analysisSteps = useWatch({ control: form.control, name: 'analysisSteps' });
   const teamMembers = useWatch({ control: form.control, name: 'teamMembers' });
   const responsiblePersons = useWatch({ control: form.control, name: 'responsiblePersons' });
+  const ptLocal = useWatch({ control: form.control, name: 'pt.ptLocalAtividade' });
+  const ptColaboradores = useWatch({ control: form.control, name: 'pt.ptColaboradores' });
+  const ptResponsaveis = useWatch({ control: form.control, name: 'pt.ptResponsaveis' });
+  const ptData = useWatch({ control: form.control, name: 'pt.ptData' });
   const [isEditingWorkData, setIsEditingWorkData] = useState(false);
-  const [activeAnalysisStep, setActiveAnalysisStep] = useState(0);
-  const [teamDraftError, setTeamDraftError] = useState('');
-  const [responsibleDraftError, setResponsibleDraftError] = useState('');
-  const [teamDraft, setTeamDraft] = useState<{
-    employeeId: string;
-    date: string;
-    name: string;
-    role: string;
-    email: string;
-    phone: string;
-    useAssinafy: boolean;
-    isManual: boolean;
-    signatureData: string;
-  } | null>(null);
-  const [responsibleDraft, setResponsibleDraft] = useState<{
-    employeeId: string;
-    name: string;
-    role: string;
-    email: string;
-    phone: string;
-    useAssinafy: boolean;
-    signatureData: string;
-  } | null>(null);
+  const [activeAprStep, setActiveAprStep] = useState(0);
+  // Nenhuma etapa nasce em edicao: a pessoa confere e so abre a que quiser mudar.
+  const [editingAnalysisStep, setEditingAnalysisStep] = useState<number | null>(null);
+  // Editar pela revisao abre a etapa numa janela, sem tirar a pessoa do lugar
+  // nem obriga-la a percorrer as etapas seguintes de novo.
+  const [editingSection, setEditingSection] = useState<number | null>(null);
+  // A IA nao fecha APR sozinha: a revisao so libera a emissao apos confirmacao.
+  const [analiseRevisada, setAnaliseRevisada] = useState(false);
+  const [foiFinalizada, setFoiFinalizada] = useState(false);
+  // Sem local conhecido, o campo ja nasce em modo de cadastro.
+  const [cadastrandoLocal, setCadastrandoLocal] = useState(false);
+  const [isSavingResponsibleContact, setIsSavingResponsibleContact] = useState(false);
+  const [epiDraft, setEpiDraft] = useState('');
+  const [epcDraft, setEpcDraft] = useState('');
+
+  const patchEquipment = (patch: Partial<ProtectiveEquipmentOutput>) => {
+    if (!equipment || !onEquipmentChange) return;
+    onEquipmentChange({ ...equipment, ...patch });
+  };
 
   const todayDate = new Date().toISOString().split('T')[0];
 
-  const createTeamDraft = (isManual = false) => ({
-    employeeId: '',
-    date: todayDate,
-    name: '',
-    role: '',
-    email: '',
-    phone: '',
-    useAssinafy: true,
-    isManual,
-    signatureData: '',
-  });
+  const employeeOptions: PersonOption[] = (employees || []).map((employee) => ({
+    id: employee.id,
+    kind: 'employee' as const,
+    name: `${employee.firstName} ${employee.lastName}`.trim(),
+    role: employee.roleName || '',
+    email: employee.email || '',
+    phone: employee.phone || '',
+    document: employee.cpf || '',
+    organization: employee.subcontractorName || '',
+  }));
 
-  const createResponsibleDraft = () => ({
-    employeeId: '',
-    name: '',
-    role: '',
-    email: '',
-    phone: '',
-    useAssinafy: true,
-    signatureData: '',
-  });
+  // Responsaveis salvos aparecem primeiro; um funcionario que ja esta salvo como
+  // responsavel nao e listado duas vezes.
+  const responsibleOptions: PersonOption[] = (() => {
+    const contacts: PersonOption[] = responsibleContacts
+      .filter((contact) => contact.isActive)
+      .map((contact) => ({
+        id: contact.id,
+        kind: 'contact' as const,
+        name: contact.name,
+        role: contact.role,
+        email: contact.email || '',
+        phone: contact.phone || '',
+      }));
+    const seen = new Set(contacts.map((contact) => contact.name.trim().toLowerCase()));
+    return [
+      ...contacts,
+      ...employeeOptions.filter((option) => !seen.has(option.name.trim().toLowerCase())),
+    ];
+  })();
 
   const hasAnyTeamMemberValue = (member?: {
     employeeId?: string;
@@ -200,76 +333,292 @@ export function SafetyForm({
     }
   }, [form, teamMembers]);
 
-  const FormSkeleton = () => (
-    <div className="space-y-6">
-      <Skeleton className="h-10 w-1/3" />
-      <div className="space-y-4">
-        <Skeleton className="h-8 w-1/4" />
-        <Skeleton className="h-10 w-full" />
-      </div>
-      <div className="space-y-4">
-        <Skeleton className="h-8 w-1/4" />
-        <Skeleton className="h-10 w-full" />
-      </div>
-    </div>
-  );
-
 
   const hasGeneratedAnalysis = Array.isArray(analysisSteps)
     && analysisSteps.some((step) => (step?.activity || step?.potentialRisks || step?.preventiveMeasures));
   const canFillActivity = Boolean(workId && workName && startDate && endDate);
   const canGenerateAnalysis = Boolean(activityDescription?.trim().length);
-  const hasTeamMembers = Array.isArray(teamMembers)
-    && teamMembers.some((member) => (member?.employeeId || member?.name));
-  const hasResponsibles = Array.isArray(responsiblePersons)
-    && responsiblePersons.some((person) => (person?.employeeId || person?.name));
-  const teamMemberChips = (teamMembers || []).filter((member) => member?.name);
-  const responsibleChips = (responsiblePersons || []).filter((person) => person?.name);
+  const selectedProject = projects.find((project) => project.id === selectedProjectId) || null;
 
-  const handleConfirmTeamDraft = () => {
-    if (!teamDraft) return;
+  // As empresas do projeto vem da tabela de obras, que ja guarda CNPJ, razao
+  // social, logo e endereco. Nao ha entidade separada para empresa.
+  const empresasDoProjeto: EmpresaOpcao[] = (works || [])
+    .filter((obra) => !selectedProjectId || obra.projeto_id === selectedProjectId)
+    .map((obra) => ({
+      id: obra.id,
+      nome: obra.name,
+      razaoSocial: obra.razao_social || obra.nome_fantasia || obra.name,
+      cnpj: obra.cnpj,
+      logoUrl: obra.logo_empresa_url,
+      detalhe: obra.address || obra.cidade || null,
+    }));
 
-    if (teamDraft.isManual) {
-      if (!teamDraft.name.trim()) {
-        setTeamDraftError('Informe o nome do membro.');
-        return;
-      }
-    } else if (!teamDraft.employeeId) {
-      setTeamDraftError('Selecione um funcionario.');
-      return;
+  const empresaSelecionada = empresasDoProjeto.find((empresa) => empresa.id === workId) || null;
+  const companyLabel = empresaSelecionada
+    ? [empresaSelecionada.razaoSocial, empresaSelecionada.cnpj].filter(Boolean).join(' \u00b7 ')
+    : '';
+  const hasActivityDescription = (activityDescription || '').trim().length >= 10;
+
+  // Cada etapa so libera a proxima quando tem o minimo para a seguinte fazer sentido.
+  const ehPT = documentType === DOCUMENT_TYPES.PT;
+  const ETAPAS = ehPT ? PT_STEPS : APR_STEPS;
+
+  // A PT tem outro caminho: empresa, atividade, condicoes, participantes,
+  // assinaturas e revisao.
+  const ptStepReady = [
+    Boolean(selectedProjectId && workId),
+    Boolean(ptLocal?.trim() && ptData?.trim()),
+    true,
+    true,
+    true,
+    true,
+  ];
+
+
+  const aprStepReady = [
+    Boolean(selectedProjectId && workId),
+    hasActivityDescription,
+    canFillActivity,
+    true,
+    hasGeneratedAnalysis,
+    analiseRevisada,
+    true,
+  ];
+  const canAdvanceAprStep = (ehPT ? ptStepReady : aprStepReady)[activeAprStep] ?? true;
+  const passoVisivel = editingSection ?? activeAprStep;
+
+  // Uma lista curta do que falta, cada item apontando para a etapa que resolve.
+  // A PT tem regras proprias, num modulo separado e auditavel.
+  const pendenciasPt = ehPT
+    ? [
+        ...(!selectedProjectId || !workId
+          ? [{ texto: 'Selecione a empresa da permissao.', passo: 0 }]
+          : []),
+        ...pendenciasDaPt(form.getValues('pt') || {}),
+      ]
+    : [];
+
+  const pendencias: Pendencia[] = [];
+  if (!selectedProjectId) {
+    pendencias.push({ texto: 'Selecione o projeto do documento.', passo: 0 });
+  } else if (!workId) {
+    pendencias.push({ texto: 'Selecione a empresa da atividade.', passo: 0 });
+  }
+  if (!hasActivityDescription) {
+    pendencias.push({ texto: 'Descreva a atividade com pelo menos 10 caracteres.', passo: 1 });
+  }
+  if (!startDate || !endDate) {
+    pendencias.push({ texto: 'Informe as datas de inicio e termino.', passo: 2 });
+  } else if (new Date(endDate) < new Date(startDate)) {
+    pendencias.push({ texto: 'A data de termino nao pode ser anterior a de inicio.', passo: 2 });
+  }
+
+  const responsaveisComNome = (responsiblePersons || []).filter((pessoa) => pessoa?.name?.trim());
+  if (responsaveisComNome.length === 0) {
+    pendencias.push({ texto: 'Adicione pelo menos um responsavel pela atividade.', passo: 3 });
+  } else {
+    const semFuncao = responsaveisComNome.filter((pessoa) => !pessoa?.role?.trim()).length;
+    if (semFuncao > 0) {
+      pendencias.push({ texto: `${semFuncao} responsavel(is) sem funcao informada.`, passo: 3 });
     }
+  }
 
-    if (!teamDraft.date) {
-      setTeamDraftError('Informe a data.');
-      return;
-    }
+  // Cada forma de assinatura cobra o contato dela.
+  const pessoasDoDocumento = [...(teamMembers || []), ...(responsiblePersons || [])]
+    .filter((pessoa) => pessoa?.name?.trim());
+  const metodoDaPessoa = (pessoa: { signatureMethod?: string; useAssinafy?: boolean }) =>
+    pessoa.signatureMethod || (pessoa.useAssinafy === false ? 'manual' : 'email');
 
-    if (teamDraft.useAssinafy && !teamDraft.email.trim()) {
-      setTeamDraftError('Informe o e-mail para assinatura.');
-      return;
-    }
+  const semEmailParaAssinar = pessoasDoDocumento
+    .filter((pessoa) => metodoDaPessoa(pessoa) === 'email' && !pessoa?.email?.trim()).length;
+  if (semEmailParaAssinar > 0) {
+    pendencias.push({ texto: `${semEmailParaAssinar} pessoa(s) sem e-mail para assinatura.`, passo: 3 });
+  }
 
-    appendTeamMember(teamDraft);
-    setTeamDraft(null);
-    setTeamDraftError('');
+  const semTelefoneParaAssinar = pessoasDoDocumento
+    .filter((pessoa) => metodoDaPessoa(pessoa) === 'whatsapp' && !pessoa?.phone?.trim()).length;
+  if (semTelefoneParaAssinar > 0) {
+    pendencias.push({ texto: `${semTelefoneParaAssinar} pessoa(s) sem telefone para WhatsApp.`, passo: 3 });
+  }
+
+  const semDataDeParticipacao = (teamMembers || [])
+    .filter((membro) => membro?.name?.trim() && !membro?.date).length;
+  if (semDataDeParticipacao > 0) {
+    pendencias.push({ texto: `${semDataDeParticipacao} membro(s) da equipe sem data de participacao.`, passo: 3 });
+  }
+
+  if (!hasGeneratedAnalysis) {
+    pendencias.push({ texto: 'Gere a analise de risco da atividade.', passo: 4 });
+  }
+
+  // Etapas antigas so tem os dois campos de texto: cada linha vira um item.
+  const paraItens = (valor: unknown): string[] => {
+    if (Array.isArray(valor)) return valor.map((item) => String(item).trim()).filter(Boolean);
+    if (typeof valor === 'string') return valor.split('\n').map((linha) => linha.trim()).filter(Boolean);
+    return [];
   };
 
-  const handleConfirmResponsibleDraft = () => {
-    if (!responsibleDraft) return;
+  const itensDaEtapa = (indice: number): ItensDaEtapa => {
+    const etapa = analysisSteps?.[indice] as Record<string, unknown> | undefined;
+    const riscos = paraItens(etapa?.risks);
+    const medidas = paraItens(etapa?.measures);
+    return {
+      hazards: paraItens(etapa?.hazards),
+      risks: riscos.length ? riscos : paraItens(etapa?.potentialRisks),
+      consequences: paraItens(etapa?.consequences),
+      measures: medidas.length ? medidas : paraItens(etapa?.preventiveMeasures),
+      epis: paraItens(etapa?.epis),
+      epcs: paraItens(etapa?.epcs),
+    };
+  };
 
-    if (!responsibleDraft.employeeId) {
-      setResponsibleDraftError('Selecione um funcionario.');
-      return;
+  // Os dois campos de texto seguem sincronizados com as listas: e deles que o
+  // PDF e os documentos ja emitidos dependem.
+  const gravarLista = (indice: number, campo: ListaDaEtapa, itens: string[]) => {
+    const atual = { ...itensDaEtapa(indice), [campo]: itens };
+    form.setValue(`analysisSteps.${indice}.${campo}` as never, itens as never, { shouldDirty: true });
+    form.setValue(
+      `analysisSteps.${indice}.potentialRisks` as never,
+      [
+        ...atual.hazards.map((item) => `Perigo: ${item}`),
+        ...atual.risks,
+        ...atual.consequences.map((item) => `Consequencia: ${item}`),
+      ].join('\n') as never,
+      { shouldDirty: true },
+    );
+    form.setValue(
+      `analysisSteps.${indice}.preventiveMeasures` as never,
+      [
+        ...atual.measures,
+        ...(atual.epis.length ? [`EPI: ${atual.epis.join(', ')}`] : []),
+        ...(atual.epcs.length ? [`EPC: ${atual.epcs.join(', ')}`] : []),
+      ].join('\n') as never,
+      { shouldDirty: true },
+    );
+  };
+
+  const patchPerson = (
+    field: 'teamMembers' | 'responsiblePersons',
+    index: number,
+    patch: Partial<PickedPerson>,
+  ) => {
+    Object.entries(patch).forEach(([key, value]) => {
+      form.setValue(`${field}.${index}.${key}` as never, value as never, { shouldDirty: true });
+    });
+  };
+
+  // A PT guarda RG/CPF, empresa e "apto" por pessoa; o seletor fala em
+  // document / organization / fitness. Estas duas funcoes ligam os dois lados.
+  const ptMembroParaPessoa = (membro: Record<string, unknown>): PickedPerson => ({
+    name: String(membro?.name || ''),
+    role: String(membro?.func || ''),
+    document: String(membro?.rgCpf || ''),
+    organization: String(membro?.empresa || ''),
+    fitness: String(membro?.apto || PT_FIT_STATUS.YES),
+    email: String(membro?.email || ''),
+    phone: String(membro?.phone || ''),
+    signatureMethod: (membro?.signatureMethod as never) || (membro?.useAssinafy === false ? 'manual' : 'email'),
+    useAssinafy: membro?.useAssinafy !== false,
+  });
+
+  const pessoaParaPtMembro = (pessoa: PickedPerson) => ({
+    name: pessoa.name,
+    rgCpf: pessoa.document || '',
+    func: pessoa.role || '',
+    empresa: pessoa.organization || '',
+    apto: (pessoa.fitness as never) || PT_FIT_STATUS.YES,
+    email: pessoa.email || undefined,
+    phone: pessoa.phone || undefined,
+    signatureMethod: pessoa.signatureMethod,
+    useAssinafy: pessoa.useAssinafy !== false,
+  });
+
+  const patchPtPessoa = (
+    campo: 'pt.ptColaboradores' | 'pt.ptResponsaveis',
+    indice: number,
+    patch: Partial<PickedPerson>,
+  ) => {
+    const traduzido: Record<string, unknown> = { ...patch };
+    if ('document' in patch) { traduzido.rgCpf = patch.document; delete traduzido.document; }
+    if ('organization' in patch) { traduzido.empresa = patch.organization; delete traduzido.organization; }
+    if ('fitness' in patch) { traduzido.apto = patch.fitness; delete traduzido.fitness; }
+    if ('role' in patch && campo === 'pt.ptColaboradores') { traduzido.func = patch.role; delete traduzido.role; }
+
+    Object.entries(traduzido).forEach(([chave, valor]) => {
+      form.setValue(`${campo}.${indice}.${chave}` as never, valor as never, { shouldDirty: true });
+    });
+  };
+
+  const handleAddPtResponsavel = async (pessoa: PickedPerson & { saveForReuse?: boolean }) => {
+    if (pessoa.saveForReuse && onSaveResponsibleContact) {
+      setIsSavingResponsibleContact(true);
+      const salvou = await onSaveResponsibleContact({
+        name: pessoa.name,
+        role: pessoa.role || '',
+        email: pessoa.email || null,
+        phone: pessoa.phone || null,
+        signsByDefault: pessoa.useAssinafy !== false,
+        isActive: true,
+      });
+      setIsSavingResponsibleContact(false);
+      if (!salvou) return;
     }
 
-    if (responsibleDraft.useAssinafy && !responsibleDraft.email.trim()) {
-      setResponsibleDraftError('Informe o e-mail para assinatura.');
-      return;
+    const atuais = form.getValues('pt.ptResponsaveis') || [];
+    form.setValue('pt.ptResponsaveis', [...atuais, {
+      employeeId: pessoa.employeeId || undefined,
+      name: pessoa.name,
+      role: pessoa.role || '',
+      email: pessoa.email || undefined,
+      phone: pessoa.phone || undefined,
+      signatureMethod: pessoa.signatureMethod,
+      useAssinafy: pessoa.useAssinafy !== false,
+      signatureData: pessoa.signatureData || undefined,
+    }], { shouldDirty: true });
+  };
+
+  const handleAddTeamMember = (person: PickedPerson) => {
+    appendTeamMember({
+      employeeId: person.employeeId || undefined,
+      date: person.date || todayDate,
+      name: person.name,
+      role: person.role || undefined,
+      email: person.email || undefined,
+      phone: person.phone || undefined,
+      signatureMethod: person.signatureMethod,
+      useAssinafy: person.useAssinafy !== false,
+      isManual: Boolean(person.isManual),
+      signatureData: person.signatureData || undefined,
+    });
+  };
+
+  const handleAddResponsible = async (person: PickedPerson & { saveForReuse?: boolean }) => {
+    if (person.saveForReuse && onSaveResponsibleContact) {
+      setIsSavingResponsibleContact(true);
+      const saved = await onSaveResponsibleContact({
+        name: person.name,
+        role: person.role || '',
+        email: person.email || null,
+        phone: person.phone || null,
+        signsByDefault: person.useAssinafy !== false,
+        isActive: true,
+      });
+      setIsSavingResponsibleContact(false);
+      if (!saved) return;
     }
 
-    appendResponsible(responsibleDraft);
-    setResponsibleDraft(null);
-    setResponsibleDraftError('');
+    // O documento guarda uma copia dos dados: alteracoes futuras no cadastro
+    // nao podem mudar uma APR ja emitida.
+    appendResponsible({
+      employeeId: person.employeeId || undefined,
+      name: person.name,
+      role: person.role || '',
+      email: person.email || undefined,
+      phone: person.phone || undefined,
+      signatureMethod: person.signatureMethod,
+      useAssinafy: person.useAssinafy !== false,
+      signatureData: person.signatureData || undefined,
+    });
   };
 
   return (
@@ -277,6 +626,43 @@ export function SafetyForm({
       <CardContent className="p-0">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+            {(
+              <nav aria-label={`Etapas da ${documentType === DOCUMENT_TYPES.APR ? 'APR' : 'PT'}`} className="rounded-2xl border border-[#cfcbc0] bg-white p-4 shadow-sm md:p-5">
+                <ol className="grid gap-2 md:grid-cols-4">
+                  {ETAPAS.map((step, index) => {
+                    const isActive = activeAprStep === index;
+                    const isComplete = activeAprStep > index;
+                    return (
+                      <li key={step.title}>
+                        <button
+                          type="button"
+                          disabled={index > activeAprStep && (ehPT ? ptStepReady : aprStepReady).slice(0, index).some((pronto) => !pronto)}
+                          onClick={() => setActiveAprStep(index)}
+                          className={cn(
+                            'flex w-full items-start gap-3 rounded-xl border px-3 py-3 text-left transition-colors',
+                            isActive
+                              ? 'border-[#7a1f1f] bg-[#f7f5f0] text-[#8a5a00]'
+                              : 'border-transparent text-[#6e6a61] hover:border-[#cfcbc0] hover:bg-[#faf3e4]',
+                          )}
+                        >
+                          <span className={cn(
+                            'flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold',
+                            isActive || isComplete ? 'bg-[#7a1f1f] text-white' : 'bg-[#ebe9e3] text-[#6e6a61]',
+                          )}>
+                            {isComplete ? 'OK' : index + 1}
+                          </span>
+                          <span className="min-w-0">
+                            <span className="block text-sm font-semibold">{step.title}</span>
+                            <span className="mt-0.5 block text-xs leading-4 opacity-80">{step.description}</span>
+                          </span>
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ol>
+              </nav>
+            )}
+
             <FormField
               control={form.control}
               name="documentType"
@@ -287,9 +673,9 @@ export function SafetyForm({
                       <FileText className="inline-block mr-2" /> {ptBr.safetyForm.documentType}
                     </FormLabel>
                     <FormControl>
-                      <div className="flex items-center justify-between rounded-lg border border-[#ead7ca] bg-gradient-to-r from-[#fff3e8] via-[#fff8f2] to-transparent p-4">
+                      <div className="flex items-center justify-between rounded-lg border border-[#e8d9ae] bg-gradient-to-r from-[#faf3e4] via-[#faf3e4] to-transparent p-4">
                         <div className="flex items-center gap-2">
-                          <FileText className="h-5 w-5 text-[#f46e11]" />
+                          <FileText className="h-5 w-5 text-[#7a1f1f]" />
                           <span className="font-semibold text-lg">
                             {field.value === DOCUMENT_TYPES.APR ? ptBr.documentType.apr : ptBr.documentType.pt}
                           </span>
@@ -313,63 +699,197 @@ export function SafetyForm({
             />
 
             {documentType === DOCUMENT_TYPES.PT ? (
-              <PTForm form={form} />
+              <>
+                {/* Etapa 1 da PT: a mesma escolha de empresa da APR. */}
+                <div className={cn('mb-5', passoVisivel !== 0 && 'hidden')}>
+                  <CompanyStep
+                    empresas={empresasDoProjeto}
+                    selectedId={workId || ''}
+                    onSelect={(id) => onSelectCompany?.(id)}
+                    onCreateNew={() => onCreateCompany?.()}
+                    projetoNome={selectedProject?.nome_projeto}
+                    temProjeto={Boolean(selectedProjectId)}
+                    onEscolherProjeto={() => onSelectProject?.('')}
+                  />
+                </div>
+
+                <PTForm
+                  form={form}
+                  passoVisivel={passoVisivel}
+                  pessoasExternas
+                  recentActivities={recentActivities}
+                  similarActivities={similarActivities}
+                />
+
+                {/* Etapa: quem executa a atividade */}
+                <div className={cn('mb-5', passoVisivel !== 3 && 'hidden')}>
+                  <PersonPicker
+                    title="Colaboradores"
+                    subtitle="Quem vai executar a atividade. Todos assinam a permissao."
+                    icon={<Users className="mr-2" />}
+                    addLabel="Adicionar colaborador"
+                    emptyHint="Escolha quem ja esta cadastrado ou cadastre na hora."
+                    options={employeeOptions}
+                    people={(ptColaboradores || []).map(ptMembroParaPessoa)}
+                    withDocument
+                    withFitness
+                    onAdd={(pessoa) => {
+                      const atuais = form.getValues('pt.ptColaboradores') || [];
+                      form.setValue('pt.ptColaboradores', [...atuais, pessoaParaPtMembro(pessoa)], { shouldDirty: true });
+                    }}
+                    onPatch={(indice, patch) => patchPtPessoa('pt.ptColaboradores', indice, patch)}
+                    onRemove={(indice) => {
+                      const atuais = form.getValues('pt.ptColaboradores') || [];
+                      form.setValue('pt.ptColaboradores', atuais.filter((_, i) => i !== indice), { shouldDirty: true });
+                    }}
+                  />
+                </div>
+
+                {/* Etapa: quem libera e assina */}
+                <div className={cn('mb-5', passoVisivel !== 4 && 'hidden')}>
+                  <PersonPicker
+                    title="Liberacao e assinaturas"
+                    subtitle="Gestor da area, responsavel pela atividade e SESMT. Todos assinam."
+                    icon={<UserCheck className="mr-2" />}
+                    addLabel="Adicionar responsavel"
+                    emptyHint="Escolha quem ja esta cadastrado ou cadastre na hora."
+                    options={responsibleOptions}
+                    people={(ptResponsaveis || []) as never[]}
+                    requireRole
+                    canSaveContact={Boolean(onSaveResponsibleContact)}
+                    isSavingContact={isSavingResponsibleContact}
+                    onAdd={handleAddPtResponsavel}
+                    onPatch={(indice, patch) => patchPtPessoa('pt.ptResponsaveis', indice, patch)}
+                    onRemove={(indice) => {
+                      const atuais = form.getValues('pt.ptResponsaveis') || [];
+                      form.setValue('pt.ptResponsaveis', atuais.filter((_, i) => i !== indice), { shouldDirty: true });
+                    }}
+                  />
+                </div>
+
+                <div className={cn('mb-5', passoVisivel !== 5 && 'hidden')}>
+                  <PtReview
+                    values={form.getValues()}
+                    companyLabel={companyLabel}
+                    pendencias={pendenciasPt}
+                    revisada={analiseRevisada}
+                    onRevisadaChange={setAnaliseRevisada}
+                    onEditStep={(passo) => setEditingSection(passo)}
+                    onVisualizarDocumento={onVisualizarDocumento}
+                    isFinalizando={isFinalizando}
+                    jaFinalizado={foiFinalizada}
+                    onFinalizar={async () => {
+                      const salvou = await onFinalizar?.();
+                      if (salvou !== false) setFoiFinalizada(true);
+                    }}
+                    onEnviarAssinatura={onEnviarAssinatura}
+                    isEnviando={isEnviando}
+                  />
+                </div>
+              </>
             ) : isDataLoading ? (
               <FormSkeleton />
             ) : (
+              <EnvoltorioEtapa
+                aberto={editingSection !== null}
+                titulo={editingSection !== null ? APR_STEPS[editingSection].title : ''}
+                onFechar={() => setEditingSection(null)}
+              >
                 <div className="space-y-8">
-                  <div className="mb-5">
-                    <div className="overflow-hidden rounded-md border border-[#e6cfc1] bg-white shadow-sm">
-                      <div className="flex flex-col gap-3 bg-[#5f7394] px-5 py-3 text-white sm:flex-row sm:items-center sm:justify-between">
-                        <h3 className="flex items-center font-headline text-h3">
-                          <Briefcase className="mr-2" /> {ptBr.safetyForm.workData}
+                  <div className={cn('mb-5', passoVisivel !== 0 && 'hidden')}>
+                    <CompanyStep
+                      empresas={empresasDoProjeto}
+                      selectedId={workId || ''}
+                      onSelect={(id) => onSelectCompany?.(id)}
+                      onCreateNew={() => onCreateCompany?.()}
+                      projetoNome={selectedProject?.nome_projeto}
+                      temProjeto={Boolean(selectedProjectId)}
+                      onEscolherProjeto={() => onSelectProject?.('')}
+                    />
+                  </div>
+
+                  <div className={cn('mb-5', passoVisivel !== 2 && 'hidden')}>
+                    <div className="overflow-hidden rounded-md border border-[#cfcbc0] bg-white shadow-sm">
+                      <div className="flex items-center justify-between gap-3 bg-[#111111] px-5 py-3 text-white">
+                        <h3 className="flex min-w-0 items-center font-headline text-h3">
+                          <Briefcase className="mr-2 shrink-0" />
+                          <span className="truncate">{ptBr.safetyForm.workData}</span>
                         </h3>
+                        {/* No celular so o lapis, para o botao encaixar no canto. */}
                         <Button
                           type="button"
                           variant="ghost"
                           size="sm"
-                          className="rounded-md text-white hover:bg-white/10 hover:text-white"
+                          aria-label={isEditingWorkData ? 'Concluir edicao' : 'Editar dados'}
+                          className="h-9 shrink-0 rounded-md px-2 text-white hover:bg-white/10 hover:text-white sm:px-3"
                           onClick={() => setIsEditingWorkData(!isEditingWorkData)}
                         >
-                          <Pencil className="mr-2 h-4 w-4" /> Editar
+                          <Pencil className="h-4 w-4 sm:mr-2" />
+                          <span className="hidden sm:inline">Editar</span>
                         </Button>
                       </div>
                       <div className="space-y-4 px-5 pb-5 pt-4">
 
                       <FormField
                         control={form.control}
-                        name="workId"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>{ptBr.safetyForm.selectWork}</FormLabel>
-                            <Select onValueChange={(workId) => {
-                              field.onChange(workId);
-                              const work = works.find(w => w.id === workId);
-                              if (work) {
-                                form.setValue('workName', work.name);
-                                form.setValue('workAddress', work.address);
-                                form.setValue('startDate', work.startDate.split('T')[0]);
-                                form.setValue('endDate', work.endDate.split('T')[0]);
-                                form.setValue('workLocationDetails', work.workLocationDetails);
-                              }
-                            }} value={field.value}>
-                              <FormControl>
-                                  <SelectTrigger className="h-12 rounded-md border-[#ccb4a6] bg-white">
-                                    <SelectValue placeholder={ptBr.safetyForm.selectWorkPlaceholder} />
-                                  </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                {works.map((work) => (
-                                  <SelectItem key={work.id} value={work.id}>
-                                    {work.name}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                            <FormDescription>{ptBr.safetyForm.workDetailsAutoFilled}</FormDescription>
-                            <FormMessage />
-                          </FormItem>
-                        )}
+                        name="workLocationDetails"
+                        render={({ field }) => {
+                          const temConhecidos = knownLocations.length > 0;
+                          const escolhendo = temConhecidos && !cadastrandoLocal;
+
+                          return (
+                            <FormItem>
+                              <FormLabel>Local da atividade</FormLabel>
+
+                              {escolhendo ? (
+                                <Select onValueChange={(valor) => field.onChange(valor)} value={field.value || ''}>
+                                  <FormControl>
+                                    <SelectTrigger className="h-12 rounded-md border-[#cfcbc0] bg-white">
+                                      <SelectValue placeholder="Escolha um local ja cadastrado" />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    {knownLocations.map((local) => (
+                                      <SelectItem key={local} value={local}>
+                                        {local}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              ) : (
+                                <FormControl>
+                                  <Input
+                                    className="h-12 rounded-md border-[#cfcbc0]"
+                                    placeholder="Ex.: Pavimento 2 - Setor de producao"
+                                    {...field}
+                                  />
+                                </FormControl>
+                              )}
+
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  if (escolhendo) {
+                                    field.onChange('');
+                                    setCadastrandoLocal(true);
+                                  } else {
+                                    setCadastrandoLocal(false);
+                                  }
+                                }}
+                                className="mt-1 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.07em] text-[#7a1f1f] transition-colors hover:text-[#5f1818]"
+                              >
+                                <PlusCircle className="h-3.5 w-3.5" />
+                                {escolhendo ? 'Cadastrar novo local' : temConhecidos ? 'Escolher um local ja cadastrado' : 'Novo local'}
+                              </button>
+
+                              <FormDescription>
+                                Este local sai no documento. Depois de salvo, ele fica disponivel
+                                para os proximos documentos desta empresa.
+                              </FormDescription>
+                              <FormMessage />
+                            </FormItem>
+                          );
+                        }}
                       />
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-1">
@@ -380,7 +900,7 @@ export function SafetyForm({
                               <FormItem>
                                 <FormLabel>{ptBr.safetyForm.startDate}</FormLabel>
                                 <FormControl>
-                                   <Input type="date" className="h-12 rounded-md border-[#ccb4a6]" {...field} />
+                                   <Input type="date" className="h-12 rounded-md border-[#cfcbc0]" {...field} />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -393,112 +913,95 @@ export function SafetyForm({
                               <FormItem>
                                 <FormLabel>{ptBr.safetyForm.endDate}</FormLabel>
                                 <FormControl>
-                                   <Input type="date" className="h-12 rounded-md border-[#ccb4a6]" {...field} />
+                                   <Input type="date" className="h-12 rounded-md border-[#cfcbc0]" {...field} />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
                             )}
                           />
                         </div>
-                        {isEditingWorkData && (
-                          <FormField
-                            control={form.control}
-                            name="workLocationDetails"
-                            render={({ field }) => (
-                              <FormItem className="animate-in fade-in slide-in-from-top-4 duration-300">
-                                <FormLabel>{ptBr.safetyForm.workLocation}</FormLabel>
-                                <FormControl>
-                                   <Input className="h-12 rounded-md border-[#ccb4a6]" placeholder={ptBr.safetyForm.workLocationPlaceholder} {...field} />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className={cn('mb-5', passoVisivel !== 1 && 'hidden')}>
+                    <DocumentActivityPicker
+                      titulo="O que será realizado?"
+                      icone={<BookOpen className="mr-2 inline-block text-white" />}
+                      dica="Escreva com suas palavras. Quanto mais detalhe — altura, energia, equipamento, produto — melhor fica a análise. Exemplo: manutenção elétrica no quadro de distribuição do setor de produção."
+                      placeholder={ptBr.safetyForm.activityDescriptionPlaceholder}
+                      valor={activityDescription || ''}
+                      onChange={(texto) => form.setValue('activityDescription', texto, { shouldDirty: true, shouldValidate: true })}
+                      semelhantes={similarActivities}
+                      recentes={recentActivities}
+                    />
+                  </div>
+
+                  <div className={cn('mb-5', passoVisivel !== 4 && 'hidden')}>
+                    <div className="overflow-hidden rounded-md border border-[#cfcbc0] bg-white shadow-sm">
+                      <div className="bg-[#111111] px-5 py-3 text-white">
+                        <h3 className="flex items-center font-headline text-h3 text-white">
+                          <Lightbulb className="mr-2 shrink-0" /> Análise de risco
+                        </h3>
+                      </div>
+                      <div className="space-y-4 px-5 pb-5 pt-4">
+                        {isLoading ? (
+                          <div className="flex flex-col items-center gap-4 py-12 text-center">
+                            <Loader2 className="h-7 w-7 animate-spin text-[#7a1f1f]" />
+                            <div>
+                              <p className="font-headline text-h3 text-[#111111]">Gerando os seus dados</p>
+                              <p className="mx-auto mt-1 max-w-sm text-sm text-[#6e6a61]">
+                                A IA está montando as etapas do procedimento, os riscos, as medidas de controle e os EPIs desta atividade.
+                              </p>
+                            </div>
+                            <div className="h-2 w-full max-w-sm overflow-hidden rounded-full bg-[#ebe9e3]">
+                              <div className="barra-indeterminada h-full w-1/3 rounded-full bg-[#7a1f1f]" />
+                            </div>
+                          </div>
+                        ) : (
+                          <>
+                            <div className="flex items-start gap-2 rounded-md border border-[#e8d9ae] bg-[#faf3e4] px-3 py-2 text-sm text-[#8a5a00]">
+                              <Lightbulb className="mt-0.5 h-4 w-4 shrink-0" />
+                              <p>
+                                <strong>O conteúdo abaixo é sugerido por inteligência artificial.</strong>{' '}
+                                Ele é um ponto de partida e precisa ser revisado e validado por você,
+                                responsável técnico, antes da emissão.
+                              </p>
+                            </div>
+
+                            {hasGeneratedAnalysis && (
+                              <div className="flex items-start gap-2 rounded-md border border-[#dde9e2] bg-[#eaf2ed] px-3 py-2 text-sm font-medium text-[#1b5e3f]">
+                                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" />
+                                Análise gerada. Confira etapa por etapa e ajuste o que precisar.
+                              </div>
                             )}
-                          />
+
+                            <div className="flex justify-end">
+                              <Button
+                                type="button"
+                                disabled={isLoading || !canGenerateAnalysis}
+                                className="rounded-md bg-[#7a1f1f] px-6 text-white hover:bg-[#5f1818]"
+                                onClick={async () => {
+                                  const isValid = await form.trigger('activityDescription');
+                                  if (isValid) {
+                                    setAnaliseRevisada(false);
+                                    setFoiFinalizada(false);
+                                    onSubmit(form.getValues());
+                                  }
+                                }}
+                              >
+                                {hasGeneratedAnalysis ? 'Gerar novamente' : ptBr.actions.generateAnalysis}
+                              </Button>
+                            </div>
+                          </>
                         )}
                       </div>
                     </div>
                   </div>
 
-                  {canFillActivity ? (
-                    <div className="mb-5">
-                      <div className="overflow-hidden rounded-md border border-[#e6cfc1] bg-white shadow-sm">
-                        <div className="bg-[#5f7394] px-5 py-3 text-white">
-                          <FormLabel className="flex items-center font-headline text-h3 text-white">
-                            <BookOpen className="inline-block mr-2" /> {ptBr.safetyForm.activityDescription}
-                          </FormLabel>
-                        </div>
-                        <div className="space-y-4 px-5 pb-5 pt-4">
-                          <div className="flex items-start gap-2 rounded-md border border-[#f0c8aa] bg-[#fff4e8] px-3 py-2 text-sm text-[#7a3300]">
-                            <Lightbulb className="mt-0.5 h-4 w-4 shrink-0 text-[#f46e11]" />
-                            <p>
-                              Explique qual APR voce quer gerar. Exemplo: limpar calhas a 15 metros de altura.
-                            </p>
-                          </div>
-                          <FormField
-                            control={form.control}
-                            name="activityDescription"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormControl>
-                                  <Textarea
-                                    placeholder={ptBr.safetyForm.activityDescriptionPlaceholder}
-                                    className="min-h-[128px] resize-none rounded-md border-[#ccb4a6]"
-                                    {...field}
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-
-                          {isLoading && (
-                            <div className="space-y-2 rounded-md border border-[#e6cfc1] bg-[#fff8f2] p-3">
-                              <div className="flex items-center gap-2 text-sm font-medium text-[#9e4300]">
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                                Gerando analise de seguranca...
-                              </div>
-                              <div className="h-2 overflow-hidden rounded-full bg-[#eceef1]">
-                                <div className="h-full w-2/3 animate-pulse rounded-full bg-[#f46e11]" />
-                              </div>
-                            </div>
-                          )}
-
-                          {hasGeneratedAnalysis && !isLoading && (
-                            <div className="flex items-start gap-2 rounded-md border border-[#b7dfc5] bg-[#eefaf2] px-3 py-2 text-sm font-medium text-[#116329]">
-                              <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" />
-                              Analise gerada. Verifique o resultado na pre-visualizacao do PDF.
-                            </div>
-                          )}
-
-                          <div className="flex justify-end">
-                            <Button
-                              type="button"
-                              disabled={isLoading || !canGenerateAnalysis}
-                              className="rounded-md bg-[#f46e11] px-6 text-white hover:bg-[#e96710]"
-                              onClick={async () => {
-                                const isValid = await form.trigger('activityDescription');
-                                if (isValid) {
-                                  onSubmit(form.getValues());
-                                }
-                              }}
-                            >
-                              {isLoading ? ptBr.actions.generatingAnalysis : ptBr.actions.generateAnalysis}
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="mb-5 rounded-md border border-dashed border-[#ccb4a6] bg-white px-5 py-4 text-sm text-[#4f5f7a] shadow-sm">
-                      Complete os dados da obra para liberar a descricao da atividade.
-                    </div>
-                  )}
-
-                  {hasGeneratedAnalysis && (
-                    <>
-                  <div className="mb-5">
-                    <div className="overflow-hidden rounded-md border border-[#e6cfc1] bg-white shadow-sm">
-                      <div className="flex flex-col gap-3 bg-[#5f7394] px-5 py-3 text-white sm:flex-row sm:items-center sm:justify-between">
+                   <div className={cn('mb-5', passoVisivel !== 4 && 'hidden')}>
+                    <div className="overflow-hidden rounded-md border border-[#cfcbc0] bg-white shadow-sm">
+                      <div className="flex flex-col gap-3 bg-[#111111] px-5 py-3 text-white sm:flex-row sm:items-center sm:justify-between">
                         <h3 className="flex items-center font-headline text-h3 text-white">
                           <ShieldCheck className="mr-2" /> {ptBr.safetyForm.manualAnalysisTitle}
                         </h3>
@@ -506,503 +1009,255 @@ export function SafetyForm({
                           type="button"
                           variant="outline"
                           size="sm"
-                          className="bg-white text-[#4f5f7a] hover:bg-[#eceef1]"
+                          className="bg-white text-[#6e6a61] hover:bg-[#ebe9e3]"
                           onClick={() => {
                             appendAnalysisStep({ activity: '', potentialRisks: '', preventiveMeasures: '' });
-                            setActiveAnalysisStep(analysisStepFields.length);
+                            setEditingAnalysisStep(analysisStepFields.length);
                           }}
                         >
                           <PlusCircle className="mr-2 h-4 w-4" /> {ptBr.safetyForm.addAnalysisStep}
                         </Button>
                       </div>
                       <div className="space-y-4 px-5 py-5">
-                        <div className="mt-3 flex flex-wrap items-center gap-2">
-                          {analysisStepFields.map((_, index) => (
-                            <Button
-                              key={index}
-                              type="button"
-                              variant={activeAnalysisStep === index ? "secondary" : "outline"}
-                              size="sm"
-                              onClick={() => setActiveAnalysisStep(index)}
-                              className={cn(
-                                activeAnalysisStep === index && "border-[#b8c4d8] bg-[#e8edf6] text-[#203555]",
-                                "min-w-[3rem]"
-                              )}
-                            >
-                              {index + 1}
-                            </Button>
+                        {analysisStepFields.length === 0 && (
+                          <div className="mt-2 flex flex-col items-center justify-center rounded-md border-2 border-dashed border-[#cfcbc0] px-8 py-10 text-center">
+                            <FileText className="mb-3 h-12 w-12 text-[#6e6a61]/50" />
+                            <p className="italic text-[#6e6a61]">{ptBr.safetyForm.manualAnalysisEmpty}</p>
+                          </div>
+                        )}
+
+                        {/* Uma etapa so vira campo editavel quando a pessoa
+                            clica no lapis daquela etapa. */}
+                        <div className="space-y-3">
+                          {analysisStepFields.map((field, index) => (
+                            <AnalysisStepCard
+                              key={field.id}
+                              index={index}
+                              activity={analysisSteps?.[index]?.activity || ''}
+                              itens={itensDaEtapa(index)}
+                              emEdicao={editingAnalysisStep === index}
+                              onToggleEdit={() => setEditingAnalysisStep(editingAnalysisStep === index ? null : index)}
+                              onRemove={() => {
+                                removeAnalysisStep(index);
+                                setEditingAnalysisStep(null);
+                              }}
+                              onChangeActivity={(valor) =>
+                                form.setValue(`analysisSteps.${index}.activity` as never, valor as never, { shouldDirty: true })
+                              }
+                              onChangeLista={(campo, itens) => gravarLista(index, campo, itens)}
+                            />
                           ))}
                         </div>
-
-                        {analysisStepFields.length === 0 && (
-                           <div className="mt-2 flex flex-col items-center justify-center rounded-md border-2 border-dashed border-[#b99986] px-8 py-10 text-center">
-                            <FileText className="mb-3 h-12 w-12 text-[#8c7165]/50" />
-                            <p className="italic text-[#584237]">{ptBr.safetyForm.manualAnalysisEmpty}</p>
-                          </div>
-                        )}
-
-                        {analysisStepFields.length > 0 && analysisStepFields[activeAnalysisStep] && (
-                          <div key={analysisStepFields[activeAnalysisStep].id} className="mt-3 space-y-4 rounded-md border border-[#e6cfc1] bg-[#fbfbfc] p-4 animate-in fade-in slide-in-from-left-4 duration-300">
-                            <div className="flex items-center justify-between">
-                              <div className="text-sm font-semibold">
-                                {ptBr.safetyForm.analysisStepLabel} {activeAnalysisStep + 1}
-                              </div>
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => {
-                                  removeAnalysisStep(activeAnalysisStep);
-                                  if (activeAnalysisStep > 0) {
-                                    setActiveAnalysisStep(activeAnalysisStep - 1);
-                                  }
-                                }}
-                              >
-                                <Trash2 className="h-4 w-4 text-destructive" />
-                              </Button>
-                            </div>
-                            <FormField
-                              control={form.control}
-                              name={`analysisSteps.${activeAnalysisStep}.activity`}
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>{ptBr.safetyForm.analysisStepActivity}</FormLabel>
-                                  <FormControl>
-                                     <Textarea
-                                       placeholder={ptBr.safetyForm.analysisStepActivityPlaceholder}
-                                       className="min-h-[80px] resize-y rounded-md border border-[#ccb4a6] bg-white"
-                                       {...field}
-                                     />
-                                  </FormControl>
-                                </FormItem>
-                              )}
-                            />
-                            <FormField
-                              control={form.control}
-                              name={`analysisSteps.${activeAnalysisStep}.potentialRisks`}
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>{ptBr.safetyForm.analysisStepRisks}</FormLabel>
-                                  <FormControl>
-                                     <Textarea
-                                       placeholder={ptBr.safetyForm.analysisStepRisksPlaceholder}
-                                       className="min-h-[80px] resize-y rounded-md border border-[#ccb4a6] bg-white"
-                                       {...field}
-                                     />
-                                  </FormControl>
-                                </FormItem>
-                              )}
-                            />
-                            <FormField
-                              control={form.control}
-                              name={`analysisSteps.${activeAnalysisStep}.preventiveMeasures`}
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>{ptBr.safetyForm.analysisStepMeasures}</FormLabel>
-                                  <FormControl>
-                                     <Textarea
-                                       placeholder={ptBr.safetyForm.analysisStepMeasuresPlaceholder}
-                                       className="min-h-[80px] resize-y rounded-md border border-[#ccb4a6] bg-white"
-                                       {...field}
-                                     />
-                                  </FormControl>
-                                </FormItem>
-                              )}
-                            />
-                          </div>
-                        )}
                       </div>
                     </div>
                   </div>
-                  <div className="mb-5">
-                    <div className="overflow-hidden rounded-md border border-[#e6cfc1] bg-white shadow-sm">
-                      <div className="flex flex-col gap-3 bg-[#5f7394] px-5 py-3 text-white sm:flex-row sm:items-center sm:justify-between">
-                        <h3 className="flex items-center font-headline text-h3 text-white">
-                          <Users className="mr-2" /> {ptBr.safetyForm.team}
-                        </h3>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          disabled={Boolean(teamDraft)}
-                          className="h-9 w-full justify-center rounded-md bg-background px-4 text-[#203555] hover:bg-background/90 sm:w-auto"
-                          onClick={() => {
-                            setTeamDraft(createTeamDraft(false));
-                            setTeamDraftError('');
-                          }}
-                        >
-                          <PlusCircle className="mr-2 h-4 w-4" /> {ptBr.actions.addMember}
-                        </Button>
-                      </div>
+                  {equipment && (
+                    <div className={cn('mb-5', passoVisivel !== 4 && 'hidden')}>
+                      <div className="overflow-hidden rounded-md border border-[#cfcbc0] bg-white">
+                        <div className="flex items-center justify-between gap-3 bg-[#111111] px-5 py-3 text-white">
+                          <h3 className="flex min-w-0 items-center font-headline text-h3">
+                            <HardHat className="mr-2 shrink-0" />
+                            <span className="truncate">EPI e EPC recomendados</span>
+                          </h3>
+                        </div>
 
-                      <div className="space-y-4 px-5 pb-5 pt-4">
-                        {teamMemberChips.length > 0 && (
-                          <div className="flex flex-wrap gap-3">
-                            {teamMemberChips.map((member, index) => (
-                              <div key={`${member.name}-${index}`} className="flex items-center gap-2 rounded-md border border-[#e6cfc1] bg-[#eef1f5] px-3 py-2">
-                                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[#4f5f7a] text-[10px] font-semibold text-white">
-                                  {(member.name || 'U').slice(0, 1).toUpperCase()}
-                                </div>
-                                <span className="text-sm font-medium text-[#191c1e]">
-                                  {member.name}
-                                </span>
-                                <button
-                                  type="button"
-                                  className="ml-1 text-[#ba1a1a] transition-colors hover:text-[#93000a]"
-                                  onClick={() => removeTeamMember(index)}
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </button>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-
-                        {teamDraft && (
-                          <div className="grid grid-cols-1 gap-4 rounded-md border border-[#e6cfc1] bg-[#fbfbfc] p-4">
-                            <div className="flex flex-col gap-2">
-                              <FormLabel>Modo</FormLabel>
-                              <Tabs
-                                value={teamDraft.isManual ? 'manual' : 'employee'}
-                                onValueChange={(value) => {
-                                  setTeamDraft(createTeamDraft(value === 'manual'));
-                                  setTeamDraftError('');
-                                }}
-                              >
-                                <TabsList className="grid h-auto w-full grid-cols-2 gap-2 bg-[#eceef1] p-1">
-                                  <TabsTrigger value="employee">Selecionar funcionario</TabsTrigger>
-                                  <TabsTrigger value="manual">Preencher manualmente</TabsTrigger>
-                                </TabsList>
-                              </Tabs>
-                            </div>
-
-                            {!teamDraft.isManual ? (
-                              <>
-                                <div>
-                                  <FormLabel>{ptBr.safetyForm.teamName}</FormLabel>
-                                  <Select
-                                    value={teamDraft.employeeId}
-                                    onValueChange={(employeeId) => {
-                                      const employee = employees.find((emp) => emp.id === employeeId);
-                                      if (!employee) return;
-                                      setTeamDraft((current) => current ? {
-                                        ...current,
-                                        employeeId,
-                                        name: `${employee.firstName} ${employee.lastName}`,
-                                        role: employee.roleName || '',
-                                        email: employee.email || '',
-                                        phone: employee.phone || '',
-                                        date: current.date || todayDate,
-                                      } : current);
-                                      setTeamDraftError('');
-                                    }}
-                                  >
-                                    <SelectTrigger className="h-10 rounded-md border-[#ccb4a6] bg-white">
-                                      <SelectValue placeholder={ptBr.safetyForm.selectEmployeePlaceholder} />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      {employees.map((emp) => (
-                                        <SelectItem key={emp.id} value={emp.id}>
-                                          {emp.firstName} {emp.lastName} ({emp.roleName})
-                                        </SelectItem>
-                                      ))}
-                                    </SelectContent>
-                                  </Select>
-                                </div>
-
-                                {teamDraft.employeeId && (
-                                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                                    <div>
-                                      <FormLabel>{ptBr.safetyForm.teamDate}</FormLabel>
-                                      <Input
-                                        type="date"
-                                        value={teamDraft.date}
-                                        onChange={(event) => setTeamDraft((current) => current ? { ...current, date: event.target.value } : current)}
-                                        className="h-10 rounded-md border-[#ccb4a6]"
-                                      />
-                                    </div>
-                                  </div>
-                                )}
-                              </>
-                            ) : (
-                              <>
-                                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                                  <div>
-                                    <FormLabel>{ptBr.safetyForm.teamName}</FormLabel>
-                                    <Input
-                                      className="h-10 rounded-md border-[#ccb4a6]"
-                                      placeholder={ptBr.safetyForm.teamNamePlaceholder}
-                                      value={teamDraft.name}
-                                      onChange={(event) => setTeamDraft((current) => current ? { ...current, name: event.target.value } : current)}
-                                    />
-                                  </div>
-                                  <div>
-                                    <FormLabel>{ptBr.safetyForm.teamRole} (opcional)</FormLabel>
-                                    <Input
-                                      className="h-10 rounded-md border-[#ccb4a6]"
-                                      placeholder={ptBr.safetyForm.teamRolePlaceholder}
-                                      value={teamDraft.role}
-                                      onChange={(event) => setTeamDraft((current) => current ? { ...current, role: event.target.value } : current)}
-                                    />
-                                  </div>
-                                </div>
-                                <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                                  <div>
-                                    <FormLabel>{ptBr.safetyForm.teamDate}</FormLabel>
-                                    <Input
-                                      type="date"
-                                      value={teamDraft.date}
-                                      onChange={(event) => setTeamDraft((current) => current ? { ...current, date: event.target.value } : current)}
-                                      className="h-10 rounded-md border-[#ccb4a6]"
-                                    />
-                                  </div>
-                                  {teamDraft.useAssinafy && (
-                                    <div>
-                                      <FormLabel className="flex items-center gap-2">
-                                        <Mail className="h-4 w-4" />
-                                        {ptBr.auth.email}
-                                      </FormLabel>
-                                      <Input
-                                        className="h-10 rounded-md border-[#ccb4a6]"
-                                        placeholder={ptBr.auth.emailPlaceholder}
-                                        value={teamDraft.email}
-                                        onChange={(event) => setTeamDraft((current) => current ? { ...current, email: event.target.value } : current)}
-                                      />
-                                    </div>
-                                  )}
-                                  <div>
-                                    <FormLabel className="flex items-center gap-2">
-                                      <MessageCircle className="h-4 w-4" />
-                                      Telefone (opcional)
-                                    </FormLabel>
-                                    <PhoneInput
-                                      value={teamDraft.phone}
-                                      onChange={(value) => setTeamDraft((current) => current ? { ...current, phone: value } : current)}
-                                    />
-                                  </div>
-                                </div>
-                              </>
-                            )}
-
-                            {(teamDraft.isManual || teamDraft.employeeId) && (
-                              <>
-                                <div>
-                                  <FormLabel>{ptBr.safetyForm.signatureMethod}</FormLabel>
-                                  <Tabs
-                                    value={teamDraft.useAssinafy ? 'assinafy' : 'system'}
-                                    onValueChange={(value) => {
-                                      setTeamDraft((current) => current ? { ...current, useAssinafy: value === 'assinafy' } : current);
-                                      setTeamDraftError('');
-                                    }}
-                                  >
-                                    <TabsList className="grid h-auto w-full grid-cols-2 gap-2 bg-transparent p-0">
-                                      <TabsTrigger className="min-h-[42px] whitespace-normal rounded-md border border-[#ccb4a6] px-3 py-2 text-center leading-4 data-[state=active]:border-[#9e4300] data-[state=active]:bg-[#9e4300] data-[state=active]:text-white" value="assinafy">PhiDocs Sign (E-mail)</TabsTrigger>
-                                      <TabsTrigger className="min-h-[42px] whitespace-normal rounded-md border border-[#e6cfc1] bg-[#eceef1] px-3 py-2 text-center leading-4 text-[#584237] data-[state=active]:border-[#ccb4a6] data-[state=active]:bg-white" value="system">Assinatura no sistema</TabsTrigger>
-                                    </TabsList>
-                                  </Tabs>
-                                </div>
-
-                                {teamDraft.useAssinafy ? (
-                                  <div className="flex flex-col gap-2 rounded-md border border-[#e6cfc1] px-3 py-3 text-sm text-muted-foreground sm:flex-row sm:items-start">
-                                    <Badge variant="secondary" className="flex shrink-0 items-center gap-1 self-start">
-                                      <Mail className="h-3 w-3" />
-                                      Assinatura por e-mail
-                                    </Badge>
-                                    A assinatura sera enviada por e-mail via Assinafy.
-                                  </div>
-                                ) : (
-                                  <div>
-                                    <FormLabel>Assinatura (opcional)</FormLabel>
-                                    <SignaturePad
-                                      value={teamDraft.signatureData}
-                                      onChange={(value) => setTeamDraft((current) => current ? { ...current, signatureData: value } : current)}
-                                    />
-                                  </div>
-                                )}
-                              </>
-                            )}
-
-                            {teamDraftError ? <p className="text-sm font-medium text-destructive">{teamDraftError}</p> : null}
-
-                            <div className="flex flex-wrap justify-end gap-3">
-                              <Button
-                                type="button"
-                                variant="outline"
-                                className="rounded-md border-[#ccb4a6]"
-                                onClick={() => {
-                                  setTeamDraft(null);
-                                  setTeamDraftError('');
-                                }}
-                              >
-                                Cancelar
-                              </Button>
-                              <Button
-                                type="button"
-                                className="rounded-md bg-[#f46e11] text-white hover:bg-[#e96710]"
-                                onClick={handleConfirmTeamDraft}
-                              >
-                                Confirmar membro
-                              </Button>
-                            </div>
-                          </div>
-                        )}
-
-                        <FormMessage>
-                          {form.formState.errors.teamMembers?.root?.message}
-                        </FormMessage>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="mb-5">
-                    <div className="overflow-hidden rounded-md border border-[#e6cfc1] bg-white shadow-sm">
-                      <div className="flex items-center justify-between bg-[#5f7394] px-5 py-3 text-white">
-                        <h3 className="flex items-center font-headline text-h3 text-white">
-                          <UserCheck className="mr-2" /> {ptBr.safetyForm.responsibles}
-                        </h3>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          disabled={Boolean(responsibleDraft)}
-                          className="h-9 w-full justify-center rounded-md bg-background px-4 text-[#203555] hover:bg-background/90 sm:w-auto"
-                          onClick={() => {
-                            setResponsibleDraft(createResponsibleDraft());
-                            setResponsibleDraftError('');
-                          }}
-                        >
-                          <PlusCircle className="mr-2 h-4 w-4" /> {ptBr.actions.addResponsible}
-                        </Button>
-                      </div>
-
-                      <div className="grid grid-cols-1 gap-4 px-5 pb-5 pt-4">
-                        {responsibleChips.length > 0 && (
-                          <div className="flex flex-wrap gap-3">
-                            {responsibleChips.map((person, index) => (
-                              <div key={`${person.name}-${index}`} className="flex items-center gap-2 rounded-md border border-[#e6cfc1] bg-[#eef1f5] px-3 py-2">
-                                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[#4f5f7a] text-[10px] font-semibold text-white">
-                                  {(person.name || 'U').slice(0, 1).toUpperCase()}
-                                </div>
-                                <span className="text-sm font-medium text-[#191c1e]">
-                                  {person.name}
-                                </span>
-                                <button
-                                  type="button"
-                                  className="ml-1 text-[#ba1a1a] transition-colors hover:text-[#93000a]"
-                                  onClick={() => removeResponsible(index)}
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </button>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-
-                        {responsibleDraft && (
-                          <div className="grid grid-cols-1 gap-4 rounded-md border border-[#e6cfc1] bg-[#f7f9fc] p-4">
-                            <div>
-                              <FormLabel>{ptBr.safetyForm.responsibleName}</FormLabel>
-                              <Select
-                                value={responsibleDraft.employeeId}
-                                onValueChange={(employeeId) => {
-                                  const employee = employees.find((emp) => emp.id === employeeId);
-                                  if (!employee) return;
-                                  setResponsibleDraft((current) => current ? {
-                                    ...current,
-                                    employeeId,
-                                    name: `${employee.firstName} ${employee.lastName}`,
-                                    role: employee.roleName || '',
-                                    email: employee.email || '',
-                                    phone: employee.phone || '',
-                                  } : current);
-                                  setResponsibleDraftError('');
-                                }}
-                              >
-                                <SelectTrigger className="h-10 rounded-md border-[#ccb4a6] bg-white">
-                                  <SelectValue placeholder={ptBr.safetyForm.selectEmployeePlaceholder} />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {employees.map((emp) => (
-                                    <SelectItem key={emp.id} value={emp.id}>
-                                      {emp.firstName} {emp.lastName} ({emp.roleName})
-                                    </SelectItem>
+                        <div className="grid gap-5 px-5 pb-5 pt-4 md:grid-cols-2">
+                          {([
+                            { chave: 'epiItems' as const, notaChave: 'epiNote' as const, titulo: 'EPI - Protecao Individual', rascunho: epiDraft, setRascunho: setEpiDraft },
+                            { chave: 'epcItems' as const, notaChave: 'epcNote' as const, titulo: 'EPC - Protecao Coletiva', rascunho: epcDraft, setRascunho: setEpcDraft },
+                          ]).map((grupo) => {
+                            const itens = equipment[grupo.chave] || [];
+                            const adicionar = () => {
+                              const valor = grupo.rascunho.trim();
+                              if (!valor) return;
+                              patchEquipment({ [grupo.chave]: [...itens, valor] } as Partial<ProtectiveEquipmentOutput>);
+                              grupo.setRascunho('');
+                            };
+                            return (
+                              <div key={grupo.chave}>
+                                <p className="label-oficial mb-2">{grupo.titulo}</p>
+                                <ul className="space-y-1.5">
+                                  {itens.map((item, index) => (
+                                    <li key={`${item}-${index}`} className="flex items-start gap-2 rounded-md border border-[#e3e0d8] bg-[#f7f5f0] px-3 py-2 text-sm text-[#111111]">
+                                      <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-[#1b5e3f]" />
+                                      <span className="min-w-0 flex-1">{item}</span>
+                                      {onEquipmentChange && (
+                                        <button
+                                          type="button"
+                                          aria-label={`Remover ${item}`}
+                                          className="text-[#7a1f1f] transition-colors hover:text-[#5f1818]"
+                                          onClick={() => patchEquipment({ [grupo.chave]: itens.filter((_, i) => i !== index) } as Partial<ProtectiveEquipmentOutput>)}
+                                        >
+                                          <Trash2 className="h-3.5 w-3.5" />
+                                        </button>
+                                      )}
+                                    </li>
                                   ))}
-                                </SelectContent>
-                              </Select>
-                            </div>
+                                  {itens.length === 0 && (
+                                    <li className="rounded-md border border-dashed border-[#cfcbc0] px-3 py-2 text-sm text-[#6e6a61]">
+                                      Nada recomendado para esta atividade.
+                                    </li>
+                                  )}
+                                </ul>
 
-                            {responsibleDraft.employeeId && (
-                              <>
-                                <div>
-                                  <FormLabel>{ptBr.safetyForm.signatureMethod}</FormLabel>
-                                  <Tabs
-                                    value={responsibleDraft.useAssinafy ? 'assinafy' : 'system'}
-                                    onValueChange={(value) => {
-                                      setResponsibleDraft((current) => current ? { ...current, useAssinafy: value === 'assinafy' } : current);
-                                      setResponsibleDraftError('');
-                                    }}
-                                  >
-                                    <TabsList className="grid h-auto w-full grid-cols-2 gap-2 bg-transparent p-0">
-                                      <TabsTrigger className="min-h-[42px] whitespace-normal rounded-md border border-[#ccb4a6] px-3 py-2 text-center leading-4 data-[state=active]:border-[#9e4300] data-[state=active]:bg-[#9e4300] data-[state=active]:text-white" value="assinafy">PhiDocs Sign (E-mail)</TabsTrigger>
-                                      <TabsTrigger className="min-h-[42px] whitespace-normal rounded-md border border-[#e6cfc1] bg-[#eceef1] px-3 py-2 text-center leading-4 text-[#584237] data-[state=active]:border-[#ccb4a6] data-[state=active]:bg-white" value="system">Assinatura no sistema</TabsTrigger>
-                                    </TabsList>
-                                  </Tabs>
-                                </div>
-
-                                {responsibleDraft.useAssinafy ? (
-                                  <div className="flex flex-col gap-2 rounded-md border border-[#e6cfc1] px-3 py-3 text-sm text-muted-foreground sm:flex-row sm:items-start">
-                                    <Badge variant="secondary" className="flex shrink-0 items-center gap-1 self-start">
-                                      <Mail className="h-3 w-3" />
-                                      Assinatura por e-mail
-                                    </Badge>
-                                    A assinatura sera enviada por e-mail via Assinafy.
-                                  </div>
-                                ) : (
-                                  <div>
-                                    <FormLabel>Assinatura (opcional)</FormLabel>
-                                    <SignaturePad
-                                      value={responsibleDraft.signatureData}
-                                      onChange={(value) => setResponsibleDraft((current) => current ? { ...current, signatureData: value } : current)}
+                                {onEquipmentChange && (
+                                  <div className="mt-2 flex gap-2">
+                                    <Input
+                                      value={grupo.rascunho}
+                                      onChange={(event) => grupo.setRascunho(event.target.value)}
+                                      onKeyDown={(event) => {
+                                        if (event.key === 'Enter') {
+                                          event.preventDefault();
+                                          adicionar();
+                                        }
+                                      }}
+                                      placeholder="Adicionar item..."
+                                      className="h-9 text-sm"
                                     />
+                                    <Button type="button" variant="outline" size="sm" className="h-9 shrink-0" onClick={adicionar}>
+                                      <PlusCircle className="h-4 w-4" />
+                                    </Button>
                                   </div>
                                 )}
-                              </>
-                            )}
 
-                            {responsibleDraftError ? <p className="text-sm font-medium text-destructive">{responsibleDraftError}</p> : null}
+                                {equipment[grupo.notaChave] && (
+                                  <p className="mt-2 text-xs leading-5 text-[#6e6a61]">{equipment[grupo.notaChave]}</p>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
-                            <div className="flex flex-wrap justify-end gap-3">
-                              <Button
-                                type="button"
-                                variant="outline"
-                                className="rounded-md border-[#ccb4a6]"
-                                onClick={() => {
-                                  setResponsibleDraft(null);
-                                  setResponsibleDraftError('');
-                                }}
-                              >
-                                Cancelar
-                              </Button>
-                              <Button
-                                type="button"
-                                className="rounded-md bg-[#f46e11] text-white hover:bg-[#e96710]"
-                                onClick={handleConfirmResponsibleDraft}
-                              >
-                                Confirmar responsavel
-                              </Button>
-                            </div>
-                          </div>
-                        )}
+                  <div className={cn('mb-5 space-y-5', passoVisivel !== 3 && 'hidden')}>
+                    <PersonPicker
+                      title={ptBr.safetyForm.team}
+                      subtitle="Quem vai executar a atividade. Todos assinam o documento."
+                      icon={<Users className="mr-2" />}
+                      addLabel={ptBr.actions.addMember}
+                      emptyHint="Escolha quem ja esta cadastrado ou cadastre na hora."
+                      options={employeeOptions}
+                      people={teamMembers || []}
+                      withDate
+                      defaultDate={todayDate}
+                      onAdd={handleAddTeamMember}
+                      onPatch={(index, patch) => patchPerson('teamMembers', index, patch)}
+                      onRemove={removeTeamMember}
+                      errorMessage={form.formState.errors.teamMembers?.root?.message}
+                    />
 
-                        <FormMessage>
-                          {form.formState.errors.responsiblePersons?.root?.message}
-                        </FormMessage>
+                    <PersonPicker
+                      title={ptBr.safetyForm.responsibles}
+                      subtitle="Quem acompanha, aprova e responde pela atividade. Todos assinam o documento."
+                      icon={<UserCheck className="mr-2" />}
+                      addLabel={ptBr.actions.addResponsible}
+                      emptyHint="Escolha quem ja esta cadastrado ou cadastre na hora."
+                      options={responsibleOptions}
+                      people={responsiblePersons || []}
+                      requireRole
+                      canSaveContact={Boolean(onSaveResponsibleContact)}
+                      isSavingContact={isSavingResponsibleContact}
+                      onAdd={handleAddResponsible}
+                      onPatch={(index, patch) => patchPerson('responsiblePersons', index, patch)}
+                      onRemove={removeResponsible}
+                      errorMessage={form.formState.errors.responsiblePersons?.root?.message}
+                    />
+                  </div>
+
+                  <div className={cn('mb-5', passoVisivel !== 5 && 'hidden')}>
+                    <AprReview
+                      values={form.getValues()}
+                      equipment={equipment}
+                      companyLabel={companyLabel}
+                      pendencias={pendencias}
+                      analiseRevisada={analiseRevisada}
+                      onAnaliseRevisadaChange={setAnaliseRevisada}
+                      onEditStep={(passo) => setEditingSection(passo)}
+                      onVisualizarDocumento={onVisualizarDocumento}
+                      isFinalizando={isFinalizando}
+                      jaFinalizado={foiFinalizada}
+                      onFinalizar={async () => {
+                        const salvou = await onFinalizar?.();
+                        if (salvou !== false) setFoiFinalizada(true);
+                      }}
+                      onEnviarAssinatura={onEnviarAssinatura}
+                      isEnviando={isEnviando}
+                    />
+                  </div>
+
+                  <div className={cn('mb-5 rounded-md border border-[#cfcbc0] bg-white p-5 shadow-sm', passoVisivel !== 6 && 'hidden')}>
+                    <h3 className="flex items-center font-headline text-h3 text-[#111111]">
+                      <CheckCircle2 className="mr-2 text-[#1b5e3f]" /> Revisão e emissão
+                    </h3>
+                    <p className="mt-2 text-sm text-[#6e6a61]">
+                      Confira os dados abaixo e use a pré-visualização ao lado antes de salvar ou gerar o documento.
+                    </p>
+                    <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                      <div className="rounded-xl bg-[#f7f5f0] p-3">
+                        <p className="text-xs font-semibold uppercase tracking-wide text-[#7a1f1f]">Contexto</p>
+                        <p className="mt-1 text-sm font-medium text-[#111111]">{workName || 'Não informado'}</p>
+                      </div>
+                      <div className="rounded-xl bg-[#f7f5f0] p-3">
+                        <p className="text-xs font-semibold uppercase tracking-wide text-[#7a1f1f]">Atividade</p>
+                        <p className="mt-1 line-clamp-2 text-sm font-medium text-[#111111]">{activityDescription || 'Não informada'}</p>
+                      </div>
+                      <div className="rounded-xl bg-[#eaf2ed] p-3">
+                        <p className="text-xs font-semibold uppercase tracking-wide text-[#1b5e3f]">Etapas de risco</p>
+                        <p className="mt-1 text-sm font-medium text-[#111111]">{analysisSteps?.length || 0} cadastradas</p>
+                      </div>
+                      <div className="rounded-xl bg-[#ebe9e3] p-3">
+                        <p className="text-xs font-semibold uppercase tracking-wide text-[#6e6a61]">Pessoas</p>
+                        <p className="mt-1 text-sm font-medium text-[#111111]">{(teamMembers || []).length} executoras · {(responsiblePersons || []).length} responsáveis</p>
                       </div>
                     </div>
                   </div>
-                    </>
-                  )}
                 </div>
+              </EnvoltorioEtapa>
+            )}
+            {(
+              <>
+                {/* No celular a navegacao fica fixa no rodape, ao alcance do polegar.
+                    O espacador evita que ela cubra o fim do formulario. */}
+                <div className="h-20 lg:hidden" aria-hidden="true" />
+
+                <div className="fixed inset-x-0 bottom-0 z-30 border-t border-[#cfcbc0] bg-[#f7f5f0] px-4 py-3 lg:static lg:z-auto lg:border-0 lg:border-t lg:bg-transparent lg:px-0 lg:pb-0 lg:pt-5">
+                  <div className="mx-auto flex max-w-[940px] items-center gap-3">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      disabled={activeAprStep === 0}
+                      className="h-12 flex-1 rounded-md border-[#cfcbc0] lg:h-11 lg:flex-none lg:px-6"
+                      onClick={() => setActiveAprStep((current) => Math.max(0, current - 1))}
+                    >
+                      Voltar
+                    </Button>
+
+                    <span className="hidden text-sm text-[#6e6a61] lg:block lg:flex-1 lg:text-center">
+                      Etapa {activeAprStep + 1} de {ETAPAS.length} &middot; {ETAPAS[activeAprStep].title}
+                    </span>
+                    <span className="text-center text-xs tabular-nums text-[#6e6a61] lg:hidden">
+                      {activeAprStep + 1}/{ETAPAS.length}
+                    </span>
+
+                    {activeAprStep < ETAPAS.length - 1 ? (
+                      <Button
+                        type="button"
+                        disabled={!canAdvanceAprStep}
+                        className="h-12 flex-1 rounded-md bg-[#7a1f1f] text-white hover:bg-[#5f1818] lg:h-11 lg:flex-none lg:px-6"
+                        onClick={() => setActiveAprStep((current) => Math.min(ETAPAS.length - 1, current + 1))}
+                      >
+                        Continuar
+                      </Button>
+                    ) : (
+                      <span className="flex-1 text-right text-xs text-[#6e6a61] lg:text-sm">
+                        Use os botões de emissão para salvar ou gerar o documento.
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </>
             )}
           </form>
         </Form>
