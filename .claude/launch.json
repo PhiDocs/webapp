@@ -1,0 +1,9 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "apr-dev",
+      "url": "http://localhost:9002"
+    }
+  ]
+}

@@ -10,14 +10,18 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        body: ['Inter', 'sans-serif'],
-        headline: ['"Hanken Grotesk"', 'Inter', 'sans-serif'],
-        code: ['"JetBrains Mono"', 'monospace'],
+        body: ['var(--font-body)', '"Public Sans"', 'system-ui', 'sans-serif'],
+        headline: ['var(--font-headline)', '"Source Serif 4"', 'Georgia', 'serif'],
+        // Rotulos em caixa alta com tracking usam a sans da interface.
+        code: ['var(--font-body)', '"Public Sans"', 'system-ui', 'sans-serif'],
       },
       fontSize: {
-        h1: ['40px', { lineHeight: '1.2', letterSpacing: '-0.02em', fontWeight: '700' }],
-        h2: ['32px', { lineHeight: '1.3', fontWeight: '600' }],
-        h3: ['24px', { lineHeight: '1.4', fontWeight: '600' }],
+        display: ['48px', { lineHeight: '1.1', letterSpacing: '-0.02em', fontWeight: '600' }],
+        h1: ['38px', { lineHeight: '1.15', letterSpacing: '-0.02em', fontWeight: '600' }],
+        h2: ['29px', { lineHeight: '1.2', letterSpacing: '-0.015em', fontWeight: '600' }],
+        h3: ['23px', { lineHeight: '1.25', letterSpacing: '-0.01em', fontWeight: '600' }],
+        // Rotulo de campo e cabecalho de tabela do idioma de formulario.
+        label: ['11px', { lineHeight: '1.2', letterSpacing: '0.1em', fontWeight: '600' }],
         'body-lg': ['18px', { lineHeight: '1.6', fontWeight: '400' }],
         'body-md': ['16px', { lineHeight: '1.5', fontWeight: '400' }],
         'body-sm': ['14px', { lineHeight: '1.5', fontWeight: '400' }],
@@ -57,6 +61,19 @@ export default {
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
         ring: 'hsl(var(--ring))',
+        // Apelidos da paleta, para uso direto no JSX.
+        paper: 'hsl(var(--background))',
+        ink: 'hsl(var(--foreground))',
+        carimbo: 'hsl(var(--primary))',
+        rule: 'hsl(var(--border))',
+        success: {
+          DEFAULT: 'hsl(var(--success))',
+          foreground: 'hsl(var(--success-foreground))',
+        },
+        warning: {
+          DEFAULT: 'hsl(var(--warning))',
+          foreground: 'hsl(var(--warning-foreground))',
+        },
         chart: {
           '1': 'hsl(var(--chart-1))',
           '2': 'hsl(var(--chart-2))',
@@ -77,8 +94,30 @@ export default {
       },
       borderRadius: {
         lg: 'var(--radius)',
-        md: 'calc(var(--radius) - 2px)',
-        sm: 'calc(var(--radius) - 4px)',
+        md: 'var(--radius)',
+        sm: 'var(--radius)',
+        card: '0.1875rem',
+        section: '0.25rem',
+        pill: '9999px',
+      },
+      borderColor: {
+        strong: 'hsl(var(--border-strong))',
+      },
+      borderWidth: {
+        3: '3px',
+      },
+      // Este sistema nao tem elevacao: a separacao e feita por cor solida e
+      // borda. As chaves ficam mapeadas para 'none' de proposito, para que
+      // qualquer shadow-* remanescente no codigo seja inofensivo.
+      boxShadow: {
+        none: 'none',
+        sm: 'none',
+        DEFAULT: 'none',
+        md: 'none',
+        lg: 'none',
+        xl: 'none',
+        '2xl': 'none',
+        inner: 'none',
       },
       keyframes: {
         'accordion-down': {

@@ -1,9 +1,26 @@
 import type { Metadata } from "next";
+import { Source_Serif_4, Public_Sans } from "next/font/google";
 import { Toaster } from "@/components/ui/toaster";
 import { ptBr } from "@/lib/data/strings";
 import { SessionProvider } from "@/components/auth/session-provider";
 import { getSession } from "@/server/auth-guard";
 import "./globals.css";
+
+// Servidas pelo next/font: sem request extra ao Google no carregamento da
+// pagina e sem flash de fonte trocando depois que a tela ja apareceu.
+const headline = Source_Serif_4({
+  subsets: ["latin"],
+  weight: ["400", "600"],
+  variable: "--font-headline",
+  display: "swap",
+});
+
+const body = Public_Sans({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  variable: "--font-body",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: ptBr.header.title,
@@ -27,15 +44,11 @@ export default async function RootLayout({
     : null;
 
   return (
-    <html lang="pt-BR" suppressHydrationWarning={true}>
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap"
-          rel="stylesheet"
-        />
-      </head>
+    <html
+      lang="pt-BR"
+      className={`${headline.variable} ${body.variable}`}
+      suppressHydrationWarning={true}
+    >
       <body className="font-body antialiased" suppressHydrationWarning={true}>
         <SessionProvider initialUser={initialUser}>
           {children}

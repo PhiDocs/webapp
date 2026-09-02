@@ -84,7 +84,7 @@ export function LoginForm() {
         description: ptBr.toasts.success.loginSuccessDescription,
       });
 
-      window.location.href = '/reports';
+      window.location.assign('/reports');
 
 
     } catch (error: any) {

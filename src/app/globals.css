@@ -2,60 +2,99 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+  Identidade visual: documento oficial.
+
+  O produto existe para emitir documento formal, assinado e fiscalizavel. A
+  interface assume esse vocabulario, para que a tela e o PDF gerado deixem de
+  parecer dois produtos diferentes.
+
+  - Fundo papel levemente quente; a superficie do cartao e branca. O cartao se
+    destaca por ser mais claro que o fundo, nao por sombra.
+  - Regua de 1px, canto vivo, rotulo em caixa alta com tracking.
+  - Vermelho de carimbo (#7A1F1F) e a acao principal e tambem o estado critico:
+    aqui cor de status nao e enfeite, e parte do idioma.
+  - Sem sombra, sem gradiente.
+*/
+
 @layer base {
   :root {
-    --background: 210 33% 98%;
-    --foreground: 200 11% 11%;
+    /* Papel e tinta */
+    --background: 48 16% 94%;
+    --foreground: 0 0% 7%;
+
+    /* A superficie e branca: o cartao aparece por contraste com o papel */
     --card: 0 0% 100%;
-    --card-foreground: 220 22% 12%;
+    --card-foreground: 0 0% 7%;
     --popover: 0 0% 100%;
-    --popover-foreground: 220 22% 12%;
-    --primary: 26 100% 31%;
+    --popover-foreground: 0 0% 7%;
+
+    /* Acao principal: vermelho de carimbo */
+    --primary: 0 59% 30%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 217 22% 39%;
-    --secondary-foreground: 0 0% 100%;
-    --muted: 210 17% 93%;
-    --muted-foreground: 215 10% 39%;
-    --accent: 217 22% 39%;
-    --accent-foreground: 0 0% 100%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 23 37% 71%;
+
+    /* Botao de apoio: papel um tom abaixo */
+    --secondary: 44 14% 90%;
+    --secondary-foreground: 0 0% 7%;
+
+    /* Superficie discreta e texto secundario (cinza quente) */
+    --muted: 46 14% 92%;
+    --muted-foreground: 42 6% 41%;
+
+    /* Usado como fundo de hover pelos componentes base: fica quieto */
+    --accent: 44 14% 90%;
+    --accent-foreground: 0 0% 7%;
+
+    /* Estados. O painel de extintores depende de distinguir
+       vencido / vence em breve / em dia num relance. */
+    --destructive: 0 59% 30%;
+    --destructive-foreground: 0 0% 100%;
+    --success: 152 55% 24%;
+    --success-foreground: 0 0% 100%;
+    --warning: 39 100% 27%;
+    --warning-foreground: 0 0% 100%;
+
+    /* --border e a regua fina; --border-strong e o traco de enfase */
+    --border: 44 14% 78%;
+    --border-strong: 0 0% 7%;
     --input: 0 0% 100%;
-    --ring: 26 100% 31%;
-    --chart-1: 26 100% 31%;
-    --chart-2: 217 22% 39%;
-    --chart-3: 215 18% 49%;
-    --chart-4: 215 38% 81%;
-    --chart-5: 34 88% 68%;
-    --radius: 0.5rem;
+    --ring: 0 0% 7%;
+
+    --chart-1: 0 59% 30%;
+    --chart-2: 152 55% 24%;
+    --chart-3: 39 100% 27%;
+    --chart-4: 42 6% 41%;
+    --chart-5: 0 0% 7%;
+
+    --radius: 0.125rem;
   }
 
-  .dark {
-    --background: 222 20% 14%;
-    --foreground: 210 40% 94%;
-    --card: 222 18% 20%;
-    --card-foreground: 210 40% 94%;
-    --popover: 222 20% 16%;
-    --popover-foreground: 210 40% 94%;
-    --primary: 182 85% 39%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 222 16% 24%;
-    --secondary-foreground: 210 40% 92%;
-    --muted: 220 14% 22%;
-    --muted-foreground: 215 12% 68%;
-    --accent: 182 85% 39%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 222 15% 28%;
-    --input: 222 18% 22%;
-    --ring: 182 85% 39%;
-    --chart-1: 182 85% 39%;
-    --chart-2: 199 65% 42%;
-    --chart-3: 210 30% 55%;
-    --chart-4: 156 42% 45%;
-    --chart-5: 36 70% 58%;
+  /*
+    Faixas escuras. Reescreve os tokens do bloco inteiro, entao qualquer
+    componente dentro dela se adapta sozinho, sem variante propria.
+  */
+  .section-dark {
+    --background: 0 0% 7%;
+    --foreground: 48 16% 94%;
+    --card: 0 0% 11%;
+    --card-foreground: 48 16% 94%;
+    --popover: 0 0% 11%;
+    --popover-foreground: 48 16% 94%;
+    --primary: 48 16% 94%;
+    --primary-foreground: 0 0% 7%;
+    --secondary: 0 0% 16%;
+    --secondary-foreground: 48 16% 94%;
+    --muted: 0 0% 14%;
+    --muted-foreground: 44 8% 66%;
+    --accent: 0 0% 16%;
+    --accent-foreground: 48 16% 94%;
+    --border: 0 0% 22%;
+    --border-strong: 48 16% 94%;
+    --input: 0 0% 11%;
+    --ring: 48 16% 94%;
+
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
   }
 }
 
@@ -65,9 +104,7 @@
   }
 
   body {
-    @apply bg-background text-foreground;
-    background: hsl(var(--background));
-    font-family: Inter, sans-serif;
+    @apply bg-background text-foreground font-body;
   }
 
   h1,
@@ -76,7 +113,38 @@
   h4,
   h5,
   h6 {
-    font-family: "Hanken Grotesk", Inter, sans-serif;
+    font-family: var(--font-headline), "Source Serif 4", Georgia, serif;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+}
+
+@layer components {
+  /* Barra de progresso sem porcentagem: a geracao nao tem duracao previsivel. */
+  @keyframes barra-indeterminada {
+    0% { transform: translateX(-110%); }
+    100% { transform: translateX(320%); }
+  }
+
+  .barra-indeterminada {
+    animation: barra-indeterminada 1.3s ease-in-out infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .barra-indeterminada {
+      animation: none;
+      width: 100%;
+      opacity: 0.5;
+    }
+  }
+
+  /* Rotulo de campo/secao no idioma de formulario oficial. */
+  .label-oficial {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: hsl(var(--muted-foreground));
   }
 }
 
@@ -84,6 +152,9 @@
 /* These styles apply to both the on-screen preview and the print output. */
 .print-preview-wrapper {
   width: 794px;
+  /* Nao herda a tipografia da interface: o documento impresso segue o CSS
+     proprio do gerador de PDF, que nao entra no redesign. */
+  font-family: system-ui, -apple-system, sans-serif;
 }
 
 .print-preview-wrapper .print-document-container {
