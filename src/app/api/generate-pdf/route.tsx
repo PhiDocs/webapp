@@ -5,6 +5,13 @@ import type { SafetyAnalysisOutput, ProtectiveEquipmentOutput } from '@/server/a
 import { generatePdfBuffer } from '@/server/pdf-generator';
 import { requireAuth } from '@/server/auth-guard';
 
+// Chromium so roda no runtime Node, nunca no edge.
+export const runtime = 'nodejs';
+// Levantar o Chromium a frio na Vercel leva alguns segundos; o padrao curto
+// cortaria a geracao no meio e o usuario veria um erro sem causa aparente.
+export const maxDuration = 60;
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: NextRequest) {
   try {
     const contentLength = Number(request.headers.get('content-length') || '0');

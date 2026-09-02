@@ -1,10 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { ErrorLogRepository } from '@/repositories/error-log.repository';
 import { requireAuth } from '@/server/auth-guard';
+import { getOrCreatePdfBrowser } from '@/server/pdf-generator';
+
+// Chromium so roda no runtime Node, nunca no edge.
+export const runtime = 'nodejs';
+export const maxDuration = 60;
+export const dynamic = 'force-dynamic';
 
 async function createPdf(html: string): Promise<Buffer> {
-  const puppeteer = await import('puppeteer');
-  const browser = await puppeteer.default.launch();
+  // Usa a mesma fabrica do gerador de APR/PT: ela escolhe entre o puppeteer
+  // completo (local) e o Chromium enxuto (serverless). Antes esta rota
+  // chamava o puppeteer completo direto e quebraria na Vercel.
+  const browser = await getOrCreatePdfBrowser();
   const page = await browser.newPage();
 
   try {
@@ -17,8 +25,8 @@ async function createPdf(html: string): Promise<Buffer> {
     });
     return Buffer.from(pdf);
   } finally {
+    // Nao fecha o navegador: ele e compartilhado com o gerador de APR/PT.
     await page.close().catch(() => undefined);
-    await browser.close().catch(() => undefined);
   }
 }
 

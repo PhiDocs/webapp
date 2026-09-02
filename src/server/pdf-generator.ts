@@ -5,7 +5,6 @@ import type { SafetyAnalysisOutput, ProtectiveEquipmentOutput } from '@/server/a
 
 const PDF_FUNCTION_URL = process.env.PDF_FUNCTION_URL || '';
 const PDF_FUNCTION_SECRET = process.env.PDF_FUNCTION_SECRET || '';
-const isProd = process.env.NODE_ENV === 'production';
 
 const pdfStyles = `
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -210,12 +209,37 @@ async function generatePdfViaCloudFunction(html: string): Promise<Buffer> {
   return Buffer.from(data.pdf, 'base64');
 }
 
+/** Serverless (Vercel, Lambda) nao tem Chromium instalado no sistema. */
+const ehServerless = Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
+
+/**
+ * O navegador que gera o PDF.
+ *
+ * Local: o puppeteer completo, que traz o proprio Chromium.
+ * Serverless: puppeteer-core + o Chromium enxuto do @sparticuz, que e o unico
+ * que cabe e roda dentro de uma function. Sem isso o PDF simplesmente nao sai
+ * na Vercel — e o PDF e o produto.
+ */
 async function createBrowserInstance() {
+  if (ehServerless) {
+    const chromium = (await import('@sparticuz/chromium')).default;
+    const puppeteerCore = await import('puppeteer-core');
+    return puppeteerCore.default.launch({
+      args: chromium.args,
+      executablePath: await chromium.executablePath(),
+      headless: true,
+    });
+  }
+
   const puppeteer = await import('puppeteer');
   return puppeteer.default.launch();
 }
 
-async function getOrCreatePdfBrowser() {
+/**
+ * Reaproveitado tambem pela rota do mapa de extintores, que antes chamava o
+ * puppeteer completo direto e por isso tambem quebraria em serverless.
+ */
+export async function getOrCreatePdfBrowser() {
   const g: any = globalThis as any;
 
   if (!g.__pdfBrowserPromise) {
@@ -249,6 +273,16 @@ async function generatePdfLocally(html: string): Promise<Buffer> {
         format: 'A4',
         printBackground: true,
         margin: { top: '20mm', right: '20mm', bottom: '16mm', left: '20mm' },
+        // A numeracao vem daqui porque so o Puppeteer sabe em quantas paginas o
+        // documento acabou caindo. Antes o rodape trazia "Pagina 01 de 01"
+        // escrito na mao, o que ficava errado em toda APR de varias paginas —
+        // e paginacao errada e a primeira coisa que a fiscalizacao questiona.
+        displayHeaderFooter: true,
+        headerTemplate: '<span></span>',
+        footerTemplate: `
+          <div style="width:100%;padding:0 20mm;font-family:Arial,Helvetica,sans-serif;font-size:8px;color:#6e6a61;text-align:right;">
+            Pagina <span class="pageNumber"></span> de <span class="totalPages"></span>
+          </div>`,
       });
       return Buffer.from(pdfBuffer);
     } finally {
@@ -308,7 +342,11 @@ export async function generatePdfBuffer({
 
   const fullHtml = buildHtml(componentHtml);
 
-  if (isProd) {
+  // A funcao externa deixou de ser obrigatoria: o proprio processo gera o PDF,
+  // local ou na Vercel. Ela continua disponivel como escape, mas so quando
+  // configurada de proposito. Antes isto era `if (isProd)`, e como
+  // PDF_FUNCTION_URL nunca foi definida, todo PDF em producao morria no throw.
+  if (PDF_FUNCTION_URL) {
     return generatePdfViaCloudFunction(fullHtml);
   }
 

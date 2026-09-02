@@ -43,6 +43,9 @@ const csp = [
 const nextConfig = {
   // Use Turbopack (default in Next.js 16)
   turbopack: {},
+  // O Chromium do PDF nao pode ser empacotado pelo bundler: ele carrega um
+  // binario em disco e precisa ser resolvido em tempo de execucao.
+  serverExternalPackages: ['@sparticuz/chromium', 'puppeteer-core', 'puppeteer'],
   env: {
     NEXT_PUBLIC_APP_VERSION: appVersion,
   },
