@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { signOut } from '@/server/auth-actions';
 import { Button } from '@/components/ui/button';
-import { LogOut, LayoutDashboard } from 'lucide-react';
+import { FolderOpen, LogOut } from 'lucide-react';
 import { useSession } from './session-provider';
 import { createSupabaseBrowserClient } from '@/supabase/browser';
 import {
@@ -43,12 +43,6 @@ export function UserNav() {
     return null;
   }
 
-  const handleAdminPanelClick = () => {
-    if (user.role === 'admin' && user.companyId) {
-      router.push(`/company/${user.companyId}`);
-    }
-  };
-
   return (
     <DropdownMenu>
         <DropdownMenuTrigger asChild>
@@ -69,12 +63,10 @@ export function UserNav() {
                 </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            {user.role === 'admin' && user.companyId && (
-                <DropdownMenuItem onClick={handleAdminPanelClick} className="cursor-pointer">
-                    <LayoutDashboard className="mr-2 h-4 w-4" />
-                    <span>Painel do Admin</span>
-                </DropdownMenuItem>
-            )}
+            <DropdownMenuItem onClick={() => router.push('/documents')} className="cursor-pointer">
+                <FolderOpen className="mr-2 h-4 w-4" />
+                <span>Documentos</span>
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer">
                 <LogOut className="mr-2 h-4 w-4" />

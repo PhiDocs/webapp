@@ -7,7 +7,10 @@ import { createAssignment, createOrGetSigner, downloadSignedDocument, getDocumen
 import type { Company, SafetyFormValues, SignatureDocument, SignatureSigner } from '@/lib/types';
 import type { SafetyAnalysisOutput, ProtectiveEquipmentOutput } from '@/server/ai-actions';
 import { DOCUMENT_TYPES } from '@/lib/constants';
-import { requireAuth } from '@/server/auth-guard';
+import { requireAuth, getSession } from '@/server/auth-guard';
+import { DocumentRepository } from '@/repositories/document.repository';
+import { DocumentEventRepository } from '@/repositories/document-event.repository';
+import { DOCUMENT_STATUS } from '@/lib/document-status';
 
 function buildDocumentName(formData: SafetyFormValues) {
   const base = formData.documentType === DOCUMENT_TYPES.APR ? 'APR' : 'PT';
@@ -35,14 +38,22 @@ function getSignersFromForm(formData: SafetyFormValues): SignerInput[] {
       }
     }
 
-    // Signatários (gestor, responsável, SESMT)
-    if (pt.ptGestorArea?.name && pt.ptGestorArea?.useAssinafy) {
+    // Liberacao como lista (formato novo, igual ao da APR)
+    for (const pessoa of pt.ptResponsaveis || []) {
+      if (pessoa.name && pessoa.useAssinafy) {
+        ptSigners.push({ name: pessoa.name, email: pessoa.email || '', phone: pessoa.phone });
+      }
+    }
+
+    // Signatários nomeados (legado): so entram se a lista acima estiver vazia.
+    const temListaDeResponsaveis = (pt.ptResponsaveis || []).some((pessoa) => pessoa.name);
+    if (!temListaDeResponsaveis && pt.ptGestorArea?.name && pt.ptGestorArea?.useAssinafy) {
       ptSigners.push({ name: pt.ptGestorArea.name, email: pt.ptGestorArea.email || '', phone: pt.ptGestorArea.phone });
     }
-    if (pt.ptResponsavelAtividade?.name && pt.ptResponsavelAtividade?.useAssinafy) {
+    if (!temListaDeResponsaveis && pt.ptResponsavelAtividade?.name && pt.ptResponsavelAtividade?.useAssinafy) {
       ptSigners.push({ name: pt.ptResponsavelAtividade.name, email: pt.ptResponsavelAtividade.email || '', phone: pt.ptResponsavelAtividade.phone });
     }
-    if (pt.ptSesmt?.name && pt.ptSesmt?.useAssinafy) {
+    if (!temListaDeResponsaveis && pt.ptSesmt?.name && pt.ptSesmt?.useAssinafy) {
       ptSigners.push({ name: pt.ptSesmt.name, email: pt.ptSesmt.email || '', phone: pt.ptSesmt.phone });
     }
     return ptSigners;
@@ -245,6 +256,32 @@ export async function refreshSignatureDocument(signatureDocumentId: string) {
       updatedAt: now,
       lastSyncedAt: now,
     });
+
+    // O status tambem passa a viver no documento, para a lista nao precisar
+    // cruzar as duas tabelas em memoria para descobrir o estado.
+    const documento = await DocumentRepository.getBySignatureDocumentId(signatureDocumentId);
+    if (documento) {
+      const novoStatus = isDocumentCompleted
+        ? DOCUMENT_STATUS.SIGNED
+        : isDocumentDeclined
+          ? DOCUMENT_STATUS.DECLINED
+          : DOCUMENT_STATUS.AWAITING_SIGNATURE;
+
+      if (documento.status !== novoStatus) {
+        await DocumentRepository.update(documento.id, { status: novoStatus, updatedAt: now } as any);
+        const sessao = await getSession();
+        await DocumentEventRepository.record({
+          companyId: documento.companyId,
+          documentId: documento.id,
+          action: isDocumentCompleted ? 'signed' : isDocumentDeclined ? 'declined' : 'signature_synced',
+          userUid: sessao?.uid,
+          userEmail: sessao?.email,
+          documentStatus: novoStatus,
+          version: (documento as any).version ?? 1,
+          detail: `Sincronizado com a Assinafy (${docStatus.status}).`,
+        });
+      }
+    }
 
     console.log(`[refreshSignature] Documento ${signatureDocumentId} atualizado. Status API: ${docStatus.status} → Salvo: ${normalizedStatus}`);
     return { success: true };

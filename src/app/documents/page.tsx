@@ -7,6 +7,10 @@ import { useSession } from '@/components/auth/session-provider';
 import { getDocuments, deleteDocument } from '@/server/document-actions';
 import { getSignatureDocuments, refreshSignatureDocument, resendSignatureNotification } from '@/server/signature-actions';
 import type { SavedDocument, SignatureDocument } from '@/lib/types';
+import {
+  CORES_POR_TOM, DOCUMENT_STATUS, STATUS_INFO,
+  progressoAssinaturas, resolverStatus, type DocumentStatus,
+} from '@/lib/document-status';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { UserNav } from '@/components/auth/user-nav';
@@ -62,18 +66,26 @@ type FilterType = 'all' | 'draft' | 'signature' | 'completed';
 
 type DocumentRow = {
   id: string;
+  /** De onde veio a linha. Define quais acoes o menu oferece. */
   kind: 'draft' | 'signature';
   name: string;
   type: string;
-  status: 'draft' | 'pending' | 'completed' | 'uploaded' | 'declined' | 'expired';
+  /** Estado do ciclo de vida, unico em todo o sistema. Ver lib/document-status. */
+  status: DocumentStatus;
   date: string;
   workName: string;
+  /**
+   * Assinatura vinculada, quando existe. Documento assinado no WhatsApp ou na
+   * mao nunca passa pela Assinafy e continua aparecendo na lista sem isto.
+   */
+  assinatura?: SignatureDocument;
   raw: SavedDocument | SignatureDocument;
 };
 
 const PAGE_SIZE = 10;
 
 const adminNavItems = [
+  { label: 'Acessos', icon: Users, section: 'teamAccess' },
   { label: 'Obras', icon: HardHat, section: 'works' },
   { label: 'Colaboradores', icon: UserRound, section: 'collaborators' },
   { label: 'Funcionarios', icon: Users, section: 'employees' },
@@ -96,6 +108,13 @@ const filters: Array<{ value: FilterType; label: string }> = [
   { value: 'completed', label: 'Concluidos' },
 ];
 
+/** Quais estados cada aba mostra. 'all' nao filtra nada. */
+const ESTADOS_POR_FILTRO: Record<Exclude<FilterType, 'all'>, DocumentStatus[]> = {
+  draft: [DOCUMENT_STATUS.DRAFT, DOCUMENT_STATUS.IN_REVIEW],
+  signature: [DOCUMENT_STATUS.AWAITING_SIGNATURE],
+  completed: [DOCUMENT_STATUS.SIGNED, DOCUMENT_STATUS.COMPLETED],
+};
+
 function formatShortDate(dateString: string) {
   try {
     return new Date(dateString).toLocaleDateString('pt-BR', {
@@ -108,67 +127,41 @@ function formatShortDate(dateString: string) {
   }
 }
 
-function normalizeSignatureStatus(status: SignatureDocument['status']): DocumentRow['status'] {
-  if (status === 'signed' || status === 'certificated') return 'completed';
-  if (status === 'uploaded') return 'uploaded';
-  if (status === 'declined') return 'declined';
-  if (status === 'expired') return 'expired';
-  return 'pending';
-}
+/**
+ * O rotulo e a cor saem do ciclo de vida, nao de uma tabela propria desta tela.
+ * Assim a lista, o painel do documento e a trilha falam a mesma lingua.
+ */
+function getStatusPill(status: DocumentStatus) {
+  const info = STATUS_INFO[status];
+  const cores = CORES_POR_TOM[info.tom];
+  const concluido = status === DOCUMENT_STATUS.SIGNED || status === DOCUMENT_STATUS.COMPLETED;
 
-function getStatusPill(status: DocumentRow['status']) {
-  switch (status) {
-    case 'completed':
-      return {
-        label: 'Assinado',
-        className: 'bg-[#ddf7e3] text-[#0f9f46]',
-        icon: <CheckCircle2 className="h-3.5 w-3.5" />,
-      };
-    case 'pending':
-      return {
-        label: 'Pendente',
-        className: 'bg-[#ffe6cc] text-[#b45309]',
-        icon: <span className="h-1.5 w-1.5 rounded-full bg-[#b45309]" />,
-      };
-    case 'uploaded':
-      return {
-        label: 'Enviado',
-        className: 'bg-[#e5efff] text-[#415778]',
-        icon: <span className="h-1.5 w-1.5 rounded-full bg-[#415778]" />,
-      };
-    case 'expired':
-      return {
-        label: 'Expirado',
-        className: 'bg-[#eceef1] text-[#4f5f7a]',
-        icon: <span className="h-1.5 w-1.5 rounded-full bg-[#4f5f7a]" />,
-      };
-    case 'declined':
-      return {
-        label: 'Recusado',
-        className: 'bg-[#ffdfdc] text-[#ba1a1a]',
-        icon: <span className="h-1.5 w-1.5 rounded-full bg-[#ba1a1a]" />,
-      };
-    case 'draft':
-    default:
-      return {
-        label: 'Rascunho',
-        className: 'bg-[#eceef1] text-[#4f5f7a]',
-        icon: <span className="h-1.5 w-1.5 rounded-full bg-[#4f5f7a]" />,
-      };
-  }
+  return {
+    label: info.rotulo,
+    style: { backgroundColor: cores.fundo, color: cores.texto },
+    icon: concluido
+      ? <CheckCircle2 className="h-3.5 w-3.5" />
+      : <span className="h-1.5 w-1.5 rounded-full" style={{ background: cores.ponto }} />,
+  };
 }
 
 function getTypeBadge(type: string) {
   return type === 'APR'
-    ? 'bg-[#d8e5fb] text-[#51617d]'
-    : 'bg-[#b6c7e7] text-[#2d3f59]';
+    ? 'bg-[#f7f5f0] text-[#111111]'
+    : 'bg-[#e3e0d8] text-[#111111]';
 }
 
 function getDocumentIcon(row: DocumentRow) {
-  if (row.status === 'completed') return <FileCheck2 className="h-6 w-6 text-[#0f9f46]" />;
-  if (row.status === 'pending') return <FileClock className="h-6 w-6 text-[#9e4300]" />;
-  if (row.kind === 'draft') return <FilePenLine className="h-6 w-6 text-[#9e4300]" />;
-  return <FileText className="h-6 w-6 text-[#4f5f7a]" />;
+  if (row.status === DOCUMENT_STATUS.SIGNED || row.status === DOCUMENT_STATUS.COMPLETED) {
+    return <FileCheck2 className="h-6 w-6 text-[#1b5e3f]" />;
+  }
+  if (row.status === DOCUMENT_STATUS.AWAITING_SIGNATURE) {
+    return <FileClock className="h-6 w-6 text-[#7a1f1f]" />;
+  }
+  if (row.status === DOCUMENT_STATUS.DRAFT || row.status === DOCUMENT_STATUS.IN_REVIEW) {
+    return <FilePenLine className="h-6 w-6 text-[#7a1f1f]" />;
+  }
+  return <FileText className="h-6 w-6 text-[#6e6a61]" />;
 }
 
 export default function DocumentsPage() {
@@ -220,40 +213,62 @@ export default function DocumentsPage() {
   }, [user, user?.companyId, router]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const rows = useMemo<DocumentRow[]>(() => {
-    const draftRows = drafts
-      .filter((draft) => draft.status === 'draft')
-      .map((draft) => ({
-        id: draft.id,
+    const porId = new Map(signatures.map((assinatura) => [assinatura.id, assinatura]));
+
+    // Todo documento entra, em qualquer estado. Antes so 'draft' aparecia, e o
+    // que fosse para revisao, para assinatura manual ou fosse cancelado sumia.
+    const documentRows = drafts.map((documento) => {
+      const assinatura = documento.signatureDocumentId
+        ? porId.get(documento.signatureDocumentId)
+        : undefined;
+
+      return {
+        id: documento.id,
         kind: 'draft' as const,
-        name: draft.documentName,
-        type: draft.documentType,
-        status: 'draft' as const,
-        date: draft.updatedAt || draft.createdAt,
-        workName: draft.formData?.workName || 'Nao informado',
-        raw: draft,
+        name: documento.documentName,
+        type: documento.documentType,
+        status: resolverStatus(documento, assinatura),
+        date: documento.updatedAt || documento.createdAt,
+        workName: documento.formData?.workName || 'Nao informado',
+        assinatura,
+        raw: documento,
+      };
+    });
+
+    // Assinaturas antigas que nao apontam para nenhum documento continuam visiveis.
+    const vinculadas = new Set(
+      drafts.map((documento) => documento.signatureDocumentId).filter(Boolean)
+    );
+    const orfas = signatures
+      .filter((assinatura) => !vinculadas.has(assinatura.id))
+      .map((assinatura) => ({
+        id: assinatura.id,
+        kind: 'signature' as const,
+        name: assinatura.documentName,
+        type: assinatura.documentType,
+        status: resolverStatus({ status: 'sent' }, assinatura),
+        date: assinatura.createdAt,
+        workName: 'Nao informado',
+        assinatura,
+        raw: assinatura,
       }));
 
-    const signatureRows = signatures.map((signature) => ({
-      id: signature.id,
-      kind: 'signature' as const,
-      name: signature.documentName,
-      type: signature.documentType,
-      status: normalizeSignatureStatus(signature.status),
-      date: signature.createdAt,
-      workName: 'Nao informado',
-      raw: signature,
-    }));
-
-    return [...draftRows, ...signatureRows].sort(
+    return [...documentRows, ...orfas].sort(
       (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
     );
   }, [drafts, signatures]);
 
   const stats = useMemo(() => {
     const total = rows.length;
-    const pending = rows.filter((row) => row.status === 'pending' || row.status === 'uploaded').length;
-    const completed = rows.filter((row) => row.status === 'completed').length;
-    const draftCount = rows.filter((row) => row.status === 'draft').length;
+    const pending = rows.filter(
+      (row) => row.status === DOCUMENT_STATUS.AWAITING_SIGNATURE
+    ).length;
+    const completed = rows.filter((row) =>
+      ESTADOS_POR_FILTRO.completed.includes(row.status)
+    ).length;
+    const draftCount = rows.filter((row) =>
+      ESTADOS_POR_FILTRO.draft.includes(row.status)
+    ).length;
 
     return { total, pending, completed, draftCount };
   }, [rows]);
@@ -261,12 +276,9 @@ export default function DocumentsPage() {
   const filteredRows = useMemo(() => {
     const query = searchTerm.trim().toLowerCase();
 
-    const statusFiltered = rows.filter((row) => {
-      if (filter === 'draft') return row.status === 'draft';
-      if (filter === 'signature') return row.status === 'pending' || row.status === 'uploaded';
-      if (filter === 'completed') return row.status === 'completed';
-      return true;
-    });
+    const statusFiltered = rows.filter((row) =>
+      filter === 'all' ? true : ESTADOS_POR_FILTRO[filter].includes(row.status)
+    );
 
     if (!query) {
       return statusFiltered;
@@ -353,20 +365,27 @@ export default function DocumentsPage() {
   };
 
   const handlePreviewRow = (row: DocumentRow) => {
+    const assinatura = row.assinatura;
+
+    // Enquanto falta assinar, o util e cair direto no link de assinatura.
+    if (assinatura && row.status === DOCUMENT_STATUS.AWAITING_SIGNATURE) {
+      const pendente = assinatura.signers.find((signer) => signer.signingUrl);
+      if (pendente?.signingUrl) {
+        window.open(pendente.signingUrl, '_blank', 'noopener,noreferrer');
+        return;
+      }
+    }
+
+    if (assinatura && ESTADOS_POR_FILTRO.completed.includes(row.status)) {
+      void handleDownload(
+        assinatura.id,
+        assinatura.documentName.replace('.pdf', '_assinado.pdf')
+      );
+      return;
+    }
+
     if (row.kind === 'draft') {
       handleOpenDraft(row.raw as SavedDocument);
-      return;
-    }
-
-    const signature = row.raw as SignatureDocument;
-    const firstPendingSigner = signature.signers.find((signer) => signer.signingUrl);
-    if (firstPendingSigner?.signingUrl) {
-      window.open(firstPendingSigner.signingUrl, '_blank', 'noopener,noreferrer');
-      return;
-    }
-
-    if (row.status === 'completed') {
-      void handleDownload(signature.id, signature.documentName.replace('.pdf', '_assinado.pdf'));
     }
   };
 
@@ -382,12 +401,12 @@ export default function DocumentsPage() {
   const pageButtons = Array.from({ length: Math.min(3, totalPages) }, (_, index) => index + 1);
 
   return (
-    <div className="min-h-screen bg-[#f7f9fc]">
-      <aside className="fixed left-0 top-0 z-50 hidden h-screen w-64 flex-col border-r border-[#e0c0b1] bg-[#f2f4f7] py-4 lg:flex">
+    <div className="min-h-screen bg-[#f2f1ed]">
+      <aside className="fixed left-0 top-0 z-50 hidden h-screen w-64 flex-col border-r border-[#cfcbc0] bg-[#f2f1ed] py-4 lg:flex">
         <div className="px-4 pb-8">
           <div className="space-y-3">
             <Logo className="h-auto w-[210px]" />
-            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#4f5f7a]">Phi Docs</p>
+            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#6e6a61]">Phi Docs</p>
           </div>
         </div>
 
@@ -396,7 +415,7 @@ export default function DocumentsPage() {
             <button
               type="button"
               onClick={() => setIsAprPtMenuOpen((current) => !current)}
-              className="flex w-full items-center justify-between rounded-xl px-4 py-3 text-[1rem] font-semibold text-[#4f5f7a] transition-colors hover:bg-[#e6e8eb] hover:text-[#191c1e]"
+              className="flex w-full items-center justify-between rounded-xl px-4 py-3 text-[1rem] font-semibold text-[#6e6a61] transition-colors hover:bg-[#e3e0d8] hover:text-[#111111]"
             >
               <span className="flex items-center gap-4">
                 <FileText className="h-5 w-5" />
@@ -405,14 +424,14 @@ export default function DocumentsPage() {
               <ChevronDown className={['h-4 w-4 transition-transform', isAprPtMenuOpen ? 'rotate-180' : ''].join(' ')} />
             </button>
             {isAprPtMenuOpen && (
-              <div className="mt-1 space-y-1 border-l border-[#d8dadd] pl-3">
+              <div className="mt-1 space-y-1 border-l border-[#e3e0d8] pl-3">
                 {aprPtNavItems.map((item) => {
                   const Icon = item.icon;
                   return (
                     <Link
                       key={item.label}
                       href={companyPanelHref(item.section)}
-                      className="flex items-center gap-3 rounded-xl px-4 py-2.5 text-[0.95rem] text-[#4f5f7a] transition-colors hover:bg-[#e6e8eb] hover:text-[#191c1e]"
+                      className="flex items-center gap-3 rounded-xl px-4 py-2.5 text-[0.95rem] text-[#6e6a61] transition-colors hover:bg-[#e3e0d8] hover:text-[#111111]"
                     >
                       <Icon className="h-4 w-4" />
                       {item.label}
@@ -428,7 +447,7 @@ export default function DocumentsPage() {
               <Link
                 key={item.label}
                 href={companyPanelHref(item.section)}
-                className="mx-2 flex items-center gap-4 rounded-xl px-4 py-3 text-[1rem] text-[#4f5f7a] transition-colors hover:bg-[#e6e8eb] hover:text-[#191c1e]"
+                className="mx-2 flex items-center gap-4 rounded-xl px-4 py-3 text-[1rem] text-[#6e6a61] transition-colors hover:bg-[#e3e0d8] hover:text-[#111111]"
               >
                 <Icon className="h-5 w-5" />
                 {item.label}
@@ -437,24 +456,24 @@ export default function DocumentsPage() {
           })}
         </nav>
 
-        <div className="mt-auto border-t border-[#e0c0b1]/30 px-4 py-4">
+        <div className="mt-auto border-t border-[#cfcbc0]/30 px-4 py-4">
           <Button
             onClick={() => router.push('/reports')}
-            className="h-14 w-full rounded-xl bg-[#f46e11] text-[1rem] font-semibold text-[#521f00] hover:bg-[#e96710]"
+            className="h-14 w-full rounded-xl bg-[#7a1f1f] text-[1rem] font-semibold text-[#8a5a00] hover:bg-[#5f1818]"
           >
             <Briefcase className="h-5 w-5" />
             Novo Relatorio
           </Button>
 
           <div className="mt-4 space-y-1">
-            <Button variant="ghost" className="h-11 w-full justify-start rounded-xl px-4 text-[0.95rem] text-[#4f5f7a] hover:bg-[#e6e8eb] hover:text-[#191c1e]">
+            <Button variant="ghost" className="h-11 w-full justify-start rounded-xl px-4 text-[0.95rem] text-[#6e6a61] hover:bg-[#e3e0d8] hover:text-[#111111]">
               <CircleHelp className="h-5 w-5" />
               Suporte
             </Button>
             <Button
               variant="ghost"
               onClick={handleSignOut}
-              className="h-11 w-full justify-start rounded-xl px-4 text-[0.95rem] text-[#ba1a1a] hover:bg-[#ffdfdc] hover:text-[#ba1a1a]"
+              className="h-11 w-full justify-start rounded-xl px-4 text-[0.95rem] text-[#7a1f1f] hover:bg-[#f0e2e0] hover:text-[#7a1f1f]"
             >
               <LogOut className="h-5 w-5" />
               Sair
@@ -464,14 +483,14 @@ export default function DocumentsPage() {
       </aside>
 
       <div className="lg:pl-64">
-        <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b border-[#e0c0b1] bg-white px-6 shadow-sm">
+        <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b border-[#cfcbc0] bg-white px-6 shadow-sm">
           <div className="flex items-center gap-6">
             <Logo className="h-auto w-[170px]" />
             <nav className="hidden items-center gap-6 md:flex">
-              <Link href="/reports" className="text-[1rem] text-[#584237] transition-colors hover:text-[#9e4300]">
+              <Link href="/reports" className="text-[1rem] text-[#6e6a61] transition-colors hover:text-[#7a1f1f]">
                 Relatorios
               </Link>
-              <Link href="/documents" className="border-b-2 border-[#9e4300] pb-1 text-[1rem] font-bold text-[#9e4300]">
+              <Link href="/documents" className="border-b-2 border-[#7a1f1f] pb-1 text-[1rem] font-bold text-[#7a1f1f]">
                 Documentos
               </Link>
             </nav>
@@ -479,12 +498,12 @@ export default function DocumentsPage() {
 
           <div className="flex items-center gap-4">
             <div className="relative">
-              <Button variant="ghost" size="icon" className="h-10 w-10 rounded-full text-[#4f5f7a] hover:bg-[#eef1f5]">
+              <Button variant="ghost" size="icon" className="h-10 w-10 rounded-full text-[#6e6a61] hover:bg-[#ebe9e3]">
                 <Bell className="h-5 w-5" />
               </Button>
-              <span className="absolute right-2 top-2 h-2.5 w-2.5 rounded-full bg-[#9e4300]" />
+              <span className="absolute right-2 top-2 h-2.5 w-2.5 rounded-full bg-[#7a1f1f]" />
             </div>
-            <Button variant="ghost" size="icon" className="h-10 w-10 rounded-full text-[#4f5f7a] hover:bg-[#eef1f5]">
+            <Button variant="ghost" size="icon" className="h-10 w-10 rounded-full text-[#6e6a61] hover:bg-[#ebe9e3]">
               <CircleHelp className="h-5 w-5" />
             </Button>
             <UserNav />
@@ -493,52 +512,52 @@ export default function DocumentsPage() {
 
         <main className="mx-auto max-w-7xl p-6">
           <section className="mb-6">
-            <h2 className="font-headline text-[3.75rem] font-bold leading-[1.05] tracking-[-0.03em] text-[#191c1e]">Documentos</h2>
-            <p className="mt-3 max-w-4xl text-[1.2rem] leading-10 text-[#4f5f7a]">
+            <h2 className="font-headline text-[3.75rem] font-bold leading-[1.05] tracking-[-0.03em] text-[#111111]">Documentos</h2>
+            <p className="mt-3 max-w-4xl text-[1.2rem] leading-10 text-[#6e6a61]">
               Gerencie rascunhos, documentos enviados e o status de assinaturas em tempo real.
             </p>
           </section>
 
           <section className="mb-6 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-            <div className="rounded-2xl border border-[#e0c0b1] bg-white p-6 shadow-[0_2px_8px_rgba(0,0,0,0.05)] transition-all hover:border-[#9e4300]/30">
+            <div className="rounded-2xl border border-[#cfcbc0] bg-white p-6 shadow-[0_2px_8px_rgba(0,0,0,0.05)] transition-all hover:border-[#7a1f1f]/30">
               <div className="mb-2 flex items-start justify-between">
-                <FileText className="h-10 w-10 text-[#4f5f7a]" />
-                <span className="text-xs font-bold uppercase tracking-[0.18em] text-[#4f5f7a]">Total</span>
+                <FileText className="h-10 w-10 text-[#6e6a61]" />
+                <span className="text-xs font-bold uppercase tracking-[0.18em] text-[#6e6a61]">Total</span>
               </div>
-              <div className="font-headline text-[3rem] font-semibold leading-none text-[#191c1e]">{stats.total}</div>
-              <p className="mt-3 text-[1rem] text-[#4f5f7a]">Documentos totais</p>
+              <div className="font-headline text-[3rem] font-semibold leading-none text-[#111111]">{stats.total}</div>
+              <p className="mt-3 text-[1rem] text-[#6e6a61]">Documentos totais</p>
             </div>
 
-            <div className="rounded-2xl border border-[#e0c0b1] bg-white p-6 shadow-[0_2px_8px_rgba(0,0,0,0.05)] transition-all hover:border-[#9e4300]/30">
+            <div className="rounded-2xl border border-[#cfcbc0] bg-white p-6 shadow-[0_2px_8px_rgba(0,0,0,0.05)] transition-all hover:border-[#7a1f1f]/30">
               <div className="mb-2 flex items-start justify-between">
-                <FileClock className="h-10 w-10 text-[#9e4300]" />
-                <span className="text-xs font-bold uppercase tracking-[0.18em] text-[#9e4300]">Em Assinatura</span>
+                <FileClock className="h-10 w-10 text-[#7a1f1f]" />
+                <span className="text-xs font-bold uppercase tracking-[0.18em] text-[#7a1f1f]">Em Assinatura</span>
               </div>
-              <div className="font-headline text-[3rem] font-semibold leading-none text-[#191c1e]">{stats.pending}</div>
-              <p className="mt-3 text-[1rem] text-[#4f5f7a]">Aguardando firmas</p>
+              <div className="font-headline text-[3rem] font-semibold leading-none text-[#111111]">{stats.pending}</div>
+              <p className="mt-3 text-[1rem] text-[#6e6a61]">Aguardando firmas</p>
             </div>
 
-            <div className="rounded-2xl border border-[#e0c0b1] bg-white p-6 shadow-[0_2px_8px_rgba(0,0,0,0.05)] transition-all hover:border-[#9e4300]/30">
+            <div className="rounded-2xl border border-[#cfcbc0] bg-white p-6 shadow-[0_2px_8px_rgba(0,0,0,0.05)] transition-all hover:border-[#7a1f1f]/30">
               <div className="mb-2 flex items-start justify-between">
-                <CheckCircle2 className="h-10 w-10 text-[#0f9f46]" />
-                <span className="text-xs font-bold uppercase tracking-[0.18em] text-[#0f9f46]">Concluidos</span>
+                <CheckCircle2 className="h-10 w-10 text-[#1b5e3f]" />
+                <span className="text-xs font-bold uppercase tracking-[0.18em] text-[#1b5e3f]">Concluidos</span>
               </div>
-              <div className="font-headline text-[3rem] font-semibold leading-none text-[#191c1e]">{stats.completed}</div>
-              <p className="mt-3 text-[1rem] text-[#4f5f7a]">Validos e arquivados</p>
+              <div className="font-headline text-[3rem] font-semibold leading-none text-[#111111]">{stats.completed}</div>
+              <p className="mt-3 text-[1rem] text-[#6e6a61]">Validos e arquivados</p>
             </div>
 
-            <div className="rounded-2xl border border-[#e0c0b1] bg-white p-6 shadow-[0_2px_8px_rgba(0,0,0,0.05)] transition-all hover:border-[#9e4300]/30">
+            <div className="rounded-2xl border border-[#cfcbc0] bg-white p-6 shadow-[0_2px_8px_rgba(0,0,0,0.05)] transition-all hover:border-[#7a1f1f]/30">
               <div className="mb-2 flex items-start justify-between">
-                <FilePenLine className="h-10 w-10 text-[#584237]" />
-                <span className="text-xs font-bold uppercase tracking-[0.18em] text-[#584237]">Rascunhos</span>
+                <FilePenLine className="h-10 w-10 text-[#6e6a61]" />
+                <span className="text-xs font-bold uppercase tracking-[0.18em] text-[#6e6a61]">Rascunhos</span>
               </div>
-              <div className="font-headline text-[3rem] font-semibold leading-none text-[#191c1e]">{stats.draftCount}</div>
-              <p className="mt-3 text-[1rem] text-[#4f5f7a]">Edicoes pendentes</p>
+              <div className="font-headline text-[3rem] font-semibold leading-none text-[#111111]">{stats.draftCount}</div>
+              <p className="mt-3 text-[1rem] text-[#6e6a61]">Edicoes pendentes</p>
             </div>
           </section>
 
-          <section className="mb-4 flex flex-col gap-4 rounded-2xl border border-[#e0c0b1] bg-white p-4 shadow-sm md:flex-row md:items-center md:justify-between">
-            <div className="flex w-full self-start overflow-x-auto rounded-lg bg-[#f2f4f7] p-1 md:w-auto">
+          <section className="mb-4 flex flex-col gap-4 rounded-2xl border border-[#cfcbc0] bg-white p-4 shadow-sm md:flex-row md:items-center md:justify-between">
+            <div className="flex w-full self-start overflow-x-auto rounded-lg bg-[#f2f1ed] p-1 md:w-auto">
               {filters.map((item) => (
                 <button
                   key={item.value}
@@ -547,8 +566,8 @@ export default function DocumentsPage() {
                   className={[
                     'whitespace-nowrap rounded-md px-5 py-2 text-[0.95rem] transition-colors',
                     filter === item.value
-                      ? 'bg-white font-bold text-[#9e4300] shadow-sm'
-                      : 'text-[#4f5f7a] hover:text-[#9e4300]',
+                      ? 'bg-white font-bold text-[#7a1f1f] shadow-sm'
+                      : 'text-[#6e6a61] hover:text-[#7a1f1f]',
                   ].join(' ')}
                 >
                   {item.label}
@@ -558,19 +577,19 @@ export default function DocumentsPage() {
 
             <div className="flex w-full flex-col gap-4 md:w-auto md:flex-row">
               <div className="relative flex-1 md:w-64">
-                <Search className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-[#4f5f7a]" />
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-[#6e6a61]" />
                 <input
                   value={searchTerm}
                   onChange={(event) => setSearchTerm(event.target.value)}
                   placeholder="Buscar documento..."
-                  className="h-11 w-full rounded-lg border border-[#e0c0b1] bg-[#f7f9fc] pl-11 pr-4 text-[0.95rem] text-[#191c1e] outline-none focus:border-[#9e4300] focus:ring-2 focus:ring-[#9e4300]/15"
+                  className="h-11 w-full rounded-lg border border-[#cfcbc0] bg-[#f2f1ed] pl-11 pr-4 text-[0.95rem] text-[#111111] outline-none focus:border-[#7a1f1f] focus:ring-2 focus:ring-[#7a1f1f]/15"
                 />
               </div>
               <Button
                 type="button"
                 onClick={handleRefreshAll}
                 disabled={refreshing || loading}
-                className="h-11 rounded-lg bg-[#5f7394] px-8 text-[0.95rem] font-semibold text-white hover:bg-[#556887]"
+                className="h-11 rounded-lg bg-[#111111] px-8 text-[0.95rem] font-semibold text-white hover:bg-[#111111]"
               >
                 {refreshing || loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <RefreshCw className="h-5 w-5" />}
                 Atualizar Status
@@ -578,41 +597,45 @@ export default function DocumentsPage() {
             </div>
           </section>
 
-          <section className="overflow-hidden rounded-2xl border border-[#e0c0b1] bg-white shadow-sm">
+          <section className="overflow-hidden rounded-2xl border border-[#cfcbc0] bg-white shadow-sm">
             <div className="overflow-x-auto">
               <table className="w-full border-collapse text-left">
                 <thead>
-                  <tr className="border-b border-[#e0c0b1] bg-[#f2f4f7]">
-                    <th className="px-8 py-5 text-[1rem] font-bold text-[#4f5f7a]">Documento</th>
-                    <th className="px-6 py-5 text-[1rem] font-bold text-[#4f5f7a]">Tipo</th>
-                    <th className="px-6 py-5 text-[1rem] font-bold text-[#4f5f7a]">Status</th>
-                    <th className="px-6 py-5 text-[1rem] font-bold text-[#4f5f7a]">Data</th>
-                    <th className="px-6 py-5 text-[1rem] font-bold text-[#4f5f7a]">Obra</th>
-                    <th className="px-8 py-5 text-right text-[1rem] font-bold text-[#4f5f7a]">Acoes</th>
+                  <tr className="border-b border-[#cfcbc0] bg-[#f2f1ed]">
+                    <th className="px-8 py-5 text-[1rem] font-bold text-[#6e6a61]">Documento</th>
+                    <th className="px-6 py-5 text-[1rem] font-bold text-[#6e6a61]">Tipo</th>
+                    <th className="px-6 py-5 text-[1rem] font-bold text-[#6e6a61]">Status</th>
+                    <th className="px-6 py-5 text-[1rem] font-bold text-[#6e6a61]">Data</th>
+                    <th className="px-6 py-5 text-[1rem] font-bold text-[#6e6a61]">Obra</th>
+                    <th className="px-8 py-5 text-right text-[1rem] font-bold text-[#6e6a61]">Acoes</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#e0c0b1]/40">
+                <tbody className="divide-y divide-[#cfcbc0]/40">
                   {loading ? (
                     <tr>
                       <td colSpan={6} className="px-8 py-20 text-center">
-                        <Loader2 className="mx-auto h-8 w-8 animate-spin text-[#9e4300]" />
+                        <Loader2 className="mx-auto h-8 w-8 animate-spin text-[#7a1f1f]" />
                       </td>
                     </tr>
                   ) : visibleRows.length === 0 ? (
                     <tr>
-                      <td colSpan={6} className="px-8 py-16 text-center text-[1rem] text-[#4f5f7a]">
+                      <td colSpan={6} className="px-8 py-16 text-center text-[1rem] text-[#6e6a61]">
                         Nenhum documento encontrado.
                       </td>
                     </tr>
                   ) : (
                     visibleRows.map((row) => {
                       const statusPill = getStatusPill(row.status);
+                      const assinaturaId = row.assinatura?.id;
+                      const concluido = ESTADOS_POR_FILTRO.completed.includes(row.status);
+                      // Excluir so enquanto o documento ainda e rascunho, como antes.
+                      const podeExcluir = ESTADOS_POR_FILTRO.draft.includes(row.status);
                       return (
-                        <tr key={`${row.kind}-${row.id}`} className="group transition-colors hover:bg-[#fbfcff]">
+                        <tr key={`${row.kind}-${row.id}`} className="group transition-colors hover:bg-[#f7f5f0]">
                           <td className="px-8 py-5">
                             <div className="flex items-start gap-4">
                               <div className="pt-1">{getDocumentIcon(row)}</div>
-                              <span className="max-w-[420px] text-[1rem] font-semibold leading-10 text-[#191c1e]">{row.name}</span>
+                              <span className="max-w-[420px] text-[1rem] font-semibold leading-10 text-[#111111]">{row.name}</span>
                             </div>
                           </td>
                           <td className="px-6 py-5">
@@ -621,13 +644,22 @@ export default function DocumentsPage() {
                             </span>
                           </td>
                           <td className="px-6 py-5">
-                            <span className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-[0.95rem] font-semibold ${statusPill.className}`}>
+                            <span
+                              className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-[0.95rem] font-semibold"
+                              style={statusPill.style}
+                            >
                               {statusPill.icon}
                               {statusPill.label}
                             </span>
+                            {row.assinatura && row.status === DOCUMENT_STATUS.AWAITING_SIGNATURE && (
+                              <span className="mt-1 block text-xs tabular-nums text-[#6e6a61]">
+                                {progressoAssinaturas(row.assinatura).concluidas} de{' '}
+                                {progressoAssinaturas(row.assinatura).total} assinaram
+                              </span>
+                            )}
                           </td>
-                          <td className="px-6 py-5 text-[1rem] leading-9 text-[#4f5f7a]">{formatShortDate(row.date)}</td>
-                          <td className="px-6 py-5 text-[1rem] leading-9 text-[#4f5f7a]">{row.workName}</td>
+                          <td className="px-6 py-5 text-[1rem] leading-9 text-[#6e6a61]">{formatShortDate(row.date)}</td>
+                          <td className="px-6 py-5 text-[1rem] leading-9 text-[#6e6a61]">{row.workName}</td>
                           <td className="px-8 py-5">
                             <div className="flex items-center justify-end gap-2 opacity-70 transition-opacity group-hover:opacity-100">
                               <button
@@ -637,7 +669,7 @@ export default function DocumentsPage() {
                                     handleOpenDraft(row.raw as SavedDocument);
                                   }
                                 }}
-                                className="rounded-lg p-2 text-[#c9793d] transition-colors hover:bg-[#f2f4f7] hover:text-[#9e4300]"
+                                className="rounded-lg p-2 text-[#8a5a00] transition-colors hover:bg-[#f2f1ed] hover:text-[#7a1f1f]"
                                 title="Abrir"
                               >
                                 <PenSquare className="h-6 w-6" />
@@ -645,7 +677,7 @@ export default function DocumentsPage() {
                               <button
                                 type="button"
                                 onClick={() => handlePreviewRow(row)}
-                                className="rounded-lg p-2 text-[#91a0b7] transition-colors hover:bg-[#f2f4f7] hover:text-[#4f5f7a]"
+                                className="rounded-lg p-2 text-[#cfcbc0] transition-colors hover:bg-[#f2f1ed] hover:text-[#6e6a61]"
                                 title="Visualizar"
                               >
                                 <Eye className="h-6 w-6" />
@@ -654,20 +686,21 @@ export default function DocumentsPage() {
                                 <DropdownMenuTrigger asChild>
                                   <button
                                     type="button"
-                                    className="rounded-lg p-2 text-[#91a0b7] transition-colors hover:bg-[#f2f4f7] hover:text-[#4f5f7a]"
+                                    className="rounded-lg p-2 text-[#cfcbc0] transition-colors hover:bg-[#f2f1ed] hover:text-[#6e6a61]"
                                   >
                                     <EllipsisVertical className="h-6 w-6" />
                                   </button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end" className="w-52">
-                                  {row.kind === 'draft' ? (
+                                  {row.kind === 'draft' && (
                                     <>
                                       <DropdownMenuItem onClick={() => handleOpenDraft(row.raw as SavedDocument)}>
-                                        Abrir rascunho
+                                        Abrir documento
                                       </DropdownMenuItem>
+                                      {podeExcluir && (
                                       <AlertDialog>
                                         <AlertDialogTrigger asChild>
-                                          <button className="flex w-full cursor-pointer items-center rounded-sm px-2 py-1.5 text-sm text-[#ba1a1a] outline-none transition-colors hover:bg-[#fff1f0]">
+                                          <button className="flex w-full cursor-pointer items-center rounded-sm px-2 py-1.5 text-sm text-[#7a1f1f] outline-none transition-colors hover:bg-[#f6edec]">
                                             {deletingId === row.id ? 'Excluindo...' : 'Excluir'}
                                           </button>
                                         </AlertDialogTrigger>
@@ -686,29 +719,31 @@ export default function DocumentsPage() {
                                           </AlertDialogFooter>
                                         </AlertDialogContent>
                                       </AlertDialog>
+                                      )}
                                     </>
-                                  ) : (
+                                  )}
+                                  {assinaturaId && (
                                     <>
                                       <DropdownMenuItem
-                                        onClick={() => handleRefreshSignature(row.id)}
-                                        disabled={rowRefreshingId === row.id}
+                                        onClick={() => handleRefreshSignature(assinaturaId)}
+                                        disabled={rowRefreshingId === assinaturaId}
                                       >
-                                        {rowRefreshingId === row.id ? 'Atualizando...' : 'Atualizar status'}
+                                        {rowRefreshingId === assinaturaId ? 'Atualizando...' : 'Atualizar status'}
                                       </DropdownMenuItem>
                                       <DropdownMenuItem
-                                        onClick={() => handleResend(row.id)}
-                                        disabled={resendingId === row.id || row.status === 'completed'}
+                                        onClick={() => handleResend(assinaturaId)}
+                                        disabled={resendingId === assinaturaId || concluido}
                                       >
-                                        {resendingId === row.id ? 'Reenviando...' : 'Reenviar notificacao'}
+                                        {resendingId === assinaturaId ? 'Reenviando...' : 'Reenviar notificacao'}
                                       </DropdownMenuItem>
                                       <DropdownMenuItem
                                         onClick={() =>
                                           handleDownload(
-                                            row.id,
+                                            assinaturaId,
                                             row.name.replace('.pdf', '_assinado.pdf')
                                           )
                                         }
-                                        disabled={row.status !== 'completed'}
+                                        disabled={!concluido}
                                       >
                                         Baixar PDF
                                       </DropdownMenuItem>
@@ -726,8 +761,8 @@ export default function DocumentsPage() {
               </table>
             </div>
 
-            <div className="flex flex-col gap-4 border-t border-[#e0c0b1] px-8 py-7 sm:flex-row sm:items-center sm:justify-between">
-              <p className="text-[1rem] text-[#4f5f7a]">
+            <div className="flex flex-col gap-4 border-t border-[#cfcbc0] px-8 py-7 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-[1rem] text-[#6e6a61]">
                 Exibindo {visibleRows.length} de {filteredRows.length} documentos
               </p>
               <div className="flex items-center gap-3">
@@ -735,7 +770,7 @@ export default function DocumentsPage() {
                   type="button"
                   disabled={currentPage === 1}
                   onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
-                  className="flex h-12 w-12 items-center justify-center rounded-xl border border-[#e0c0b1] text-[#8c7165] transition-colors hover:bg-[#f2f4f7] disabled:opacity-30"
+                  className="flex h-12 w-12 items-center justify-center rounded-xl border border-[#cfcbc0] text-[#6e6a61] transition-colors hover:bg-[#f2f1ed] disabled:opacity-30"
                 >
                   <ChevronLeft className="h-5 w-5" />
                 </button>
@@ -747,8 +782,8 @@ export default function DocumentsPage() {
                     className={[
                       'h-12 w-12 rounded-xl border font-bold transition-colors',
                       currentPage === page
-                        ? 'border-[#9e4300] bg-[#9e4300] text-white'
-                        : 'border-[#e0c0b1] bg-white text-[#191c1e] hover:bg-[#f2f4f7]',
+                        ? 'border-[#7a1f1f] bg-[#7a1f1f] text-white'
+                        : 'border-[#cfcbc0] bg-white text-[#111111] hover:bg-[#f2f1ed]',
                     ].join(' ')}
                   >
                     {page}
@@ -758,7 +793,7 @@ export default function DocumentsPage() {
                   type="button"
                   disabled={currentPage === totalPages}
                   onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
-                  className="flex h-12 w-12 items-center justify-center rounded-xl border border-[#e0c0b1] text-[#191c1e] transition-colors hover:bg-[#f2f4f7] disabled:opacity-30"
+                  className="flex h-12 w-12 items-center justify-center rounded-xl border border-[#cfcbc0] text-[#111111] transition-colors hover:bg-[#f2f1ed] disabled:opacity-30"
                 >
                   <ChevronRight className="h-5 w-5" />
                 </button>
