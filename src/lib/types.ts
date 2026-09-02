@@ -1,4 +1,4 @@
-import { z } from 'zod';
+﻿import { z } from 'zod';
 import { DOCUMENT_TYPES, PT_FIT_STATUS, type DocumentType } from './constants';
 import { ptBr } from './data/strings';
 import { isValidBrazilianPhone } from './utils/phone-validator';
@@ -39,6 +39,12 @@ export const responsiblePersonSchema = z.object({
   email: z.string().email().optional(),
   phone: z.string().optional(),
   useAssinafy: z.boolean().default(true),
+  /**
+   * Como esta pessoa assina: por e-mail, por WhatsApp ou a mao no papel.
+   * 'useAssinafy' continua existindo e fica sincronizado (true so no e-mail),
+   * porque e ele que decide o que vai para a Assinafy.
+   */
+  signatureMethod: z.enum(['email', 'whatsapp', 'manual']).optional(),
   signatureData: z.string().optional(),
   assinafySignerId: z.string().optional(),
   assinafySigningUrl: z.string().optional(),
@@ -69,14 +75,28 @@ export const teamMemberSchema = z.object({
   email: z.string().email().optional(),
   phone: z.string().optional(),
   useAssinafy: z.boolean().default(true),
+  /**
+   * Como esta pessoa assina: por e-mail, por WhatsApp ou a mao no papel.
+   * 'useAssinafy' continua existindo e fica sincronizado (true so no e-mail),
+   * porque e ele que decide o que vai para a Assinafy.
+   */
+  signatureMethod: z.enum(['email', 'whatsapp', 'manual']).optional(),
   isManual: z.boolean().optional(),
   signatureData: z.string().optional(),
 }).superRefine((data, ctx) => {
-  if (data.useAssinafy && !data.email) {
+  const metodo = data.signatureMethod || (data.useAssinafy ? 'email' : 'manual');
+  if (metodo === 'email' && !data.email) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
       message: validationMessages.emailRequired,
       path: ['email'],
+    });
+  }
+  if (metodo === 'whatsapp' && !data.phone) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'Informe o telefone para assinatura por WhatsApp.',
+      path: ['phone'],
     });
   }
 });
@@ -84,6 +104,17 @@ export const teamMemberSchema = z.object({
 export const analysisStepSchema = z.object({
   item: z.number().optional(),
   activity: z.string().optional(),
+
+  // Listas por etapa. Sao a forma editavel item a item na tela.
+  hazards: z.array(z.string()).optional(),
+  risks: z.array(z.string()).optional(),
+  consequences: z.array(z.string()).optional(),
+  measures: z.array(z.string()).optional(),
+  epis: z.array(z.string()).optional(),
+  epcs: z.array(z.string()).optional(),
+
+  // Mantidos e sempre sincronizados com as listas acima. Documentos emitidos
+  // antes desta mudanca so tem estes dois, e continuam abrindo e imprimindo.
   potentialRisks: z.string().optional(),
   preventiveMeasures: z.string().optional(),
 });
@@ -99,6 +130,12 @@ export const ptTeamMemberSchema = z.object({
   email: z.string().email().optional(),
   phone: z.string().optional(),
   useAssinafy: z.boolean().default(true),
+  /**
+   * Como esta pessoa assina: por e-mail, por WhatsApp ou a mao no papel.
+   * 'useAssinafy' continua existindo e fica sincronizado (true so no e-mail),
+   * porque e ele que decide o que vai para a Assinafy.
+   */
+  signatureMethod: z.enum(['email', 'whatsapp', 'manual']).optional(),
 });
 
 const ptSignerSchema = z.object({
@@ -130,6 +167,18 @@ export const ptFormSchema = z.object({
 
   ptChecklist: ptChecklistSchema,
 
+  /**
+   * De onde veio cada controle marcado: regra do sistema, sugestao da IA ou
+   * mao do tecnico. Fica no formData, sem tocar no banco.
+   */
+  ptControlesAdicionados: z.array(z.object({
+    itemId: z.string(),
+    origem: z.enum(['regra', 'ia', 'manual']),
+    em: z.string(),
+    por: z.string().optional(),
+    removidoEm: z.string().optional(),
+  })).optional(),
+
   // Optional Sections
   ptEnableEspacoConfinado: z.boolean().optional(),
   ptEnableVigia: z.boolean().optional(),
@@ -147,7 +196,13 @@ export const ptFormSchema = z.object({
   ptVigias: z.array(ptTeamMemberSchema),
   ptResgatistas: z.array(ptTeamMemberSchema),
 
-  // Signatures
+  /**
+   * Liberacao da PT como lista de pessoas, no mesmo formato da APR.
+   * Os tres campos abaixo continuam existindo para documentos ja emitidos.
+   */
+  ptResponsaveis: z.array(responsiblePersonSchema).optional(),
+
+  // Signatures (legado, mantido para documentos antigos)
   ptGestorArea: ptSignerSchema,
   ptResponsavelAtividade: ptSignerSchema,
   ptSesmt: ptSignerSchema,
@@ -182,9 +237,15 @@ export const formSchema = z.object({
   if (data.documentType === DOCUMENT_TYPES.APR) {
     if (!data.workId) ctx.addIssue({ code: z.ZodIssueCode.custom, message: validationMessages.workIdRequired, path: ["workId"] });
 
+    // O responsavel pode vir do cadastro de funcionarios, do cadastro de
+    // responsaveis reutilizaveis ou ser informado manualmente. Por isso a
+    // validacao exige nome e funcao, e nao mais um employeeId.
     data.responsiblePersons.forEach((person, index) => {
-      if (!person.employeeId) {
-        ctx.addIssue({ code: z.ZodIssueCode.custom, message: validationMessages.employeeIdRequired, path: [`responsiblePersons.${index}.employeeId`] });
+      if (!person.name?.trim()) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, message: validationMessages.responsibleName, path: [`responsiblePersons.${index}.name`] });
+      }
+      if (!person.role?.trim()) {
+        ctx.addIssue({ code: z.ZodIssueCode.custom, message: validationMessages.responsibleRole, path: [`responsiblePersons.${index}.role`] });
       }
     });
 
@@ -245,11 +306,24 @@ export type SavedDocument = {
   companyId: string;
   documentType: DocumentType;
   documentName: string;
-  status: 'draft' | 'sent';
+  /** 'sent' e legado e equivale a 'awaiting_signature'. Ver lib/document-status. */
+  status:
+    | 'draft'
+    | 'in_review'
+    | 'awaiting_signature'
+    | 'sent'
+    | 'signed'
+    | 'completed'
+    | 'declined'
+    | 'cancelled';
   formData: SafetyFormValues;
   analysisData: any | null;
   equipmentData: any | null;
   signatureDocumentId?: string;
+  /** A partir daqui o conteudo nao pode mais ser alterado em silencio. */
+  lockedAt?: string | null;
+  version?: number;
+  createdBy?: string | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -306,6 +380,27 @@ export const workClientFormSchema = z.object({
   workLocationDetails: z.string().min(3, "O local da obra deve ter pelo menos 3 caracteres."),
   startDate: z.string().min(1, "A data de início é obrigatória."),
   endDate: z.string().min(1, "A data de término é obrigatória."),
+  projeto_id: z.string().optional(),
+  tipo_servico: z.string().optional(),
+  status: z.string().optional(),
+  cnpj: z.string().optional(),
+  razao_social: z.string().optional(),
+  nome_fantasia: z.string().optional(),
+  situacao_cadastral: z.string().optional(),
+  cnae_principal: z.string().optional(),
+  logo_empresa_url: z.string().optional(),
+  cep: z.string().optional(),
+  logradouro: z.string().optional(),
+  numero: z.string().optional(),
+  complemento: z.string().optional(),
+  bairro: z.string().optional(),
+  cidade: z.string().optional(),
+  estado: z.string().optional(),
+  responsavel_obra: z.string().optional(),
+  telefone: z.string().optional(),
+  email: z.string().optional(),
+  descricao_atividade: z.string().optional(),
+  observacoes: z.string().optional(),
 }).superRefine((data, ctx) => {
   if (data.startDate && data.endDate && new Date(data.endDate) < new Date(data.startDate)) {
     ctx.addIssue({
@@ -329,9 +424,91 @@ export type Work = {
   startDate: string;
   endDate: string;
   companyId: string;
+  projeto_id?: string | null;
+  tipo_servico?: string | null;
+  status?: string | null;
+  cnpj?: string | null;
+  razao_social?: string | null;
+  nome_fantasia?: string | null;
+  situacao_cadastral?: string | null;
+  cnae_principal?: string | null;
+  logo_empresa_url?: string | null;
+  cep?: string | null;
+  logradouro?: string | null;
+  numero?: string | null;
+  complemento?: string | null;
+  bairro?: string | null;
+  cidade?: string | null;
+  estado?: string | null;
+  responsavel_obra?: string | null;
+  telefone?: string | null;
+  email?: string | null;
+  descricao_atividade?: string | null;
+  observacoes?: string | null;
   createdAt: string;
   deletedAt?: string | null;
 }
+
+export type AprPtProjectStatus = 'ativo' | 'em_andamento' | 'arquivado' | 'concluido';
+
+export type AprPtProject = {
+  id: string;
+  companyId: string;
+  nome_projeto: string;
+  descricao?: string | null;
+  responsavel_interno?: string | null;
+  data_inicio?: string | null;
+  data_termino_prevista?: string | null;
+  cliente_principal?: string | null;
+  nome_empresa?: string | null;
+  razao_social?: string | null;
+  nome_fantasia?: string | null;
+  cnpj_empresa?: string | null;
+  logo_empresa_url?: string | null;
+  situacao_cadastral?: string | null;
+  cep?: string | null;
+  endereco?: string | null;
+  numero?: string | null;
+  complemento?: string | null;
+  bairro?: string | null;
+  cidade?: string | null;
+  estado?: string | null;
+  responsavel?: string | null;
+  telefone?: string | null;
+  email?: string | null;
+  cnae_principal?: string | null;
+  observacoes?: string | null;
+  status: AprPtProjectStatus;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt?: string | null;
+}
+
+export type AprPtProjectFormValues = Omit<AprPtProject, 'id' | 'createdAt' | 'updatedAt' | 'deletedAt'>;
+
+// --- Responsible Contact ---
+// Cadastro reutilizavel de responsaveis da APR/PT (SST, tecnico, gestor, cliente).
+// Nao e uma "equipe": sao pessoas individuais vinculadas ao documento como
+// responsavel ou assinante. O documento emitido guarda uma copia dos dados.
+export type ResponsibleContact = {
+  id: string;
+  companyId: string;
+  name: string;
+  role: string;
+  organization?: string | null;
+  email?: string | null;
+  phone?: string | null;
+  signsByDefault: boolean;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt?: string | null;
+}
+
+export type ResponsibleContactInput = Omit<
+  ResponsibleContact,
+  'id' | 'companyId' | 'createdAt' | 'updatedAt' | 'deletedAt'
+>;
 
 // --- Employee Schema ---
 export const employeeFormSchema = z.object({
@@ -997,5 +1174,6 @@ export type Subcontractor = {
   createdAt: string;
   deletedAt?: string | null;
 }
+
 
 

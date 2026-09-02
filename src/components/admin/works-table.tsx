@@ -36,23 +36,23 @@ function getWorkStatus(work: Work, index: number) {
   if (name.includes('torre') || name.includes('crit')) {
     return {
       label: 'Alerta Critico',
-      className: 'bg-[#ffdfdc] text-[#ba1a1a] border-[#f3a7a0]',
-      dot: 'bg-[#ba1a1a]',
+      className: 'bg-[#f0e2e0] text-[#7a1f1f] border-[#f0e2e0]',
+      dot: 'bg-[#7a1f1f]',
     };
   }
 
   if (name.includes('ponte') || index % 3 === 2) {
     return {
       label: 'Aguardando',
-      className: 'bg-[#d6e4ff] text-[#4f5f7a] border-[#a7bde8]',
-      dot: 'bg-[#f46e11]',
+      className: 'bg-[#f7f5f0] text-[#6e6a61] border-[#e3e0d8]',
+      dot: 'bg-[#7a1f1f]',
     };
   }
 
   return {
     label: 'Em Conformidade',
-    className: 'bg-[#dff7e5] text-[#18703a] border-[#b7ebc4]',
-    dot: 'bg-[#22c55e]',
+    className: 'bg-[#dde9e2] text-[#1b5e3f] border-[#dde9e2]',
+    dot: 'bg-[#1b5e3f]',
   };
 }
 
@@ -150,14 +150,14 @@ export function WorksTable({ companyId }: WorksTableProps) {
       <div className="space-y-8">
         <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
           <div>
-            <h2 className="font-headline text-[3rem] font-bold leading-[1.05] tracking-[-0.03em] text-[#191c1e]">Obras</h2>
-            <p className="mt-3 text-[1.1rem] leading-8 text-[#4f5f7a]">Gerenciamento e conformidade de canteiros ativos.</p>
+            <h2 className="font-headline text-[3rem] font-bold leading-[1.05] tracking-[-0.03em] text-[#111111]">Obras</h2>
+            <p className="mt-3 text-[1.1rem] leading-8 text-[#6e6a61]">Gerenciamento e conformidade de canteiros ativos.</p>
           </div>
 
           <DialogTrigger asChild>
             <Button
               onClick={() => setEditingWork(null)}
-              className="h-16 w-full rounded-xl bg-[#9e4300] px-8 text-lg font-bold text-white shadow-[0_8px_18px_rgba(158,67,0,0.24)] hover:bg-[#8a3a00] xl:w-auto"
+              className="h-16 w-full rounded-xl bg-[#7a1f1f] px-8 text-lg font-bold text-white shadow-[0_8px_18px_rgba(158,67,0,0.24)] hover:bg-[#7a1f1f] xl:w-auto"
             >
               <Plus className="mr-3 h-5 w-5" />
               Nova Obra
@@ -166,67 +166,67 @@ export function WorksTable({ companyId }: WorksTableProps) {
         </div>
 
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-          <div className="rounded-xl border border-[#e0c0b1] bg-white p-8 shadow-sm">
+          <div className="rounded-xl border border-[#cfcbc0] bg-white p-8 shadow-sm">
             <div className="mb-6 flex items-center justify-between">
-              <span className="text-[1.05rem] text-[#4f5f7a]">Obras Ativas</span>
-              <div className="rounded-lg bg-[#dbe7ff] p-3 text-[#4f5f7a]">
+              <span className="text-[1.05rem] text-[#6e6a61]">Obras Ativas</span>
+              <div className="rounded-lg bg-[#f7f5f0] p-3 text-[#6e6a61]">
                 <Construction className="h-6 w-6" />
               </div>
             </div>
-            <div className="text-[3.25rem] font-bold leading-none text-[#191c1e]">{activeWorks}</div>
-            <p className="mt-3 text-[0.95rem] text-[#4f5f7a]">+2 em relacao ao mes anterior</p>
+            <div className="text-[3.25rem] font-bold leading-none text-[#111111]">{activeWorks}</div>
+            <p className="mt-3 text-[0.95rem] text-[#6e6a61]">+2 em relacao ao mes anterior</p>
           </div>
 
-          <div className="relative overflow-hidden rounded-xl border border-[#d51f1f] bg-white p-8 shadow-sm">
-            <div className="absolute inset-y-0 left-0 w-1 bg-[#ba1a1a]" />
+          <div className="relative overflow-hidden rounded-xl border border-[#7a1f1f] bg-white p-8 shadow-sm">
+            <div className="absolute inset-y-0 left-0 w-1 bg-[#7a1f1f]" />
             <div className="mb-6 flex items-center justify-between">
-              <span className="text-[1.05rem] text-[#4f5f7a]">Alertas Criticos</span>
-              <div className="rounded-lg bg-[#ffe1dc] p-3 text-[#ba1a1a]">
+              <span className="text-[1.05rem] text-[#6e6a61]">Alertas Criticos</span>
+              <div className="rounded-lg bg-[#f6edec] p-3 text-[#7a1f1f]">
                 <AlertTriangle className="h-6 w-6" />
               </div>
             </div>
-            <div className="text-[3.25rem] font-bold leading-none text-[#ba1a1a]">{criticalAlerts}</div>
-            <p className="mt-3 text-[0.95rem] font-semibold text-[#ba1a1a]">Acao imediata necessaria</p>
+            <div className="text-[3.25rem] font-bold leading-none text-[#7a1f1f]">{criticalAlerts}</div>
+            <p className="mt-3 text-[0.95rem] font-semibold text-[#7a1f1f]">Acao imediata necessaria</p>
           </div>
 
         </div>
 
         <div className="grid grid-cols-1 gap-6">
-          <div className="overflow-hidden rounded-xl border border-[#e0c0b1] bg-white shadow-sm">
-            <div className="flex flex-col gap-4 border-b border-[#e0c0b1] px-8 py-5 sm:flex-row sm:items-center sm:justify-between">
-              <h3 className="font-headline text-[2rem] font-semibold text-[#191c1e]">Listagem de Obras</h3>
+          <div className="overflow-hidden rounded-xl border border-[#cfcbc0] bg-white shadow-sm">
+            <div className="flex flex-col gap-4 border-b border-[#cfcbc0] px-8 py-5 sm:flex-row sm:items-center sm:justify-between">
+              <h3 className="font-headline text-[2rem] font-semibold text-[#111111]">Listagem de Obras</h3>
               <div className="relative w-full sm:w-[340px]">
-                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#4f5f7a]" />
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#6e6a61]" />
                 <input
                   value={searchTerm}
                   onChange={(event) => setSearchTerm(event.target.value)}
                   placeholder="Buscar obra..."
-                  className="h-11 w-full rounded-lg border border-[#e0c0b1] bg-[#f3f4f6] pl-10 pr-4 text-sm text-[#191c1e] outline-none focus:border-[#9e4300]"
+                  className="h-11 w-full rounded-lg border border-[#cfcbc0] bg-[#f2f1ed] pl-10 pr-4 text-sm text-[#111111] outline-none focus:border-[#7a1f1f]"
                 />
               </div>
             </div>
 
             <div className="overflow-x-auto">
               <table className="w-full min-w-[900px] border-collapse text-left">
-                <thead className="bg-[#f3f4f6]">
+                <thead className="bg-[#f2f1ed]">
                   <tr>
-                    <th className="px-8 py-5 text-[1rem] font-semibold text-[#4f5f7a]">Nome</th>
-                    <th className="px-8 py-5 text-[1rem] font-semibold text-[#4f5f7a]">Endereco</th>
-                    <th className="px-8 py-5 text-[1rem] font-semibold text-[#4f5f7a]">Periodo</th>
-                    <th className="px-8 py-5 text-center text-[1rem] font-semibold text-[#4f5f7a]">Status</th>
-                    <th className="px-8 py-5 text-right text-[1rem] font-semibold text-[#4f5f7a]">Acoes</th>
+                    <th className="px-8 py-5 text-[1rem] font-semibold text-[#6e6a61]">Nome</th>
+                    <th className="px-8 py-5 text-[1rem] font-semibold text-[#6e6a61]">Endereco</th>
+                    <th className="px-8 py-5 text-[1rem] font-semibold text-[#6e6a61]">Periodo</th>
+                    <th className="px-8 py-5 text-center text-[1rem] font-semibold text-[#6e6a61]">Status</th>
+                    <th className="px-8 py-5 text-right text-[1rem] font-semibold text-[#6e6a61]">Acoes</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#e0c0b1]">
+                <tbody className="divide-y divide-[#cfcbc0]">
                   {isLoading ? (
                     <tr>
                       <td colSpan={5} className="px-8 py-16 text-center">
-                        <Construction className="mx-auto h-7 w-7 animate-pulse text-[#4f5f7a]" />
+                        <Construction className="mx-auto h-7 w-7 animate-pulse text-[#6e6a61]" />
                       </td>
                     </tr>
                   ) : filteredWorks.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="px-8 py-16 text-center text-base text-[#4f5f7a]">
+                      <td colSpan={5} className="px-8 py-16 text-center text-base text-[#6e6a61]">
                         Nenhuma obra encontrada.
                       </td>
                     </tr>
@@ -235,10 +235,10 @@ export function WorksTable({ companyId }: WorksTableProps) {
                       const status = getWorkStatus(work, index);
 
                       return (
-                        <tr key={work.id} className={cn('transition-colors hover:bg-[#f9fafb]', index % 2 === 1 && 'bg-[#fafbfd]')}>
-                          <td className="px-8 py-6 text-[1.05rem] font-semibold leading-9 text-[#191c1e]">{work.name}</td>
-                          <td className="px-8 py-6 text-[0.95rem] leading-8 text-[#4f5f7a]">{work.address}</td>
-                          <td className="px-8 py-6 text-[0.95rem] leading-8 text-[#584237]">{getWorkPeriod(work)}</td>
+                        <tr key={work.id} className={cn('transition-colors hover:bg-[#f7f5f0]', index % 2 === 1 && 'bg-[#faf9f5]')}>
+                          <td className="px-8 py-6 text-[1.05rem] font-semibold leading-9 text-[#111111]">{work.name}</td>
+                          <td className="px-8 py-6 text-[0.95rem] leading-8 text-[#6e6a61]">{work.address}</td>
+                          <td className="px-8 py-6 text-[0.95rem] leading-8 text-[#6e6a61]">{getWorkPeriod(work)}</td>
                           <td className="px-8 py-6 text-center">
                             <span className={cn('inline-flex rounded-full border px-4 py-1 text-xs font-bold uppercase tracking-[0.08em]', status.className)}>
                               {status.label}
@@ -252,7 +252,7 @@ export function WorksTable({ companyId }: WorksTableProps) {
                                   setEditingWork(work);
                                   setIsFormOpen(true);
                                 }}
-                                className="rounded-lg p-2 text-[#4f5f7a] hover:bg-[#eceef1] hover:text-[#191c1e]"
+                                className="rounded-lg p-2 text-[#6e6a61] hover:bg-[#ebe9e3] hover:text-[#111111]"
                                 title="Editar"
                               >
                                 <Edit className="h-5 w-5" />
@@ -260,14 +260,14 @@ export function WorksTable({ companyId }: WorksTableProps) {
                               <button
                                 type="button"
                                 onClick={() => setDeletingWork(work)}
-                                className="rounded-lg p-2 text-[#ba1a1a] hover:bg-[#fff1f0]"
+                                className="rounded-lg p-2 text-[#7a1f1f] hover:bg-[#f6edec]"
                                 title="Excluir"
                               >
                                 <Trash2 className="h-5 w-5" />
                               </button>
                               <button
                                 type="button"
-                                className="rounded-lg p-2 text-[#4f5f7a] hover:bg-[#eceef1] hover:text-[#191c1e]"
+                                className="rounded-lg p-2 text-[#6e6a61] hover:bg-[#ebe9e3] hover:text-[#111111]"
                                 title="Mais acoes"
                               >
                                 <MoreVertical className="h-5 w-5" />

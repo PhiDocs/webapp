@@ -576,15 +576,15 @@ export function CollaboratorsTable({ companyId, companyName }: CollaboratorsTabl
     });
   }, [asoFilter, collaboratorContexts, companyFilter, epiFilter, functionFilter, safetyFilter, search, sectorFilter, statusFilter, trainingFilter]);
 
-  useEffect(() => {
-    const maxPage = Math.max(0, Math.ceil(filteredCollaborators.length / PAGE_SIZE) - 1);
-    if (page > maxPage) setPage(maxPage);
-  }, [filteredCollaborators.length, page]);
+  // A pagina e limitada durante o render. Antes um effect corrigia o estado
+  // depois, o que custava um render extra a cada filtro digitado.
+  const totalPages = Math.max(1, Math.ceil(filteredCollaborators.length / PAGE_SIZE));
+  const currentPage = Math.min(page, totalPages - 1);
 
   const pagedCollaborators = useMemo(() => {
-    const start = page * PAGE_SIZE;
+    const start = currentPage * PAGE_SIZE;
     return filteredCollaborators.slice(start, start + PAGE_SIZE);
-  }, [filteredCollaborators, page]);
+  }, [filteredCollaborators, currentPage]);
 
   const resetFilters = () => {
     setSearch('');
@@ -742,8 +742,6 @@ export function CollaboratorsTable({ companyId, companyName }: CollaboratorsTabl
       }
     });
   };
-
-  const totalPages = Math.max(1, Math.ceil(filteredCollaborators.length / PAGE_SIZE));
 
   return (
     <div className="space-y-7">
@@ -1035,11 +1033,11 @@ export function CollaboratorsTable({ companyId, companyName }: CollaboratorsTabl
 
         <div className="flex flex-col items-center justify-between gap-4 border-t border-[#e0c0b1] bg-[#f7f8fa] px-5 py-4 sm:flex-row">
           <p className="text-sm text-[#4f5f7a]">
-            Pagina {page + 1} de {totalPages}
+            Pagina {currentPage + 1} de {totalPages}
           </p>
           <div className="flex gap-2">
-            <Button variant="outline" disabled={page === 0} onClick={() => setPage((current) => Math.max(0, current - 1))}>Anterior</Button>
-            <Button variant="outline" disabled={page >= totalPages - 1} onClick={() => setPage((current) => Math.min(totalPages - 1, current + 1))}>Proxima</Button>
+            <Button variant="outline" disabled={currentPage === 0} onClick={() => setPage(Math.max(0, currentPage - 1))}>Anterior</Button>
+            <Button variant="outline" disabled={currentPage >= totalPages - 1} onClick={() => setPage(Math.min(totalPages - 1, currentPage + 1))}>Proxima</Button>
           </div>
         </div>
       </div>

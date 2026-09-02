@@ -1,6 +1,16 @@
 import type { Work, WorkFormValues } from '@/lib/types';
 import { createSupabaseAdminClient } from '@/supabase/server';
 
+function throwSupabaseError(error: unknown): never {
+  if (error && typeof error === 'object') {
+    const record = error as { message?: string; details?: string; hint?: string; code?: string };
+    const parts = [record.message, record.details, record.hint, record.code].filter(Boolean);
+    throw new Error(parts.join(' ') || JSON.stringify(error));
+  }
+
+  throw new Error(String(error || 'Erro desconhecido no banco.'));
+}
+
 export const WorkRepository = {
   async getAllByCompany(companyId: string): Promise<Work[]> {
     const { data, error } = await createSupabaseAdminClient()
@@ -10,7 +20,7 @@ export const WorkRepository = {
       .is('deletedAt', null)
       .order('createdAt', { ascending: false });
 
-    if (error) throw error;
+    if (error) throwSupabaseError(error);
     return (data ?? []) as Work[];
   },
 
@@ -25,7 +35,7 @@ export const WorkRepository = {
       .select('id')
       .single();
 
-    if (error) throw error;
+    if (error) throwSupabaseError(error);
     return created.id;
   },
 
@@ -35,7 +45,7 @@ export const WorkRepository = {
       .update(data)
       .eq('id', workId);
 
-    if (error) throw error;
+    if (error) throwSupabaseError(error);
   },
 
   async delete(workId: string): Promise<void> {
@@ -46,6 +56,6 @@ export const WorkRepository = {
       })
       .eq('id', workId);
 
-    if (error) throw error;
+    if (error) throwSupabaseError(error);
   },
 };

@@ -123,15 +123,15 @@ export function DocumentPreviewPanel({
 
   return (
     <div
-      className={`fixed right-0 top-16 z-10 hidden h-[calc(100vh-64px)] border-l border-[#e6cfc1] bg-[#f3f4f6] transition-all duration-300 ease-in-out xl:flex ${
+      className={`fixed right-0 top-16 z-10 hidden h-[calc(100vh-64px)] border-l border-[#cfcbc0] bg-[#f2f1ed] transition-all duration-300 ease-in-out xl:flex ${
         isMinimized ? 'w-[72px]' : ''
       }`}
       style={isMinimized ? undefined : { width: `${panelWidth}px` }}
     >
       <div className="flex h-full w-full flex-col">
-        <div className="flex h-16 items-center justify-between gap-2 border-b border-[#e6cfc1] bg-[#f8f8f8] px-4">
+        <div className="flex h-16 items-center justify-between gap-2 border-b border-[#cfcbc0] bg-[#f7f5f0] px-4">
           {!isMinimized && (
-            <h3 className="font-headline text-[16px] font-semibold leading-5 text-[#191c1e]">
+            <h3 className="font-headline text-[16px] font-semibold leading-5 text-[#111111]">
               Pre-visualizacao
             </h3>
           )}
@@ -176,14 +176,14 @@ export function DocumentPreviewPanel({
         </div>
 
         {!isMinimized ? (
-          <div ref={viewportRef} className="flex-1 overflow-auto bg-[#efefef] p-3">
+          <div ref={viewportRef} className="flex-1 overflow-auto bg-[#f6edec] p-3">
             <div className="flex min-h-full items-start justify-center">
               {previewDocument}
             </div>
           </div>
         ) : (
           <div className="flex flex-1 items-center justify-center">
-            <div className="-rotate-90 whitespace-nowrap text-xs font-semibold tracking-[0.2em] text-[#4a5b73]">
+            <div className="-rotate-90 whitespace-nowrap text-xs font-semibold tracking-[0.2em] text-[#111111]">
               PREVIEW
             </div>
           </div>
@@ -192,10 +192,10 @@ export function DocumentPreviewPanel({
 
       <Dialog open={isZoomOpen} onOpenChange={setIsZoomOpen}>
         <DialogContent className="h-[92vh] max-w-[96vw] p-0">
-          <DialogHeader className="border-b border-[#e1d6cb] px-5 py-4">
+          <DialogHeader className="border-b border-[#e8d9ae] px-5 py-4">
             <DialogTitle>Pre-visualizacao</DialogTitle>
           </DialogHeader>
-          <div className="h-[calc(92vh-70px)] overflow-auto bg-[#eceef1] p-6">
+          <div className="h-[calc(92vh-70px)] overflow-auto bg-[#ebe9e3] p-6">
             <div className="mx-auto w-fit overflow-hidden bg-white shadow-[0_10px_30px_rgba(12,30,54,0.12)]">
               <PrintPreview
                 formData={formData}

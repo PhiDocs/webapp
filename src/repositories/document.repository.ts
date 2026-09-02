@@ -15,12 +15,13 @@ export const DocumentRepository = {
     return created.id;
   },
 
-  async getByCompany(companyId: string): Promise<SavedDocument[]> {
-    const { data, error } = await createSupabaseAdminClient()
-      .from('documents')
-      .select('*')
-      .eq('companyId', companyId)
-      .order('updatedAt', { ascending: false });
+    async getByCompany(companyId: string): Promise<SavedDocument[]> {
+        const { data, error } = await createSupabaseAdminClient()
+          .from('documents')
+          .select('*')
+          .eq('companyId', companyId)
+          .not('documentName', 'like', 'APR_PT_PROJECT::%')
+          .order('updatedAt', { ascending: false });
 
     if (error) throw error;
     return (data ?? []) as SavedDocument[];
@@ -35,6 +36,19 @@ export const DocumentRepository = {
 
     if (error) throw error;
     return data as SavedDocument | null;
+  },
+
+  /** Usado para propagar o status vindo da Assinafy de volta ao documento. */
+  async getBySignatureDocumentId(signatureDocumentId: string): Promise<SavedDocument | null> {
+    const supabase = createSupabaseAdminClient();
+    const { data, error } = await supabase
+      .from('documents')
+      .select('*')
+      .eq('signatureDocumentId', signatureDocumentId)
+      .maybeSingle();
+
+    if (error) throw new Error(error.message);
+    return (data as SavedDocument) ?? null;
   },
 
   async update(id: string, data: Partial<SavedDocument>): Promise<void> {
