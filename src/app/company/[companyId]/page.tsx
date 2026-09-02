@@ -32,6 +32,7 @@ import {
   Users,
   X,
 } from 'lucide-react';
+import { TeamAccess } from '@/components/admin/team-access';
 import { UserNav } from '@/components/auth/user-nav';
 import { useSession } from '@/components/auth/session-provider';
 import { Logo } from '@/components/icons/logo';
@@ -45,7 +46,7 @@ import { cn } from '@/lib/utils';
 import { getModuleColor, moduleColorForSection, type ModuleColorKey } from '@/lib/module-colors';
 import { navigateCompanySection } from '@/lib/client-navigation';
 
-type AdminSection = 'works' | 'dashboardGeneral' | 'collaborators' | 'epiDeliveries' | 'trainings' | 'inspections' | 'fireExtinguishers' | 'incidents' | 'costsPrevention' | 'nonconformities' | 'employees' | 'jobRoles' | 'subcontractors' | 'dataImports' | 'settings';
+type AdminSection = 'teamAccess' | 'works' | 'dashboardGeneral' | 'collaborators' | 'epiDeliveries' | 'trainings' | 'inspections' | 'fireExtinguishers' | 'incidents' | 'costsPrevention' | 'nonconformities' | 'employees' | 'jobRoles' | 'subcontractors' | 'dataImports' | 'settings';
 type SectionNavigationEvent = CustomEvent<{ section: AdminSection; filters?: Record<string, string> }>;
 
 const adminSections: Array<{
@@ -55,6 +56,7 @@ const adminSections: Array<{
   description: string;
   roles?: string[];
 }> = [
+  { value: 'teamAccess', label: 'Acessos', icon: Users, description: 'Libere quem pode entrar no sistema e veja quem ja tem acesso.', roles: ['admin'] },
   { value: 'works', label: 'Obras', icon: HardHat, description: 'Gerencie obras usadas em APRs e permissoes.', roles: ['admin', 'tecnico'] },
   { value: 'dashboardGeneral', label: 'Central de Seguranca', icon: BarChart3, description: 'Veja indicadores gerais de seguranca.', roles: ['admin', 'tecnico', 'gestor'] },
   { value: 'collaborators', label: 'Colaboradores', icon: UserRound, description: 'Cadastre e acompanhe colaboradores.', roles: ['admin', 'rh', 'tecnico'] },
@@ -80,72 +82,31 @@ type NavigationItem =
 
 const navigationGroups: Array<{ id: string; title: string; defaultOpen: boolean; items: NavigationItem[] }> = [
   {
-    id: 'principal',
-    title: 'Principal',
-    defaultOpen: true,
-    items: [
-      { type: 'section', section: 'dashboardGeneral', label: 'Central de Seguranca', icon: Shield, module: 'dashboard', description: 'Visao operacional de riscos, pendencias e respaldo.', keywords: ['central', 'seguranca', 'risco', 'inicio'] },
-      { type: 'section', section: 'dashboardGeneral', label: 'Dashboard', icon: BarChart3, module: 'dashboard', description: 'Indicadores gerais e graficos executivos.', keywords: ['dashboard', 'indicadores', 'graficos'] },
-    ],
-  },
-  {
-    id: 'operacional',
-    title: 'Gestao Operacional',
-    defaultOpen: true,
-    items: [
-      { type: 'section', section: 'collaborators' },
-      { type: 'section', section: 'epiDeliveries' },
-      { type: 'section', section: 'trainings' },
-      { type: 'section', section: 'inspections' },
-    ],
-  },
-  {
-    id: 'riscos',
-    title: 'Riscos e Ocorrencias',
-    defaultOpen: false,
-    items: [{ type: 'section', section: 'nonconformities' }, { type: 'section', section: 'incidents' }],
-  },
-  {
-    id: 'emergencia',
-    title: 'Prevencao e Emergencia',
-    defaultOpen: false,
-    items: [{ type: 'section', section: 'fireExtinguishers' }],
-  },
-  {
-    id: 'dados',
-    title: 'Dados e Relatorios',
-    defaultOpen: false,
-    items: [
-      { type: 'link', label: 'Relatorios', href: '/reports', icon: BarChart3, module: 'relatorios', description: 'Acesse relatorios e exportacoes.', keywords: ['relatorio', 'pdf', 'exportar'] },
-      { type: 'link', label: 'Documentos', href: '/documents', icon: FileText, module: 'documentos', description: 'Acesse documentos e registros gerados.', roles: ['admin', 'tecnico'], keywords: ['documento', 'arquivo', 'respaldo'] },
-      { type: 'section', section: 'dataImports' },
-      { type: 'section', section: 'costsPrevention' },
-    ],
-  },
-  {
     id: 'aprs',
     title: 'APRs e PTs',
-    defaultOpen: false,
+    defaultOpen: true,
     items: [
-      { type: 'link', label: 'APRs e PTs', href: '/reports', icon: FileText, module: 'aprs', description: 'Gere APRs, IPTs e permissoes de trabalho.', roles: ['admin', 'tecnico'], keywords: ['apr', 'ipt', 'pt', 'permissao'] },
-      { type: 'section', section: 'works' },
-      { type: 'section', section: 'employees', label: 'Equipe APR/PT', description: 'Gerencie funcionarios usados em APRs e PTs.', keywords: ['funcionarios', 'equipe', 'apr', 'pt'] },
-      { type: 'section', section: 'jobRoles' },
-      { type: 'section', section: 'subcontractors' },
+      { type: 'link', label: 'APRs e PTs', href: '/reports', icon: FileText, module: 'aprs', description: 'Gere APRs, PTs e documentos de seguranca.', roles: ['admin', 'tecnico'], keywords: ['apr', 'pt', 'permissao', 'documento'] },
     ],
   },
   {
-    id: 'sistema',
-    title: 'Sistema',
-    defaultOpen: false,
-    items: [{ type: 'section', section: 'settings' }],
+    id: 'equipe',
+    title: 'Equipe',
+    defaultOpen: true,
+    items: [{ type: 'section', section: 'teamAccess' }],
+  },
+  {
+    id: 'extintores',
+    title: 'Extintores',
+    defaultOpen: true,
+    items: [{ type: 'section', section: 'fireExtinguishers' }],
   },
 ];
 
 function SectionLoading() {
   return (
     <div className="space-y-5">
-      <div className="rounded-2xl border border-[#e0c0b1] bg-white p-6 shadow-sm">
+      <div className="rounded-2xl border border-[#cfcbc0] bg-white p-6 shadow-sm">
         <Skeleton className="h-8 w-72 rounded-lg" />
         <Skeleton className="mt-3 h-5 w-[34rem] max-w-full rounded-lg" />
       </div>
@@ -183,7 +144,7 @@ export default function CompanyPage() {
   const companyId = params.companyId as string;
 
   const requestedSection = searchParams.get('section') as AdminSection | null;
-  const initialSection = requestedSection && adminSections.some((section) => section.value === requestedSection) ? requestedSection : 'dashboardGeneral';
+  const initialSection = requestedSection && adminSections.some((section) => section.value === requestedSection) ? requestedSection : 'fireExtinguishers';
 
   const [activeSection, setActiveSection] = useState<AdminSection>(initialSection);
   const [renderedSection, setRenderedSection] = useState<AdminSection | null>(initialSection);
@@ -311,6 +272,8 @@ export default function CompanyPage() {
         return <NonconformitiesTable companyId={companyId} />;
       case 'employees':
         return <EmployeesTable companyId={companyId} searchTerm={employeeSearch} />;
+      case 'teamAccess':
+        return <TeamAccess />;
       case 'jobRoles':
         return <JobRolesTable companyId={companyId} />;
       case 'subcontractors':
@@ -374,11 +337,11 @@ export default function CompanyPage() {
     compact ? 'px-3 py-2 text-[0.88rem]' : 'px-3 py-2.5 text-[0.92rem]',
     active
       ? 'border-l-4 font-semibold shadow-sm'
-      : 'text-[#4f5f7a] hover:bg-[#e6e8eb] hover:text-[#191c1e]',
+      : 'text-[#6e6a61] hover:bg-[#e3e0d8] hover:text-[#111111]',
     isSidebarCollapsed && !compact && !isMobileMenuOpen && 'justify-center px-2',
   );
 
-  const renderSectionButton = (item: Extract<NavigationItem, { type: 'section' }>, compact = false) => {
+  const renderSectionButton = (item: Extract<NavigationItem, { type: 'section' }>, compact = false, itemKey?: string) => {
     const section = getSection(item.section);
     const Icon = item.icon || section.icon;
     const label = item.label || section.label;
@@ -388,7 +351,7 @@ export default function CompanyPage() {
 
     return (
       <button
-        key={section.value}
+        key={itemKey || `${section.value}-${label}`}
         type="button"
         title={description}
         onClick={() => handleSectionChange(section.value)}
@@ -406,12 +369,12 @@ export default function CompanyPage() {
       {!isSidebarCollapsed || mobile ? (
         <div className="mb-4 px-1">
           <div className="relative">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#6c7280]" />
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#6e6a61]" />
             <input
               value={menuSearch}
               onChange={(event) => setMenuSearch(event.target.value)}
               placeholder="Buscar modulo..."
-              className="h-10 w-full rounded-xl border border-[#e0c0b1] bg-[#f8f8f8] pl-9 pr-3 text-sm text-[#191c1e] outline-none focus:border-[#f46e11]"
+              className="h-10 w-full rounded-xl border border-[#cfcbc0] bg-[#f7f5f0] pl-9 pr-3 text-sm text-[#111111] outline-none focus:border-[#7a1f1f]"
             />
           </div>
         </div>
@@ -424,17 +387,17 @@ export default function CompanyPage() {
               <button
                 type="button"
                 onClick={() => setOpenMenuGroups((current) => current.includes(group.id) ? current.filter((id) => id !== group.id) : [...current, group.id])}
-                className="flex w-full items-center justify-between rounded-lg px-3 py-1.5 text-left text-[0.68rem] font-bold uppercase tracking-[0.16em] text-[#7b8495] hover:bg-[#e6e8eb]"
+                className="flex w-full items-center justify-between rounded-lg px-3 py-1.5 text-left text-[0.68rem] font-bold uppercase tracking-[0.16em] text-[#6e6a61] hover:bg-[#e3e0d8]"
               >
                 <span>{group.title}</span>
                 <ChevronDown className={cn('h-3.5 w-3.5 transition-transform', (openMenuGroups.includes(group.id) || menuQuery) && 'rotate-180')} />
               </button>
             ) : (
-              <div className="mx-auto h-px w-10 bg-[#d8dadd]" />
+              <div className="mx-auto h-px w-10 bg-[#e3e0d8]" />
             )}
             {(openMenuGroups.includes(group.id) || Boolean(menuQuery) || isSidebarCollapsed) ? <div className="space-y-1">
-              {group.items.map((item) => {
-                if (item.type === 'section') return renderSectionButton(item);
+              {group.items.map((item, index) => {
+                if (item.type === 'section') return renderSectionButton(item, false, `${group.id}-${index}-${item.section}-${item.label || ''}`);
 
                 if (item.type === 'link') {
                   const Icon = item.icon;
@@ -464,8 +427,8 @@ export default function CompanyPage() {
 
   if (isSessionLoading || isAuthorizing) {
     return (
-      <div className="min-h-screen bg-[#f7f9fc]">
-        <div className="flex h-16 items-center border-b border-[#e6cfc1] bg-[#f8f8f8] px-6">
+      <div className="min-h-screen bg-[#f2f1ed]">
+        <div className="flex h-16 items-center border-b border-[#cfcbc0] bg-[#f7f5f0] px-6">
           <Logo className="h-auto w-[170px]" />
         </div>
         <div className="mx-auto flex max-w-[1600px] gap-6 px-6 py-8">
@@ -481,14 +444,14 @@ export default function CompanyPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f7f9fc]">
-      <header className="fixed inset-x-0 top-0 z-30 flex h-16 items-center border-b border-[#e6cfc1] bg-[#f8f8f8] px-6 shadow-sm">
+    <div className="min-h-screen bg-[#f2f1ed]">
+      <header className="fixed inset-x-0 top-0 z-30 flex h-16 items-center border-b border-[#cfcbc0] bg-[#f7f5f0] px-6 shadow-sm">
         <div className="flex items-center gap-4">
           <Button
             variant="ghost"
             size="icon"
             onClick={() => setIsMobileMenuOpen(true)}
-            className="h-10 w-10 rounded-full text-[#415778] hover:bg-[#eef1f5] lg:hidden"
+            className="h-10 w-10 rounded-full text-[#111111] hover:bg-[#ebe9e3] lg:hidden"
           >
             <Menu className="h-5 w-5" />
           </Button>
@@ -496,7 +459,7 @@ export default function CompanyPage() {
         </div>
         <div className="ml-auto flex items-center gap-4">
           <div className="relative hidden lg:block">
-            <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#584237]" />
+            <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-[#6e6a61]" />
             <input
               value={activeSection === 'employees' ? employeeSearch : ''}
               onChange={(event) => {
@@ -505,26 +468,26 @@ export default function CompanyPage() {
                 }
               }}
               placeholder="Buscar..."
-              className="h-14 w-[300px] rounded-2xl border border-[#e0c0b1] bg-[#f8f8f8] pl-12 pr-4 text-[1rem] text-[#191c1e] outline-none ring-0 placeholder:text-[#6c7280] focus:border-[#f46e11]"
+              className="h-14 w-[300px] rounded-2xl border border-[#cfcbc0] bg-[#f7f5f0] pl-12 pr-4 text-[1rem] text-[#111111] outline-none ring-0 placeholder:text-[#6e6a61] focus:border-[#7a1f1f]"
             />
           </div>
-          <Button variant="ghost" size="icon" className="h-10 w-10 rounded-full text-[#415778] hover:bg-[#eef1f5]">
+          <Button variant="ghost" size="icon" className="h-10 w-10 rounded-full text-[#111111] hover:bg-[#ebe9e3]">
             <Bell className="h-4 w-4" />
           </Button>
-          <Button variant="ghost" size="icon" className="h-10 w-10 rounded-full text-[#415778] hover:bg-[#eef1f5]">
+          <Button variant="ghost" size="icon" className="h-10 w-10 rounded-full text-[#111111] hover:bg-[#ebe9e3]">
             <CircleHelp className="h-4 w-4" />
           </Button>
           <UserNav />
         </div>
       </header>
 
-      <aside className={cn('fixed left-0 top-16 z-20 hidden h-[calc(100vh-4rem)] flex-col border-r border-[#e0c0b1] bg-[#f3f4f6] transition-all duration-200 lg:flex', sidebarWidthClass)}>
+      <aside className={cn('fixed left-0 top-16 z-20 hidden h-[calc(100vh-4rem)] flex-col border-r border-[#cfcbc0] bg-[#f2f1ed] transition-all duration-200 lg:flex', sidebarWidthClass)}>
         <div className={cn('px-5 pb-4 pt-4', isSidebarCollapsed && 'px-3')}>
           <Button
             variant="ghost"
             size="icon"
             onClick={() => setIsSidebarCollapsed((current) => !current)}
-            className={cn('h-9 rounded-xl text-[#4f5f7a] hover:bg-[#e6e8eb]', isSidebarCollapsed ? 'mx-auto w-11' : 'w-full justify-start px-3')}
+            className={cn('h-9 rounded-xl text-[#6e6a61] hover:bg-[#e3e0d8]', isSidebarCollapsed ? 'mx-auto w-11' : 'w-full justify-start px-3')}
             title={isSidebarCollapsed ? 'Expandir menu' : 'Recolher menu'}
           >
             {isSidebarCollapsed ? <PanelLeftOpen className="h-4 w-4" /> : <><PanelLeftClose className="h-4 w-4" /><span className="ml-2 text-sm">Recolher menu</span></>}
@@ -533,11 +496,11 @@ export default function CompanyPage() {
 
         {renderNavigation(false)}
 
-        <div className={cn('mt-auto border-t border-[#e0c0b1] px-3 py-4', isSidebarCollapsed && 'px-2')}>
+        <div className={cn('mt-auto border-t border-[#cfcbc0] px-3 py-4', isSidebarCollapsed && 'px-2')}>
           <div className="space-y-1">
             <Button
               variant="ghost"
-              className={cn('h-11 rounded-xl text-[#4f5f7a] hover:bg-[#e6e8eb] hover:text-[#191c1e]', isSidebarCollapsed ? 'w-full justify-center px-0' : 'w-full justify-start px-3')}
+              className={cn('h-11 rounded-xl text-[#6e6a61] hover:bg-[#e3e0d8] hover:text-[#111111]', isSidebarCollapsed ? 'w-full justify-center px-0' : 'w-full justify-start px-3')}
               title="Suporte"
             >
               <CircleHelp className="h-4 w-4" />
@@ -546,33 +509,33 @@ export default function CompanyPage() {
             <Button
               variant="ghost"
               onClick={handleSignOut}
-              className={cn('h-11 rounded-xl text-[#d01818] hover:bg-[#fbe2df] hover:text-[#d01818]', isSidebarCollapsed ? 'w-full justify-center px-0' : 'w-full justify-start px-3')}
+              className={cn('h-11 rounded-xl text-[#7a1f1f] hover:bg-[#f0e2e0] hover:text-[#7a1f1f]', isSidebarCollapsed ? 'w-full justify-center px-0' : 'w-full justify-start px-3')}
               title="Sair"
             >
               <LogOut className="h-4 w-4" />
               {!isSidebarCollapsed ? <span>Sair</span> : null}
             </Button>
           </div>
-          {!isSidebarCollapsed ? <p className="mt-3 px-3 text-xs text-[#7b8495]">Versao {process.env.NEXT_PUBLIC_APP_VERSION || 'dev'}</p> : null}
+          {!isSidebarCollapsed ? <p className="mt-3 px-3 text-xs text-[#6e6a61]">Versao {process.env.NEXT_PUBLIC_APP_VERSION || 'dev'}</p> : null}
         </div>
       </aside>
 
       {isMobileMenuOpen ? (
         <div className="fixed inset-0 z-50 lg:hidden">
           <button type="button" aria-label="Fechar menu" className="absolute inset-0 bg-black/35" onClick={() => setIsMobileMenuOpen(false)} />
-          <aside className="relative flex h-full w-[min(88vw,22rem)] flex-col border-r border-[#e0c0b1] bg-[#f3f4f6] shadow-2xl">
+          <aside className="relative flex h-full w-[min(88vw,22rem)] flex-col border-r border-[#cfcbc0] bg-[#f2f1ed] shadow-2xl">
             <div className="flex items-center justify-between px-5 py-4">
               <div>
-                <p className="text-lg font-semibold text-[#191c1e]">Menu</p>
-                <p className="text-sm text-[#4f5f7a]">Gestao SST</p>
+                <p className="text-lg font-semibold text-[#111111]">Menu</p>
+                <p className="text-sm text-[#6e6a61]">Gestao SST</p>
               </div>
               <Button variant="ghost" size="icon" onClick={() => setIsMobileMenuOpen(false)} className="rounded-full">
                 <X className="h-5 w-5" />
               </Button>
             </div>
             {renderNavigation(true)}
-            <div className="border-t border-[#e0c0b1] p-4">
-              <Button variant="ghost" onClick={handleSignOut} className="w-full justify-start rounded-xl text-[#d01818] hover:bg-[#fbe2df] hover:text-[#d01818]">
+            <div className="border-t border-[#cfcbc0] p-4">
+              <Button variant="ghost" onClick={handleSignOut} className="w-full justify-start rounded-xl text-[#7a1f1f] hover:bg-[#f0e2e0] hover:text-[#7a1f1f]">
                 <LogOut className="h-4 w-4" />
                 Sair
               </Button>
@@ -593,17 +556,17 @@ export default function CompanyPage() {
                   </div>
                 ) : (
                   <>
-                    <h1 className="font-headline text-[4rem] font-bold leading-[1.05] tracking-[-0.03em] text-[#191c1e]">
+                    <h1 className="font-headline text-[4rem] font-bold leading-[1.05] tracking-[-0.03em] text-[#111111]">
                       Configuracoes da Empresa
                     </h1>
-                    <p className="mt-4 max-w-4xl text-[1.2rem] leading-10 text-[#4f5f7a]">
+                    <p className="mt-4 max-w-4xl text-[1.2rem] leading-10 text-[#6e6a61]">
                       Gerencie a identidade da sua organizacao e as integracoes de automacao n8n.
                     </p>
                   </>
                 )}
               </div>
             ) : (
-              <div className="mb-6 rounded-2xl border border-[#e0c0b1] bg-white px-6 py-5 shadow-sm">
+              <div className="mb-6 rounded-2xl border border-[#cfcbc0] bg-white px-6 py-5 shadow-sm">
                 {isCompanyLoading ? (
                   <div className="space-y-3">
                     <Skeleton className="h-9 w-72 rounded-lg" />
@@ -611,8 +574,8 @@ export default function CompanyPage() {
                   </div>
                 ) : (
                   <>
-                    <h1 className="font-headline text-[2rem] leading-tight text-[#191c1e]">{company?.name || 'Empresa'}</h1>
-                    <p className="mt-2 max-w-3xl text-body-md text-[#4f5f7a]">
+                    <h1 className="font-headline text-[2rem] leading-tight text-[#111111]">{company?.name || 'Empresa'}</h1>
+                    <p className="mt-2 max-w-3xl text-body-md text-[#6e6a61]">
                       Gerencie obras, funcionarios, cargos, terceirizadas e configuracoes da empresa no mesmo padrao visual do painel principal.
                     </p>
                   </>
