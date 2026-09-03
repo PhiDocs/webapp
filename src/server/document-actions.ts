@@ -329,6 +329,7 @@ export async function logPdfGenerated(documentId: string) {
   try {
     const document = await DocumentRepository.getById(documentId);
     if (!document) return { success: false };
+    await requireAuth({ matchCompanyId: document.companyId, requireCompany: true });
     const sessao = await getSession();
 
     await DocumentEventRepository.record({

@@ -22,21 +22,25 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    try {
-      await requireAuth();
-    } catch (error: any) {
-      return NextResponse.json(
-        { error: error.message || 'Acesso negado.' },
-        { status: 401 }
-      );
-    }
-
     const { formData, analysisData, equipmentData, company } = (await request.json()) as {
         formData: SafetyFormValues;
         analysisData: SafetyAnalysisOutput | null;
         equipmentData: ProtectiveEquipmentOutput | null;
         company: Company | null;
     };
+
+    if (!company?.id) {
+      return NextResponse.json({ error: 'Empresa não identificada.' }, { status: 400 });
+    }
+
+    try {
+      await requireAuth({ matchCompanyId: company.id, requireCompany: true });
+    } catch (error: any) {
+      return NextResponse.json(
+        { error: error.message || 'Acesso negado.' },
+        { status: 401 }
+      );
+    }
 
     const pdfBuffer = await generatePdfBuffer({
       formData,

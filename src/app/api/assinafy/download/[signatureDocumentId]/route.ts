@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { SignatureDocumentRepository } from '@/repositories/signature-document.repository';
 import { downloadSignedDocument } from '@/server/assinafy-actions';
 import { ErrorLogRepository } from '@/repositories/error-log.repository';
+import { requireAuth } from '@/server/auth-guard';
 
 export async function GET(
   _request: NextRequest,
@@ -13,6 +14,12 @@ export async function GET(
 
     if (!signatureDoc) {
       return NextResponse.json({ error: 'Documento de assinatura n\u00e3o encontrado.' }, { status: 404 });
+    }
+
+    try {
+      await requireAuth({ matchCompanyId: signatureDoc.companyId, requireCompany: true });
+    } catch (authError: any) {
+      return NextResponse.json({ error: authError.message || 'Acesso negado.' }, { status: 401 });
     }
 
     const pdfBlob = await downloadSignedDocument(signatureDoc.assinafyDocumentId);
