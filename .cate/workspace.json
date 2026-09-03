@@ -1,0 +1,162 @@
+{
+  "version": 1,
+  "name": "APR.ai",
+  "color": "",
+  "dockState": {
+    "zones": {
+      "left": {
+        "position": "left",
+        "visible": false,
+        "size": 260,
+        "layout": null
+      },
+      "right": {
+        "position": "right",
+        "visible": false,
+        "size": 260,
+        "layout": null
+      },
+      "bottom": {
+        "position": "bottom",
+        "visible": false,
+        "size": 240,
+        "layout": null
+      },
+      "center": {
+        "position": "center",
+        "visible": true,
+        "size": 0,
+        "layout": {
+          "type": "tabs",
+          "id": "4e6ce2b1-eba4-4617-bb58-bfc04fa86c53",
+          "panelIds": [
+            "3b072618-eac2-41bf-a02b-ab46f39cadc2"
+          ],
+          "activeIndex": 0
+        }
+      }
+    }
+  },
+  "panels": {
+    "17c996c5-e41a-476e-996e-d8b1bf73aa5c": {
+      "type": "terminal",
+      "title": "Terminal 1"
+    },
+    "dd2d4e1d-0b6b-40e8-b0de-5b333319d0a8": {
+      "type": "terminal",
+      "title": "Terminal 3"
+    },
+    "14df099d-3b20-4de0-96ef-55e3b5dc7b0f": {
+      "type": "terminal",
+      "title": "Terminal 4"
+    },
+    "b4d47bef-2e41-4b5a-81da-088b87247d02": {
+      "type": "cateAgent",
+      "title": "Cate Agent 1"
+    },
+    "3b072618-eac2-41bf-a02b-ab46f39cadc2": {
+      "type": "canvas",
+      "title": "Canvas"
+    }
+  },
+  "canvases": {
+    "3b072618-eac2-41bf-a02b-ab46f39cadc2": {
+      "id": "3b072618-eac2-41bf-a02b-ab46f39cadc2",
+      "canvasNodes": {
+        "a89ee3eb-d921-4d83-8bdb-aef5b72b515a": {
+          "id": "a89ee3eb-d921-4d83-8bdb-aef5b72b515a",
+          "origin": {
+            "x": -1289.715400917135,
+            "y": -277.0175524718335
+          },
+          "size": {
+            "width": 640,
+            "height": 400
+          },
+          "zOrder": 16,
+          "creationIndex": 0,
+          "animationState": "idle",
+          "dockLayout": {
+            "type": "tabs",
+            "id": "89b3a863-8247-4b18-80a8-751ffe371d94",
+            "panelIds": [
+              "17c996c5-e41a-476e-996e-d8b1bf73aa5c"
+            ],
+            "activeIndex": 0
+          }
+        },
+        "446a4517-0021-46d4-bb2b-8b2705003484": {
+          "id": "446a4517-0021-46d4-bb2b-8b2705003484",
+          "origin": {
+            "x": -600,
+            "y": -280
+          },
+          "size": {
+            "width": 640,
+            "height": 400
+          },
+          "zOrder": 18,
+          "creationIndex": 2,
+          "animationState": "idle",
+          "dockLayout": {
+            "type": "tabs",
+            "id": "6beba3e4-f785-49f6-8581-e22d20d4ade4",
+            "panelIds": [
+              "dd2d4e1d-0b6b-40e8-b0de-5b333319d0a8"
+            ],
+            "activeIndex": 0
+          }
+        },
+        "2e3e6117-ce89-4af4-86fb-5f9ba329e847": {
+          "id": "2e3e6117-ce89-4af4-86fb-5f9ba329e847",
+          "origin": {
+            "x": -1980,
+            "y": -280
+          },
+          "size": {
+            "width": 640,
+            "height": 400
+          },
+          "zOrder": 19,
+          "creationIndex": 3,
+          "animationState": "idle",
+          "dockLayout": {
+            "type": "tabs",
+            "id": "658fcc8e-3709-4927-a0b8-40e6ecaa2080",
+            "panelIds": [
+              "14df099d-3b20-4de0-96ef-55e3b5dc7b0f"
+            ],
+            "activeIndex": 0
+          }
+        },
+        "00858c33-0df1-4029-91bd-c27a75ef85ce": {
+          "id": "00858c33-0df1-4029-91bd-c27a75ef85ce",
+          "origin": {
+            "x": -1300,
+            "y": -894.1884169158748
+          },
+          "size": {
+            "width": 660,
+            "height": 574.1884169158748
+          },
+          "zOrder": 26,
+          "creationIndex": 4,
+          "animationState": "idle",
+          "dockLayout": {
+            "type": "tabs",
+            "id": "fbc3b93e-026f-4bf9-8f73-a2a82393b452",
+            "panelIds": [
+              "b4d47bef-2e41-4b5a-81da-088b87247d02"
+            ],
+            "activeIndex": 0
+          }
+        }
+      },
+      "zoomLevel": 0.7983624999999999,
+      "viewportOffset": {
+        "x": 1584.4116249999997,
+        "y": 901.1812499999999
+      }
+    }
+  }
+}
