@@ -716,7 +716,6 @@ export function SafetyForm({
                 <PTForm
                   form={form}
                   passoVisivel={passoVisivel}
-                  pessoasExternas
                   recentActivities={recentActivities}
                   similarActivities={similarActivities}
                 />
