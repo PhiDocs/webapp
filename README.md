@@ -55,9 +55,39 @@ e o que é obrigatório está em
 | `npm run typecheck` | `tsc --noEmit` |
 | `npm run lint` | ESLint |
 | `npm run db:migrate` | Aplica as migrations do Supabase |
-| `npm run create-company` | Cria uma empresa via script |
-| `npm run set-admin` | Promove um usuário a admin |
+| `npm run create-company` | Cria uma empresa e o primeiro admin |
+| `npm run set-admin` | Promove um usuário existente a admin |
 | `npm run docker:up` / `docker:down` | Sobe/derruba a stack local em container |
+
+```bash
+npm run create-company -- "Nome da Empresa" "admin@empresa.com" "Nome do Admin" "senhaForte123"
+npm run set-admin -- "usuario@empresa.com" "ID_DA_EMPRESA"
+```
+
+O schema inicial do banco está em
+`supabase/migrations/20260506100000_initial_schema.sql`; as migrations
+seguintes ficam na mesma pasta.
+
+### Docker local (app + Supabase + Postgres)
+
+Alternativa ao rodar contra um projeto Supabase remoto: sobe tudo local.
+
+```bash
+cp .env.docker.example .env.docker
+docker compose --env-file .env.docker up -d --build
+```
+
+- App: `http://localhost:9002`
+- Supabase Gateway / Studio: `http://localhost:8000` (basic auth em `DASHBOARD_USERNAME`/`DASHBOARD_PASSWORD`)
+- Postgres direto: `localhost:54322` (usuário `postgres`, senha `POSTGRES_PASSWORD`, db `postgres`)
+
+O serviço `bootstrap` cria (ou reaproveita, é idempotente) a empresa e o
+admin locais a partir de `LOCAL_COMPANY_NAME`, `LOCAL_ADMIN_NAME`,
+`LOCAL_ADMIN_EMAIL` e `LOCAL_ADMIN_PASSWORD`. Para ver o resultado:
+
+```bash
+docker compose --env-file .env.docker logs bootstrap
+```
 
 ## Documentação
 
